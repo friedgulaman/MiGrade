@@ -1,0 +1,288 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block page_title %}
+upload
+{% endblock page_title %}
+{% block main_content %}  
+<section class="content container mt-2">
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs text" role="tablist">
+          <li class="nav-ite m">
+            <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab" aria-selected="false">Audiences</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#demographics" role="tab" aria-selected="false">Demographics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#more" role="tab" aria-selected="false">More</a>
+          </li>
+        </ul>
+        <div>
+          <div class="btn-wrapper p-2">
+            <a href="{%url 'upload_documents' %}" class="btn btn-otline-dark"><i class="mdi mdi-adjust"></i> OCR</a>
+            <a href="#" class="btn btn-primary text-white me-0" id="togglePanelBtn">
+            <i class="mdi mdi-apple-keyboard-caps"></i> Upload SF1</a>
+                <!-- Centered Right-Side Panel -->
+            <div id="rightSidePanel" class="position-fixed bg-light p-3 shadow d-flex flex-column align-items-center justify-content-center"
+                style="top: 50%; right: -300px; transform: translateY(-50%); height: 100%; width: 300px; transition: right 0.3s;">
+                <!-- Content for the right-side panel -->
+
+        
+                <form method="post" action="{% url 'upload' %}" class="container text-center">
+                  {% csrf_token %}
+                  <h4>Upload SF1 Data</h4>
+                  <p>Please paste the Google Sheet link containing your SF1 data below:</p>
+                  <div class="form-group">
+                      <input type="text" name="google_sheet_link" id="google_sheet_link" placeholder="Paste Here" required>
+                      <button type="submit" id="upload_btn" class="btn btn-primary mt-3">Upload</button>
+                  </div>
+              </form>
+              
+              
+                      
+                <!-- Add your content here -->
+                <button id="closePanelBtn" class="btn btn-danger mt-3">Close</button>
+            </div>  
+        
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content tab-content-basic">
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+          <div id="excel-data-container">
+              {% csrf_token %}
+              <div class="table-responsive">
+                {% if lrn_data %}
+                  <table class="table hover" id="data-table">
+                    <thead>
+                      <tr>
+                        <th>LRN</th>
+                        <th>Name</th>
+                        <th>Sex</th>
+                        <th>Birthday</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for key, values in lrn_data.items %}
+                        <tr>
+                          <td>{{ key }}</td>
+                          <td>{{ values.0.1 }}</td>
+                          <td>{{ values.0.2 }}</td>
+                          <td>{{ values.0.3 }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                 
+                  <button type="button" class="btn btn-secondary mt-3" id="selectGradeSectionButton">Select Grade and Section</button>
+                  <div class="modal" id="gradeSectionModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Select Grade and Section</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <form id="gradeSectionForm" method="get" action="{% url 'get_grades_and_sections' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                              <label for="grade">Grade</label>
+                              <select class="form-control" id="grade" name="grade">
+                                <!-- Populate grade options dynamically from the database -->
+                                {% for grade in grades %}
+                                  <option value="{{ grade.name }}">{{ grade.name }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                            <div class="form-group">
+                              <label for="section">Section</label>
+                              <select class="form-control" id="section" name="section">
+                                <!-- Populate section options dynamically from the database -->
+                                {% for section in sections %}
+                                  <option value="{{ section.name }}">{{ section.name }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="saveGradeSection">Save</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                {% else %}
+                  <p>No data to display.</p>
+                {% endif %}
+              </div>
+              <!-- The modal for grade and section selection -->
+
+              
+
+            
+              </div>
+          </div>
+
+      
+      
+        <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences"> 
+          <div id="handsontable-container"></div>
+        </div>
+        <div class="tab-pane fade show " id="demographics" role="tabpanel" aria-labelledby="demographics"> 
+        <h1>3</h1>
+        </div>
+        <div class="tab-pane fade show " id="more" role="tabpanel" aria-labelledby="more"> 
+            <h1>4</h1>
+        </div>
+      </div>
+      
+      
+
+</section>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+
+<script>
+// Function to open the grade and section selection modal
+const selectGradeSectionButton = document.getElementById('selectGradeSectionButton');
+const gradeSectionModal = new bootstrap.Modal(document.getElementById('gradeSectionModal'));
+
+if (selectGradeSectionButton && gradeSectionModal) {
+  selectGradeSectionButton.addEventListener('click', () => {
+    fetchGradesAndSections()  ; // Fetch grades and sections when the button is clicked
+    gradeSectionModal.show();
+  });
+}
+
+// Function to handle the form submission in the modal
+const saveGradeSectionButton = document.getElementById('saveGradeSection');
+if (saveGradeSectionButton) {
+  saveGradeSectionButton.addEventListener('click', () => {
+    const selectedGrade = document.getElementById('grade').value;
+    const selectedSection = document.getElementById('section').value;
+
+    // Get the existing JSON data
+    const jsonData = tableToJson();
+
+    // Add selectedGrade and selectedSection names to the JSON data
+    jsonData.selectedGrade = getSelectedGradeName(selectedGrade);
+    jsonData.selectedSection = getSelectedSectionName(selectedSection);
+
+    // Close the modal
+    gradeSectionModal.hide();
+
+    // Now, jsonData contains selectedGrade and selectedSection names
+    sendJsonData(jsonData); // Send the JSON data to the server
+  });
+}
+
+// Function to get the name of the selected grade based on its ID
+function getSelectedGradeName(selectedGradeId) {
+  const gradeSelect = document.getElementById('grade');
+  const selectedGrade = Array.from(gradeSelect.options).find(option => option.value === selectedGradeId);
+  return selectedGrade ? selectedGrade.textContent : '';
+}
+
+// Function to get the name of the selected section based on its ID
+function getSelectedSectionName(selectedSectionId) {
+  const sectionSelect = document.getElementById('section');
+  const selectedSection = Array.from(sectionSelect.options).find(option => option.value === selectedSectionId);
+  return selectedSection ? selectedSection.textContent : '';
+}
+
+
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === name + '=') {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function tableToJson() {
+    const table = document.getElementById("data-table");
+    const data = { rows: [] };
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+      const rowData = {};
+      const cells = row.querySelectorAll("td");
+
+      // Assuming the first cell is the key (LRN) and the rest are values
+      rowData.LRN = cells[0].textContent;
+      rowData.Name = cells[1].textContent;
+      rowData.Sex = cells[2].textContent;
+      rowData.Birthday = cells[3].textContent;
+
+      data.rows.push(rowData);
+    });
+
+    return data;
+  }
+
+  // Function to send JSON data to your Django views
+  function sendJsonData(jsonData) {
+    fetch("{% url 'save_json_data' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken') // Include CSRF token
+      },
+      body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+      .then(data => {
+        // Handle the response from the server, e.g., display a success message or perform other actions.
+        alert("JSON data has been saved!"); // Add an alert
+      })
+      .catch(error => {
+        // Handle errors, e.g., display an error message to the user.
+        alert("An error occurred while saving JSON data: " + error.message); // Add an alert for errors
+      });
+  }
+
+  // Function to fetch grades and sections
+  function fetchGradesAndSections() {
+    fetch("{% url 'get_grades_and_sections' %}")
+      .then(response => response.json())
+      .then(data => {
+        const gradeSelect = document.getElementById('grade');
+        const sectionSelect = document.getElementById('section');
+
+        // Populate grade options
+        data.grades.forEach(grade => {
+          const option = document.createElement('option');
+          option.value = grade.id;
+          option.textContent = grade.name;
+          gradeSelect.appendChild(option);
+        });
+
+        // Populate section options
+        data.sections.forEach(section => {
+          const option = document.createElement('option');
+          option.value = section.id;
+          option.textContent = section.name;
+          sectionSelect.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error("Error fetching grades and sections:", error);
+      });
+  }
+  
+</script>
+
+
+{% endblock main_content %}

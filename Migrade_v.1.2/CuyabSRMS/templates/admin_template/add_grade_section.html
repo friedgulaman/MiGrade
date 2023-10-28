@@ -1,0 +1,152 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Add Teacher
+{% endblock page_title %}
+{% block main_content %}
+<section class="container">
+  <div class="container-fluid">
+    <h1>Create Grade Section List</h1>
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Grade and Section Form</h4>
+        <button type="button" class="btn btn-success" id="addGradeSection">+ Add Grade Level</button>
+        <!-- Display Messages -->
+        {% if messages %}
+        <div class="col-12">
+          {% for message in messages %}
+            {% if message.tags == "success" %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form class="forms-sample" id="gradeSectionForm" method="post" action="{% url 'submit_grade_section' %}">
+          <div id="gradeSectionFields">
+            <!-- Initially, no fields are added -->
+          </div>
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+          
+          
+         
+        </form>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-body">
+          <h4 class="card-title">List of Grades and Sections</h4>
+          
+          <table class="table table-hover">
+              <thead>
+                  <tr>
+                      <th>Grade</th>
+                      <th>Sections</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for grade in grades %}
+                      <tr>
+                          <td>{{ grade.name }}</td>
+                          <td>
+                              {% for section in grade.sections.all %}
+                                  {{ section.name }}
+                                  {% if not forloop.last %}, {% endif %}
+                              {% endfor %}
+                          </td>
+                      </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+      </div>
+  </div>
+  
+  </div>
+</section>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("gradeSectionForm");
+      const fieldsContainer = document.getElementById("gradeSectionFields");
+      const addGradeButton = document.getElementById("addGradeSection");
+      const cancelButton = document.getElementById("cancel_button");
+      let gradeCounter = 0; // Initialize a grade counter
+    
+      addGradeButton.addEventListener("click", function () {
+        gradeCounter++; // Increment the grade counter
+        // Add Grade field
+        const newGradeField = document.createElement("div");
+        newGradeField.innerHTML = `
+  
+          <div class="form-group m-2 border-top gradeSectionField">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="button" class="btn btn-secondary btn-sm add-section mt-2">+ Add Section</button>
+            <button type="button" class="btn btn-danger btn-sm add-section mt-2 cancel-button">Cancel</button>
+            </div>
+            <label for="gradeInput">Grade</label>
+            <select class="form-select" name="grade_${gradeCounter}">
+              <option value="Grade 1">Grade 1</option>
+              <option value="Grade 2">Grade 2</option>
+              <option value="Grade 3">Grade 3</option>
+              <option value="Grade 4">Grade 4</option>
+              <option value="Grade 5">Grade 5</option>
+              <option value="Grade 6">Grade 6</option>
+            </select>
+  
+            <div class="section-fields">
+              <!-- Section fields will be added here -->
+              
+            </div>
+          </div>
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+          <button type="submit" class="btn btn-primary me-md-2">Submit</button>
+          </div>
+        `;
+    
+        fieldsContainer.appendChild(newGradeField);
+    
+        // Add Section button click event for this grade
+        const addSectionButton = newGradeField.querySelector(".add-section");
+        addSectionButton.addEventListener("click", function () {
+          const sectionFieldsContainer = newGradeField.querySelector(".section-fields");
+    
+          const newSectionField = document.createElement("div");
+          newSectionField.innerHTML = `
+            <div class="form-group">
+              <label for="sectionInput">Section</label>
+              <input type="text" class="form-control" name="section_${gradeCounter}[]" placeholder="Section">
+            </div>
+          `;
+    
+          sectionFieldsContainer.appendChild(newSectionField);
+        });
+    
+        // Cancel button click event for this grade
+        const cancelButton = newGradeField.querySelector(".cancel-button");
+        cancelButton.addEventListener("click", function () {
+          fieldsContainer.removeChild(newGradeField);
+          gradeCounter--; // Decrement the grade counter
+        });
+      });
+    
+      form.addEventListener("submit", function (e) {
+        // Serialize the form data properly for multiple sections
+        const formData = new FormData(form);
+        const gradeData = formData.getAll("grade[]");
+        const sectionData = formData.getAll("section[]");
+    
+        // Clear the original data for these fields
+        formData.delete("grade[]");
+        formData.delete("section[]");
+    
+        // Add the serialized grade and section data back to the form data
+        gradeData.forEach((grade) => formData.append("grade[]", grade));
+        sectionData.forEach((section) => formData.append("section[]", section));
+      });
+    });
+    </script>
+{% endblock main_content %}

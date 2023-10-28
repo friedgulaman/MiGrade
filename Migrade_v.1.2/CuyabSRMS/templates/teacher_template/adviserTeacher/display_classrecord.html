@@ -1,0 +1,228 @@
+{% extends 'teacher_template/teacher_base.html' %}
+{% block page_title %}
+    Adviser Teacher
+{% endblock page_title %}
+{% block main_content %}
+<style>
+    .table, th {
+        border: solid 1px;
+    }
+    td {
+        border: solid 1px;
+    }
+    #components {
+        color: red;
+        text-align: center;
+    }
+</style>
+
+<section class="content container mt-2">
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#written_works" role="tab"
+                    aria-controls="overview" aria-selected="true">Written Works</a>
+            </li>
+            <li class="nav-item">
+                <a class "nav-link" id="profile-tab" data-bs-toggle="tab" href="#performance_task" role="tab"
+                    aria-selected="false">Performance Task</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly_assessment" role="tab"
+                    aria-selected="false">Quarterly Assessment</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#initial_grade" role="tab"
+                    aria-selected="false">Initial Grades</a>
+            </li>
+        </ul>
+        <div>
+            <div class="btn-wrapper">
+                {% if grade_scores %}
+                <div>{{ grade_scores.0.student_name }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content tab-content-basic">
+        <div class="tab-pane fade show active" id="written_works" role="tabpanel" aria-labelledby="home-tab">
+            <div class="mb-3">
+                {% if grade_scores %}
+                <div class="table-responsive">
+                    <div id="components">WRITTEN WORKS</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>1</th>
+                                <th>2</th>
+                                <th>3</th>
+                                <th>4</th>
+                                <th>5</th>
+                                <th>6</th>
+                                <th>7</th>
+                                <th>8</th>
+                                <th>9</th>
+                                <th>10</th>
+                                <th>Total</th>
+                                <th>PS</th>
+                                <th>WS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in grade_scores %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ record.student_name }}</td>
+                                <td>{{ record.scores_written_works.0 }}</td>
+                                <td>{{ record.scores_written_works.1 }}</td>
+                                <td>{{ record.scores_written_works.2 }}</td>
+                                <td>{{ record.scores_written_works.3 }}</td>
+                                <td>{{ record.scores_written_works.4 }}</td>
+                                <td>{{ record.scores_written_works.5 }}</td>
+                                <td>{{ record.scores_written_works.6 }}</td>
+                                <td>{{ record.scores_written_works.7 }}</td>
+                                <td>{{ record.scores_written_works.8 }}</td>
+                                <td>{{ record.scores_written_works.9 }}</td>
+                                <td>{{ record.initial_grades }}</td>
+                                <td>{{ record.percentage_score_written }}</td>
+                                <td>{{ record.weighted_score_written }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Add similar sections for Performance Task, Quarterly Assessment, and Initial Grades -->
+        <!-- Performance Task -->
+        <div class="tab-pane fade show" id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="mb-3">
+                {% if grade_scores %}
+                <div class="table-responsive">
+                    <div id="components">PERFORMANCE TASK</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>1</th>
+                                <th>2</th>
+                                <th>3</th>
+                                <th>4</th>
+                                <th>5</th>
+                                <th>6</th>
+                                <th>7</th>
+                                <th>8</th>
+                                <th>9</th>
+                                <th>10</th>
+                                <th>Total</th>
+                                <th>PS</th>
+                                <th>WS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in grade_scores %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ record.student_name }}</td>
+                                <td>{{ record.scores_performance_task.0 }}</td>
+                                <td>{{ record.scores_performance_task.1 }}</td>
+                                <td>{{ record.scores_performance_task.2 }}</td>
+                                <td>{{ record.scores_performance_task.3 }}</td>
+                                <td>{{ record.scores_performance_task.4 }}</td>
+                                <td>{{ record.scores_performance_task.5 }}</td>
+                                <td>{{ record.scores_performance_task.6 }}</td>
+                                <td>{{ record.scores_performance_task.7 }}</td>
+                                <td>{{ record.scores_performance_task.8 }}</td>
+                                <td>{{ record.scores_performance_task.9 }}</td>
+                                <td>{{ record.initial_grades }}</td>
+                                <td>{{ record.percentage_score_performance }}</td>
+                                <td>{{ record.weighted_score_performance }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quarterly Assessment -->
+        <div class="tab-pane fade show" id="quarterly_assessment" role="tabpanel" aria-labelledby="contact-tab">
+            <div class="mb-3">
+                {% if grade_scores %}
+                <div class="table-responsive">
+                    <div id="components">QUARTERLY ASSESSMENT</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>1</th>
+                                <th>2</th>
+                                <th>3</th>
+                                <th>4</th>
+                                <th>Total</th>
+                                <th>PS</th>
+                                <th>WS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in grade_scores %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ record.student_name }}</td>
+                                <td>{{ record.scores_quarterly_assessment.0 }}</td>
+                                <td>{{ record.scores_quarterly_assessment.1 }}</td>
+                                <td>{{ record.scores_quarterly_assessment.2 }}</td>
+                                <td>{{ record.scores_quarterly_assessment.3 }}</td>
+                                <td>{{ record.initial_grades }}</td>
+                                <td>{{ record.percentage_score_quarterly }}</td>
+                                <td>{{ record.weighted_score_quarterly }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Initial Grades -->
+        <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
+            <div class="mb-3">
+                {% if grade_scores %}
+                <div class="table-responsive">
+                    <div id="components">INITIAL GRADE</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Initial Grade</th>
+                                <th>Quarterly Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in grade_scores %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ record.student_name }}</td>
+                                <td>{{ record.initial_grades }}</td>
+                                <td>{{ record.transmuted_grades }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}

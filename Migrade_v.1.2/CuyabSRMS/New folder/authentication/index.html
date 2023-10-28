@@ -1,0 +1,20 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <strong>Message:</strong> {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    <h1>this is home page</h1>
+    <a href="/signup" class="btn btn-primary">Sign Up</a>
+    <a href="/signin" class="btn btn-success">Log In</a>
+</div>
+
+{% endblock %}

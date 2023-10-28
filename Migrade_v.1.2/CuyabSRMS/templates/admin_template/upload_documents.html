@@ -1,0 +1,35 @@
+    {% extends 'admin_template/admin_base.html' %}   
+    {% block page_title %}
+    upload
+    {% endblock page_title %}
+    {% block main_content %}
+<section class="content container mt-2">
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <div>
+            <div class="btn-wrapper p-2">
+                <a href="#" class="btn btn-primary text-white me-0" id="togglePanelBtn">
+                <i class="mdi mdi-apple-keyboard-caps"></i> Upload Documents</a>
+    
+                <!-- Centered Right-Side Panel -->
+                <div id="rightSidePanel" class="position-fixed bg-light p-3 shadow d-flex flex-column align-items-center justify-content-center"
+                    style="top: 50%; right: -300px; transform: translateY(-50%); height: 100%; width: 300px; transition: right 0.3s;">
+    
+                    <!-- Upload form -->
+                    <form method="post" enctype="multipart/form-data" action="{% url 'upload_documents' %}" class="container text-center">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary mt-3">Upload</button>
+                    </form>
+    
+                    <!-- Edit form for extracted data -->
+                    <!-- Close button for the right-side panel -->
+                    <button id="closePanelBtn" class="btn btn-danger mt-3">Close</button>
+                </div>  
+            </div>
+        </div>
+    </div>
+    
+   
+</section>
+
+{% endblock main_content %}

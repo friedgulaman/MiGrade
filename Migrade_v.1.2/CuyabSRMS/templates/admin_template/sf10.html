@@ -1,0 +1,70 @@
+{% extends 'admin_template/admin_base.html' %}   
+{% block page_title %}
+upload
+{% endblock page_title %}
+{% block main_content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed Document</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<!-- Search Form -->
+<div>
+    <div>
+        <form method="GET" action="{% url 'sf10_view' %}" style="margin-bottom: 20px;">
+            <input type="text" name="search_query" placeholder="Enter search query">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+<br><br>
+
+    <div>
+        <table>
+            <!-- Table header remains the same -->
+            
+            {% for extracted_data in all_extracted_data %}
+            <tr>
+                <td>{{ extracted_data.last_name }}</td>
+                <td>{{ extracted_data.first_name }}</td>
+                <td>{{ extracted_data.middle_name }}</td>
+                <td>{{ extracted_data.school_year }}</td>
+                <td>{{ extracted_data.school_id }}</td>
+                <td>{{ extracted_data.school_name }}</td>
+                <td><a href="{{ uploaded_document_url }}" download>Download</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No extracted data available</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+</body>
+
+{% endblock main_content %}

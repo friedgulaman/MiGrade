@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Sheet Data</title>
+</head>
+<body>
+    <h1>Google Sheet Data</h1>
+    
+    {% if lrn_data %}
+        <table>
+            <tr>
+                <th>LRN</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Birthday</th>
+            </tr>
+            {% for lrn, values in lrn_data.items %}
+                <tr>
+                    <td>{{ lrn }}</td>
+                    <td>{{ values.0 }}</td>
+                    <td>{{ values.1 }}</td>
+                    <td>{{ values.2 }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    
+    <a href="{% url 'upload' %}">Back</a>
+</body>
+</html>

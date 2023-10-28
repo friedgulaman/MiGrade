@@ -1,0 +1,141 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Add Teacher
+{% endblock page_title %}
+{% block main_content %}
+<section class="container">
+  <div class="container-fluid">
+    <h1>Assigned Teachers to Grade and Section</h1>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h4 class="card-title">List of Grades and Sections</h4>
+
+            <!-- Add a form with select inputs for teachers, grades, and sections -->
+            <form id="assignmentForm" method="POST" action="{% url 'save_assignment' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="teacherSelect">Select a Teacher:</label>
+                    <select class="form-control" id="teacherSelect" name="teacher">
+                        <option value="" disabled selected>Select a Teacher</option> <!-- Teacher Placeholder -->
+                        {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}">{{ teacher.user.first_name }} {{ teacher.user.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="gradeSelect">Select a Grade:</label>
+                    <select class="form-control" id="gradeSelect" name="grade">
+                        <option value="" disabled selected>Select a Grade</option> <!-- Grade Placeholder -->
+                        {% for grade in grades %}
+                            <option value="{{ grade.id }}">{{ grade.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sectionSelect">Select a Section:</label>
+                    <select class="form-control" id="sectionSelect" name="section">
+                        <option value="" disabled selected>Select a Section</option> <!-- Section Placeholder -->
+                        <!-- Options for sections will be populated dynamically using JavaScript -->
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button> 
+            </form>
+        </div>
+    </div>
+</div>
+</section>
+<script>
+    // Function to fetch sections based on the selected grade and teacher
+    function fetchSections(selectedGradeId, selectedTeacherId) {
+      var sectionSelect = document.getElementById('sectionSelect');
+      sectionSelect.innerHTML = '<option value="" disabled selected>Select a Section</option>'; // Reset Section Placeholder
+  
+      if (selectedGradeId && selectedTeacherId) {
+        // Fetch section options from the server based on the selected grade and teacher
+        fetch(`/get_sections/?grade_id=${selectedGradeId}&teacher_id=${selectedTeacherId}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Received data from the server:', data);
+          data.sections.forEach(section => {
+            var option = document.createElement('option');
+            option.value = section.id;
+            option.textContent = section.name;
+            sectionSelect.appendChild(option);
+          });
+        });
+      }
+    }
+  
+    // Add event listener for cancel button
+    document.getElementById('cancelButton').addEventListener('click', function () {
+      // Clear the selected values in the form fields
+      document.getElementById('teacherSelect').value = ''; // Clear teacher select
+      document.getElementById('gradeSelect').value = '';   // Clear grade select
+  
+      // Clear and reset the section select with the placeholder
+      var sectionSelect = document.getElementById('sectionSelect');
+      sectionSelect.innerHTML = '<option value="" disabled selected>Select a Section</option>';
+    });
+  
+    // Add event listener for the grade selection to fetch sections
+    document.getElementById('gradeSelect').addEventListener('change', function () {
+      var selectedGradeId = this.value;
+      var selectedTeacherId = document.getElementById('teacherSelect').value;
+      fetchSections(selectedGradeId, selectedTeacherId);
+    });
+  
+    // Add event listener for the teacher selection to fetch sections
+    document.getElementById('teacherSelect').addEventListener('change', function () {
+      var selectedGradeId = document.getElementById('gradeSelect').value;
+      var selectedTeacherId = this.value;
+      fetchSections(selectedGradeId, selectedTeacherId);
+    });
+  
+    // Restoring sections when teacher and grade are selected
+    var initialTeacherValue = document.getElementById('teacherSelect').value;
+    var initialGradeValue = document.getElementById('gradeSelect').value;
+    if (initialGradeValue && initialTeacherValue) {
+      fetchSections(initialGradeValue, initialTeacherValue);
+    }
+  
+    // Add event listener for the form submission
+    document.getElementById('assignmentForm').addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent the form from submitting normally
+  
+      // Get selected values from the form
+      var teacherId = document.getElementById('teacherSelect').value;
+      var gradeId = document.getElementById('gradeSelect').value;
+      var sectionId = document.getElementById('sectionSelect').value;
+  
+      // Send the data to the server using a POST request
+      fetch('/save_assignment/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}', // Include the CSRF token
+        },
+        body: 'teacher=' + teacherId + '&grade=' + gradeId + '&section=' + sectionId,
+      })
+      .then(response => {
+        if (response.ok) {
+          // Handle success, e.g., show a success message or redirect to a success page
+          console.log('Assignment saved successfully');
+          // Redirect to a success page if needed
+        } else {
+          // Handle errors, e.g., show an error message
+          console.error('Failed to save assignment');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  </script>
+  
+  
+{% endblock main_content %}

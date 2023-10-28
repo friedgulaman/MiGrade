@@ -1,0 +1,49 @@
+* (Google Sheet Template - ECR) 
+		- lrn, name, 1st, 2nd, 3rd, 4th grading, grade and section, 
+		- written works, performance task, quarterly assessment, 
+		- initial grade, quarterly grade 
+
+* all input will store first in database.
+
+* input will process with formulas. 
+
+* (Google Sheet Templates) will be used to read and write value in cells
+
+	*if the quarterly grades are complete 
+		- teachers can download the (Google Sheet Template - ECR) with inputs. ex. 1st_Grading Period_Grade_Section
+		- teachers can download the (Google Sheet Template - SF9)
+		- generation of SF9 is for all students individually (zip file)
+
+	*if all quarter ly grades are complete (1st,2nd,3rd,4th) 
+		- teachers generate (Google Sheet Template - SF10)
+		- generation of SF10 is for all students individually (zip file)
+
+* login - adviser - paste Name of Learners - paste Grade & Section - store in database
+* start inputing the scores - display table ex. ECR score labels must be user friendly
+* You can use OCR to input scores
+* All calculations are carried out at the backend.
+* 
+
+
+
+"adviser" - got different grade and section
+		- upload sf1 or add student for advisory class 
+		- summary of grades from subjects teachers
+		- Advisers request a summary of grades from subject teachers at the end of each grading period (e.g., quarterly or semester).
+		- The summary should include the names of learners, grades, and sections for each subject taught by the respective teachers.
+	- review & consolidate
+		- parent & teacher conference
+
+"subject teachers" - subject  class list
+				 -  input of grades
+				 -	they will create summary of grades that will send to the adviser.
+				 - ex. Filipino subject
+				 	- Upload or input names of learners, grade and section
+					- can start input scores (automated calculations)
+					- when grades are complete on the 1st quarter (ready to send in the adviser)
+				 - communication to the adviser
+
+
+"Admin" - can add teacher
+		- can add grade and section
+		- designate grade and section name to teacher

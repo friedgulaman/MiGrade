@@ -1,0 +1,46 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{% block title %}Your Page Title{% endblock %}</title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/feather/feather.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/mdi/css/materialdesignicons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/ti-icons/css/themify-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/typicons/typicons.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/simple-line-icons/css/simple-line-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/css/vendor.bundle.base.css' %}">
+  <!-- endinject -->
+  <!-- Plugin css for this page -->
+  {% block plugin_css %}{% endblock %}
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
+  <!-- endinject -->
+  <link rel="shortcut icon" href="{% static 'star-admin/images/favicon.png' %}" />
+</head>
+
+<body>
+  {% block content %}{% endblock %}
+
+  <!-- plugins:js -->
+  <script src="{% static 'star-admin/vendors/js/vendor.bundle.base.js' %}"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  {% block plugin_js %}{% endblock %}
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script src="{% static 'star-admin/js/off-canvas.js' %}"></script>
+  <script src="{% static 'star-admin/js/hoverable-collapse.js' %}"></script>
+  <script src="{% static 'star-admin/js/template.js' %}"></script>
+  <script src="{% static 'star-admin/js/settings.js' %}"></script>
+  <script src="{% static 'star-admin/js/todolist.js' %}"></script>
+  <!-- endinject -->
+</body>
+
+</html>
