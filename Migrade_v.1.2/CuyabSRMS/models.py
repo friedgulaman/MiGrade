@@ -101,3 +101,47 @@ def save_user_profile(sender, instance, **kwargs):
     if instance.user_type == 2:
         instance.teacher.save()
 
+
+class ProcessedDocument(models.Model):
+    document = models.FileField(upload_to='processed_documents/')
+    upload_date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return self.document.name
+
+class ExtractedData(models.Model):
+    processed_document = models.OneToOneField(ProcessedDocument, on_delete=models.CASCADE)
+    region = models.CharField(max_length=255, blank=True, null=True)
+    division = models.CharField(max_length=255, blank=True, null=True)
+    school_year = models.CharField(max_length=255, blank=True, null=True)
+    school_name = models.CharField(max_length=255, blank=True, null=True)
+    school_id = models.CharField(max_length=10, blank=True, null=True)
+    grade_section = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True)  # Add new field for last name
+    first_name = models.CharField(max_length=255, blank=True)  # Add new field for first name
+    middle_name = models.CharField(max_length=255, blank=True)  # Add new field for middle name
+
+    def save_extracted_data(self, key_value_pairs):
+        self.region = key_value_pairs.get("REGION", "")
+        self.division = key_value_pairs.get("DIVISION", "")
+        self.school_year = key_value_pairs.get("SCHOOL YEAR", "")
+        self.school_name = key_value_pairs.get("SCHOOL NAME", "")
+        self.school_id = key_value_pairs.get("SCHOOL ID", "")
+        self.grade_section = key_value_pairs.get("GRADE & SECTION", "")
+        self.last_name = key_value_pairs.get("LAST NAME", "")  # Extracted last name
+        self.first_name = key_value_pairs.get("FIRST NAME", "")  # Extracted first name
+        self.middle_name = key_value_pairs.get("MIDDLE NAME", "")
+        self.save()
+
+    def to_json(self):
+        return {
+            "region": self.region,
+            "division": self.division,
+            "school_year": self.school_year,
+            "school_name": self.school_name,
+            "school_id": self.school_id,
+            "grade_section": self.grade_section
+        }
+

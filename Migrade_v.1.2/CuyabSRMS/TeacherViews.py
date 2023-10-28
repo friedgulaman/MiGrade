@@ -377,7 +377,7 @@ def calculate_grades(request):
         # Redirect to a success page or render a response as needed
         return redirect('display_classrecord')
 
-    return render(request, "teacher_template/adviserTeacher/upload.html")
+    return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
 
 def display_classrecord(request):

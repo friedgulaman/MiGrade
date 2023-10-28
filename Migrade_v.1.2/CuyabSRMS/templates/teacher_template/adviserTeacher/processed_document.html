@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed Document</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Processed Document</h1>
+    <p>Extracted Text:</p>
+    <pre>{{ document_text }}</pre>
+    <p>Uploaded Document URL:</p>
+    <a href="{{ uploaded_document_url }}" target="_blank">{{ uploaded_document_url }}</a>
+
+    <table>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>School Year</th>
+            <th>School ID</th>
+            <th>School Name</th>
+            <th>Document</th>
+        </tr>
+        {% for extracted_data in all_extracted_data %}
+        <tr>
+            <td>{{ extracted_data.last_name }}</td>
+            <td>{{ extracted_data.first_name }}</td>
+            <td>{{ extracted_data.middle_name }}</td>
+            <td>{{ extracted_data.school_year }}</td>
+            <td>{{ extracted_data.school_id }}</td>
+            <td>{{ extracted_data.school_name }}</td>
+            <td><a href="{{ uploaded_document_url }}" download>Download</a></td>
+        </tr>
+
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No extracted data available</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

@@ -13,7 +13,6 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 
 #OCR
-import mimetypes
 from .models import ExtractedData
 from .models import ProcessedDocument
 from google.cloud import documentai_v1beta3 as documentai
@@ -353,14 +352,6 @@ def upload_documents_ocr(request):
             print("Extracted Data for Review:")
             print(extracted_data_for_review)
 
-            if os.path.exists(uploaded_document_path):
-                with open(uploaded_document_path, 'rb') as file:
-                    response = HttpResponse(file.read(), content_type=mimetypes.guess_type(uploaded_document_path)[0])
-                    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(uploaded_document_path)}"'
-                    return response
-        else:
-            # Handle the case when the file does not exist
-            return HttpResponse("File not found.", status=404)
 
             # Render the 'processed_document.html' template with the extracted text and document URL.
             # return render(request, 'admin_template/edit_extracted_data.html', {'document_text': text, 'uploaded_document_url': uploaded_document_path, 'all_extracted_data': all_extracted_data,})
@@ -398,17 +389,8 @@ def save_edited_data(request):
         # Create a custom success message
         success_message = "Data has been successfully saved!"
 
-        all_extracted_data = ExtractedData.objects.all()
-
-    # Pass the extracted data to the template context
-        context = {
-            'all_extracted_data': all_extracted_data,
-        }
-
         # Send an HTTP response with the success message
-       
-    
-        return render(request, 'admin_template/sf10.html', context)
+        return HttpResponse(success_message)
 
     else:
         # Handle GET request if necessary
@@ -416,28 +398,14 @@ def save_edited_data(request):
     
 
 
-from django.db.models import Q
-
 def sf10_views(request):
-    search_query = request.GET.get('search_query')
+    # Query the ExtractedData model to retrieve all records
+    all_extracted_data = ExtractedData.objects.all()
 
-    if search_query:
-        # Filter the ExtractedData queryset based on the search query
-        all_extracted_data = ExtractedData.objects.filter(
-            Q(last_name__icontains=search_query) |
-            Q(first_name__icontains=search_query) |
-            Q(middle_name__icontains=search_query) |
-            Q(school_year__icontains=search_query) |
-            Q(school_id__icontains=search_query) |
-            Q(school_name__icontains=search_query)
-        )
-    else:
-        # If no search query, retrieve all records
-        all_extracted_data = ExtractedData.objects.all()
-
+    # Pass the extracted data to the template context
     context = {
         'all_extracted_data': all_extracted_data,
     }
 
+    # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
-

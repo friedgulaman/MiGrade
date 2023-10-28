@@ -1,0 +1,106 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block page_title %}
+upload
+{% endblock page_title %}
+{% block main_content %}
+<section class="content container mt-2">
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs text" role="tablist">
+          <li class="nav-ite m">
+            <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab" aria-selected="false">Audiences</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#demographics" role="tab" aria-selected="false">Demographics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#more" role="tab" aria-selected="false">More</a>
+          </li>
+        </ul>
+        <div>
+          <div class="btn-wrapper p-2">
+            <a href="{%url 'upload_documents' %}" class="btn btn-otline-dark"><i class="mdi mdi-adjust"></i> OCR</a>
+            
+            
+            <a href="#" class="btn btn-primary text-white me-0" id="togglePanelBtn">
+            <i class="mdi mdi-apple-keyboard-caps"></i> Upload SF1</a>
+                <!-- Centered Right-Side Panel -->
+            <div id="rightSidePanel" class="position-fixed bg-light p-3 shadow d-flex flex-column align-items-center justify-content-center"
+                style="top: 50%; right: -300px; transform: translateY(-50%); height: 100%; width: 300px; transition: right 0.3s;">
+                <!-- Content for the right-side panel -->
+                <form method="post" enctype="multipart/form-data" action="{% url 'upload_documents' %}" class="container text-center">
+                  {% csrf_token %}
+                  {{ form.as_p }}
+                  <button type="submit" class="btn btn-primary mt-3">Upload</button>
+              </form>
+                      
+                <!-- Add your content here -->
+                <button id="closePanelBtn" class="btn btn-danger mt-3">Close</button>
+            </div>  
+        
+          </div>
+        </div>
+      </div>
+      <div class="tab-content tab-content-basic">
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+          <div id="excel-data-container">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>
+                         <h3> {{ grade_section.grade }} - {{ grade_section.section }}</h3>
+                      </th>
+                      <th></th>
+                      <th></th>
+                    </tr>
+                   
+                      <tr>
+                          <th>LRN</th>
+                          <th>NAME</th>
+                          <th>SEX (M/F)</th>
+
+                          <!-- Add more column headers as needed -->
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% for row in data %}
+                      <tr>
+                          <td>{{ row.LRN }}</td>
+                          <td>{{ row.NAME }}</td>
+                          <td>{{ row.SEX }}</td>
+
+                          <!-- Add more table cells as needed -->
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+                  
+              </table>
+                <form method="post" action="{% url 'save_json_data' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="data" value="{{  data }}">
+                  <input type="hidden" name="grade" value="{{ grade }}">
+                  <input type="hidden" name="section" value="{{ section }}">
+                  <button type="submit" class="btn btn-primary mt-3">Save JSON Data</button>
+              </form>
+              </div>
+          </div>
+      </div>
+      
+      
+        <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences"> 
+          <div id="handsontable-container"></div>
+        </div>
+        <div class="tab-pane fade show " id="demographics" role="tabpanel" aria-labelledby="demographics"> 
+        <h1>3</h1>
+        <div class="tab-pane fade show " id="more" role="tabpanel" aria-labelledby="more"> 
+            <h1>4</h1>
+        </div>
+      </div>
+      
+      
+</section>
+
+{% endblock main_content %}

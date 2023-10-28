@@ -15,13 +15,14 @@ upload
 
 <body>
     {% if extracted_data %}
+    <h1>Edit Extracted Data</h1>
     <form method="post" action="{% url 'save_edited_data' %}">
         {% csrf_token %}
         {% for key, value in extracted_data.items %}
             <label for="{{ key }}">{{ key }}</label>
             <input type="text" id   ="{{ key }}" name="{{ key }}" placeholder="Enter {{ key }}" value="{{ value }}"><br>
         {% endfor %}
-        <input type="submit" value="Save" href="{% url 'sf10_view' %}">
+        <input type="submit" value="Save">
     </form>
 {% else %}
     <p>No data available.</p>
