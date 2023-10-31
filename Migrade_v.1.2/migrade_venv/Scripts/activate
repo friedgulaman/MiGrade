@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\ericr\OneDrive\Desktop\SAD\Migrade\migrade_v.1.2\migrade_venv"
+VIRTUAL_ENV="C:\Users\ericr\OneDrive\Desktop\Ces\MiGrade\migrade_v.1.2\migrade_venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
