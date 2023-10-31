@@ -11,6 +11,7 @@ urlpatterns = [
     path('doLogin', views.ShowLoginPage, name='ShowLoginPage'),
     path('get_user_details/', views.get_user_details),
     path('logout_user/', views.logout_user, name='logout_user'),
+    path('profile_page/', views.profile_page, name='profile_page'),
 
     # Admin
     path('home_admin', AdminViews.home_admin, name="home_admin"),
