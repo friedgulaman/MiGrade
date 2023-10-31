@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: tablepyxl
+Version: 0.6.1
+Summary: Generate Excel documents from html tables
+Home-page: https://github.com/martsberger/tablepyxl
+Author: Brad Martsberger, Asma Mehjabeen, Brian Davis
+Author-email: bmarts@lumere.com
+License: MIT
+Download-URL: https://github.com/martsberger/tablepyxl/archive/0.6.1.tar.gz
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Requires-Dist: openpyxl
+Requires-Dist: premailer
+Requires-Dist: requests
+Requires-Dist: lxml
+
+UNKNOWN
+
+
