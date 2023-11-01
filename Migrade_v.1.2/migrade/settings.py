@@ -79,6 +79,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
+
             ],
         },
     },
@@ -156,7 +158,13 @@ STATIC_URL = '/static/'
 # Set a STATIC_ROOT if you plan to collect static files for deployment
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000  # Adjust the number as needed
 
 
 # Default primary key field type
@@ -174,12 +182,4 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-# Define the base directory where uploaded files will be stored
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Define the URL for serving uploaded files
-MEDIA_URL = '/media/'
-
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000  # Adjust the number as needed

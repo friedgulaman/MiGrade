@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
     )
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES)
     middle_ini = models.CharField(max_length=1, blank=True, null=True)  # Add the middle_ini field here
+    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default_profile_img.jpg')
 
     def __str__(self):
         return self.username  # You can choose any field that you want to display here
@@ -144,4 +145,3 @@ class ExtractedData(models.Model):
             "school_id": self.school_id,
             "grade_section": self.grade_section
         }
-

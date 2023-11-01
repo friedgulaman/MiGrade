@@ -54,7 +54,7 @@ def add_teacher_save(request):
         middle_ini = request.POST.get('middle_ini')
         username = request.POST.get('username')
         email = request.POST.get('email')
-        password = request.POST.get('password')
+        password = request.POST.get('password', 'default_pass')
 
         try:
             # Create a CustomUser
@@ -65,7 +65,8 @@ def add_teacher_save(request):
                 first_name=first_name,
                 last_name=last_name,
                 middle_ini=middle_ini,
-                user_type=2  # This represents a teacher user
+                user_type=2,  # This represents a teacher user
+                profile_image=''
             )
 
             # No need to create a Teacher object here

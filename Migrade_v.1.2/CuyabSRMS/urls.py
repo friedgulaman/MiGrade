@@ -1,9 +1,11 @@
 from django import forms
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import URLPattern, path, include
 from CuyabSRMS import AdminViews, TeacherViews, StudentViews
 from django.contrib import admin
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.ShowLoginPage),
@@ -48,12 +50,18 @@ urlpatterns = [
     path('display_classrecord', TeacherViews.display_classrecord, name='display_classrecord'),
 
 
+    path('update_profile_photo', TeacherViews.update_profile_photo, name='update_profile_photo'),
+    path('update_teacher_profile', TeacherViews.update_teacher_profile, name='update_teacher_profile'),       
+    path('change_password/', TeacherViews.change_password, name='change_password'),
+
     # Subject Teacher
     path('home_subject_teacher', TeacherViews.home_subject_teacher, name="home_subject_teacher"),
     path('filipino_subject', TeacherViews.filipino_subject, name="filipino_subject"),
 
     # Student
     path('student_list/', StudentViews.student_list, name='student_list'),
-
-
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
