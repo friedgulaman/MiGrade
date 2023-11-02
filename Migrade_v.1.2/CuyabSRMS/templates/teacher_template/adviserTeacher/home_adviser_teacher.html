@@ -3,47 +3,119 @@
 Adviser Teacher
 {% endblock page_title %}
 {% block main_content %}
+<style>
+  /* CSS to remove the outline */
+  #no-outline {
+      border: none;
+      background: transparent;
+  }
+  .fs-5{
+    color: #1F3BB3;
+  }
+  .fs-5:hover{
+    color: black;
+    cursor: pointer;
+  }
 
+</style>
 <section class="content container mt-2">
-  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-    <ul class="nav nav-tabs " role="tablist">
-      <li class="nav-item">
-        <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#AddTeacher" role="tab" aria-controls="overview" aria-selected="true">Dashboard</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#AddGradeSection" role="tab" aria-selected="false">Audiences</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#AssignTeacher" role="tab" aria-selected="false">Demographics</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#more" role="tab" aria-selected="false">More</a>
-      </li>
-    </ul>
-    <div>
-      <div class="btn-wrapper">
-        <a href="{% url 'get_grade_details' %}" class="btn btn-primary text-white me-0"><i class="icon-download"></i> New Class Record</a>
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-center">
+        <h5 class="mt-1">My Class Advisory</h5>
+        <form method="post" action="{% url 'home_adviser_teacher' %}">
+          {% csrf_token %}
+          <button type="submit" id="no-outline" title="Refresh">⟳</button>
+        </form>
+      </div>
+        <div class="d-flex justify-content-evenly align-center  mt-4 mb-4">
+          <div class="d-flex flex-column justify-content-center align-center text-center">
+            <div class="fs-5 fw-bold">{{ grade.name }}</div>
+            <div class="fw-lighter">Grade</div>
+          </div>
+    
+    
+          <div class="d-flex flex-column justify-content-center align-center text-center">
+            <div class="fs-5 fw-bold">{{ section.name }}</div>
+            <div class="fw-lighter">Section</div>
+          </div>
+    
+          <div class="d-flex flex-column justify-content-center align-center text-center">
+            <div class="fs-5 fw-bold">{{ num_male_students }}</div>
+            <div class="fw-lighter">Male</div>
+          </div>
+    
+          <div class="d-flex flex-column justify-content-center align-center text-center">
+            <div class="fs-5 fw-bold">{{ num_female_students }}</div>
+            <div class="fw-lighter">Female</div>
+          </div>
+    
+          <div class="d-flex flex-column justify-content-center align-center text-center">
+            <div class="fs-5 fw-bold">{{ num_students }}</div>
+            <div class="fw-lighter">Total</div>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="d-flex justify-content-end align-center p-4 m-0">
+        <a class="btn btn-primary" href="{% url 'get_grade_details' %}">New Class Record</a>
+      </div> -->
+
+
+  <div class="container mt-4">
+    <div class="grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Recent Files</h4>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Date Modified</th>
+                  <th>Type</th>
+                  <th>Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><i class="fa fa-file-o me-2 text-primary"></i>Jacob</td>
+                  <td>03/11/2023 12:43pm</td>
+                  <td>Class Record</td>
+                  <td>12 MB</td>
+                </tr>
+                <tr>
+                  <td>Messsy</td>
+                  <td>Flash</td>
+                  <td class="text-danger"> 21.06% <i class="ti-arrow-down"></i></td>
+                  <td><label class="badge badge-warning">In progress</label></td>
+                </tr>
+                <tr>
+                  <td>John</td>
+                  <td>Premier</td>
+                  <td class="text-danger"> 35.00% <i class="ti-arrow-down"></i></td>
+                  <td><label class="badge badge-info">Fixed</label></td>
+                </tr>
+                <tr>
+                  <td>Peter</td>
+                  <td>After effects</td>
+                  <td class="text-success"> 82.00% <i class="ti-arrow-up"></i></td>
+                  <td><label class="badge badge-success">Completed</label></td>
+                </tr>
+                <tr>
+                  <td>Dave</td>
+                  <td>53275535</td>
+                  <td class="text-success"> 98.05% <i class="ti-arrow-up"></i></td>
+                  <td><label class="badge badge-warning">In progress</label></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="tab-content tab-content-basic">
-    <div class="tab-pane fade show active" id="AddTeacher" role="tabpanel" aria-labelledby="home-tab">
-      
-    </div>
-
-    <div class="tab-pane fade show " id="AddGradeSection" role="tabpanel" aria-labelledby="profile-tab">
-      <h1>2</h1>
-    </div>
 
 
-    <div class="tab-pane fade show" id="AssignTeacher" role="tabpanel" aria-labelledby="contact-tab">
-      <h1>3</h1>
-    </div>
 
-
-    <div class="tab-pane fade show" id="more" role="tabpanel" aria-labelledby="more-tab">
-      <h1>4</h1>
-    </div>
 </section>
 {% endblock main_content %}

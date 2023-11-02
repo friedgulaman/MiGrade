@@ -41,8 +41,39 @@ def home_teacher(request):
 
 
 # adviser
+@login_required
 def home_adviser_teacher(request):
-    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
+     # Get the currently logged-in teacher
+    teacher = request.user.teacher
+
+    # Retrieve the related section
+    section = teacher.sections.first()  # Assuming a teacher can have multiple sections
+
+    if section:
+        # Get the grade from the related section
+        grade = section.grade
+    else:
+        # Handle the case where no section is related to the teacher
+        grade = None
+
+    # Filter students based on the teacher's ID
+    students = Student.objects.filter(teacher=teacher)
+
+    # Count the number of students
+    num_students = students.count()
+
+    # Count the number of male (M) and female (F) students
+    num_male_students = students.filter(sex='M').count()
+    num_female_students = students.filter(sex='F').count()
+
+    context = {
+        'num_students': num_students,
+        'grade': grade,  # Include the grade in the context
+        'section': section,
+        'num_male_students': num_male_students,
+        'num_female_students': num_female_students,
+    }
+    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', context)
 
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')
@@ -437,7 +468,7 @@ def change_password(request):
 
                     # Add a success message
                     messages.success(request, 'Password changed successfully.')
-                    return redirect('profile')  # Replace 'profile' with the name of the view you want to redirect to
+                    return redirect('profile_page')  # Replace 'profile' with the name of the view you want to redirect to
 
                 else:
                     # Add an error message
@@ -452,6 +483,11 @@ def change_password(request):
             messages.error(request, 'Invalid old password')
 
     return redirect('profile_page')  # Replace 'profile' with the name of the view you want to redirect to
+
+
+
+
+
 # Subject teacher
 def home_subject_teacher(request):
     return render(request, 'teacher_template/subjectTeacher/home_subject_teacher.html')

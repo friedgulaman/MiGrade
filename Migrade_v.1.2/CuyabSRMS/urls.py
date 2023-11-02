@@ -54,6 +54,8 @@ urlpatterns = [
     path('update_teacher_profile', TeacherViews.update_teacher_profile, name='update_teacher_profile'),       
     path('change_password/', TeacherViews.change_password, name='change_password'),
 
+
+
     # Subject Teacher
     path('home_subject_teacher', TeacherViews.home_subject_teacher, name="home_subject_teacher"),
     path('filipino_subject', TeacherViews.filipino_subject, name="filipino_subject"),

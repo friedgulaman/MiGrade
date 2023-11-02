@@ -58,151 +58,211 @@ input[type="password"] {
 .custom-button:hover{
   color: #007bff;
 }
+.back-button{
+  color: #1027ac;
+  font-size: 30px;
+  text-decoration: none;
+  cursor: pointer;
+}
 
 </style>
 <section>
   <div class="container d-flex justify-content-center align-items-center p-5">
     <div class="card mb-3 p-5 container">
+      <div class="col-md-12 text-center d-flex justify-content-between align-items-center">
+        <a class="back-button" >&larr;</a>
+      
+      
       {% if messages %}
       <div class="alert-messages">
-          <ul class="list-unstyled">
-              {% for message in messages %}
-                  <li class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% endif %}">
-                      {{ message }}
-                  </li>
-              {% endfor %}
-          </ul>
+        <ul class="list-unstyled">
+          {% for message in messages %}
+          <li
+            class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% endif %}">
+            {{ message }}
+          </li>
+          {% endfor %}
+        </ul>
       </div>
-  {% endif %}
+      {% endif %}
+    </div>
       <div class="row g-0">
         <div class="col-md-3 text-center d-flex justify-content-center align-items-center">
           <div class="image-container ">
-            <img class="zoomable-image" src="{{ teacher.user.profile_image.url }}" alt="Profile Photo Preview" data-bs-toggle="modal" data-bs-target="#photoUploadModal">
+            <img class="zoomable-image" src="{{ teacher.user.profile_image.url }}" alt="Profile Photo Preview"
+              data-bs-toggle="modal" data-bs-target="#photoUploadModal">
           </div>
         </div>
-        
-        
-        
-        
-        
-          <div class="col-md-9">
-            <form method="post" action="{% url 'update_teacher_profile' %}">
-              {% csrf_token %}
+
+
+
+
+
+        <div class="col-md-9">
+          <form method="post" action="{% url 'update_teacher_profile' %}">
+            {% csrf_token %}
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Teacher Profile</h5>
                 <button type="button" class="btn btn-primary btn-sm" id="editProfileFields">&#9998;</button>
-                <button type="submit" class="btn btn-success btn-sm" id="submit-button" style="display: none">&#10004;</button>
+                <button type="submit" class="btn btn-success btn-sm" id="submit-button-field"
+                  style="display: none">&#10004;</button>
               </div>
               <div class="row">
                 <div class="col">
                   <label class="form-label form-text" for="firstname">First Name</label>
-                  <input type="text" class="form-control" id="firstname" name="first_name" value="{{ teacher.user.first_name }}" aria-label="First name" readonly>
+                  <input type="text" class="form-control input-field" id="firstname" name="first_name"
+                    value="{{ teacher.user.first_name }}" aria-label="First name" readonly>
                 </div>
                 <div class="col">
                   <label class="form-label form-text" for="lastname">Last Name</label>
-                  <input type="text" class="form-control" id="lastname" name="last_name" value="{{ teacher.user.last_name }}" aria-label="Last name" readonly>
+                  <input type="text" class="form-control input-field" id="lastname" name="last_name"
+                    value="{{ teacher.user.last_name }}" aria-label="Last name" readonly>
                 </div>
                 <div class="col">
                   <label class="form-label form-text" for="middle_ini">Middle Initial</label>
-                  <input type="text" class="form-control" id="middle_ini" name="middle_ini" value="{{ teacher.user.middle_ini }}" aria-label="Last name" readonly>
+                  <input type="text" class="form-control input-field" id="middle_ini" name="middle_ini"
+                    value="{{ teacher.user.middle_ini }}" aria-label="Last name" readonly>
                 </div>
               </div>
               <div class="row mt-3 mb-3">
                 <div class="col">
                   <label class="form-label form-text" for="username">User Name</label>
-                  <input type="text" class="form-control" id="username" name="username" value="{{ teacher.user.username }}" aria-label="Email" readonly>
+                  <input type="text" class="form-control input-field" id="username" name="username"
+                    value="{{ teacher.user.username }}" aria-label="Email" readonly>
                 </div>
               </div>
               <div class="row mt-3 mb-3">
                 <div class="col">
                   <label class="form-label form-text" for="email">Email</label>
-                  <input type="text" class="form-control" id="email" name="email" value="{{ teacher.user.email }}" aria-label="Email" readonly>
+                  <input type="text" class="form-control input-field" id="email" name="email"
+                    value="{{ teacher.user.email }}" aria-label="Email" readonly>
                 </div>
               </div>
-              <div class="d-flex justify-content-end" >
-                <button type="button" class="form-text fw-light custom-button" data-toggle="modal" data-target="#passwordChangeModal" id="change-password-link">
+              <div class="d-flex justify-content-end">
+                <button type="button" class="form-text fw-light custom-button" data-toggle="modal"
+                  data-target="#passwordChangeModal" id="change-password-link">
                   Change Password Here
                 </button>
 
 
-            </div>
-            
+              </div>
+
             </div>
           </form>
-          </div>
-        
-          
+        </div>
+
+
       </div>
     </div>
   </div>
 
   <!-- Modal -->
-<div class="modal fade" id="photoUploadModal" tabindex="-1" aria-labelledby="photoUploadModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form class="" method="post" action="{% url 'update_profile_photo' %}" enctype="multipart/form-data">
-    <div class="modal-content">
-      <div class="modal-header">
-        {% csrf_token %}
-        <input type="file" name="profile_photo" id="profile_photo_modal" accept="image/*">
-        <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="container text-center d-flex justify-content-center align-items-center">
-          <div class="image-container ">
-            <img class="zoomable-image" id="profile_photo_preview" src="{% if teacher.user.profile_image %}{{ teacher.user.profile_image.url }}{% else %}# {% endif %}" alt="Profile Photo Preview" data-bs-toggle="modal" data-bs-target="#photoUploadModal">
+  <div class="modal fade" id="photoUploadModal" tabindex="-1" aria-labelledby="photoUploadModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="" method="post" action="{% url 'update_profile_photo' %}" enctype="multipart/form-data">
+        <div class="modal-content">
+          <div class="modal-header">
+            {% csrf_token %}
+            <input type="file" name="profile_photo" id="profile_photo_modal" accept="image/*">
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-        </div>
-       
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-success btn-sm" id="submit-button" >&#10004;</button>
+          <div class="modal-body">
+            <div class="container text-center d-flex justify-content-center align-items-center">
+              <div class="image-container ">
+                <img class="zoomable-image" id="profile_photo_preview"
+                  src="{% if teacher.user.profile_image %}{{ teacher.user.profile_image.url }}{% else %}# {% endif %}"
+                  alt="Profile Photo Preview" data-bs-toggle="modal" data-bs-target="#photoUploadModal">
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-sm" id="submit-button">&#10004;</button>
       </form>
-      </div>
     </div>
   </div>
-</div>
-<!-- Password change modal -->
-<div class="modal fade" id="passwordChangeModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-        <form id="password-change-form" method="post" action="{% url 'change_password' %}">
-          {% csrf_token %}
-          <div class="form-group">
+  </div>
+  </div>
+  <!-- Password change modal -->
+  <div class="modal fade" id="passwordChangeModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <form id="password-change-form" method="post" action="{% url 'change_password' %}">
+            {% csrf_token %}
+            <div class="form-group">
               <label for="id_old_password">Old Password</label>
               <div class="input-group d-flex justify-content-between align-items-center">
-                  <input type="password" class="form-control" name="old_password" id="id_old_password" required>
-                  <button type="button" class="btn" id="toggle-old-password"> <i class="fas fa-eye"></i></button>
+                <input type="password" class="form-control" name="old_password" id="id_old_password" required>
+                <button type="button" class="btn" id="toggle-old-password"> <i class="fas fa-eye"></i></button>
               </div>
               <div id="id_old_password_error" class="text-danger"></div>
-          </div>
-          <div class="form-group">
+            </div>
+            <div class="form-group">
               <label for="id_new_password">New Password</label>
               <div class="input-group  d-flex justify-content-between align-items-center">
-                  <input type="password" class="form-control" name="new_password" id="id_new_password" required>
-                  <button type="button" class="btn" id="toggle-new-password"> <i class="fas fa-eye"></i></button>
+                <input type="password" class="form-control" name="new_password" id="id_new_password" required>
+                <button type="button" class="btn" id="toggle-new-password"> <i class="fas fa-eye"></i></button>
               </div>
               <div id="password-validation-message" class="form-text text-danger"></div>
-          </div>
-          <div class="form-group">
+            </div>
+            <div class="form-group">
               <label for="id_confirm_password">Confirm New Password</label>
               <div class="input-group d-flex justify-content-between align-items-center">
-                  <input type="password" class="form-control" name="confirm_password" id="id_confirm_password" required>
-                  <button type="button" class="btn" id="toggle-confirm-password"> <i class="fas fa-eye"></i></button>
-              </input>
+                <input type="password" class="form-control" name="confirm_password" id="id_confirm_password" required>
+                <button type="button" class="btn" id="toggle-confirm-password"> <i class="fas fa-eye"></i></button>
+                </input>
               </div>
               <div id="confirm-password-validation-message" class="form-text text-danger"></div>
-          </div>
-          <button type="submit" class="btn btn-primary" id="change-password-button" disabled>Change Password</button>
-      </form>
-      
-        
-        
+            </div>
+            <button type="submit" class="btn btn-primary" id="change-password-button" disabled>Change Password</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</section>
+<section class="content container mt-2 vh-100">
+  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+    <ul class="nav nav-tabs text" role="tablist">
+      <li class="nav-ite m">
+        <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
+          aria-controls="overview" aria-selected="true">Overview</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab"
+          aria-selected="false">Audiences</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#demographics" role="tab"
+          aria-selected="false">Demographics</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#more" role="tab"
+          aria-selected="false">More</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content tab-content-basic">
+    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+      1
+    </div>
+    <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
+      2
+    </div>
+    <div class="tab-pane fade show " id="demographics" role="tabpanel" aria-labelledby="demographics">
+      <h1>3</h1>
+    </div>
+    <div class="tab-pane fade show " id="more" role="tabpanel" aria-labelledby="more">
+      <h1>4</h1>
+    </div>
+  </div>
+
+
+
 </section>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -283,10 +343,10 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 <script>
   const editProfileFields = document.getElementById('editProfileFields');
-  const submitButton = document.getElementById('submit-button');
+  const submitButton = document.getElementById('submit-button-field');
 
   editProfileFields.addEventListener('click', () => {
-    const inputFields = document.querySelectorAll('.form-control[readonly]');
+    const inputFields = document.querySelectorAll('.input-field[readonly]');
     for (const field of inputFields) {
       field.removeAttribute('readonly');
     }
@@ -378,6 +438,13 @@ document.addEventListener("DOMContentLoaded", function () {
               alertMessages.style.display = "none";
           }, 3000); // Adjust the timeout (in milliseconds) as needed
       }
+  });
+</script>
+
+<script>
+  // JavaScript to handle the back button click event
+  document.querySelector(".back-button").addEventListener("click", function() {
+    window.history.back();
   });
 </script>
 {% endblock main_content %}
