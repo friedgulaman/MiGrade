@@ -37,10 +37,10 @@ urlpatterns = [
     path('home_teacher', TeacherViews.home_teacher, name="home_teacher"),
     path('home_adviser_teacher', TeacherViews.home_adviser_teacher, name="home_adviser_teacher"),
     path('upload_adviser_teacher', TeacherViews.upload_adviser_teacher, name="upload_adviser_teacher"),   
-    path('upload/', TeacherViews.upload, name='upload'),
+    path('upload', TeacherViews.upload, name='upload'),
     path('save_json_data', TeacherViews.save_json_data, name='save_json_data'),
     path('new_classrecord', TeacherViews.new_classrecord, name='new_classrecord'),
-
+    path('classes', TeacherViews.classes, name='classes'),
     path('class_record', TeacherViews.class_record, name='class_record'),
     path('get_grades_and_sections', TeacherViews.get_grades_and_sections, name='get_grades_and_sections'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
@@ -50,6 +50,7 @@ urlpatterns = [
     path('display_classrecord', TeacherViews.display_classrecord, name='display_classrecord'),
 
 
+    path('display_students', TeacherViews.display_students, name='display_students'),
     path('update_profile_photo', TeacherViews.update_profile_photo, name='update_profile_photo'),
     path('update_teacher_profile', TeacherViews.update_teacher_profile, name='update_teacher_profile'),       
     path('change_password/', TeacherViews.change_password, name='change_password'),

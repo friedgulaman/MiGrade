@@ -39,6 +39,21 @@ from django.contrib.auth.forms import PasswordChangeForm
 def home_teacher(request):
     return render(request, 'teacher_template/home_teacher.html')
 
+def upload_adviser_teacher(request):
+    return render(request, 'teacher_template/adviserTeacher/upload.html')
+
+def new_classrecord(request):
+        return render(request, 'teacher_template/adviserTeacher/new_classrecord.html')
+
+def classes(request):
+        return render(request, 'teacher_template/adviserTeacher/classes.html')
+
+# Subject teacher
+def home_subject_teacher(request):
+    return render(request, 'teacher_template/subjectTeacher/home_subject_teacher.html')
+
+def filipino_subject(request):
+    return render (request, 'teacher_template/subjectTeacher/filipino_subject.html')
 
 # adviser
 @login_required
@@ -75,8 +90,6 @@ def home_adviser_teacher(request):
     }
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', context)
 
-def upload_adviser_teacher(request):
-    return render(request, 'teacher_template/adviserTeacher/upload.html')
 
 # Your combined view
 def process_google_sheet(spreadsheet_id, sheet_name):
@@ -248,8 +261,6 @@ def get_grades_and_sections(request):
 
     return JsonResponse(data)
 
-def new_classrecord(request):
-        return render(request, 'teacher_template/adviserTeacher/new_classrecord.html')
 
 def class_record(request):
     students = Student.objects.all()  # Replace with your actual query
@@ -416,7 +427,6 @@ def calculate_grades(request):
 
 def display_classrecord(request):
     grade_scores = GradeScores.objects.all()
-    
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
 
 
@@ -485,13 +495,44 @@ def change_password(request):
     return redirect('profile_page')  # Replace 'profile' with the name of the view you want to redirect to
 
 
+@login_required
+def display_students(request):
+    # Get the currently logged-in user
+    user = request.user
 
+    if user.user_type == 2:
+        try:
+            # Retrieve the teacher associated with the user
+            teacher = Teacher.objects.get(user=user)
+            
+            # Filter students based on the teacher
+            students = Student.objects.filter(teacher=teacher)
 
+            # You can also filter students by grade and section if needed
+            grade = request.GET.get('grade')  # Example: Get grade from request
+            section = request.GET.get('section')  # Example: Get section from request
 
-# Subject teacher
-def home_subject_teacher(request):
-    return render(request, 'teacher_template/subjectTeacher/home_subject_teacher.html')
+            if grade and section:
+                students = students.filter(grade=grade, section=section)
 
-def filipino_subject(request):
-    return render (request, 'teacher_template/subjectTeacher/filipino_subject.html')
+            # Extract unique grades and sections from the students
+            unique_grades = students.values_list('grade', flat=True).distinct()
+            unique_sections = students.values_list('section', flat=True).distinct()
+
+            context = {
+                'students': students,
+                'teacher': teacher,
+                'unique_grades': unique_grades,  # Pass unique grades to the template
+                'unique_sections': unique_sections,  # Pass unique sections to the template
+                'grade': grade,
+                'section': section,
+            }
+            return render(request, 'teacher_template/adviserTeacher/classes.html', context)
+        except Teacher.DoesNotExist:
+            # Handle the case where the user has user_type=2 but is not associated with a teacher
+            return render(request, 'teacher_template/adviserTeacher/classes.html')
+    else:
+        # Handle the case where the user is not a teacher (user_type is not 2)
+        return render(request, 'teacher_template/adviserTeacher/classes.html')
+
 

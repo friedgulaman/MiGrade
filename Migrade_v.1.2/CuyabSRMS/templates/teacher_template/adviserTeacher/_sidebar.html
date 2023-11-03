@@ -9,50 +9,28 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'upload_adviser_teacher' %}">
               <i class="mdi mdi-apple-keyboard-caps menu-icon"></i>
-              <span class="menu-title">Upload</span>
+              <span class="menu-title">Create Class</span>
             </a>
           </li>
           <!-- Manage Class -->
           <li class="nav-item nav-category">Manage</li>
           <!-- Teacher -->
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-teacher" aria-expanded="false" aria-controls="ui-teacher">
+            <a class="nav-link" href="{% url 'classes' %}">
               <i class="menu-icon mdi mdi-account-multiple-outline"></i>
               <span class="menu-title">Classes</span>
-              <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-teacher">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="#">Add Class List</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'student_list' %}">Grade & Section</a></li>
-              </ul>
-            </div>
-          </li>
-          <!-- Students -->
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-students" aria-expanded="false" aria-controls="ui-students">
-              <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">Students</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-students">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="pages/ui-features/buttons.html">Add Students</a></li>
-                <li class="nav-item"><a class="nav-link" href="pages/ui-features/dropdowns.html">Dropdowns</a></li>
-                <li class="nav-item"><a class="nav-link" href="pages/ui-features/typography.html">Typography</a></li>
-              </ul>
-            </div>
           </li>
           <!-- OCR -->
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-ocr" aria-expanded="false" aria-controls="ui-students">
               <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">OCR</span>
+              <span class="menu-title">Archive</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="ui-ocr">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">Upload</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">School Form 10</a></li>
               </ul>
             </div>
           </li>
