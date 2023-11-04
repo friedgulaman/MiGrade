@@ -32,35 +32,39 @@ upload
     </style>
 </head>
 <body>
-<table>
-    <tr>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Middle Name</th>
-        <th>School Year</th>
-        <th>School ID</th>
-        <th>School Name</th>
-        <th>Document</th>
-    </tr>
-    {% for extracted_data in all_extracted_data %}
-    <tr>
-        <td>{{ extracted_data.last_name }}</td>
-        <td>{{ extracted_data.first_name }}</td>
-        <td>{{ extracted_data.middle_name }}</td>
-        <td>{{ extracted_data.school_year }}</td>
-        <td>{{ extracted_data.school_id }}</td>
-        <td>{{ extracted_data.school_name }}</td>
-        <td><a href="{{ uploaded_document_url }}" download>Download</a></td>
-    </tr>
+    <table>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Sex</th>
+            <th>BirthDate</th>
+            <th>LRN</th>
+            <th>School Year</th>
+            <th>Grade</th>
+            <th>General Average</th>
+            <th>Document</th>
+        </tr>
+        {% for extracted_data in all_extracted_data %}
+        <tr>
+            <td>{{ extracted_data.last_name }}</td>
+            <td>{{ extracted_data.first_name }}</td>
+            <td>{{ extracted_data.middle_name }}</td>
+            <td>{{ extracted_data.sex }}</td>
+            <td>{{ extracted_data.birthdate }}</td>
+            <td>{{ extracted_data.lrn }}</td>
+            <td>{{ extracted_data.school_year }}</td>
+            <td>{{ extracted_data.classified_as_grade }}</td>
+            <td>{{ extracted_data.general_average }}</td>
 
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No extracted data available</td>
-    </tr>
-    {% endfor %}
-</table>
 
+            <td><a href="{{ extracted_data.processed_document.document.url }}" download>Download</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9">No extracted data available</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
-
 {% endblock main_content %}

@@ -133,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 
@@ -175,7 +175,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 # Define the base directory where uploaded files will be stored
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Define the URL for serving uploaded files
 MEDIA_URL = '/media/'
