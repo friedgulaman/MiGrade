@@ -95,19 +95,17 @@ upload
                               <select class="form-control" id="grade" name="grade">
                                 <!-- Populate grade options dynamically from the database -->
                                 {% for grade in grades %}
-                                  <option value="{{ grade.name }}">{{ grade.name }}</option>
+                                  <option value="{{ grade.id }}">{{ grade.name }}</option>
                                 {% endfor %}
                               </select>
                             </div>
                             <div class="form-group">
                               <label for="section">Section</label>
                               <select class="form-control" id="section" name="section">
-                                <!-- Populate section options dynamically from the database -->
-                                {% for section in sections %}
-                                  <option value="{{ section.name }}">{{ section.name }}</option>
-                                {% endfor %}
+                                <!-- Options will be populated dynamically using JavaScript -->
                               </select>
                             </div>
+         
                             <button type="button" class="btn btn-primary" id="saveGradeSection">Save</button>
                           </form>
                         </div>
@@ -143,6 +141,52 @@ upload
       
 
 </section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  // Wait for the document to be ready
+  $(document).ready(function() {
+    // Select the Grade select element
+    var $gradeSelect = $('#grade');
+
+    // Select the Section select element
+    var $sectionSelect = $('#section');
+
+    // Define a function to populate the Section options
+    function populateSections(gradeId) {
+      // Clear existing options
+      $sectionSelect.empty();
+
+      // Make an AJAX request to fetch the sections based on the selected grade
+      $.ajax({
+        url: '/get_sections/',  // Define the URL to your Django view that returns section options
+        data: { grade_id: gradeId },
+        method: 'GET',
+        success: function(data) {
+          // Iterate through the sections and add them to the Section select element
+          data.sections.forEach(function(section) {
+            $sectionSelect.append('<option value="' + section.id + '">' + section.name + '</option>');
+          });
+        },
+        error: function() {
+          // Handle errors if necessary
+        }
+      });
+    }
+
+    // Add an event listener to the Grade select element
+    $gradeSelect.on('change', function() {
+      var selectedGradeId = $(this).val();
+
+      if (selectedGradeId) {
+        // Populate the Section select element when a grade is selected
+        populateSections(selectedGradeId);
+      } else {
+        // Clear the Section select element if no grade is selected
+        $sectionSelect.empty();
+      }
+    });
+  });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
 
 <script>
@@ -283,6 +327,5 @@ function getSelectedSectionName(selectedSectionId) {
   }
   
 </script>
-
 
 {% endblock main_content %}

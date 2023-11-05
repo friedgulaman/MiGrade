@@ -32,6 +32,8 @@ from .models import ProcessedDocument, ExtractedData
 from google.cloud import documentai_v1beta3 as documentai
 from django.shortcuts import render
 
+#Grade
+from django.http import JsonResponse
 
 def home_teacher(request):
     return render(request, 'teacher_template/home_teacher.html')
@@ -108,6 +110,17 @@ def process_google_sheet(spreadsheet_id, sheet_name):
         logging.error(f"An error occurred while processing the Google Sheet: {str(e)}")
         return None  # Return None or handle the error as needed
 
+
+def get_sections(request):
+    grade_id = request.GET.get('grade_id')
+    
+    # Query your database to get sections for the selected grade
+    sections = Section.objects.filter(grade_id=grade_id)
+
+    # Serialize the sections into a JSON response
+    sections_data = [{'id': section.id, 'name': section.name} for section in sections]
+
+    return JsonResponse({'sections': sections_data})
 
 def upload(request):
     if request.method == 'POST':

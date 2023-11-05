@@ -50,6 +50,18 @@ Adviser Teacher
         </li>
       </ul>
       <div>
+
+        <!-- <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+          <ul class="nav nav-tabs" role="tablist" id="myTabs">
+            <li class="nav-item">
+              <a class="nav-link active" id="tab-0-tab" data-bs-toggle="tab" href="#tab-0" role="tab" aria-controls="tab-0" aria-selected="true">Tab 1</a>
+            </li>
+          </ul>
+          <div>
+            <button id="addTabButton" class="btn btn-primary">Add Tab</button>
+          </div>
+        </div> -->
+        
         <div class="btn-wrapper">
             {% if students %}
             <div>{{ students.0.grade }} {{ students.0.section }}</div>
@@ -279,5 +291,69 @@ Adviser Teacher
     </form>
   </section>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const tabsList = document.getElementById("myTabs");
+      const addTabButton = document.getElementById("addTabButton");
+      let tabCount = 1;
+  
+      // Load tab names from localStorage and re-create tabs
+      const savedTabs = JSON.parse(localStorage.getItem("tabs"));
+      if (savedTabs) {
+        tabCount = savedTabs.length;
+        savedTabs.forEach(tabName => {
+          addTabElement(tabName);
+        });
+      }
+  
+      function addTabElement(newTabName) {
+        const newTab = document.createElement("li");
+        newTab.className = "nav-item";
+  
+        newTab.innerHTML = `
+          <a class="nav-link" id="tab-${tabCount}-tab" data-bs-toggle="tab" href="#tab-${tabCount}" role="tab" aria-controls="tab-${tabCount}" aria-selected="false">${newTabName}</a>
+        `;
+  
+        tabsList.appendChild(newTab);
+  
+        // Activate the new tab and show its content
+        const newTabLink = newTab.querySelector("a");
+        newTabLink.click();
+  
+        tabCount++;
+      }
+  
+      function addTab() {
+        const newTabName = `Tab ${tabCount}`;
+        addTabElement(newTabName);
+  
+        // Save the tab names in localStorage
+        const savedTabs = JSON.parse(localStorage.getItem("tabs")) || [];
+        savedTabs.push(newTabName);
+        localStorage.setItem("tabs", JSON.stringify(savedTabs));
+      }
+  
+      addTabButton.addEventListener("click", addTab);
+  
+      // Allow renaming tabs when they are clicked
+      tabsList.addEventListener("click", function (event) {
+        const target = event.target;
+        if (target.tagName === "A" && target.parentElement.classList.contains("nav-item")) {
+          const tabName = target.textContent;
+          const newTabName = prompt("Enter a new name for the tab:", tabName);
+          if (newTabName !== null) {
+            target.textContent = newTabName;
+            // Update the tab names in localStorage
+            const savedTabs = JSON.parse(localStorage.getItem("tabs")) || [];
+            const tabIndex = Array.from(target.parentElement.parentElement.children).indexOf(target.parentElement);
+            if (tabIndex >= 0) {
+              savedTabs[tabIndex] = newTabName;
+              localStorage.setItem("tabs", JSON.stringify(savedTabs));
+            }
+          }
+        }
+      });
+    });
+  </script>
 
 {% endblock main_content %}

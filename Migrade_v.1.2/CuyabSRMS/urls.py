@@ -47,6 +47,9 @@ urlpatterns = [
     path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('display_classrecord', TeacherViews.display_classrecord, name='display_classrecord'),
+    path('get_sections/', TeacherViews.get_sections, name='get_sections'),
+
+
 
 
     # Subject Teacher
