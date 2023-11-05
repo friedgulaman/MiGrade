@@ -389,9 +389,9 @@ def upload_documents_ocr(request):
         #         json.dump(key_value_pairs, json_file, indent=4)
 
         #     # Assuming you create a ProcessedDocument instance
-        #     # processed_document = ProcessedDocument()
-        #     processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
-        #     processed_document.save()
+            # processed_document = ProcessedDocument()
+            # processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
+            # processed_document.save()
 
         #     extracted_data_instance, created = ExtractedData.objects.get_or_create(
         #         processed_document=processed_document
@@ -401,14 +401,14 @@ def upload_documents_ocr(request):
         # # # Save the ProcessedDocument instance
         # #     processed_document.save()
 
-        # #     # Create ExtractedData instance and save extracted data
-        # #     extracted_data_instance = ExtractedData(processed_document=processed_document)
-        # #     extracted_data_instance.save_extracted_data(key_value_pairs)
+            # Create ExtractedData instance and save extracted data
+            # extracted_data_instance = ExtractedData(processed_document=processed_document)
+            # extracted_data_instance.save_extracted_data(key_value_pairs)
 
-        #     # Construct the URL of the uploaded document.
-        #     # uploaded_document_path = os.path.join(settings.MEDIA_URL, str(processed_document.document))
+            # Construct the URL of the uploaded document.
+            # uploaded_document_path = os.path.join(settings.MEDIA_URL, str(processed_document.document))
 
-        #     all_extracted_data = ExtractedData.objects.all().order_by('last_name')
+            # all_extracted_data = ExtractedData.objects.all().order_by('last_name')
 
        
 

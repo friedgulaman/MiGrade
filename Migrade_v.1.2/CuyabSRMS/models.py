@@ -69,7 +69,7 @@ class GradeScores(models.Model):
     student_name = models.CharField(max_length=255, null=True, blank=True)
     written_works_scores = models.JSONField()
     performance_task_scores = models.JSONField()
-    quarterly_assessment_scores = models.FloatField(default=0)
+    quarterly_assessment_scores = models.JSONField()
     initial_grades = models.FloatField(default=0)
     transmuted_grades = models.FloatField(default=0)
     total_score_written = models.FloatField(default=0)
