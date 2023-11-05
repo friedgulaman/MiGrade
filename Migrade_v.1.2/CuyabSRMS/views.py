@@ -1,3 +1,4 @@
+import requests
 from .models import Teacher
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -6,6 +7,8 @@ from django.contrib.auth import get_user_model
 from .EmailBackEnd import EmailBackEnd  # Update the import path
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+
 
 
 
@@ -22,19 +25,35 @@ def doLogin(request):
     if request.method != "POST":
         return HttpResponse("<h2>Method Not Allowed</h2>")
     else:
-        user = EmailBackEnd().authenticate(
-            request, username=request.POST.get('email'), password=request.POST.get('password')
-        )
-        if user is not None:
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-
-            # Check the user type and redirect accordingly
-            if user.user_type == 2:  # Assuming '2' represents a teacher user type
-                return redirect('home_teacher')
+        captcha_response = request.POST.get("g-recaptcha-response")
+        
+        if not captcha_response:
+            messages.error(request, "Please complete the reCAPTCHA.")
+            return redirect('ShowLoginPage')
+        
+        data = {
+            'secret': '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW',
+            'response': captcha_response
+        }
+        
+        response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=data)
+        result = response.json()
+        
+        if result['success']:
+            user = EmailBackEnd().authenticate(
+                request, username=request.POST.get('email'), password=request.POST.get('password')
+            )
+            if user is not None:
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                if user.user_type == 2:
+                    return redirect('home_teacher')
+                else:
+                    return redirect('home_admin')
             else:
-                return redirect('home_admin')
+                messages.error(request, "Invalid Login Credentials!")
+                return redirect('ShowLoginPage')
         else:
-            messages.error(request, "Invalid Login Credentials!")
+            messages.error(request, "Invalid reCAPTCHA. Please try again.")
             return redirect('ShowLoginPage')
         
 def get_user_details(request):
@@ -61,3 +80,6 @@ def profile_page(request):
     else:
         # Handle the case for other user types (e.g., admin) or provide an error message
         return HttpResponse("You are not a teacher.")
+
+def password_reset_sent(request):
+     return render(request, 'password_reset_sent.html' )

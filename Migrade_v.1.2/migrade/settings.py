@@ -47,6 +47,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'captcha',
     'CuyabSRMS',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -180,6 +181,11 @@ AUTHENTICATION_BACKENDS = [
     'CuyabSRMS.EmailBackEnd.EmailBackEnd',
     'django.contrib.auth.backends.ModelBackend',  # You can keep the default backend too.
 ]
+
+# reCAPTCHA settings
+RECAPTCHA_PUBLIC_KEY = '6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI'
+RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
+
 
 
 

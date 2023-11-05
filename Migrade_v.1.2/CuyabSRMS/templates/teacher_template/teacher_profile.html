@@ -65,6 +65,7 @@ input[type="password"] {
   cursor: pointer;
 }
 
+
 </style>
 <section>
   <div class="container d-flex justify-content-center align-items-center p-5">
@@ -194,27 +195,40 @@ input[type="password"] {
             {% csrf_token %}
             <div class="form-group">
               <label for="id_old_password">Old Password</label>
-              <div class="input-group d-flex justify-content-between align-items-center">
-                <input type="password" class="form-control" name="old_password" id="id_old_password" required>
-                <button type="button" class="btn" id="toggle-old-password"> <i class="fas fa-eye"></i></button>
+              <div class="input-group d-flex justify-content-center align-items-center position-relative">
+                <input type="password" class="form-control container" name="old_password" id="id_old_password" required>
+                <div class="position-absolute end-0 ">
+                  <button type="button" class="btn eye text-muted" id="toggle-old-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
               </div>
               <div id="id_old_password_error" class="text-danger"></div>
             </div>
             <div class="form-group">
               <label for="id_new_password">New Password</label>
-              <div class="input-group  d-flex justify-content-between align-items-center">
+              <div class="input-group d-flex justify-content-between align-items-center position-relative">
                 <input type="password" class="form-control" name="new_password" id="id_new_password" required>
-                <button type="button" class="btn" id="toggle-new-password"> <i class="fas fa-eye"></i></button>
+                <div class="position-absolute end-0 " >
+                  <button type="button" class="btn eye text-muted" id="toggle-new-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
               </div>
-              <div id="password-validation-message" class="form-text text-danger"></div>
+              
+              <div id="password-validation-message" class="text-color-message form-text"></div>
             </div>
             <div class="form-group">
               <label for="id_confirm_password">Confirm New Password</label>
-              <div class="input-group d-flex justify-content-between align-items-center">
+              <div class="input-group d-flex justify-content-between align-items-center position-relative">
                 <input type="password" class="form-control" name="confirm_password" id="id_confirm_password" required>
-                <button type="button" class="btn" id="toggle-confirm-password"> <i class="fas fa-eye"></i></button>
-                </input>
+                <div class="position-absolute end-0 ">
+                  <button type="button" class="btn eye text-muted" id="toggle-confirm-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
               </div>
+              
               <div id="confirm-password-validation-message" class="form-text text-danger"></div>
             </div>
             <button type="submit" class="btn btn-primary" id="change-password-button" disabled>Change Password</button>
@@ -364,10 +378,35 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
   // Password validation function
   function isStrongPassword(password) {
-    // Implement your password strength criteria here
-    // For example, you can check length, complexity, etc.
-    return password.length >= 8; // Minimum length of 8 characters
+  // Minimum length of 8 characters
+  if (password.length < 8) {
+    return false;
   }
+
+  // Check for at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+
+  // Check for at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+
+  // Check for at least one digit
+  if (!/\d/.test(password)) {
+    return false;
+  }
+
+  // Check for at least one special character (e.g., @, #, $, etc.)
+  if (!/[!@#\$%^&*()_+{}\[\]:;<>,.?~\\-]/.test(password)) {
+    return false;
+  }
+
+  // If all criteria pass, the password is considered strong
+  return true;
+}
+
 
   // Function to update the validation message for password fields
   function updateValidationMessage() {
@@ -378,13 +417,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const changePasswordButton = document.getElementById('change-password-button');
 
     if (isStrongPassword(newPassword)) {
-      newPasswordValidationMessage.textContent = '';
+      newPasswordValidationMessage.textContent = 'Password is strong.';
+      newPasswordValidationMessage.classList.remove('text-danger');
+      newPasswordValidationMessage.classList.add('text-success');
     } else {
-      newPasswordValidationMessage.textContent = 'Password must be at least 8 characters long.';
+      newPasswordValidationMessage.textContent = 'Password must be at least 8 characters long and contain at least one (A-Z),(a-z),(0-9), and (_-!@#$%^&*).';
+      newPasswordValidationMessage.classList.remove('text-success');
+      newPasswordValidationMessage.classList.add('text-danger');
     }
 
+
     if (newPassword === confirmPassword) {
-      confirmPassValidationMessage.textContent = '';
+      confirmPassValidationMessage.textContent = 'Passwords matched';
     } else {
       confirmPassValidationMessage.textContent = 'Passwords do not match.';
     }

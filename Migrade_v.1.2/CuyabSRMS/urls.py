@@ -6,6 +6,8 @@ from django.contrib import admin
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .ForgotPassword import ResetPasswordView
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.ShowLoginPage),
@@ -14,7 +16,13 @@ urlpatterns = [
     path('get_user_details/', views.get_user_details),
     path('logout_user/', views.logout_user, name='logout_user'),
     path('profile_page/', views.profile_page, name='profile_page'),
+    path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
 
+
+
+    path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     # Admin
     path('home_admin', AdminViews.home_admin, name="home_admin"),
     path('add_teacher', AdminViews.add_teacher, name="add_teacher"),
