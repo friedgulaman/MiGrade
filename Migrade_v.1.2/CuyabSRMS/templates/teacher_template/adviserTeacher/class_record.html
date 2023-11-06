@@ -103,7 +103,7 @@ Adviser Teacher
                         {% for i in 1|num_range %}
                         <td><input  name="max_written_works_{{ i }}"></td>
                         {% endfor %}
-                        <th>100.00</th>
+                        <td id="total_max_written_works">Total</td>
                         <th>100.00</th>
                         <th>
                           <select name="weight_written_works_{{ student.id }}">
@@ -123,10 +123,11 @@ Adviser Teacher
                     <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
                     {% load custom_filters %}
                     {% for i in 1|num_range %}
-                    <td><input  name="scores_written_{{ student.id }}_{{ i }}" ></td>
+                    <td><input class="score-input-ww" name="scores_written_{{ student.id }}_{{ i }}"></td>
                     {% endfor %}
-                    <td><input  name="total_{{ student.id }}" ></td>
-                    <td><input  name="ps_{{ student.id }}" ></td>
+                    
+                    <td><input id="total_{{ student.id }}" name="total_{{ student.id }}">Total</td>
+                    <td><input id="ps_{{ student.id }}" name="ps_{{ student.id }}"></td>
                     <td><input  name="ws_{{ student.id }}" ></td>
                   </tr>
                   {% endfor %}
@@ -139,69 +140,69 @@ Adviser Teacher
       </div>
       </div>
   
-      <div class="tab-pane fade show " id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
+      <div class="tab-pane fade show" id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
         <div class="mb-3">
-          {% if students %}
-          <div class="table-responsive">
-              <div id="components">PERFORMANCE TASK</div>
-              <table class="table">
-                  <thead>
-                      <tr>
-                          <th></th>
-                          <th>Name</th>
-                          <th>1</th>
-                          <th>2</th>
-                          <th>3</th>
-                          <th>4</th>
-                          <th>5</th>
-                          <th>6</th>
-                          <th>7</th>
-                          <th>8</th>
-                          <th>9</th>
-                          <th>10</th>
-                          <th>Total</th>
-                          <th>PS</th>
-                          <th>WS</th>
-                      </tr>
-                      <tr>
-                        <th></th>
-                        <th>Highest possible scores</th>
-                        {% load custom_filters %}
-                        {% for i in 1|num_range %}
-                        <td><input  name="max_performance_task_{{ i }}"></td>
-                         {% endfor %}
-                        <th>100.00</th>
-                        <th>100.00</th>
-                        <th>
-                          <select name="weight_performance_task_{{ student.id }}">
-                              <option value="0.3">30%</option>
-                              <option value="0.5">50%</option>
-                              <option value="0.2">20%</option>
-                          </select>
-                      </th>
-                      
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {% for student in students %}
-                    <tr>
-                      <td>{{ number }}</td>
-                      <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                      {% load custom_filters %}
-                      {% for i in 1|num_range %}
-                      <td><input  name="scores_performance_task_{{ student.id }}_{{ i }}" ></td>
-                      {% endfor %}
-                      <td><input  name="total_{{ student.id }}" ></td>
-                      <td><input  name="ps_{{ student.id }}" ></td>
-                      <td><input  name="ws_{{ student.id }}" ></td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-              </table>
-          </div>
-          {% endif %}
-          </div>
-      </div>
+            {% if students %}
+            <div class="table-responsive">
+                <div id="components">PERFORMANCE TASK</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                            <th>8</th>
+                            <th>9</th>
+                            <th>10</th>
+                            <th>Total</th>
+                            <th>PS</th>
+                            <th>WS</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th>Highest possible scores</th>
+                            {% load custom_filters %}
+                            {% for i in 1|num_range %}
+                            <td><input name="max_performance_task_{{ i }}"></td>
+                            {% endfor %}
+                            <td id="total_max_performance_task">Total</td>
+                            <th>100.00</th>
+                            <th>100.00</th>
+                            <th>
+                                <select name="weight_performance_task_{{ student.id }}">
+                                    <option value="0.3">30%</option>
+                                    <option value="0.5">50%</option>
+                                    <option value="0.2">20%</option>
+                                </select>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ number }}</td>
+                            <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
+                            {% load custom_filters %}
+                            {% for i in 1|num_range %}
+                            <td><input class="score-input-pt" name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
+                            {% endfor %}
+                            <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total</td>
+                            <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
+                            <td class="ws" name="ws_{{ student.id }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
   
   
       <div class="tab-pane fade show" id="quarterly_assessment" role="tabpanel" aria-labelledby="contact-tab">
@@ -223,7 +224,7 @@ Adviser Teacher
                         <th></th>
                         <th>Highest possible scores</th>
                         <td><input  name="max_quarterly_assessment_{{ i }}"></td>
-                        <th>100.00</th>
+                        <td id="total_max_quarterly"></td>
                         <th>100.00</th>
                         <th>
                           <select name="weight_quarterly_assessment_{{ student.id }}">
@@ -290,6 +291,205 @@ Adviser Teacher
       <button type="submit">Submit</button>
     </form>
   </section>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- PERFORMANCE TASKS -->
+    <!-- total percentage score pt -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[3]; // Adjust index for "scores_performance_task" naming
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "pt_total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+                  totalInput.value = total;
+  
+                  // Calculate the PS
+                  var totalMaxPerformanceTask = parseFloat(document.getElementById("total_max_performance_task").textContent) || 0;
+                  var ps = totalMaxPerformanceTask !== 0 ? ((total / totalMaxPerformanceTask) * 100).toFixed(2) : 0;
+  
+                  // Update the PS input field
+                  var psInput = document.querySelector('input[name="pt_ps_' + studentId + '"]');
+                  psInput.value = ps;
+              });
+          });
+      });
+  </script>
+    <!-- total score pt -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[2];
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+                  totalInput.value = total;
+              });
+          });
+      });
+  </script>
+    <!-- total hps-pt -->
+    <script>
+    function calculateTotalPerformanceTask() {
+        // Get all the input fields with names starting with "max_performance_task_{{ i }}"
+        var inputFields = document.querySelectorAll('input[name^="max_performance_task_{{ i }}"]');
+        
+        var total = 0;
+    
+        // Iterate through the input fields and sum their values
+        for (var i = 0; i < inputFields.length; i++) {
+            var value = parseFloat(inputFields[i].value) || 0;
+            total += value;
+        }
+    
+        // Update the total in the target <td> for "PERFORMANCE TASK"
+        document.getElementById('total_max_performance_task').innerText = total;
+    }
+    
+    // Attach the calculateTotalPerformanceTask function to the input fields' change event
+    var inputFieldsPerformanceTask = document.querySelectorAll('input[name^="max_performance_task_{{ i }}"]');
+    for (var i = 0; i < inputFieldsPerformanceTask.length; i++) {
+        inputFieldsPerformanceTask[i].addEventListener('change', calculateTotalPerformanceTask);
+    }
+</script>
+
+
+  <!-- WRITTEN WORKS -->
+
+    <!-- total percentage score ww -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all the score input elements by class name
+      var scoreInputs = document.querySelectorAll('.score-input-ww');
+  
+      // Attach input event listeners to each score input
+      scoreInputs.forEach(function(scoreInput) {
+        scoreInput.addEventListener("input", function() {
+          // Find the student ID from the input element's name
+          var nameParts = scoreInput.name.split('_');
+          var studentId = nameParts[2];
+  
+          // Get all the score inputs for the current student
+          var studentScoreInputs = document.querySelectorAll('input[name^="scores_written_' + studentId + '"]');
+  
+          // Calculate the total
+          var total = 0;
+          studentScoreInputs.forEach(function(studentScoreInput) {
+            var score = parseFloat(studentScoreInput.value) || 0;
+            total += score;
+          });
+  
+          // Update the corresponding "total_{{ student.id }}" input field
+          var totalInput = document.querySelector('input[name="total_' + studentId + '"]');
+          totalInput.value = total;
+  
+          // Calculate the PS
+          var totalMaxWrittenWorks = parseFloat(document.getElementById("total_max_written_works").textContent) || 0;
+          var ps = totalMaxWrittenWorks !== 0 ? ((total / totalMaxWrittenWorks) * 100).toFixed(2) : 0;
+  
+          // Update the PS input field
+          var psInput = document.querySelector('input[name="ps_' + studentId + '"]');
+          psInput.value = ps;
+        });
+      });
+    });
+  </script>
+
+    <!-- total score ww -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[3]; // Adjust index for "scores_performance_task" naming
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "pt_total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+                  totalInput.value = total;
+              });
+          });
+      });
+  </script>
+
+    <!-- total hps-ww -->
+  <script>
+    function calculateTotal() {
+        // Get all the input fields with names starting with "max_written_works_{{ i }}"
+        var inputFields = document.querySelectorAll('input[name^="max_written_works_{{ i }}"]');
+        
+        var total = 0;
+    
+        // Iterate through the input fields and sum their values
+        for (var i = 0; i < inputFields.length; i++) {
+            var value = parseFloat(inputFields[i].value) || 0;
+            total += value;
+        }
+    
+        // Update the total in the target <td>
+        document.getElementById('total_max_written_works').innerText = total;
+    }
+    
+    // Attach the calculateTotal function to the input fields' change event
+    var inputFields = document.querySelectorAll('input[name^="max_written_works_{{ i }}"]');
+    for (var i = 0; i < inputFields.length; i++) {
+        inputFields[i].addEventListener('change', calculateTotal);
+    }
+    </script>
+
+    
+
+
+
+<!-- OTHERS -->
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
