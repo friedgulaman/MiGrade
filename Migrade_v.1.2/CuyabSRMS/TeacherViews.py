@@ -314,26 +314,35 @@ def calculate_grades(request):
                 max_written_works = request.POST.get(f"max_written_works_{i}", "0")  # Change this to the actual maximum score
                 performance_task = request.POST.get(f"scores_performance_task_{student.id}_{i}", "0")
                 max_performance_task = request.POST.get(f"max_performance_task_{i}", "0")  # Change this to the actual maximum score
-                quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
-                max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
+                # quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
+                # max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
                 
                 # Retrieve weights for each component
                 weight_input_written = float(request.POST.get(f"weight_written_works_{i}", "0"))  # Change this to the actual weight for written works
                 weight_input_performance = float(request.POST.get(f"weight_performance_task_{i}", "0"))  # Change this to the actual weight for performance tasks
-                weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
+                # weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
                 
                 scores_written_works.append(float(written_works) if written_works.isnumeric() else 0)
                 scores_performance_task.append(float(performance_task) if performance_task.isnumeric() else 0)
-                scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
+                # scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
 
                 total_score_written += float(written_works) if written_works.isnumeric() else 0
                 total_max_score_written += float(max_written_works) if max_written_works.isnumeric() else 0
                 total_score_performance += float(performance_task) if performance_task.isnumeric() else 0
                 total_max_score_performance += float(max_performance_task) if max_performance_task.isnumeric() else 0
-                total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-                total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
+                # total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
+                # total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
             # Perform your calculations (as in your original code)
+
+            for i in range(1, 5):
+                quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
+                max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
+                
+                weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
+                scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
+                total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
+                total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
             if total_max_score_written > 0:
                 percentage_score_written = (total_score_written / total_max_score_written) * 100

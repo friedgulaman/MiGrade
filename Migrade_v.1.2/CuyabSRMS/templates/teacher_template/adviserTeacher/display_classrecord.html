@@ -163,13 +163,12 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                <td>{{ record.scores_quarterly_assessment.0 }}</td>
-                                <td>{{ record.scores_quarterly_assessment.1 }}</td>
-                                <td>{{ record.scores_quarterly_assessment.2 }}</td>
-                                <td>{{ record.scores_quarterly_assessment.3 }}</td>
-                                <td>{{ record.initial_grades }}</td>
+                                {% for score in record.quarterly_assessment_scores %}
+                                    <td>{{ score }}</td>
+                                {% endfor %}
+                                <td>{{ record.total_score_quarterly}}</td>
                                 <td>{{ record.percentage_score_quarterly }}</td>
-                                <td>{{ record.weighted_score_quarterly }}</td>
+                                <td>{{ record.weighted_score_quarterly}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
