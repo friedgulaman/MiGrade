@@ -45,9 +45,9 @@ Adviser Teacher
         <li class="nav-item">
           <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly_assessment" role="tab" aria-selected="false">Quarterly Assessment</a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#initial_grade" role="tab" aria-selected="false">Initial Grades</a>
-        </li>
+        </li> -->
       </ul>
       <div>
 
@@ -267,7 +267,7 @@ Adviser Teacher
       </div>
   
   
-      <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
+      <!-- <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
         <div class="mb-3">
           {% if students %}
           <div class="table-responsive" >
@@ -277,7 +277,7 @@ Adviser Teacher
                       <tr>
                           <th></th>
                           <th>Name</th>
-                          <th>   Grade</th>
+                          <th>Grade</th>
                           <th>Quarterly Grade</th>
                       </tr>
                   </thead>
@@ -286,8 +286,8 @@ Adviser Teacher
                     <tr>
                       <td>{{ number }}</td>
                       <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                      <td></td>
-                      <td></td>
+                      <td><input id="initial_grade_{{ student.id }}" name="initial_grade_{{ student.id }}"></td> 
+                      <td><input id="quarterly_grade_{{ student.id }}" name="quarterly_grade_{{ student.id}}"></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -295,13 +295,52 @@ Adviser Teacher
           </div>
           {% endif %}
       </div>
-      </div>
+      </div> -->
       </div>
       <button type="submit">Submit</button>
     </form>
   </section>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+   <!-- INITIAL GRADE -->
+   <script>
+    // Get all the input elements for qa_ws, pt_ws, ws, and initial_grade
+    const qaWsInputs = document.querySelectorAll('input[id^="qa_ws_"]');
+    const ptWsInputs = document.querySelectorAll('input[id^="pt_ws_"]');
+    const wsInputs = document.querySelectorAll('input[id^="ws_"]');
+    const initialGradeInputs = document.querySelectorAll('input[id^="initial_grade_"]');
+  
+    // Add event listeners to each input field
+    qaWsInputs.forEach((qaWsInput, index) => {
+      // Add input event listener to qa_ws field
+      qaWsInput.addEventListener('input', () => {
+        updateInitialGrade(index);
+      });
+  
+      // Add input event listener to pt_ws field
+      ptWsInputs[index].addEventListener('input', () => {
+        updateInitialGrade(index);
+      });
+  
+      // Add input event listener to ws field
+      wsInputs[index].addEventListener('input', () => {
+        updateInitialGrade(index);
+      });
+    });
+  
+    // Function to update Initial Grade for a student
+    function updateInitialGrade(index) {
+      const qaWsValue = parseFloat(qaWsInputs[index].value) || 0;
+      const ptWsValue = parseFloat(ptWsInputs[index].value) || 0;
+      const wsValue = parseFloat(wsInputs[index].value) || 0;
+  
+      // Calculate the initial grade based on your formula
+      const initialGrade = (0.3 * qaWsValue) + (0.4 * ptWsValue) + (0.3 * wsValue);
+  
+      // Update the corresponding initial_grade input field
+      initialGradeInputs[index].value = initialGrade.toFixed(2); // Display with 2 decimal places
+    }
+  </script>
   <!-- PERFORMANCE TASKS -->
     <!-- total percentage score pt -->
     <script>
