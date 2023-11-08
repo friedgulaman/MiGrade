@@ -179,3 +179,22 @@ class ExtractedData(models.Model):
             "name_of_school": self.name_of_school
         }
 
+class Subject(models.Model):
+    id = models.AutoField(primary_key=True)  # Adding an 'id' field
+    name = models.CharField(max_length=100, unique=True)
+    written_works_percentage = models.PositiveIntegerField(default=40)
+    performance_task_percentage = models.PositiveIntegerField(default=40)
+    quarterly_assessment_percentage = models.PositiveIntegerField(default=20)
+
+    def __str__(self):
+        return self.name
+
+class Quarters(models.Model):
+    id = models.AutoField(primary_key=True)
+    first_quarter = models.PositiveIntegerField(default=40)
+    second_quarter = models.PositiveIntegerField(default=40)
+    third_quarter = models.PositiveIntegerField(default=40)
+    fourth_quarter = models.PositiveIntegerField(default=40)
+
+    def __str__(self):
+        return self.name

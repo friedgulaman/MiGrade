@@ -29,6 +29,8 @@ urlpatterns = [
     path('upload_documents/', AdminViews.upload_documents_ocr, name='upload_documents'),
     path('save_edited_data/', AdminViews.save_edited_data, name='save_edited_data'),
     path('sf10/', AdminViews.sf10_views, name='sf10_view'),
+    path('add_subject/', AdminViews.add_subject, name='add_subject'),
+    path('subject_list/', AdminViews.subject_list, name='subject_list'),
 
 
 

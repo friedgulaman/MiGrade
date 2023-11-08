@@ -11,6 +11,8 @@ from django.http import JsonResponse
 from django.db import models
 from django.views.decorators.http import require_GET
 from django.db.models import Q
+from .forms import SubjectForm
+from .models import Subject
 
 #OCR
 from .models import ExtractedData
@@ -536,3 +538,20 @@ def sf10_views(request):
 
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
+
+
+def add_subject(request):
+    if request.method == 'POST':
+        form = SubjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('subject_list')  # Redirect to a page showing the list of subjects
+
+    else:
+        form = SubjectForm()
+
+    return render(request, 'admin_template/add_subject.html', {'form': form})
+
+def subject_list(request):
+    subjects = Subject.objects.all()
+    return render(request, 'admin_template/subject_list.html', {'subjects': subjects})

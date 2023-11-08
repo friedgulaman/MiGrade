@@ -10,7 +10,7 @@ from django import forms
 import openpyxl
 from django.contrib import messages
 from django.shortcuts import render
-from .models import Grade, GradeScores, Section, Student, Teacher
+from .models import Grade, GradeScores, Section, Student, Teacher, Subject
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -243,13 +243,16 @@ def class_record(request):
 def get_grade_details(request):
     grades = Student.objects.values_list('grade', flat=True).distinct()
     sections = Student.objects.values_list('section', flat=True).distinct()
+    subjects = Subject.objects.values_list('name', flat=True).distinct()
 
     context = {
         'grades': grades,
         'sections': sections,
+        'subjects': subjects,
     }
     print("Distinct grades:", grades)
     print("Distinct sections:", sections)
+    print("Distinct subjects:", subjects)
 
     return render(request, 'teacher_template/adviserTeacher/new_classrecord.html', context)
 
@@ -258,9 +261,18 @@ def get_students_by_grade_and_section(request):
     if request.method == "POST":
         grade_name = request.POST.get("grade")
         section_name = request.POST.get("section")
+        subject_name = request.POST.get("subject")
 
         # Query the database to retrieve students based on the selected grade and section
         students = Student.objects.filter(grade=grade_name, section=section_name)
+
+        subject = Subject.objects.get(name=subject_name)
+
+
+        weighted_written_works_percentage = subject.written_works_percentage
+        weighted_performance_task_percentage = subject.performance_task_percentage
+        weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
+
 
         # Create a dictionary to store scores for each student
         student_scores = {}
@@ -280,6 +292,9 @@ def get_students_by_grade_and_section(request):
         context = {
             'students': students,
             'student_scores': student_scores,
+            'written_works_percentage': weighted_written_works_percentage,
+            'performance_task_percentage': weighted_performance_task_percentage,
+            'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
         }
 
         return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
@@ -318,8 +333,8 @@ def calculate_grades(request):
                 # max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
                 
                 # Retrieve weights for each component
-                weight_input_written = float(request.POST.get(f"weight_written_works_{i}", "0"))  # Change this to the actual weight for written works
-                weight_input_performance = float(request.POST.get(f"weight_performance_task_{i}", "0"))  # Change this to the actual weight for performance tasks
+                weight_input_written = float(request.POST.get(f"written_works_weight", "0"))  # Change this to the actual weight for written works
+                weight_input_performance = float(request.POST.get(f"performance_task_weight", "0"))  # Change this to the actual weight for performance tasks
                 # weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
                 
                 scores_written_works.append(float(written_works) if written_works.isnumeric() else 0)
@@ -339,7 +354,7 @@ def calculate_grades(request):
                 quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
                 max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
                 
-                weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
+                weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight", "0"))  # Change this to the actual weight for quarterly assessments
                 scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
                 total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
                 total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
@@ -363,12 +378,16 @@ def calculate_grades(request):
             weight_performance = float(weight_input_performance)
             weight_quarterly = float(weight_input_quarterly)
 
-            weighted_score_written = (percentage_score_written * weight_written) / 100
-            weighted_score_performance = (percentage_score_performance * weight_performance) / 100
-            weighted_score_quarterly = (percentage_score_quarterly * weight_quarterly) / 100
+            weighted_score_written = (percentage_score_written / 100) * weight_written
+            weighted_score_performance = (percentage_score_performance / 100) * weight_performance
+            weighted_score_quarterly = (percentage_score_quarterly / 100) * weight_quarterly
 
             initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
             transmuted_grades = transmuted_grade(initial_grades)
+
+            # print(weight_input_written)
+            # print(weight_input_performance)
+            # print(weight_input_quarterly)
 
             # Create a new GradeScores object and populate its fields
             grade_scores = GradeScores(
