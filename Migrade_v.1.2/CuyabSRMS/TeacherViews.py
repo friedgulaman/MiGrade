@@ -36,6 +36,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 
+@login_required
 def home_teacher(request):
     return render(request, 'teacher_template/home_teacher.html')
 
@@ -47,6 +48,7 @@ def new_classrecord(request):
 
 def classes(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html')
+
 
 # Subject teacher
 def home_subject_teacher(request):
@@ -178,9 +180,9 @@ def upload(request):
                     'lrn_data': lrn_data,
                 })
             else:
-                return HttpResponse("Failed to process the Google Sheet")
+                messages.error(request, "Failed to process the Google Sheet")
         else:
-            return HttpResponse("Invalid Google Sheet link")
+            messages.error(request, "Invalid Google Sheet link")
 
     # Render the initial form if the request is not a POST or if there are form errors
     return render(request, 'teacher_template/adviserTeacher/upload.html')
@@ -430,69 +432,6 @@ def display_classrecord(request):
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
 
 
-
-def update_profile_photo(request):
-    if request.method == "POST":
-        profile_photo = request.FILES.get("profile_photo")
-        if profile_photo:
-            # Save the new profile photo
-            request.user.profile_image = profile_photo
-            request.user.save()
-            # Redirect to the user's profile page or a success page
-            return redirect('profile_page')
-
-    return render(request, 'profile_page')
-
-def update_teacher_profile(request):
-    if request.method == "POST":
-        user = request.user
-        # Update the user's profile information with the submitted data
-        user.first_name = request.POST.get('first_name')
-        user.last_name = request.POST.get('last_name')
-        user.middle_ini = request.POST.get('middle_ini')
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        user.save()
-
-        messages.success(request, 'Profile updated successfully.')  # Display a success message
-        return redirect('profile_page')  # Redirect to the updated profile page
-
-    return render(request, 'profile_page')
-
-@login_required
-def change_password(request):
-    if request.method == 'POST':
-        old_password = request.POST['old_password']
-        new_password = request.POST['new_password']
-        confirm_password = request.POST['confirm_password']
-
-        user = request.user
-
-        if user.check_password(old_password):
-            if new_password == confirm_password:
-                if not user.check_password(new_password):
-                    # Ensure the new password is different from the old one
-                    user.set_password(new_password)
-                    user.save()
-                    update_session_auth_hash(request, user)  # To maintain the user's session
-
-                    # Add a success message
-                    messages.success(request, 'Password changed successfully.')
-                    return redirect('profile_page')  # Replace 'profile' with the name of the view you want to redirect to
-
-                else:
-                    # Add an error message
-                    messages.error(request, 'New password must be different from the old password.')
-
-            else:
-                # Add an error message
-                messages.error(request, 'New password and confirm password do not match.')
-
-        else:
-            # Add an error message
-            messages.error(request, 'Invalid old password')
-
-    return redirect('profile_page')  # Replace 'profile' with the name of the view you want to redirect to
 
 
 @login_required

@@ -9,6 +9,7 @@ from django.conf.urls.static import static
 from .ForgotPassword import ResetPasswordView
 from django.contrib.auth import views as auth_views
 
+
 urlpatterns = [
     path('', views.ShowLoginPage),
     path('doLogin/', views.doLogin, name='doLogin'),
@@ -17,6 +18,11 @@ urlpatterns = [
     path('logout_user/', views.logout_user, name='logout_user'),
     path('profile_page/', views.profile_page, name='profile_page'),
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
+    path('teachers_activity', views.teachers_activity, name='teachers_activity'),
+    path('update_profile_photo', views.update_profile_photo, name='update_profile_photo'),
+    path('update_teacher_profile', views.update_teacher_profile, name='update_teacher_profile'),       
+    path('change_password/', views.change_password, name='change_password'),
+
 
 
 
@@ -59,9 +65,6 @@ urlpatterns = [
 
 
     path('display_students', TeacherViews.display_students, name='display_students'),
-    path('update_profile_photo', TeacherViews.update_profile_photo, name='update_profile_photo'),
-    path('update_teacher_profile', TeacherViews.update_teacher_profile, name='update_teacher_profile'),       
-    path('change_password/', TeacherViews.change_password, name='change_password'),
 
 
 

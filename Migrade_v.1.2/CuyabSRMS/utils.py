@@ -1,3 +1,5 @@
+from .models import ActivityLog
+
 def transmuted_grade(initial_grade):
                     if 98.40 <= initial_grade <= 99.99:
                         return 99
@@ -82,3 +84,5 @@ def transmuted_grade(initial_grade):
                     else:
                         return initial_grade
                     
+def log_activity(user, action, details=''):
+    ActivityLog.objects.create(user=user, action=action, details=details)

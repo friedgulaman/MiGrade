@@ -24,7 +24,9 @@ from django.conf import settings
 from django.shortcuts import HttpResponse
 from django.utils.text import get_valid_filename
 from .forms import ExtractedDataForm
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def home_admin(request):
     # Retrieve the grades queryset
     grades = Grade.objects.all()

@@ -28,6 +28,9 @@ New Class List
   text-decoration: none;
   cursor: pointer;
 }
+#loading-spinner {
+  display: none;
+}
 
 </style>
 <section class="content container mt-2">
@@ -38,11 +41,20 @@ New Class List
     <p>Please paste the Google Sheet link containing your SF1 data below:</p>
     <form method="post" action="{% url 'upload' %}" class="container text-center d-flex flex-column">
       {% csrf_token %}
-      <input type="text" class="form-control" name="google_sheet_link" id="google_sheet_link" placeholder="Paste Here"
-        required>
-      <button type="submit" id="upload_btn"
-        class="btn btn-primary mt-3 container d-flex justify-content-center align-center">Upload</button>
-    </form>
+      <input type="text" class="form-control" name="google_sheet_link" id="google_sheet_link" placeholder="Paste Here" required>
+      <button type="submit" id="upload_btn" class="btn btn-primary mt-3 container d-flex justify-content-center align-center">Upload</button>
+  </form>
+  
+  {% if messages %}
+  <div class="container text-center mt-3">
+      {% for message in messages %}
+      <div class="alert alert-danger" role="alert">
+          {{ message }}
+      </div>
+      {% endfor %}
+  </div>
+  {% endif %}
+  
   </div>
   <div id="excel-data-container">
     {% csrf_token %}
@@ -281,6 +293,7 @@ New Class List
   document.querySelector(".back-button").addEventListener("click", function() {
     window.history.back();
   });
+  
 </script>
 
 {% endblock main_content %}

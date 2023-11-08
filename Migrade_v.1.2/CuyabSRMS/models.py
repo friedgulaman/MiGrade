@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -145,3 +146,12 @@ class ExtractedData(models.Model):
             "school_id": self.school_id,
             "grade_section": self.grade_section
         }
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    action = models.CharField(max_length=255)
+    details = models.TextField()
+
+    def __str__(self):
+        return f'{self.user.username} - {self.action}'
