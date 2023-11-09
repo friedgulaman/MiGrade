@@ -198,3 +198,15 @@ class Quarters(models.Model):
 
     def __str__(self):
         return self.name
+    
+class ClassRecord(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)  # Add a foreign key to Grade
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)  # Add a foreign key to Section
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)  # Add a foreign key to Subject
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
+
+    def __str__(self):
+        return self.name
+    
