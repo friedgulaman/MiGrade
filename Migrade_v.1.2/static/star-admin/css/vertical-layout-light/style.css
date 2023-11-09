@@ -20126,7 +20126,7 @@ code {
 .img-ss, .settings-panel .color-tiles .tiles {
   width: 26px;
   height: 26px;
-}
+}.settings-panel
 
 .stretch-card {
   display: -webkit-flex;
@@ -30912,13 +30912,12 @@ div.tagsinput span.tag a {
   border-left: 1px solid #dee2e6;
   display: block;
   position: fixed;
-  top: 97px;
   right: -300px;
   bottom: 0;
   width: 300px;
   height: 100vh;
   min-height: 100%;
-  background: #ffffff;
+  background: red;
   -webkit-transition-duration: 0.25s;
   -moz-transition-duration: 0.25s;
   -o-transition-duration: 0.25s;

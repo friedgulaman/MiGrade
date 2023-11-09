@@ -31,20 +31,73 @@ from .forms import DocumentUploadForm
 from .models import ProcessedDocument, ExtractedData
 from google.cloud import documentai_v1beta3 as documentai
 from django.shortcuts import render
+from .views import *
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 #Grade
 from django.http import JsonResponse
 
+
+@login_required
+
 def home_teacher(request):
     return render(request, 'teacher_template/home_teacher.html')
 
-
-# adviser
-def home_adviser_teacher(request):
-    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
-
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')
+
+def new_classrecord(request):
+        return render(request, 'teacher_template/adviserTeacher/new_classrecord.html')
+
+def classes(request):
+        return render(request, 'teacher_template/adviserTeacher/classes.html')
+
+
+# Subject teacher
+def home_subject_teacher(request):
+    return render(request, 'teacher_template/subjectTeacher/home_subject_teacher.html')
+
+def filipino_subject(request):
+    return render (request, 'teacher_template/subjectTeacher/filipino_subject.html')
+
+# adviser
+@login_required
+def home_adviser_teacher(request):
+     # Get the currently logged-in teacher
+    teacher = request.user.teacher
+
+    # Retrieve the related section
+    section = teacher.sections.first()  # Assuming a teacher can have multiple sections
+
+    if section:
+        # Get the grade from the related section
+        grade = section.grade
+    else:
+        # Handle the case where no section is related to the teacher
+        grade = None
+
+    # Filter students based on the teacher's ID
+    students = Student.objects.filter(teacher=teacher)
+
+    # Count the number of students
+    num_students = students.count()
+
+    # Count the number of male (M) and female (F) students
+    num_male_students = students.filter(sex='M').count()
+    num_female_students = students.filter(sex='F').count()
+
+    context = {
+        'num_students': num_students,
+        'grade': grade,  # Include the grade in the context
+        'section': section,
+        'num_male_students': num_male_students,
+        'num_female_students': num_female_students,
+    }
+    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', context)
+
 
 # Your combined view
 def process_google_sheet(spreadsheet_id, sheet_name):
@@ -144,9 +197,9 @@ def upload(request):
                     'lrn_data': lrn_data,
                 })
             else:
-                return HttpResponse("Failed to process the Google Sheet")
+                messages.error(request, "Failed to process the Google Sheet")
         else:
-            return HttpResponse("Invalid Google Sheet link")
+            messages.error(request, "Invalid Google Sheet link")
 
     # Render the initial form if the request is not a POST or if there are form errors
     return render(request, 'teacher_template/adviserTeacher/upload.html')
@@ -227,8 +280,6 @@ def get_grades_and_sections(request):
 
     return JsonResponse(data)
 
-def new_classrecord(request):
-        return render(request, 'teacher_template/adviserTeacher/new_classrecord.html')
 
 def class_record(request):
     students = Student.objects.all()  # Replace with your actual query
@@ -425,18 +476,49 @@ def calculate_grades(request):
 
 def display_classrecord(request):
     grade_scores = GradeScores.objects.all()
-    
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
 
 
 
 
+@login_required
+def display_students(request):
+    # Get the currently logged-in user
+    user = request.user
 
+    if user.user_type == 2:
+        try:
+            # Retrieve the teacher associated with the user
+            teacher = Teacher.objects.get(user=user)
+            
+            # Filter students based on the teacher
+            students = Student.objects.filter(teacher=teacher)
 
-# Subject teacher
-def home_subject_teacher(request):
-    return render(request, 'teacher_template/subjectTeacher/home_subject_teacher.html')
+            # You can also filter students by grade and section if needed
+            grade = request.GET.get('grade')  # Example: Get grade from request
+            section = request.GET.get('section')  # Example: Get section from request
 
-def filipino_subject(request):
-    return render (request, 'teacher_template/subjectTeacher/filipino_subject.html')
+            if grade and section:
+                students = students.filter(grade=grade, section=section)
+
+            # Extract unique grades and sections from the students
+            unique_grades = students.values_list('grade', flat=True).distinct()
+            unique_sections = students.values_list('section', flat=True).distinct()
+
+            context = {
+                'students': students,
+                'teacher': teacher,
+                'unique_grades': unique_grades,  # Pass unique grades to the template
+                'unique_sections': unique_sections,  # Pass unique sections to the template
+                'grade': grade,
+                'section': section,
+            }
+            return render(request, 'teacher_template/adviserTeacher/classes.html', context)
+        except Teacher.DoesNotExist:
+            # Handle the case where the user has user_type=2 but is not associated with a teacher
+            return render(request, 'teacher_template/adviserTeacher/classes.html')
+    else:
+        # Handle the case where the user is not a teacher (user_type is not 2)
+        return render(request, 'teacher_template/adviserTeacher/classes.html')
+
 

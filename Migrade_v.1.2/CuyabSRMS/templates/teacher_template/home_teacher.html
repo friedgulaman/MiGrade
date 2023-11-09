@@ -1,12 +1,86 @@
 {% extends 'teacher_template/teacher_base.html' %}
-{% block page_title %}
-Adviser Teacher
-{% endblock page_title %}
+{% block title %}MiGrade - Home{% endblock %}
 {% block main_content %}
+<style>
+  #user{
+    font-weight: bolder;
+  }
+  #_roles {
+  position: relative;
+}
+
+#_roles::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    border-radius: 2px;
+    background-color: #18272F;
+    bottom: 0;
+    left: 0;
+    transform-origin: right;
+    transform: scaleX(0);
+    transition: transform .3s ease-in-out;
+  }
+
+  #_roles:hover::before {
+  transform-origin: left;
+  transform: scaleX(1);
+}
+strong{
+  text-decoration: underline;
+}
+
+</style>
 <section class="content">
-  <div class="container-fluid">
-    <h1>Welcome to the home teacher!!!</h1>
-    <p>This is the main content of the home page.</p>
-  </div>
+  <div class="container d-flex justify-content-end p-4">
+          <a id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+            <img class="img-xs rounded-circle" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
+          <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
+            <div class="dropdown-header text-center">
+              <p class="mb-1 font-weight-semibold">{{ user }}</p>
+              <p class="fw-light text-muted mb-0">{{ user.email }}</p>
+            </div>
+            <a class="dropdown-item" href="{% url 'profile_page' %}"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
+            <a class="dropdown-item" href="{% url 'teachers_activity' %}"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
+            <a class="dropdown-item"  href="{% url 'logout_user' %}"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
+          </div>
+        </div>
+        <div class="container d-flex justify-content-center align-items-center p-4">
+          <div class="card mb-3 p-5">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <img class="img-fluid" src="static/star-admin/images/home_teacher.svg" alt="Home Teacher">
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h5 class="card-title">Welcome, <span id="user">{{user}}</span></h5>
+                  <h5 class="card-description">Choose your role, as a teacher.</h5>
+                  <ul>
+                    <li>
+                      <p class="fw-light small-text mb-0">As an <strong>Adviser</strong>, you have access to class management tools and student information for the classes you oversee.</p>
+                    </li>
+                    <li>
+                      <p class="fw-light small-text mb-0">As a <strong>Subject Teacher</strong>, you are responsible for managing and delivering curriculum content for specific subjects. Your role includes grade recording, lesson planning, and student assessment.</p>
+                    </li>
+                  </ul>
+                  <div>
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle btn-md mb-0 me-0" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Roles:
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                        <a class="dropdown-item" id="_roles" href="{% url 'home_adviser_teacher'%}">Adviser</a>
+                        <a class="dropdown-item" id="_roles" href="{% url 'home_subject_teacher'%}">Subject Teacher</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
 </section>
+
 {% endblock main_content %}

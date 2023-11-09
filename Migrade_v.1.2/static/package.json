@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bootstrap": "^5.3.1",
+    "fastbootstrap": "^1.1.2",
     "handsontable": "^13.1.0"
   }
 }

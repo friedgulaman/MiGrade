@@ -1,11 +1,19 @@
 from django import forms
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import URLPattern, path, include
 from CuyabSRMS import AdminViews, TeacherViews, StudentViews
 from django.contrib import admin
 from . import views
+
 from django.conf.urls.static import static
 from django.conf import settings
+
+from django.conf import settings
+from django.conf.urls.static import static
+from .ForgotPassword import ResetPasswordView
+from django.contrib.auth import views as auth_views
+
+
 
 urlpatterns = [
     path('', views.ShowLoginPage),
@@ -13,7 +21,19 @@ urlpatterns = [
     path('doLogin', views.ShowLoginPage, name='ShowLoginPage'),
     path('get_user_details/', views.get_user_details),
     path('logout_user/', views.logout_user, name='logout_user'),
+    path('profile_page/', views.profile_page, name='profile_page'),
+    path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
+    path('teachers_activity', views.teachers_activity, name='teachers_activity'),
+    path('update_profile_photo', views.update_profile_photo, name='update_profile_photo'),
+    path('update_teacher_profile', views.update_teacher_profile, name='update_teacher_profile'),       
+    path('change_password/', views.change_password, name='change_password'),
 
+
+
+
+    path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     # Admin
     path('home_admin', AdminViews.home_admin, name="home_admin"),
     path('add_teacher', AdminViews.add_teacher, name="add_teacher"),
@@ -38,10 +58,10 @@ urlpatterns = [
     path('home_teacher', TeacherViews.home_teacher, name="home_teacher"),
     path('home_adviser_teacher', TeacherViews.home_adviser_teacher, name="home_adviser_teacher"),
     path('upload_adviser_teacher', TeacherViews.upload_adviser_teacher, name="upload_adviser_teacher"),   
-    path('upload/', TeacherViews.upload, name='upload'),
+    path('upload', TeacherViews.upload, name='upload'),
     path('save_json_data', TeacherViews.save_json_data, name='save_json_data'),
     path('new_classrecord', TeacherViews.new_classrecord, name='new_classrecord'),
-
+    path('classes', TeacherViews.classes, name='classes'),
     path('class_record', TeacherViews.class_record, name='class_record'),
     path('get_grades_and_sections', TeacherViews.get_grades_and_sections, name='get_grades_and_sections'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
@@ -54,16 +74,22 @@ urlpatterns = [
 
 
 
+    path('display_students', TeacherViews.display_students, name='display_students'),
+
+
+
     # Subject Teacher
     path('home_subject_teacher', TeacherViews.home_subject_teacher, name="home_subject_teacher"),
     path('filipino_subject', TeacherViews.filipino_subject, name="filipino_subject"),
 
     # Student
     path('student_list/', StudentViews.student_list, name='student_list'),
+]
 
 
 ]
 
 
+ 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -6,8 +6,11 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
 from django.conf import settings
+
 from datetime import datetime
 import re
+from django.utils import timezone
+
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -16,6 +19,7 @@ class CustomUser(AbstractUser):
     )
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES)
     middle_ini = models.CharField(max_length=1, blank=True, null=True)  # Add the middle_ini field here
+    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default_profile_img.jpg')
 
     def __str__(self):
         return self.username  # You can choose any field that you want to display here
@@ -179,6 +183,7 @@ class ExtractedData(models.Model):
             "name_of_school": self.name_of_school
         }
 
+
 class Subject(models.Model):
     id = models.AutoField(primary_key=True)  # Adding an 'id' field
     name = models.CharField(max_length=100, unique=True)
@@ -207,3 +212,13 @@ class ClassRecord(models.Model):
     def __str__(self):
         return self.name
     
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    action = models.CharField(max_length=255)
+    details = models.TextField()
+
+    def __str__(self):
+        return f'{self.user.username} - {self.action}'
+
