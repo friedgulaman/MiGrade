@@ -47,6 +47,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'captcha',
     'CuyabSRMS',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -79,6 +80,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
+
             ],
         },
     },
@@ -133,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 
@@ -156,7 +159,13 @@ STATIC_URL = '/static/'
 # Set a STATIC_ROOT if you plan to collect static files for deployment
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000  # Adjust the number as needed
 
 
 # Default primary key field type
@@ -173,13 +182,10 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # You can keep the default backend too.
 ]
 
+# reCAPTCHA settings
+RECAPTCHA_PUBLIC_KEY = '6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI'
+RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
 
-# Define the base directory where uploaded files will be stored
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Define the URL for serving uploaded files
-MEDIA_URL = '/media/'
 
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000  # Adjust the number as needed

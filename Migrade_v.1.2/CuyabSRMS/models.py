@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -14,6 +15,7 @@ class CustomUser(AbstractUser):
     )
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES)
     middle_ini = models.CharField(max_length=1, blank=True, null=True)  # Add the middle_ini field here
+    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default_profile_img.jpg')
 
     def __str__(self):
         return self.username  # You can choose any field that you want to display here
@@ -145,3 +147,11 @@ class ExtractedData(models.Model):
             "grade_section": self.grade_section
         }
 
+class ActivityLog(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    action = models.CharField(max_length=255)
+    details = models.TextField()
+
+    def __str__(self):
+        return f'{self.user.username} - {self.action}'

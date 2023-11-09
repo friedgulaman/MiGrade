@@ -1,0 +1,494 @@
+{% extends 'teacher_template/teacher_base.html' %}
+
+{% block page_title %}
+Adviser Teacher
+{% endblock page_title %}
+
+{% block main_content %}
+<style>
+/* CSS for the image and container */
+.image-container {
+  min-width: 200px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: solid 1px rgb(110, 107, 133);
+  border-radius: 50%;
+  
+  position: relative;
+}
+
+.zoomable-image {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* Style for the eye icon button */
+.input-group-append button.btn {
+  background-color: transparent;
+  border: none;
+}
+
+/* Style for the eye icon */
+.input-group-append button.btn i {
+  cursor: pointer;
+}
+
+/* Hide the password when the input type is 'password' */
+input[type="password"] {
+  -webkit-text-security: disc;
+}
+.custom-button {
+    background: none;
+    border: none;
+    color: #828a93;
+    cursor: pointer;
+    padding: 0; /* Optional: Adjust padding as needed */
+}
+
+.custom-button:focus {
+    outline: none; /* Remove focus outline if desired */
+}
+.custom-button:hover{
+  color: #007bff;
+}
+.back-button{
+  color: #1027ac;
+  font-size: 30px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+</style>
+<section>
+  <div class="container d-flex justify-content-center align-items-center p-5">
+    <div class="card mb-3 p-5 container">
+      <div class="col-md-12 text-center d-flex justify-content-between align-items-center">
+        <a class="back-button" >&larr;</a>
+      
+      
+      {% if messages %}
+      <div class="alert-messages">
+        <ul class="list-unstyled">
+          {% for message in messages %}
+          <li
+            class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% endif %}">
+            {{ message }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+      <div class="row g-0">
+        <div class="col-md-3 text-center d-flex justify-content-center align-items-center">
+          <div class="image-container ">
+            <img class="zoomable-image" src="{{ teacher.user.profile_image.url }}" alt="Profile Photo Preview"
+              data-bs-toggle="modal" data-bs-target="#photoUploadModal">
+          </div>
+        </div>
+
+
+
+
+
+        <div class="col-md-9">
+          <form method="post" action="{% url 'update_teacher_profile' %}">
+            {% csrf_token %}
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title">Teacher Profile</h5>
+                <button type="button" class="btn btn-primary btn-sm" id="editProfileFields">&#9998;</button>
+                <button type="submit" class="btn btn-success btn-sm" id="submit-button-field"
+                  style="display: none">&#10004;</button>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <label class="form-label form-text" for="firstname">First Name</label>
+                  <input type="text" class="form-control input-field" id="firstname" name="first_name"
+                    value="{{ teacher.user.first_name }}" aria-label="First name" readonly>
+                </div>
+                <div class="col">
+                  <label class="form-label form-text" for="lastname">Last Name</label>
+                  <input type="text" class="form-control input-field" id="lastname" name="last_name"
+                    value="{{ teacher.user.last_name }}" aria-label="Last name" readonly>
+                </div>
+                <div class="col">
+                  <label class="form-label form-text" for="middle_ini">Middle Initial</label>
+                  <input type="text" class="form-control input-field" id="middle_ini" name="middle_ini"
+                    value="{{ teacher.user.middle_ini }}" aria-label="Last name" readonly>
+                </div>
+              </div>
+              <div class="row mt-3 mb-3">
+                <div class="col">
+                  <label class="form-label form-text" for="username">User Name</label>
+                  <input type="text" class="form-control input-field" id="username" name="username"
+                    value="{{ teacher.user.username }}" aria-label="Email" readonly>
+                </div>
+              </div>
+              <div class="row mt-3 mb-3">
+                <div class="col">
+                  <label class="form-label form-text" for="email">Email</label>
+                  <input type="text" class="form-control input-field" id="email" name="email"
+                    value="{{ teacher.user.email }}" aria-label="Email" readonly>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="form-text fw-light custom-button" data-toggle="modal"
+                  data-target="#passwordChangeModal" id="change-password-link">
+                  Change Password Here
+                </button>
+
+
+              </div>
+
+            </div>
+          </form>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="photoUploadModal" tabindex="-1" aria-labelledby="photoUploadModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="" method="post" action="{% url 'update_profile_photo' %}" enctype="multipart/form-data">
+        <div class="modal-content">
+          <div class="modal-header">
+            {% csrf_token %}
+            <input type="file" name="profile_photo" id="profile_photo_modal" accept="image/*">
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="container text-center d-flex justify-content-center align-items-center">
+              <div class="image-container ">
+                <img class="zoomable-image" id="profile_photo_preview"
+                  src="{% if teacher.user.profile_image %}{{ teacher.user.profile_image.url }}{% else %}# {% endif %}"
+                  alt="Profile Photo Preview" data-bs-toggle="modal" data-bs-target="#photoUploadModal">
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-sm" id="submit-button">&#10004;</button>
+      </form>
+    </div>
+  </div>
+  </div>
+  </div>
+  <!-- Password change modal -->
+  <div class="modal fade" id="passwordChangeModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <form id="password-change-form" method="post" action="{% url 'change_password' %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="id_old_password">Old Password</label>
+              <div class="input-group d-flex justify-content-center align-items-center position-relative">
+                <input type="password" class="form-control container" name="old_password" id="id_old_password" required>
+                <div class="position-absolute end-0 ">
+                  <button type="button" class="btn eye text-muted" id="toggle-old-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+              <div id="id_old_password_error" class="text-danger"></div>
+            </div>
+            <div class="form-group">
+              <label for="id_new_password">New Password</label>
+              <div class="input-group d-flex justify-content-between align-items-center position-relative">
+                <input type="password" class="form-control" name="new_password" id="id_new_password" required>
+                <div class="position-absolute end-0 " >
+                  <button type="button" class="btn eye text-muted" id="toggle-new-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div id="password-validation-message" class="text-color-message form-text"></div>
+            </div>
+            <div class="form-group">
+              <label for="id_confirm_password">Confirm New Password</label>
+              <div class="input-group d-flex justify-content-between align-items-center position-relative">
+                <input type="password" class="form-control" name="confirm_password" id="id_confirm_password" required>
+                <div class="position-absolute end-0 ">
+                  <button type="button" class="btn eye text-muted" id="toggle-confirm-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div id="confirm-password-validation-message" class="form-text text-danger"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="change-password-button" disabled>Change Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="content container mt-2 vh-100">
+  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+    <ul class="nav nav-tabs text" role="tablist">
+      <li class="nav-ite m">
+        <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
+          aria-controls="overview" aria-selected="true">Overview</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab"
+          aria-selected="false">Audiences</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#demographics" role="tab"
+          aria-selected="false">Demographics</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#more" role="tab"
+          aria-selected="false">More</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content tab-content-basic">
+    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+      1
+    </div>
+    <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
+      2
+    </div>
+    <div class="tab-pane fade show " id="demographics" role="tabpanel" aria-labelledby="demographics">
+      <h1>3</h1>
+    </div>
+    <div class="tab-pane fade show " id="more" role="tabpanel" aria-labelledby="more">
+      <h1>4</h1>
+    </div>
+  </div>
+
+
+
+</section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#profile-photo").on("change", function (e) {
+      var file = e.target.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          $("#profile-image").attr("src", e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  });
+</script>
+<script>
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "profile_photo_modal") {
+      var preview = document.getElementById("profile_photo_preview");
+      var file = e.target.files[0];
+
+      if (file) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          // Show the submit button when a new photo is selected
+          document.getElementById("submit-button").style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "{% if teacher.user.profile_image %}{{ teacher.user.profile_image.url }}{% else %}#{% endif %}";
+        // Hide the submit button when no new photo is selected
+        document.getElementById("submit-button").style.display = "none";
+      }
+    }
+  });
+</script>
+
+<script>
+  function uploadPhoto() {
+    // Get the selected file from the modal input field
+    var fileInput = document.getElementById("profile_photo_modal");
+    var file = fileInput.files[0];
+
+    if (file) {
+      // Handle the file upload as needed, e.g., you can use AJAX to send it to the server
+      // Once the upload is successful, you can update the profile photo preview
+      var preview = document.getElementById("profile_photo_preview");
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        preview.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+
+      // Close the modal
+      $('#photoUploadModal').modal('hide');
+    } else {
+      alert("Please select a photo to upload.");
+    }
+  }
+</script>
+<script>
+  // JavaScript to add the zoom-in class when the image is smaller than the container
+document.addEventListener("DOMContentLoaded", function () {
+  const image = document.querySelector(".zoomable-image");
+  const container = document.querySelector(".image-container");
+
+  if (image.naturalWidth < container.offsetWidth && image.naturalHeight < container.offsetHeight) {
+    image.classList.add("zoom-in");
+  }
+});
+
+</script>
+<script>
+  const editProfileFields = document.getElementById('editProfileFields');
+  const submitButton = document.getElementById('submit-button-field');
+
+  editProfileFields.addEventListener('click', () => {
+    const inputFields = document.querySelectorAll('.input-field[readonly]');
+    for (const field of inputFields) {
+      field.removeAttribute('readonly');
+    }
+
+    editProfileFields.style.display = 'none';
+    submitButton.style.display = 'block';
+  });
+</script>
+<script>
+  // In your JavaScript file or script
+    $('#change-password-link').click(function () {
+        $('#passwordChangeModal').modal('show');
+    });
+</script>
+<script>
+  // Password validation function
+  function isStrongPassword(password) {
+  // Minimum length of 8 characters
+  if (password.length < 8) {
+    return false;
+  }
+
+  // Check for at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+
+  // Check for at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+
+  // Check for at least one digit
+  if (!/\d/.test(password)) {
+    return false;
+  }
+
+  // Check for at least one special character (e.g., @, #, $, etc.)
+  if (!/[!@#\$%^&*()_+{}\[\]:;<>,.?~\\-]/.test(password)) {
+    return false;
+  }
+
+  // If all criteria pass, the password is considered strong
+  return true;
+}
+
+
+  // Function to update the validation message for password fields
+  function updateValidationMessage() {
+    const newPassword = document.getElementById('id_new_password').value;
+    const confirmPassword = document.getElementById('id_confirm_password').value;
+    const newPasswordValidationMessage = document.getElementById('password-validation-message');
+    const confirmPassValidationMessage = document.getElementById('confirm-password-validation-message');
+    const changePasswordButton = document.getElementById('change-password-button');
+
+    if (isStrongPassword(newPassword)) {
+      newPasswordValidationMessage.textContent = 'Password is strong.';
+      newPasswordValidationMessage.classList.remove('text-danger');
+      newPasswordValidationMessage.classList.add('text-success');
+    } else {
+      newPasswordValidationMessage.textContent = 'Password must be at least 8 characters long and contain at least one (A-Z),(a-z),(0-9), and (_-!@#$%^&*).';
+      newPasswordValidationMessage.classList.remove('text-success');
+      newPasswordValidationMessage.classList.add('text-danger');
+    }
+
+
+    if (newPassword === confirmPassword) {
+      confirmPassValidationMessage.textContent = 'Passwords matched';
+    } else {
+      confirmPassValidationMessage.textContent = 'Passwords do not match.';
+    }
+
+    if (isStrongPassword(newPassword) && newPassword === confirmPassword) {
+      changePasswordButton.removeAttribute('disabled');
+    } else {
+      changePasswordButton.setAttribute('disabled', 'true');
+    }
+  }
+
+  // Function to toggle password visibility
+  function togglePasswordVisibility(inputId, buttonId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleButton = document.getElementById(buttonId);
+
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Use the slash-eye icon
+    } else {
+      passwordInput.type = 'password';
+      toggleButton.innerHTML = ' <i class="fas fa-eye"></i>'; // Use the eye icon
+    }
+  }
+
+  // Add event listeners to the input fields for real-time validation
+  document.getElementById('id_old_password').addEventListener('input', updateValidationMessage);
+  document.getElementById('id_new_password').addEventListener('input', updateValidationMessage);
+  document.getElementById('id_confirm_password').addEventListener('input', updateValidationMessage);
+
+  // Add event listeners to toggle password visibility
+  document.getElementById('toggle-old-password').addEventListener('click', function () {
+    togglePasswordVisibility('id_old_password', 'toggle-old-password');
+  });
+
+  document.getElementById('toggle-new-password').addEventListener('click', function () {
+    togglePasswordVisibility('id_new_password', 'toggle-new-password');
+  });
+
+  document.getElementById('toggle-confirm-password').addEventListener('click', function () {
+    togglePasswordVisibility('id_confirm_password', 'toggle-confirm-password');
+  });
+</script>
+
+<script>
+  // Automatically remove messages after a timeout
+  document.addEventListener("DOMContentLoaded", function () {
+      let alertMessages = document.querySelector(".alert-messages");
+      if (alertMessages) {
+          setTimeout(function () {
+              alertMessages.style.display = "none";
+          }, 3000); // Adjust the timeout (in milliseconds) as needed
+      }
+  });
+</script>
+
+<script>
+  // JavaScript to handle the back button click event
+  document.querySelector(".back-button").addEventListener("click", function() {
+    window.history.back();
+  });
+</script>
+{% endblock main_content %}

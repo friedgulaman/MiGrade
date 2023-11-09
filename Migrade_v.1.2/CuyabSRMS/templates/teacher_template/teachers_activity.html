@@ -1,0 +1,89 @@
+{% extends 'teacher_template/teacher_base.html' %}
+{% block title %}MiGrade - Activity{% endblock %}
+{% block main_content %}
+<style>
+    #show-all-link{
+        text-decoration: none;
+        cursor: pointer;
+    }
+    li{
+        margin: 0;
+        padding: 12px;
+    }
+    li:hover{
+        background: #f1f1f1a1;
+        text-align: center;
+    }
+    .back-button{
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+        margin-bottom: 5px;
+        }
+</style>
+<div class="card card-rounded w-75 container d-flex justify-content-center align-content-center">
+   
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <a class="back-button" >&larr; <h4 class="card-title card-title-dash">Activities</h4></a>
+            
+        </div>
+        <p class="fw-light text-primary d-flex justify-content-end" id="show-all-link">Show all <i class="mdi mdi-arrow-down ms-2"></i></p>
+        <ul class="bullet-line-list" id="activity-list">
+            {% for log in activity_logs %}
+                <li{% if forloop.counter > 10 %} style="display: none;"{% endif %}>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <span class="text-light-green">{{ log.user.username }}</span> {{ log.action }}
+                        </div>
+                        <p>{{ log.timestamp }}</p>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="list align-items-center pt-3" id="show-all">
+            <div class="wrapper w-100">
+                <p class="mb-0">
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+  
+
+<script>
+    const activityList = document.getElementById('activity-list');
+    const showAllLink = document.getElementById('show-all-link');
+
+    let showingAll = false;
+    const initialLogCount = 10;
+
+    showAllLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showingAll = !showingAll;
+
+        // Toggle visibility of additional logs
+        const logs = activityList.getElementsByTagName('li');
+        for (let i = initialLogCount; i < logs.length; i++) {
+            logs[i].style.display = showingAll ? 'block' : 'none';
+        }
+
+        showAllLink.innerHTML = showingAll ? 'Show less <i class="mdi mdi-arrow-up ms-2"></i>' : 'Show all <i class="mdi mdi-arrow-down ms-2"></i>';
+    });
+
+    // Initially hide the additional logs
+    const logs = activityList.getElementsByTagName('li');
+    for (let i = initialLogCount; i < logs.length; i++) {
+        logs[i].style.display = 'none';
+    }
+</script>
+<script>
+    // JavaScript to handle the back button click event
+    document.querySelector(".back-button").addEventListener("click", function() {
+      window.history.back();
+    });
+  </script>
+{% endblock main_content %}

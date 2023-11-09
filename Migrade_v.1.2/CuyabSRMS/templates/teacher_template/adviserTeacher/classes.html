@@ -1,0 +1,88 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+New Class List
+{% endblock title %}
+{% block main_content %}
+
+<section class="content container mt-2">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title card-title-dash">My Classes</h4>
+                        <div class="add-items d-flex mb-0">
+                            <button id="uploadButton" class="add btn btn-icons btn-rounded btn-primary todo-list-add-btn text-white me-0 pl-12p">
+                                <i class="mdi mdi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="list-wrapper">
+                        <ul class="todo-list todo-list-rounded">
+                            <li class="d-block">
+                                {% for grade in unique_grades %}
+                                {% for section in unique_sections %}
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#studentModal">
+                                    {{ grade }} {{ section }}
+                                </button>
+                                {% endfor %}
+                                {% endfor %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="studentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Student List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h3>Student List:</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>LRN</th>
+                                <th>Sex</th>
+                                <th>Birthday</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.lrn }}</td>
+                                <td>{{ student.sex }}</td>
+                                <td>{{ student.birthday }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.getElementById("uploadButton").addEventListener("click", function() {
+        // Define the URL of the upload page
+        var uploadPageURL = "{% url 'upload_adviser_teacher' %}"; // Replace with your URL
+
+        // Redirect to the upload page
+        window.location.href = uploadPageURL;
+    });
+</script>
+
+{% endblock main_content %}
