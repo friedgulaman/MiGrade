@@ -10,7 +10,7 @@ from django import forms
 import openpyxl
 from django.contrib import messages
 from django.shortcuts import render
-from .models import Grade, GradeScores, Section, Student, Teacher, Subject
+from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -244,15 +244,17 @@ def get_grade_details(request):
     grades = Student.objects.values_list('grade', flat=True).distinct()
     sections = Student.objects.values_list('section', flat=True).distinct()
     subjects = Subject.objects.values_list('name', flat=True).distinct()
+    quarters = Quarters.objects.values_list('quarters', flat=True).distinct()
 
     context = {
         'grades': grades,
         'sections': sections,
         'subjects': subjects,
+        'quarters': quarters
     }
-    print("Distinct grades:", grades)
-    print("Distinct sections:", sections)
-    print("Distinct subjects:", subjects)
+    # print("Distinct grades:", grades)
+    # print("Distinct sections:", sections)
+    # print("Distinct subjects:", subjects)
 
     return render(request, 'teacher_template/adviserTeacher/new_classrecord.html', context)
 

@@ -36,6 +36,16 @@ Adviser Teacher
             </select>
         </div>
 
+        <div class="form-group">
+            <label for="grade">Quarter</label>
+            <select class="form-control" id="quarter" name="quarter">
+                <option value="">Select Quarter</option>
+                {% for quarter in quarters %}
+                    <option value="{{ quarter }}">{{ quarter}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">Get Students</button>
     </form>
 
