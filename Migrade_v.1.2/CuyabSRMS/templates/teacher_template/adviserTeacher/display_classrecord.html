@@ -24,7 +24,7 @@
                     aria-controls="overview" aria-selected="true">Written Works</a>
             </li>
             <li class="nav-item">
-                <a class "nav-link" id="profile-tab" data-bs-toggle="tab" href="#performance_task" role="tab"
+                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#performance_task" role="tab"
                     aria-selected="false">Performance Task</a>
             </li>
             <li class="nav-item">
@@ -76,17 +76,10 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                <td>{{ record.scores_written_works.0 }}</td>
-                                <td>{{ record.scores_written_works.1 }}</td>
-                                <td>{{ record.scores_written_works.2 }}</td>
-                                <td>{{ record.scores_written_works.3 }}</td>
-                                <td>{{ record.scores_written_works.4 }}</td>
-                                <td>{{ record.scores_written_works.5 }}</td>
-                                <td>{{ record.scores_written_works.6 }}</td>
-                                <td>{{ record.scores_written_works.7 }}</td>
-                                <td>{{ record.scores_written_works.8 }}</td>
-                                <td>{{ record.scores_written_works.9 }}</td>
-                                <td>{{ record.initial_grades }}</td>
+                                {% for score in record.written_works_scores %}
+                                    <td>{{ score }}</td>
+                                {% endfor %}
+                                <td>{{ record.total_score_written }}</td>
                                 <td>{{ record.percentage_score_written }}</td>
                                 <td>{{ record.weighted_score_written }}</td>
                             </tr>
@@ -130,19 +123,12 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                <td>{{ record.scores_performance_task.0 }}</td>
-                                <td>{{ record.scores_performance_task.1 }}</td>
-                                <td>{{ record.scores_performance_task.2 }}</td>
-                                <td>{{ record.scores_performance_task.3 }}</td>
-                                <td>{{ record.scores_performance_task.4 }}</td>
-                                <td>{{ record.scores_performance_task.5 }}</td>
-                                <td>{{ record.scores_performance_task.6 }}</td>
-                                <td>{{ record.scores_performance_task.7 }}</td>
-                                <td>{{ record.scores_performance_task.8 }}</td>
-                                <td>{{ record.scores_performance_task.9 }}</td>
-                                <td>{{ record.initial_grades }}</td>
+                                {% for score in record.performance_task_scores %}
+                                    <td>{{ score }}</td>
+                                {% endfor %}
+                                <td>{{ record.total_score_performance }}</td>
                                 <td>{{ record.percentage_score_performance }}</td>
-                                <td>{{ record.weighted_score_performance }}</td>
+                                <td>{{ record.weighted_score_performance}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -177,13 +163,12 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                <td>{{ record.scores_quarterly_assessment.0 }}</td>
-                                <td>{{ record.scores_quarterly_assessment.1 }}</td>
-                                <td>{{ record.scores_quarterly_assessment.2 }}</td>
-                                <td>{{ record.scores_quarterly_assessment.3 }}</td>
-                                <td>{{ record.initial_grades }}</td>
+                                {% for score in record.quarterly_assessment_scores %}
+                                    <td>{{ score }}</td>
+                                {% endfor %}
+                                <td>{{ record.total_score_quarterly}}</td>
                                 <td>{{ record.percentage_score_quarterly }}</td>
-                                <td>{{ record.weighted_score_quarterly }}</td>
+                                <td>{{ record.weighted_score_quarterly}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

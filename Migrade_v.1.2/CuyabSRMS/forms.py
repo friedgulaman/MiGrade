@@ -1,5 +1,6 @@
 from django import forms
 from .models import ProcessedDocument
+from .models import Subject
 
 class DocumentUploadForm(forms.ModelForm):
     class Meta:
@@ -13,3 +14,7 @@ class ExtractedDataForm(forms.Form):
         for key, value in extracted_data.items():
             self.fields[key] = forms.CharField(initial=value, label=key, required=True)
 
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['name', 'written_works_percentage', 'performance_task_percentage', 'quarterly_assessment_percentage']

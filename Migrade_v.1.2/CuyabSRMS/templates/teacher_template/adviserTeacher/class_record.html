@@ -45,11 +45,23 @@ Adviser Teacher
         <li class="nav-item">
           <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly_assessment" role="tab" aria-selected="false">Quarterly Assessment</a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#initial_grade" role="tab" aria-selected="false">Initial Grades</a>
-        </li>
+        </li> -->
       </ul>
       <div>
+
+        <!-- <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+          <ul class="nav nav-tabs" role="tablist" id="myTabs">
+            <li class="nav-item">
+              <a class="nav-link active" id="tab-0-tab" data-bs-toggle="tab" href="#tab-0" role="tab" aria-controls="tab-0" aria-selected="true">Tab 1</a>
+            </li>
+          </ul>
+          <div>
+            <button id="addTabButton" class="btn btn-primary">Add Tab</button>
+          </div>
+        </div> -->
+        
         <div class="btn-wrapper">
             {% if students %}
             <div>{{ students.0.grade }} {{ students.0.section }}</div>
@@ -91,16 +103,10 @@ Adviser Teacher
                         {% for i in 1|num_range %}
                         <td><input  name="max_written_works_{{ i }}"></td>
                         {% endfor %}
+                        <td id="total_max_written_works">Total</td>
                         <th>100.00</th>
-                        <th>100.00</th>
-                        <th>
-                          <select name="weight_written_works_{{ student.id }}">
-                              <option value="0.3">30%</option>
-                              <option value="0.5">50%</option>
-                              <option value="0.2">20%</option>
-                          </select>
-                      </th>
-                      
+                        <td><input type="text" id="written_works_weight" name="written_works_weight" value="{{ written_works_percentage }}" /></td>
+                        
                     </tr>
                     
                 </thead>
@@ -111,11 +117,12 @@ Adviser Teacher
                     <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
                     {% load custom_filters %}
                     {% for i in 1|num_range %}
-                    <td><input  name="scores_written_{{ student.id }}_{{ i }}" ></td>
+                    <td><input class="score-input-ww" name="scores_written_{{ student.id }}_{{ i }}"></td>
                     {% endfor %}
-                    <td><input  name="total_{{ student.id }}" ></td>
-                    <td><input  name="ps_{{ student.id }}" ></td>
-                    <td><input  name="ws_{{ student.id }}" ></td>
+                    
+                    <td><input id="total_{{ student.id }}" name="total_{{ student.id }}">Total</td>
+                    <td><input id="ps_{{ student.id }}" name="ps_{{ student.id }}"></td>
+                    <td><input id="ws_{{ student.id }}" name="ws_{{ student.id  }}"></td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -127,69 +134,69 @@ Adviser Teacher
       </div>
       </div>
   
-      <div class="tab-pane fade show " id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
+      <div class="tab-pane fade show" id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
         <div class="mb-3">
-          {% if students %}
-          <div class="table-responsive">
-              <div id="components">PERFORMANCE TASK</div>
-              <table class="table">
-                  <thead>
-                      <tr>
-                          <th></th>
-                          <th>Name</th>
-                          <th>1</th>
-                          <th>2</th>
-                          <th>3</th>
-                          <th>4</th>
-                          <th>5</th>
-                          <th>6</th>
-                          <th>7</th>
-                          <th>8</th>
-                          <th>9</th>
-                          <th>10</th>
-                          <th>Total</th>
-                          <th>PS</th>
-                          <th>WS</th>
-                      </tr>
-                      <tr>
-                        <th></th>
-                        <th>Highest possible scores</th>
-                        {% load custom_filters %}
-                        {% for i in 1|num_range %}
-                        <td><input  name="max_performance_task_{{ i }}"></td>
-                         {% endfor %}
-                        <th>100.00</th>
-                        <th>100.00</th>
-                        <th>
-                          <select name="weight_performance_task_{{ student.id }}">
-                              <option value="0.3">30%</option>
-                              <option value="0.5">50%</option>
-                              <option value="0.2">20%</option>
-                          </select>
-                      </th>
-                      
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {% for student in students %}
-                    <tr>
-                      <td>{{ number }}</td>
-                      <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                      {% load custom_filters %}
-                      {% for i in 1|num_range %}
-                      <td><input  name="scores_performance_task_{{ student.id }}_{{ i }}" ></td>
-                      {% endfor %}
-                      <td><input  name="total_{{ student.id }}" ></td>
-                      <td><input  name="ps_{{ student.id }}" ></td>
-                      <td><input  name="ws_{{ student.id }}" ></td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-              </table>
-          </div>
-          {% endif %}
-          </div>
-      </div>
+            {% if students %}
+            <div class="table-responsive">
+                <div id="components">PERFORMANCE TASK</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                            <th>8</th>
+                            <th>9</th>
+                            <th>10</th>
+                            <th>Total</th>
+                            <th>PS</th>
+                            <th>WS</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th>Highest possible scores</th>
+                            {% load custom_filters %}
+                            {% for i in 1|num_range %}
+                            <td><input name="max_performance_task_{{ i }}"></td>
+                            {% endfor %}
+                            <td id="total_max_performance_task">Total</td>
+                            <th>100.00</th>
+                            <td><input type="text" id="performance_task_weight" name="performance_task_weight" value="{{ performance_task_percentage }}" /></td>
+                            <!-- <th>
+                                <select name="weight_performance_task_{{ student.id }}">
+                                    <option value="0.3">30%</option>
+                                    <option value="0.5">50%</option>
+                                    <option value="0.2">20%</option>
+                                </select>
+                            </th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ number }}</td>
+                            <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
+                            {% load custom_filters %}
+                            {% for i in 1|num_range %}
+                            <td><input class="score-input-pt" name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
+                            {% endfor %}
+                            <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total</td>
+                            <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
+                            <td><input id="pt_ws_{{ student.id }}" name="pt_ws_{{ student.id }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>  
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
   
   
       <div class="tab-pane fade show" id="quarterly_assessment" role="tabpanel" aria-labelledby="contact-tab">
@@ -203,6 +210,9 @@ Adviser Teacher
                           <th></th>
                           <th>Name</th>
                           <th>1</th>
+                          <th>2</th>
+                          <th>3</th>
+                          <th>4</th>
                           <th>Total</th>
                           <th>PS</th>
                           <th>WS</th>
@@ -210,31 +220,43 @@ Adviser Teacher
                       <tr>
                         <th></th>
                         <th>Highest possible scores</th>
+                        {% load custom_filters %}
+                        {% for i in 1|num_range_qa %}
                         <td><input  name="max_quarterly_assessment_{{ i }}"></td>
+                        {% endfor %}
+                        <td id="total_max_quarterly">Total</td>
                         <th>100.00</th>
-                        <th>100.00</th>
-                        <th>
-                          <select name="weight_quarterly_assessment_{{ student.id }}">
-                              <option value="0.3">30%</option>
-                              <option value="0.5">50%</option>
-                              <option value="0.2">20%</option>
-                          </select>
-                      </th>
+                        <td> <input type="text" id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ quarterly_assessment_percentage }}" /></td>
                       
                       </tr>
                   </thead>
+                  <!-- <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ number }}</td>
+                        <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
+                        {% load custom_filters %}
+                        {% for i in 1|num_range %}
+                        <td><input class="score-input-pt" name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
+                        {% endfor %}
+                        <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total</td>
+                        <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
+                        <td class="ws" name="ws_{{ student.id }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody> -->
                   <tbody>
                     {% for student in students %}
                     <tr>
                       <td>{{ number }}</td>
                       <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
                       {% load custom_filters %}
-                      {% for i in 1|num_range %}
-                      <td><input  name="scores_quarterly_assessment{{ student.id }}_{{ i }}" ></td>
-                      {% endfor %}
-                      <td></td>
-                      <td></td>
-                      <td></td>
+                      {% for i in 1|num_range_qa %}
+                      <td><input class="score-input-qa" name="scores_quarterly_assessment_{{ student.id }}_{{ i }}"></td>
+                        {% endfor %}
+                        <td><input id="qa_total_{{ student.id }}" name="qa_total_{{ student.id }}">Total</td>
+                        <td><input id="qa_ps_{{ student.id }}" name="qa_ps_{{ student.id }}">100.0</td>
+                        <td><input id="qa_ws_{{ student.id }}" name="qa_ws_{{ student.id}}"></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -245,7 +267,7 @@ Adviser Teacher
       </div>
   
   
-      <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
+      <!-- <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
         <div class="mb-3">
           {% if students %}
           <div class="table-responsive" >
@@ -255,7 +277,7 @@ Adviser Teacher
                       <tr>
                           <th></th>
                           <th>Name</th>
-                          <th>Initial Grade</th>
+                          <th>Grade</th>
                           <th>Quarterly Grade</th>
                       </tr>
                   </thead>
@@ -264,8 +286,8 @@ Adviser Teacher
                     <tr>
                       <td>{{ number }}</td>
                       <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                      <td></td>
-                      <td></td>
+                      <td><input id="initial_grade_{{ student.id }}" name="initial_grade_{{ student.id }}"></td> 
+                      <td><input id="quarterly_grade_{{ student.id }}" name="quarterly_grade_{{ student.id}}"></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -273,11 +295,550 @@ Adviser Teacher
           </div>
           {% endif %}
       </div>
-      </div>
+      </div> -->
       </div>
       <button type="submit">Submit</button>
     </form>
   </section>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+   <!-- INITIAL GRADE -->
+   <script>
+    // Get all the input elements for qa_ws, pt_ws, ws, and initial_grade
+    const qaWsInputs = document.querySelectorAll('input[id^="qa_ws_"]');
+    const ptWsInputs = document.querySelectorAll('input[id^="pt_ws_"]');
+    const wsInputs = document.querySelectorAll('input[id^="ws_"]');
+    const initialGradeInputs = document.querySelectorAll('input[id^="initial_grade_"]');
+  
+    // Add event listeners to each input field
+    qaWsInputs.forEach((qaWsInput, index) => {
+      // Add input event listener to qa_ws field
+      qaWsInput.addEventListener('input', () => {
+        updateInitialGrade(index);
+      });
+  
+      // Add input event listener to pt_ws field
+      ptWsInputs[index].addEventListener('input', () => {
+        updateInitialGrade(index);
+      });
+  
+      // Add input event listener to ws field
+      wsInputs[index].addEventListener('input', () => {
+        updateInitialGrade(index);
+      });
+    });
+  
+    // Function to update Initial Grade for a student
+    function updateInitialGrade(index) {
+      const qaWsValue = parseFloat(qaWsInputs[index].value) || 0;
+      const ptWsValue = parseFloat(ptWsInputs[index].value) || 0;
+      const wsValue = parseFloat(wsInputs[index].value) || 0;
+  
+      // Calculate the initial grade based on your formula
+      const initialGrade = (0.3 * qaWsValue) + (0.4 * ptWsValue) + (0.3 * wsValue);
+  
+      // Update the corresponding initial_grade input field
+      initialGradeInputs[index].value = initialGrade.toFixed(2); // Display with 2 decimal places
+    }
+  </script>
+  <!-- PERFORMANCE TASKS -->
+    <!-- total percentage score pt -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[3]; // Adjust index for "scores_performance_task" naming
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "pt_total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+                  totalInput.value = total;
+  
+                  // Calculate the PS
+                  var totalMaxPerformanceTask = parseFloat(document.getElementById("total_max_performance_task").textContent) || 0;
+                  var ps = totalMaxPerformanceTask !== 0 ? ((total / totalMaxPerformanceTask) * 100).toFixed(2) : 0;
+  
+                  // Update the PS input field
+                  var psInput = document.querySelector('input[name="pt_ps_' + studentId + '"]');
+                  psInput.value = ps;
+              });
+          });
+      });
+  </script>
+    <!-- total score pt -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[2];
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+                  totalInput.value = total;
+              });
+          });
+      });
+  </script>
+    <!-- total hps-pt -->
+    <script>
+    function calculateTotalPerformanceTask() {
+        // Get all the input fields with names starting with "max_performance_task_{{ i }}"
+        var inputFields = document.querySelectorAll('input[name^="max_performance_task_{{ i }}"]');
+        
+        var total = 0;
+    
+        // Iterate through the input fields and sum their values
+        for (var i = 0; i < inputFields.length; i++) {
+            var value = parseFloat(inputFields[i].value) || 0;
+            total += value;
+        }
+    
+        // Update the total in the target <td> for "PERFORMANCE TASK"
+        document.getElementById('total_max_performance_task').innerText = total;
+    }
+    
+    // Attach the calculateTotalPerformanceTask function to the input fields' change event
+    var inputFieldsPerformanceTask = document.querySelectorAll('input[name^="max_performance_task_{{ i }}"]');
+    for (var i = 0; i < inputFieldsPerformanceTask.length; i++) {
+        inputFieldsPerformanceTask[i].addEventListener('change', calculateTotalPerformanceTask);
+    }
+</script>
+  
+  <!-- total weighted score pt -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all the score input elements by class name
+      var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+      // Attach input event listeners to each score input
+      scoreInputs.forEach(function(scoreInput) {
+        scoreInput.addEventListener("input", function() {
+          // Find the student ID from the input element's name
+          var nameParts = scoreInput.name.split('_');
+          var studentId = nameParts[3];
+  
+          // Get all the score inputs for the current student
+          var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+          // Calculate the total
+          var total = 0;
+          studentScoreInputs.forEach(function(studentScoreInput) {
+            var score = parseFloat(studentScoreInput.value) || 0; // Ensure the input is treated as 0 if it's not a valid number
+            total += score;
+          });
+  
+          // Update the corresponding "pt_total_{{ student.id }}" input field
+          var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+          totalInput.value = total;
+  
+          // Calculate the PS
+          var totalMaxPerformanceTask = parseFloat(document.getElementById("total_max_performance_task").textContent) || 0;
+          var ps = totalMaxPerformanceTask !== 0 ? ((total / totalMaxPerformanceTask) * 100).toFixed(2) : 0;
+  
+          // Update the PS input field
+          var psInput = document.querySelector('input[name="pt_ps_' + studentId + '"]');
+          psInput.value = ps;
+  
+          // Calculate the WS based on the formula (PS / 100) * performance_task_weight
+          var performanceTaskWeight = parseFloat(document.getElementById("performance_task_weight").value) || 0;
+          var ws = (ps / 100) * performanceTaskWeight;
+  
+          // Update the WS input field
+          var wsInput = document.querySelector('input[name="pt_ws_' + studentId + '"]');
+          wsInput.value = ws.toFixed(2); // Optionally, you can round to 2 decimal places
+        });
+      });
+    });
+</script>
+
+
+
+  <!-- WRITTEN WORKS -->
+
+  <!-- total weighted score ww -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all the score input elements by class name
+      var scoreInputs = document.querySelectorAll('.score-input-ww');
+  
+      // Attach input event listeners to each score input
+      scoreInputs.forEach(function(scoreInput) {
+        scoreInput.addEventListener("input", function() {
+          // Find the student ID from the input element's name
+          var nameParts = scoreInput.name.split('_');
+          var studentId = nameParts[2];
+  
+          // Get all the score inputs for the current student
+          var studentScoreInputs = document.querySelectorAll('input[name^="scores_written_' + studentId + '"]');
+  
+          // Calculate the total
+          var total = 0;
+          studentScoreInputs.forEach(function(studentScoreInput) {
+            var score = parseFloat(studentScoreInput.value) || 0; // Ensure the input is treated as 0 if it's not a valid number
+            total += score;
+          });
+  
+          // Update the corresponding "total_{{ student.id }}" input field
+          var totalInput = document.querySelector('input[name="total_' + studentId + '"]');
+          totalInput.value = total;
+  
+          // Calculate the PS
+          var totalMaxWrittenWorks = parseFloat(document.getElementById("total_max_written_works").textContent) || 0;
+          var ps = totalMaxWrittenWorks !== 0 ? ((total / totalMaxWrittenWorks) * 100).toFixed(2) : 0;
+  
+          // Update the PS input field
+          var psInput = document.querySelector('input[name="ps_' + studentId + '"]');
+          psInput.value = ps;
+  
+          // Calculate the WS based on the formula (PS / 100) * written_works_weight
+          var writtenWorksWeight = parseFloat(document.getElementById("written_works_weight").value) || 0;
+          var ws = (ps / 100) * writtenWorksWeight;
+  
+          // Update the WS input field
+          var wsInput = document.querySelector('input[name="ws_' + studentId + '"]');
+          wsInput.value = ws.toFixed(2); // Optionally, you can round to 2 decimal places
+        });
+      });
+    });
+</script>
+
+    <!-- total percentage score ww -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all the score input elements by class name
+      var scoreInputs = document.querySelectorAll('.score-input-ww');
+  
+      // Attach input event listeners to each score input
+      scoreInputs.forEach(function(scoreInput) {
+        scoreInput.addEventListener("input", function() {
+          // Find the student ID from the input element's name
+          var nameParts = scoreInput.name.split('_');
+          var studentId = nameParts[2];
+  
+          // Get all the score inputs for the current student
+          var studentScoreInputs = document.querySelectorAll('input[name^="scores_written_' + studentId + '"]');
+  
+          // Calculate the total
+          var total = 0;
+          studentScoreInputs.forEach(function(studentScoreInput) {
+            var score = parseFloat(studentScoreInput.value) || 0;
+            total += score;
+          });
+  
+          // Update the corresponding "total_{{ student.id }}" input field
+          var totalInput = document.querySelector('input[name="total_' + studentId + '"]');
+          totalInput.value = total;
+  
+          // Calculate the PS
+          var totalMaxWrittenWorks = parseFloat(document.getElementById("total_max_written_works").textContent) || 0;
+          var ps = totalMaxWrittenWorks !== 0 ? ((total / totalMaxWrittenWorks) * 100).toFixed(2) : 0;
+  
+          // Update the PS input field
+          var psInput = document.querySelector('input[name="ps_' + studentId + '"]');
+          psInput.value = ps;
+        });
+      });
+    });
+  </script>
+
+    <!-- total score ww -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-pt');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[3]; // Adjust index for "scores_performance_task" naming
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_performance_task_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "pt_total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="pt_total_' + studentId + '"]');
+                  totalInput.value = total;
+              });
+          });
+      });
+  </script>
+
+    <!-- total hps-ww -->
+  <script>
+    function calculateTotal() {
+        // Get all the input fields with names starting with "max_written_works_{{ i }}"
+        var inputFields = document.querySelectorAll('input[name^="max_written_works_{{ i }}"]');
+        
+        var total = 0;
+    
+        // Iterate through the input fields and sum their values
+        for (var i = 0; i < inputFields.length; i++) {
+            var value = parseFloat(inputFields[i].value) || 0;
+            total += value;
+        }
+    
+        // Update the total in the target <td>
+        document.getElementById('total_max_written_works').innerText = total;
+    }
+    
+    // Attach the calculateTotal function to the input fields' change event
+    var inputFields = document.querySelectorAll('input[name^="max_written_works_{{ i }}"]');
+    for (var i = 0; i < inputFields.length; i++) {
+        inputFields[i].addEventListener('change', calculateTotal);
+    }
+    </script>
+
+    <!-- QUARTERLY ASSESSMENT -->
+
+    <!-- total hps qa -->
+    <script>
+      function calculateTotalQuarterlyAssessment() {
+          // Get all the input fields with names starting with "max_written_works_{{ i }}"
+          var inputFields = document.querySelectorAll('input[name^="max_quarterly_assessment_{{ i }}"]');
+          
+          var total = 0;
+      
+          // Iterate through the input fields and sum their values
+          for (var i = 0; i < inputFields.length; i++) {
+              var value = parseFloat(inputFields[i].value) || 0;
+              total += value;
+          }
+      
+          // Update the total in the target <td>
+          document.getElementById('total_max_quarterly').innerText = total;
+      }
+      
+      // Attach the calculateTotal function to the input fields' change event
+      var inputFields = document.querySelectorAll('input[name^="max_quarterly_assessment_{{ i }}"]');
+      for (var i = 0; i < inputFields.length; i++) {
+          inputFields[i].addEventListener('change', calculateTotalQuarterlyAssessment);
+      }
+      </script>
+
+    <!-- total score qa -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-qa');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[3]; // Adjust index for "scores_quarterly_assessment" naming
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_quarterly_assessment_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "qa_total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="qa_total_' + studentId + '"]');
+                  totalInput.value = total;
+              });
+          });
+      });
+  </script>
+
+    <!-- total percentage qa -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get all the score input elements by class name
+          var scoreInputs = document.querySelectorAll('.score-input-qa');
+  
+          // Attach input event listeners to each score input
+          scoreInputs.forEach(function(scoreInput) {
+              scoreInput.addEventListener("input", function() {
+                  // Find the student ID from the input element's name
+                  var nameParts = scoreInput.name.split('_');
+                  var studentId = nameParts[3]; // Adjust index for "scores_performance_task" naming
+  
+                  // Get all the score inputs for the current student
+                  var studentScoreInputs = document.querySelectorAll('input[name^="scores_quarterly_assessment_' + studentId + '"]');
+  
+                  // Calculate the total
+                  var total = 0;
+                  studentScoreInputs.forEach(function(studentScoreInput) {
+                      var score = parseFloat(studentScoreInput.value) || 0;
+                      total += score;
+                  });
+  
+                  // Update the corresponding "pt_total_{{ student.id }}" input field
+                  var totalInput = document.querySelector('input[name="qa_total_' + studentId + '"]');
+                  totalInput.value = total;
+  
+                  // Calculate the PS
+                  var totalMaxPerformanceTask = parseFloat(document.getElementById("total_max_quarterly").textContent) || 0;
+                  var ps = totalMaxPerformanceTask !== 0 ? ((total / totalMaxPerformanceTask) * 100).toFixed(2) : 0;
+  
+                  // Update the PS input field
+                  var psInput = document.querySelector('input[name="qa_ps_' + studentId + '"]');
+                  psInput.value = ps;
+              });
+          });
+      });
+  </script>
+
+    <!-- total weighted score qa -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // Get all the score input elements by class name for quarterly assessment
+        var scoreInputs = document.querySelectorAll('.score-input-qa');
+    
+        // Attach input event listeners to each score input
+        scoreInputs.forEach(function(scoreInput) {
+          scoreInput.addEventListener("input", function() {
+            // Find the student ID from the input element's name
+            var nameParts = scoreInput.name.split('_');
+            var studentId = nameParts[3];
+    
+            // Get all the score inputs for the current student's quarterly assessment
+            var studentScoreInputs = document.querySelectorAll('input[name^="scores_quarterly_assessment_' + studentId + '"]');
+    
+            // Calculate the total
+            var total = 0;
+            studentScoreInputs.forEach(function(studentScoreInput) {
+              var score = parseFloat(studentScoreInput.value) || 0; // Ensure the input is treated as 0 if it's not a valid number
+              total += score;
+            });
+    
+            // Update the corresponding "qa_total_{{ student.id }}" input field
+            var totalInput = document.querySelector('input[name="qa_total_' + studentId + '"]');
+            totalInput.value = total;
+    
+            // Calculate the PS (assuming you have an input field for PS)
+            var psInput = document.querySelector('input[name="qa_ps_' + studentId + '"]');
+            var ps = parseFloat(psInput.value) || 0;
+    
+            // Calculate the WS based on the formula (PS / 100) * quarterly_assessment_weight
+            var quarterlyAssessmentWeight = parseFloat(document.getElementById("quarterly_assessment_weight").value) || 0;
+            var ws = (ps / 100) * quarterlyAssessmentWeight;
+    
+            // Update the WS input field for quarterly assessment
+            var wsInput = document.querySelector('input[name="qa_ws_' + studentId + '"]');
+            wsInput.value = ws.toFixed(2); // Optionally, you can round to 2 decimal places
+          });
+        });
+      });
+  </script>
+  
+  
+  
+    <!-- INITIAL GRADE -->
+
+
+
+<!-- OTHERS -->
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const tabsList = document.getElementById("myTabs");
+      const addTabButton = document.getElementById("addTabButton");
+      let tabCount = 1;
+  
+      // Load tab names from localStorage and re-create tabs
+      const savedTabs = JSON.parse(localStorage.getItem("tabs"));
+      if (savedTabs) {
+        tabCount = savedTabs.length;
+        savedTabs.forEach(tabName => {
+          addTabElement(tabName);
+        });
+      }
+  
+      function addTabElement(newTabName) {
+        const newTab = document.createElement("li");
+        newTab.className = "nav-item";
+  
+        newTab.innerHTML = `
+          <a class="nav-link" id="tab-${tabCount}-tab" data-bs-toggle="tab" href="#tab-${tabCount}" role="tab" aria-controls="tab-${tabCount}" aria-selected="false">${newTabName}</a>
+        `;
+  
+        tabsList.appendChild(newTab);
+  
+        // Activate the new tab and show its content
+        const newTabLink = newTab.querySelector("a");
+        newTabLink.click();
+  
+        tabCount++;
+      }
+  
+      function addTab() {
+        const newTabName = `Tab ${tabCount}`;
+        addTabElement(newTabName);
+  
+        // Save the tab names in localStorage
+        const savedTabs = JSON.parse(localStorage.getItem("tabs")) || [];
+        savedTabs.push(newTabName);
+        localStorage.setItem("tabs", JSON.stringify(savedTabs));
+      }
+  
+      addTabButton.addEventListener("click", addTab);
+  
+      // Allow renaming tabs when they are clicked
+      tabsList.addEventListener("click", function (event) {
+        const target = event.target;
+        if (target.tagName === "A" && target.parentElement.classList.contains("nav-item")) {
+          const tabName = target.textContent;
+          const newTabName = prompt("Enter a new name for the tab:", tabName);
+          if (newTabName !== null) {
+            target.textContent = newTabName;
+            // Update the tab names in localStorage
+            const savedTabs = JSON.parse(localStorage.getItem("tabs")) || [];
+            const tabIndex = Array.from(target.parentElement.parentElement.children).indexOf(target.parentElement);
+            if (tabIndex >= 0) {
+              savedTabs[tabIndex] = newTabName;
+              localStorage.setItem("tabs", JSON.stringify(savedTabs));
+            }
+          }
+        }
+      });
+    });
+  </script>
 
 {% endblock main_content %}
