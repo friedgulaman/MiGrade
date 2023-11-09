@@ -11,6 +11,8 @@ from django.http import JsonResponse
 from django.db import models
 from django.views.decorators.http import require_GET
 from django.db.models import Q
+from .forms import SubjectForm
+from .models import Subject
 
 #OCR
 from .models import ExtractedData
@@ -24,7 +26,15 @@ from django.conf import settings
 from django.shortcuts import HttpResponse
 from django.utils.text import get_valid_filename
 from .forms import ExtractedDataForm
+
+import openpyxl
+from django.utils import timezone
+import datetime
+from datetime import datetime
+
+
 from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def home_admin(request):
@@ -263,7 +273,7 @@ def upload_documents_ocr(request):
             client = documentai.DocumentProcessorServiceClient()
 
             # Define the processor resource name.
-            processor_name = f"projects/{project_id}/locations/us/processors/a2a69ba6fa1f343b"
+            processor_name = f"projects/{project_id}/locations/us/processors/6ff59e15c7cbbbc3"
 
             uploaded_file = request.FILES['document']
 
@@ -293,72 +303,194 @@ def upload_documents_ocr(request):
             document = response.document
             text = document.text
 
-            # Extract specific data using regular expressions
-            key_phrases = {
-                "REGION": r"REGION\s+(.+)",
-                "DIVISION": r"DIVISION\s+(.+)",
-                "SCHOOL YEAR": r"SCHOOL YEAR\s+(.+)",
-                "SCHOOL NAME": r"SCHOOL NAME\s+(.+)",
-                "SCHOOL ID": r"SCHOOL ID\s+(\d+)",
-                "GRADE & SECTION": r"GRADE & SECTION\s+(.+)",
-                "SF10-ES": r"SF10-ES\s+Page\s+\d+\s+of\s+(\d+)",  # Extract SF10-ES page number
-                "LAST NAME": r"LAST NAME:\s+(.+)",
-                "FIRST NAME": r"FIRST NAME:\s+(.+)",
-                "MIDDLE NAME": r"MIDDLE NAME:\s+(.+)",
-                "REGION": r"REGION\s+(.+)",
-                "DIVISION": r"Division\s+(.+)",
-                "SCHOOL YEAR": r"School Year\s+(.+)",
-                "SCHOOL NAME": r"School:\s+(.+)",
-                "SCHOOL ID": r"School ID\s+(\d+)",
-                "NAME OF ADVISER/TEACHER": r"Name of Adviser/Teacher:\s+(.+)\s+Signature",
+            data_by_type = {
+                'Type': [],
+                'Raw Value': [],
+                'Normalized Value': [],
+                'Confidence': [],
+            }
 
-            }     
+            # Iterate through your data extraction process and populate the dictionary
+            for entity in document.entities:
+                data_by_type['Type'].append(entity.type_)
+                data_by_type['Raw Value'].append(entity.mention_text)
+                data_by_type['Normalized Value'].append(entity.normalized_value.text)
+                data_by_type['Confidence'].append(f"{entity.confidence:.0%}")
+
+                # Get Properties (Sub-Entities) with confidence scores
+                for prop in entity.properties:
+                    data_by_type['Type'].append(prop.type_)
+                    data_by_type['Raw Value'].append(prop.mention_text)
+                    data_by_type['Normalized Value'].append(prop.normalized_value.text)
+                    data_by_type['Confidence'].append(f"{prop.confidence:.0%}")
+
+            print(data_by_type)
+            # Create a ProcessedDocument instance and save it
+            processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
+            processed_document.save()
+
+            my_data = ExtractedData(processed_document=processed_document)
+
+            # Define a mapping of keys from data_by_type to ExtractedData fields
+            key_mapping = {
+                'Last_Name': 'last_name',
+                'First_Name': 'first_name',
+                'Middle_Name': 'middle_name',
+                'SEX': 'sex',
+                'Classified_as_Grade': 'classified_as_grade',
+                'LRN': 'lrn',
+                'Name_of_School': 'name_of_school',
+                'School_Year': 'school_year',
+                'General_Average': 'general_average',
+                'Birthdate': 'birthdate',
+            }
+
+            multi_value_fields = {}
+
+            for key, field_name in key_mapping.items():
+                indices = [i for i, item in enumerate(data_by_type['Type']) if item == key]
+                if indices:
+                    values = [data_by_type['Raw Value'][index] for index in indices]
+                    combined_value = ", ".join(values)
+                    setattr(my_data, field_name, combined_value)
+
+            # Handle birthdate separately
+            if 'Birthdate' in key_mapping:
+                birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                if birthdate_index is not None:
+                    birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                    try:
+                        my_data.birthdate = datetime.strptime(birthdate_str, "%m/%d/%Y").date()
+                    except ValueError as e:
+                        print(f"Error parsing birthdate: {e}")
+
+            my_data.save()
+                    # Extract specific data using regular expressions
+        #     key_phrases = {
+        #         "LAST NAME": r"(?i)LAST\s*NAME:\s*([^\n]+)(?:\s*NAME\s*EXTN\s*\([^)]*\))?",
+        #         "FIRST NAME": r"(?i)FIRST\s*NAME:\s*([^\n]+)(?:\s*NAME\s*EXTN\s*\([^)]*\))?",
+        #         "MIDDLE NAME": r"(?i)MIDDLE\s*NAME:\s*([^\n]+)",
+        #         "LRN": r"Learner\s*Reference\s*Number\s*\(LRN\):\s*(\d+)",
+        #         "SCHOOL YEAR": r"School\s*Year:\s*(\b\d{4}-\d{4}\b)",
+        #         "BIRTHDATE": r"Birthdate\s*\(mm/dd/yyyy\):\s*([\d/]+)",
+        #         "Classified as Grade:": r"(?i)Classified\s*as\s*Grade:?\s*(\d+|(?:one|two|three|four|five|six|seven|eight|nine)|[IVXLCDM]+)",
+        #         "GENERAL AVERAGE": r"General Average\s+(.\d+)",
+        #         "SEX": r"Sex:?\s*([A-Z]+)"
+
+        #     }     
             
-            key_value_pairs = {}
+        #     key_value_pairs = {}
 
-            # Iterate through the key phrases and extract the information
-            for key, pattern in key_phrases.items():
-                match = re.search(pattern, text)
-                if match:
-                    key_value_pairs[key] = match.group(1).strip()
+        #     # Iterate through the key phrases and extract the information
+        #     for key, pattern in key_phrases.items():
+        #         matches = re.finditer(pattern, text)
+        #         extracted_values = []
+        #         for match in matches:
+        #             # Remove the unwanted part from the extracted first names
+        #             first_name = match.group(1).strip().split("NAME EXTN.")[0].strip()
+        #             extracted_values.append(first_name)
+        #         key_value_pairs[key] = ', '.join(extracted_values)
 
-            # Save extracted data to JSON file
-            with open("extracted_data.json", "w") as json_file:
-                json.dump(key_value_pairs, json_file, indent=4)
 
-            # Assuming you create a ProcessedDocument instance
-            processed_document = ProcessedDocument()
-        
+        #     # Save extracted data to JSON file
+        #     with open("extracted_data.json", "w") as json_file:
+        #         json.dump(key_value_pairs, json_file, indent=4)
 
-        # # Save the ProcessedDocument instance
-        #     processed_document.save()
+        #     # Assuming you create a ProcessedDocument instance
+            # processed_document = ProcessedDocument()
+            # processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
+            # processed_document.save()
 
-        #     # Create ExtractedData instance and save extracted data
-        #     extracted_data_instance = ExtractedData(processed_document=processed_document)
+        #     extracted_data_instance, created = ExtractedData.objects.get_or_create(
+        #         processed_document=processed_document
+        #     )
         #     extracted_data_instance.save_extracted_data(key_value_pairs)
 
-            # Construct the URL of the uploaded document.
-            uploaded_document_path = os.path.join(settings.MEDIA_URL, str(processed_document.document))
+        # # # Save the ProcessedDocument instance
+        # #     processed_document.save()
 
-            all_extracted_data = ExtractedData.objects.all()
+            # Create ExtractedData instance and save extracted data
+            # extracted_data_instance = ExtractedData(processed_document=processed_document)
+            # extracted_data_instance.save_extracted_data(key_value_pairs)
+
+            # Construct the URL of the uploaded document.
+            # uploaded_document_path = os.path.join(settings.MEDIA_URL, str(processed_document.document))
+
+            # all_extracted_data = ExtractedData.objects.all().order_by('last_name')
 
        
 
-            # Iterate through the key phrases and extract the information
-            extracted_data_for_review = {}
-            for key, pattern in key_phrases.items():
-                match = re.search(pattern, text)
-                if match:
-                    extracted_data_for_review[key] = match.group(1).strip()
+            # # Iterate through the key phrases and extract the information
+            # extracted_data_for_review = {}
+            # for key, pattern in key_phrases.items():
+            #     matches = re.finditer(pattern, text)
+            #     extracted_values = []
+            #     for match in matches:
+            #         # Remove the unwanted part from the extracted first names
+            #         first_name = match.group(1).strip().split("NAME EXTN.")[0].strip()
+            #         extracted_values.append(first_name)
+            # extracted_data_for_review[key] = ', '.join(extracted_values)
 
-            # Print the extracted data for review in the console
-            print("Extracted Data for Review:")
-            print(extracted_data_for_review)
+            # # Print the extracted data for review in the console
+            # print("Extracted Data for Review:")
+            # print(extracted_data_for_review)
 
+            # extracted_data_for_excel = {}
+            # for key, pattern in key_phrases.items():
+            #     matches = re.finditer(pattern, text)
+            #     extracted_values = []
+            #     for match in matches:
+            #         # Remove the unwanted part from the extracted first names
+            #         first_name = match.group(1).strip().split("NAME EXTN.")[0].strip()
+            #         extracted_values.append(first_name)
+            #     extracted_data_for_excel[key] = ', '.join(extracted_values)
 
+            # # Create a new workbook and add data to it
+            # workbook = openpyxl.Workbook()
+            # sheet = workbook.active
+
+            # # Write extracted data to the Excel sheet
+            # for idx, (key, value) in enumerate(extracted_data_for_excel.items(), start=1):
+            #     sheet.cell(row=idx, column=1, value=key)
+            #     sheet.cell(row=idx, column=2, value=value)
+
+            # processed_document_filename = processed_document.document.name
+
+            # timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+            # subdirectory = 'excel-files'
+
+            # # Generate the file name with the timestamp
+            # excel_file_name = f"{os.path.splitext(os.path.basename(processed_document_filename))[0]}_{timestamp}.xlsx"
+
+            # # Join the subdirectory and file name with the MEDIA_ROOT directory
+            # excel_file_path = os.path.join(settings.MEDIA_ROOT, subdirectory, excel_file_name)
+
+            # # Ensure the subdirectory exists; create it if not
+            # os.makedirs(os.path.dirname(excel_file_path), exist_ok=True)
+
+            # # Save the workbook to the specified path
+            # workbook.save(excel_file_path)
+
+            # print("Data successfully written to Excel file:", excel_file_path)
+
+            # extracted_data_for_review = {}  # Modify this line based on your extracted data
+            # extracted_text = " ".join(extracted_data_for_review.values()) 
+            # print(processed_document.document.url)
             # Render the 'processed_document.html' template with the extracted text and document URL.
             # return render(request, 'admin_template/edit_extracted_data.html', {'document_text': text, 'uploaded_document_url': uploaded_document_path, 'all_extracted_data': all_extracted_data,})
-        return render(request, 'admin_template/edit_extracted_data.html', {'extracted_data': extracted_data_for_review, 'document_text': text, 'uploaded_document_url': uploaded_document_path, 'all_extracted_data': all_extracted_data,})
+        # return render(request, 'admin_template/edit_extracted_data.html', {'extracted_data': extracted_data_for_review, 'document_text': text, 'uploaded_document_url': uploaded_document_path, 'all_extracted_data': all_extracted_data,})
+            # download_link = reverse('download_document', args=[processed_document.id])
+
+        return render(request, 'admin_template/edit_extracted_data.html', {
+                # 'extracted_data': extracted_data_for_review,
+                'document_text': text,
+                'uploaded_document_url': processed_document.document.url,
+                # 'all_extracted_data': all_extracted_data,
+                'processed_document': processed_document,
+                'download_link': processed_document.document.url,
+                # 'extracted_text': extracted_text 
+            })
     else:
         form = DocumentUploadForm()
 
@@ -412,3 +544,20 @@ def sf10_views(request):
 
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
+
+
+def add_subject(request):
+    if request.method == 'POST':
+        form = SubjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('subject_list')  # Redirect to a page showing the list of subjects
+
+    else:
+        form = SubjectForm()
+
+    return render(request, 'admin_template/add_subject.html', {'form': form})
+
+def subject_list(request):
+    subjects = Subject.objects.all()
+    return render(request, 'admin_template/subject_list.html', {'subjects': subjects})

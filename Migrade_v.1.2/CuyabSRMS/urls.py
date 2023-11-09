@@ -4,10 +4,15 @@ from django.urls import URLPattern, path, include
 from CuyabSRMS import AdminViews, TeacherViews, StudentViews
 from django.contrib import admin
 from . import views
+
+from django.conf.urls.static import static
+from django.conf import settings
+
 from django.conf import settings
 from django.conf.urls.static import static
 from .ForgotPassword import ResetPasswordView
 from django.contrib.auth import views as auth_views
+
 
 
 urlpatterns = [
@@ -44,6 +49,8 @@ urlpatterns = [
     path('upload_documents/', AdminViews.upload_documents_ocr, name='upload_documents'),
     path('save_edited_data/', AdminViews.save_edited_data, name='save_edited_data'),
     path('sf10/', AdminViews.sf10_views, name='sf10_view'),
+    path('add_subject/', AdminViews.add_subject, name='add_subject'),
+    path('subject_list/', AdminViews.subject_list, name='subject_list'),
 
 
 
@@ -62,6 +69,9 @@ urlpatterns = [
     path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('display_classrecord', TeacherViews.display_classrecord, name='display_classrecord'),
+    path('get_sections/', TeacherViews.get_sections, name='get_sections'),
+
+
 
 
     path('display_students', TeacherViews.display_students, name='display_students'),
@@ -77,5 +87,9 @@ urlpatterns = [
 ]
 
 
+]
+
+
+ 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -187,5 +187,9 @@ RECAPTCHA_PUBLIC_KEY = '6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI'
 RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
 
 
+# Define the base directory where uploaded files will be stored
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+
 
 
