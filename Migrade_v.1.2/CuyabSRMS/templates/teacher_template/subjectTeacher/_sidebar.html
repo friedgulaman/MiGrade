@@ -1,36 +1,58 @@
-<nav class="sidebar container sidebar-offcanvas" id="sidebar" style="background-color: white;">
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'home_adviser_teacher' %}">
+            <a class="nav-link" href="#">
               <i class="mdi mdi-grid-large menu-icon"></i>
               <span class="menu-title">Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'upload_adviser_teacher' %}">
+            <a class="nav-link" href="index.html">
               <i class="mdi mdi-apple-keyboard-caps menu-icon"></i>
-              <span class="menu-title">Create Class</span>
+              <span class="menu-title">Upload</span>
             </a>
           </li>
           <!-- Manage Class -->
           <li class="nav-item nav-category">Manage</li>
           <!-- Teacher -->
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'classes' %}">
+            <a class="nav-link" data-bs-toggle="collapse" href="#ui-teacher" aria-expanded="false" aria-controls="ui-teacher">
               <i class="menu-icon mdi mdi-account-multiple-outline"></i>
               <span class="menu-title">Classes</span>
+              <i class="menu-arrow"></i>
             </a>
+            <div class="collapse" id="ui-teacher">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="#">Add Class List</a></li>
+                <li class="nav-item"><a class="nav-link" href="pages/ui-features/dropdowns.html">Grade & Section</a></li>
+              </ul>
+            </div>
+          </li>
+          <!-- Students -->
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#ui-students" aria-expanded="false" aria-controls="ui-students">
+              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <span class="menu-title">Students</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="ui-students">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="pages/ui-features/buttons.html">Add Students</a></li>
+                <li class="nav-item"><a class="nav-link" href="pages/ui-features/dropdowns.html">Dropdowns</a></li>
+                <li class="nav-item"><a class="nav-link" href="pages/ui-features/typography.html">Typography</a></li>
+              </ul>
+            </div>
           </li>
           <!-- OCR -->
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-ocr" aria-expanded="false" aria-controls="ui-students">
               <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">Archive</span>
+              <span class="menu-title">OCR</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="ui-ocr">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">School Form 10</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents_ocr' %}">Upload</a></li>
               </ul>
             </div>
           </li>
@@ -98,7 +120,7 @@
             </a>
             <div class="collapse" id="tables">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Filipino</a></li>
+                <li class="nav-item"> <a class="nav-link" href="{% url 'filipino_subject' %}">Filipino</a></li>
               </ul>
             </div>
             <div class="collapse" id="tables">
