@@ -57,6 +57,7 @@ urlpatterns = [
     # Adviser Teacher
     path('home_teacher', TeacherViews.home_teacher, name="home_teacher"),
     path('home_adviser_teacher', TeacherViews.home_adviser_teacher, name="home_adviser_teacher"),
+    path('dashboard', TeacherViews.dashboard, name="dashboard"),   
     path('upload_adviser_teacher', TeacherViews.upload_adviser_teacher, name="upload_adviser_teacher"),   
     path('upload', TeacherViews.upload, name='upload'),
     path('save_json_data', TeacherViews.save_json_data, name='save_json_data'),
@@ -72,22 +73,13 @@ urlpatterns = [
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
 
 
-
-
     path('display_students', TeacherViews.display_students, name='display_students'),
 
 
 
-    # Subject Teacher
-    path('home_subject_teacher', TeacherViews.home_subject_teacher, name="home_subject_teacher"),
-    path('filipino_subject', TeacherViews.filipino_subject, name="filipino_subject"),
-
     # Student
     path('student_list/', StudentViews.student_list, name='student_list'),
 ]
-
-
-
 
 
  
