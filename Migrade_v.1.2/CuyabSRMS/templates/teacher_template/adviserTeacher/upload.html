@@ -67,7 +67,6 @@ New Class List
       <table class="table table-hover" id="data-table">
         <thead class="thead">
           <tr>
-            <th>No.</th>
             <th>LRN</th>
             <th>Name</th>
             <th>Sex</th>
@@ -81,7 +80,6 @@ New Class List
         <tbody>
           {% for key, values in lrn_data.items %}
           <tr>
-            <td>{{ forloop.counter }}</td>
             <td>{{ key }}</td>
             <td>{{ values.0.1 }}</td>
             <td>{{ values.0.2 }}</td>
@@ -132,90 +130,7 @@ New Class List
       </div>
 
 
-      <div class="tab-content tab-content-basic">
-        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
-          <div id="excel-data-container">
-              {% csrf_token %}
-              <div class="table-responsive">
-                {% if lrn_data %}
-                  <table class="table hover" id="data-table">
-                    <thead>
-                      <tr>
-                        <th>LRN</th>
-                        <th>Name</th>
-                        <th>Sex</th>
-                        <th>Birthday</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for key, values in lrn_data.items %}
-                        <tr>
-                          <td>{{ key }}</td>
-                          <td>{{ values.0.1 }}</td>
-                          <td>{{ values.0.2 }}</td>
-                          <td>{{ values.0.3 }}</td>
-                        </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                 
-                  <button type="button" class="btn btn-secondary mt-3" id="selectGradeSectionButton">Select Grade and Section</button>
-                  <div class="modal" id="gradeSectionModal" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title">Select Grade and Section</h5>
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                          <form id="gradeSectionForm" method="get" action="{% url 'get_grades_and_sections' %}">
-                            {% csrf_token %}
-                            <div class="form-group">
-                              <label for="grade">Grade</label>
-                              <select class="form-control" id="grade" name="grade">
-                                <!-- Populate grade options dynamically from the database -->
-                                {% for grade in grades %}
-                                  <option value="{{ grade.id }}">{{ grade.name }}</option>
-                                {% endfor %}
-                              </select>
-                            </div>
-                            <div class="form-group">
-                              <label for="section">Section</label>
-                              <select class="form-control" id="section" name="section">
-                                <!-- Options will be populated dynamically using JavaScript -->
-                              </select>
-                            </div>
-         
-                            <button type="button" class="btn btn-primary" id="saveGradeSection">Save</button>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                {% else %}
-                  <p>No data to display.</p>
-                {% endif %}
-              </div>
-              <!-- The modal for grade and section selection -->
-
-      {% else %}
-      <div class="center-content text-muted mt-5">
-        <img class="w-25" src="static/star-admin/images/empty.svg" alt="Empty">
-        <h4 class="mt-4">No data to display, Please upload School Form 1</h4>
-      </div>
-
-      {% endif %}
-    </div>
-    <!-- The modal for grade and section selection -->
-
-
-
-
-  </div>
-  </div>
+{% endif %}
 
 
 
@@ -291,6 +206,7 @@ New Class List
 
       // Get the existing JSON data
       const jsonData = tableToJson();
+      console.log(jsonData);
 
       // Add selectedGrade and selectedSection names to the JSON data
       jsonData.selectedGrade = getSelectedGradeName(selectedGrade);

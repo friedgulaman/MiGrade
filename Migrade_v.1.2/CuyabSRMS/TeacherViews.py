@@ -56,16 +56,12 @@ def classes(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html')
 
 
-# Subject teacher
-def home_subject_teacher(request):
-    return render(request, 'teacher_template/subjectTeacher/home_subject_teacher.html')
-
-def filipino_subject(request):
-    return render (request, 'teacher_template/subjectTeacher/filipino_subject.html')
-
 # adviser
-@login_required
 def home_adviser_teacher(request):
+    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
+
+@login_required
+def dashboard(request):
      # Get the currently logged-in teacher
     teacher = request.user.teacher
 
@@ -96,8 +92,7 @@ def home_adviser_teacher(request):
         'num_male_students': num_male_students,
         'num_female_students': num_female_students,
     }
-    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', context)
-
+    return render(request, 'teacher_template/home_teacher.html', context)
 
 # Your combined view
 def process_google_sheet(spreadsheet_id, sheet_name):
@@ -191,6 +186,7 @@ def upload(request):
 
             # Process the Google Sheet using your existing code
             lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
+            print(lrn_data)
 
             if lrn_data is not None:
                 return render(request, 'teacher_template/adviserTeacher/upload.html', {
@@ -282,13 +278,7 @@ def get_grades_and_sections(request):
 
 
 def class_record(request):
-    students = Student.objects.all()  # Replace with your actual query
-
-    context = {
-        'students': students,
-    }
-    
-    return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
+    return render(request, 'teacher_template/adviserTeacher/class_record.html')
 
 
 def get_grade_details(request):
@@ -520,5 +510,4 @@ def display_students(request):
     else:
         # Handle the case where the user is not a teacher (user_type is not 2)
         return render(request, 'teacher_template/adviserTeacher/classes.html')
-
 
