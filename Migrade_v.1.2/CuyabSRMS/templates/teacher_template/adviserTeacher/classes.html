@@ -3,7 +3,6 @@
 New Class List
 {% endblock title %}
 {% block main_content %}
-
 <section class="content container mt-2">
     <div class="card">
         <div class="card-body">
@@ -12,19 +11,38 @@ New Class List
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="card-title card-title-dash">My Classes</h4>
                         <div class="add-items d-flex mb-0">
-                            <button id="uploadButton" class="add btn btn-icons btn-rounded btn-primary todo-list-add-btn text-white me-0 pl-12p">
-                                <i class="mdi mdi-plus"></i>
+                            <button id="uploadButton" class="add btn btn-icons btn-rounded btn-secondary todo-list-add-btn text-white me-0 pl-12p">
+                                <i class="mdi mdi-plus text-black"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="list-wrapper">
-                        <ul class="todo-list todo-list-rounded">
+                    <div class="mt-5">
+                        <ul>
                             <li class="d-block">
                                 {% for grade in unique_grades %}
                                 {% for section in unique_sections %}
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#studentModal">
+                                <button type="button" class="folder d-flex justify-content-between align-items-center py-2 p-1 btn btn-secondary" onclick="showModal()">
+                                   
+                                    <div class="ms-3">
+                                    <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                        <g>
+                                            <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                            <path d="M0 0h24v24H0z" fill="none"></path>
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="ms-3">
                                     {{ grade }} {{ section }}
+                                </div>
+                                <div class="ms-4">
+                                    <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="currentColor">
+                                        <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                        <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
+                                    </svg>
+                                </div>
                                 </button>
+                                
+                                
                                 {% endfor %}
                                 {% endfor %}
                             </li>
@@ -36,17 +54,16 @@ New Class List
     </div>
 
     <div class="modal fade" id="studentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content custom-modal-content"> <!-- Added custom class -->
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Student List</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <h3>Student List:</h3>
-                    <table>
+                <div class="table-responsive">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -67,13 +84,13 @@ New Class List
                         </tbody>
                     </table>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
             </div>
         </div>
     </div>
+    
 </section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     document.getElementById("uploadButton").addEventListener("click", function() {
@@ -83,6 +100,17 @@ New Class List
         // Redirect to the upload page
         window.location.href = uploadPageURL;
     });
+
+    // Manually show the modal
+    function showModal() {
+        $('#studentModal').modal('show');
+    }
+
+    // Manually hide the modal
+    function hideModal() {
+        $('#studentModal').modal('hide');
+    }
 </script>
+
 
 {% endblock main_content %}
