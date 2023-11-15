@@ -121,9 +121,6 @@ def update_profile_photo(request):
 
     return render(request, 'profile_page')
 
-
-    return render(request, 'profile_page')
-
 def update_teacher_profile(request):
     if request.method == "POST":
         user = request.user

@@ -57,6 +57,7 @@ def classes(request):
 
 
 # adviser
+@login_required
 def home_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
 
@@ -186,7 +187,6 @@ def upload(request):
 
             # Process the Google Sheet using your existing code
             lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
-            print(lrn_data)
 
             if lrn_data is not None:
                 return render(request, 'teacher_template/adviserTeacher/upload.html', {
