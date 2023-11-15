@@ -73,7 +73,13 @@ urlpatterns = [
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
 
 
+<<<<<<< Updated upstream
     path('display_students', TeacherViews.display_students, name='display_students'),
+=======
+
+
+    # path('display_students', TeacherViews.display_students, name='display_students'),
+>>>>>>> Stashed changes
 
 
 
@@ -82,6 +88,10 @@ urlpatterns = [
 ]
 
 
- 
+<<<<<<< Updated upstream
+
+=======
+>>>>>>> Stashed changes
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
