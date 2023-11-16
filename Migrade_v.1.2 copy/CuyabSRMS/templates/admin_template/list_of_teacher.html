@@ -1,0 +1,37 @@
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+  Home
+{% endblock page_title %}
+
+{% block main_content %}
+  <section class="container">
+      <div class="container-fluid">
+        <h1>Grade Sections with Assigned Teachers</h1>
+
+        <ul>
+            {% for grade in grades %}
+                <li>
+                    <strong>Grade:</strong> {{ grade.name }}
+                    <ul>
+                        {% for section in grade.sections.all %}
+                            <li>
+                                <strong>Section:</strong> {{ section.name }}
+                                {% if section.teacher %}
+                                    <br><strong>Teacher:</strong> {{ section.teacher.user.first_name }} {{ section.teacher.user.last_name }}
+                                {% else %}
+                                    <br><strong>Teacher:</strong> Not assigned
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %} 
+        </ul>
+        </div>
+
+
+
+      </div>
+  </section>
+{% endblock main_content %}

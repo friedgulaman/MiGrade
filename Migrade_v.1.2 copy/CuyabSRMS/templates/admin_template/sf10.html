@@ -1,0 +1,70 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}   
+{% block page_title %}
+upload
+{% endblock page_title %}
+{% block main_content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed Document</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Sex</th>
+            <th>BirthDate</th>
+            <th>LRN</th>
+            <th>School Year</th>
+            <th>Grade</th>
+            <th>General Average</th>
+            <th>Document</th>
+        </tr>
+        {% for extracted_data in all_extracted_data %}
+        <tr>
+            <td>{{ extracted_data.last_name }}</td>
+            <td>{{ extracted_data.first_name }}</td>
+            <td>{{ extracted_data.middle_name }}</td>
+            <td>{{ extracted_data.sex }}</td>
+            <td>{{ extracted_data.birthdate }}</td>
+            <td>{{ extracted_data.lrn }}</td>
+            <td>{{ extracted_data.school_year }}</td>
+            <td>{{ extracted_data.classified_as_grade }}</td>
+            <td>{{ extracted_data.general_average }}</td>
+
+
+            <td><a href="{{ extracted_data.processed_document.document.url }}" download>Download</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9">No extracted data available</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+{% endblock main_content %}

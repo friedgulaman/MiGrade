@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "migrade",
+  "private_key_id": "642c058f3a00f16c3cd17d9afb05440a9e1a2edc",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCYFiPddOaRkDt6\n5t6C22VM0ZUTmtyai+fl53h8Ddl6ENR7eAso8L8EAYvfFGOhP3umixjyv5H4rto+\noAZT4R6mMF4wwwHD8uzooa6NT7uweI1TKZ0tw1Yt4D3HNfuw5yqVQhV0nq9uAvs/\n5kaPA02X3wd5zA3LniF0K1oSAJbtKodV72h7b0FJquwcEZf9i4+GMwQVj8ovcluw\nfv8hz4pFo07VkFn8+DW6TVgugUGDXdj72i9T7V4EAE0J5GGiGwE5LyoOKs/VaTQA\n2EBV8Lny2oJQZIBP8/iGR4uqn5pi+xm2CjZgkKY8EgZzNN4TTWS0e2Lyhkyz2MMW\n1biuaSCfAgMBAAECggEABg2nisp63ONZQriKtbmmzApxfRDGZA5agg+W/5ULiWy/\nEFUEWLJQYAfxucTVfFcLBGN38D2IwVWwURrMda05q5K0RQuV9+ck39ODn5NDXLBH\nq741x9sFBJluzA2NgYqJ6tvw/63LPL04o9/2Af43KerSINpq2CZonXeWQ64rU7A0\nacivmqA/XSadmA8XjVcQOqEWvkz5OrMbMHqGq9MfrwO7fdFeH0nyy3z4TpLntydv\nXylLyshFVPO4TMzJ+BEHaQEhZVl7ZdB8un8y/vOGg4/4vFkp5CpGFrjslnIeJJVd\n0G9qHnBeiKdeZ2miy7agbeM0+iCg2h91ejFXiH1kxQKBgQDS4uQwJC0ZG4m+kHh0\n13C4dW6vdblxyew3j6ZkkAjW3ZSpUss3f8cSbtp/H7cm673+/DMrHp9sonHGl/8G\n/ff29pSZTHUN1Ag/5cJ5uvXhHCn+HgBxgIT4rEB7spqBYKWXHkY0aSrH+ozjQm4f\n7Y0U6aPAeiftPXk/O9oXrsMkMwKBgQC4nxlpk624W918Ylxgl3IttG80vU6psGvm\nPgWWKvHhw64Gw2jW2zQsCRRbxuFu1xtPXY58X7Hv4xjtii1QWb8WCKXP9hR9CE8W\ndOQReNMnDFMnxBcwr4WL/zi9foz2+86HE+QkuPtKQewU1ZmHTTYdl4zp7tBqFgR6\nz8N4YohF5QKBgD81KEXRof7DhT6r2J7UsAFpmTpX47RaXEWu9aVwkmWsVlGF8kj5\nMHay6SRvIhs1T2Ysuz1yWUBbVBS9HABBgN/xukpUY0U4xxw3xllsEyRcp6112pYq\nejB6mH065BphGGC5/zrYRq1XyICZOZ6yObYJ7T3Un0D5Su0MCGtOw0iHAoGASNOZ\ntqfmkx7J09MJFaEoDRdr9qXmbdGF/qDgm0f9ek0yTMCwjnCRt/0s5rchHhQEVd5V\n4oHtMu+mWa10Cooccpier9YmZtvsNrONc8bxpCmcc8dKTo4uY/cdbsKI4LSb13Tl\nPgcqOTSf5+gKU/EFM88gavclh3N/+OIT/V0A3HECgYAZu2CfVKgJmGH5+DEsUd/r\nETvM99xB7v2/nBU18AWKHEajEpC/d7ozTNAtl8dlnTmBO9vVZovgLr72n0xn4Tho\nln0xxJI2x+YHz6qpRHBeavTrpu52KsaecLourWa5MBSUXW0O1FMBrMh+Rm2xhFY/\nlo2OX3LEQpOgO1vtUmBEJg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "friedgulaman@migrade.iam.gserviceaccount.com",
+  "client_id": "109903673675565320560",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/friedgulaman%40migrade.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

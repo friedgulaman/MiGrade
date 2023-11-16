@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}MiGrade - Login{% endblock %}
+
+{% block content %}
+
+<style>
+</style>
+<div class="container-scroller">
+  <div class="container-fluid page-body-wrapper full-page-wrapper">
+    <div class=" content-wrapper d-flex align-items-center auth px-0">
+      <div class="row w-100 mx-0">
+        <div class="card col-lg-5 mx-auto">
+          <div class="auth-form-light text-left py-5 px-4 px-sm-5">
+            <div class="brand-logo text-center">
+              <img src="{% static 'star-admin/images/logo_migrade.png' %}" alt="logo">
+            </div>
+            <h4>Hello! Let's get started</h4>
+            <h6 class="fw-light">Sign in to continue.</h6>
+            <form class="pt-3" method="post" action="{% url 'doLogin' %}">
+              {% csrf_token %}
+              <div class="form-group">
+                <input type="email" class="form-control form-control-lg" id="exampleInputEmail1" name="email" placeholder="Email" required>
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" name="password" placeholder="Password" required>
+              </div>
+              <div class="form-check d-flex justify-content-between align-content-center mb-0">
+                <div class="form-group">
+                <input type="checkbox" class="form-check-input m-auto" id="showPasswordCheckbox">
+                <label class="form-check-label" for="showPasswordCheckbox">Show Password</label>
+                </div>
+                <a class="form-text" href="{% url 'password_reset' %}"><i>Forgot Password?</i></a>
+              </div>
+              <div class="">
+                <div class="g-recaptcha d-flex justify-content-center align-center mb-2" data-sitekey="6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI"></div>
+                <button class="btn btn-primary container btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit">
+                  <span class="spinner-grow spinner-grow-sm d-none me-2" id="spinner-grow" role="status" aria-hidden="true"></span>
+                  SIGN IN
+                </button>
+              </div>
+            </form>
+            
+            <!-- Display Messages -->
+            {% if messages %}
+              <div class="mt-1">
+                {% for message in messages %}
+                  {% if message.tags == "error" %}
+                    <div class="alert alert-danger" role="alert">
+                      <div class="d-flex gap-4">
+                        <span><i class="fa-solid fa-circle-check text-danger"></i></span>
+                        <div>
+                          {{ message }}
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+                  {% if message.tags == "success" %}
+                    <div class="alert alert-success" role="alert">
+                      <div class="d-flex gap-4">
+                        <span><i class="fa-solid fa-circle-check text-success"></i></span>
+                        <div>
+                          {{ message }}
+                        </div>
+                      </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- content-wrapper ends -->
+  </div>
+  <!-- page-body-wrapper ends -->   
+</div>
+<!-- container-scroller -->
+
+<script>
+  // JavaScript to toggle password visibility
+  document.getElementById("showPasswordCheckbox").addEventListener("change", function () {
+    var passwordField = document.getElementById("exampleInputPassword1");
+    if (passwordField.type === "password") {
+      passwordField.type = "text";
+    } else {
+      passwordField.type = "password";
+    }
+  });
+
+  // Client-side form validation
+  const form = document.querySelector("form");
+  form.addEventListener("submit", function (event) {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    } else {
+      // Show the loading spinner while the login request is being processed
+      document.getElementById("spinner-grow").classList.remove("d-none");
+    }
+    form.classList.add("was-validated");
+  });
+</script>
+
+
+{% endblock %}

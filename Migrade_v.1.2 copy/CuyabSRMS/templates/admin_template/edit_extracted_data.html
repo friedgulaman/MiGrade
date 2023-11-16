@@ -1,0 +1,34 @@
+<!-- edit_extracted_data.html -->
+{% extends 'admin_template/admin_base.html' %}   
+{% block page_title %}
+upload
+{% endblock page_title %}
+{% block main_content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Extracted Data</title>
+</head>
+
+<body>
+    {% if extracted_data %}
+    <h1>Edit Extracted Data</h1>
+    <form method="post" action="{% url 'save_edited_data' %}">
+        {% csrf_token %}
+        {% for key, value in extracted_data.items %}
+            <label for="{{ key }}">{{ key }}</label>
+            <input type="text" id   ="{{ key }}" name="{{ key }}" placeholder="Enter {{ key }}" value="{{ value }}"><br>
+        {% endfor %}
+        <input type="submit" value="Save">
+    </form>
+{% else %}
+    <p>No data available.</p>
+{% endif %}
+
+</body>
+
+</html>
+{% endblock main_content %}

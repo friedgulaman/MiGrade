@@ -1,0 +1,19 @@
+<h1>Class Records for {{ student.name }}</h1>
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <th>Written Works</th>
+            <th>Performance Task</th>
+            <th>Quarterly Assessment</th>
+        </tr>
+        <tr>
+            {% for i in '0'|stringformat:"s"|range:10 %}
+            <td><input type="text" name="written_works_{{ i }}" value="{{ record.get_written_works_value.i }}"></td>
+            <td><input type="text" name="performance_task_{{ i }}" value="{{ record.get_performance_task_value.i }}"></td>
+            <td><input type="text" name="quarterly_assessment_{{ i }}" value="{{ record.get_quarterly_assessment_value.i }}"></td>
+            {% endfor %}
+        </tr>
+    </table>
+    <input type="submit" value="Update Scores">
+</form>
