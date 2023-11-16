@@ -72,6 +72,8 @@ urlpatterns = [
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
 
 
+
+
     path('display_students', TeacherViews.display_students, name='display_students'),
 
 
