@@ -6,6 +6,16 @@
 {% block content %}
 
 <style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
   img {
     max-width: 300px;
   }
@@ -14,11 +24,17 @@
     max-width: 500px;
     text-wrap: wrap;
   }
-  .first-col,
-  .second-col {
-    transition: all 0.5s ease-in-out;
+
+  .first-col {
+    animation: fadeIn 0.8s;
+    transition: linear 0.6s;
   }
-  #alert{
+
+  .second-col {
+    animation: fadeIn 3s;
+  }
+
+  #alert {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -26,7 +42,8 @@
     padding: 2px;
     z-index: 1;
   }
-  .forgot_pass{
+
+  .forgot_pass {
     font-size: 10px;
   }
 </style>
@@ -36,72 +53,78 @@
   {% if messages %}
   <div class="mt-1">
     {% for message in messages %}
-      {% if message.tags == "error" %}
-        <div class="alert alert-danger " role="alert">
-          <div class="d-flex gap-2 " >
-            <span><i class="fa-solid fa-circle-check text-danger"></i></span>
-            <div>
-              {{ message }}
-            </div>
-          </div>
+    {% if message.tags == "error" %}
+    <div class="alert alert-danger " role="alert">
+      <div class="d-flex gap-2 ">
+        <span><i class="fa-solid fa-circle-check text-danger"></i></span>
+        <div>
+          {{ message }}
         </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if message.tags == "success" %}
+    <div class="alert alert-success" role="alert">
+      <div class="d-flex gap-2">
+        <span><i class="fa-solid fa-circle-check text-success"></i></span>
+        <div>
+          {{ message }}
+        </div>
+      </div>
       {% endif %}
-      {% if message.tags == "success" %}
-        <div class="alert alert-success" role="alert">
-          <div class="d-flex gap-2">
-            <span><i class="fa-solid fa-circle-check text-success"></i></span>
-            <div>
-              {{ message }}
-            </div>
-          </div>
-      {% endif %}
-    {% endfor %}
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
- {% endif %}
-       </div>
-       </div>
+</div>
 <div class="container-scroller">
-  
+
   <div class="row">
     <div class="first-col d-flex justify-content-center align-items-center flex-column" style="height: 100vh;">
       <div class="text-center">
         <div class="brand-logo">
           <img src="{% static 'star-admin/images/logo_migrade.png' %}" alt="logo">
         </div>
-        <p class="desc">A Web Based Student Record Management System utilizing Optical Character Recognition for Cuyab Elementary School</p>
+        <p class="desc">A Web Based Student Record Management System utilizing Optical Character Recognition for Cuyab
+          Elementary School</p>
         <button id="toggle-login" class="btn btn-success container w-50">&rarr;</button>
       </div>
-      </div>
+    </div>
 
     <div class="second-col d-flex justify-content-center align-items-center d-none" style="height: 100vh;">
 
-      <form  method="post" action="{% url 'doLogin' %}">
+      <form method="post" action="{% url 'doLogin' %}">
         {% csrf_token %}
         <div class="form-group">
-          <input type="email" class="form-control form-control-lg" id="exampleInputEmail1" name="email" placeholder="Email" required>
+          <input type="email" class="form-control form-control-lg" id="exampleInputEmail1" name="email"
+            placeholder="Email" required>
         </div>
         <div class="form-group">
-          <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" name="password" placeholder="Password" required>
+          <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" name="password"
+            placeholder="Password" required>
         </div>
         <div class="form-check d-flex justify-content-between align-content-center mb-0">
           <div class="form-group ">
-          <input type="checkbox" class="form-check-input m-auto" id="showPasswordCheckbox">
-          <label class="form-check-label form-text mt-0 " for="showPasswordCheckbox">Show Password</label>
+            <input type="checkbox" class="form-check-input m-auto" id="showPasswordCheckbox">
+            <label class="form-check-label form-text mt-0 " for="showPasswordCheckbox">Show Password</label>
           </div>
           <a class="forgot_pass" href="{% url 'password_reset' %}"><i>Forgot Password?</i></a>
         </div>
         <div class="">
-          <div class="g-recaptcha d-flex justify-content-center align-center mb-2" data-sitekey="6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI"></div>
-          <button class="btn btn-primary container btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn" type="submit">
-            <span class="spinner-grow spinner-grow-sm d-none me-2" id="spinner-grow" role="status" aria-hidden="true"></span>
+          <div class="g-recaptcha d-flex justify-content-center align-center mb-2"
+            data-sitekey="6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI"></div>
+          <button class="btn btn-primary container btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn"
+            type="submit">
+            <span class="spinner-grow spinner-grow-sm d-none me-2" id="spinner-grow" role="status"
+              aria-hidden="true"></span>
             SIGN IN
           </button>
         </div>
-      
-      
-     
- 
-    </form>
+
+
+
+
+      </form>
     </div>
   </div>
 
@@ -109,7 +132,7 @@
 <!-- container-scroller -->
 
 <script>
- document.getElementById("toggle-login").addEventListener("click", function () {
+  document.getElementById("toggle-login").addEventListener("click", function () {
     var firstColumn = document.querySelector('.first-col');
     var secondColumn = document.querySelector('.second-col');
 
@@ -119,7 +142,7 @@
       firstColumn.classList.add('d-none');
       secondColumn.classList.remove('d-none');
       secondColumn.classList.add('col-sm-6');
-      
+
     } else {
       if (firstColumn.classList.contains('col-sm-6')) {
         firstColumn.classList.remove('col-sm-6');

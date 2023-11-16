@@ -35,23 +35,22 @@ from .views import *
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-
-
+from django.template.loader import render_to_string
+from django.template import RequestContext
 #Grade
 from django.http import JsonResponse
 
 
 @login_required
-
 def home_teacher(request):
     return render(request, 'teacher_template/home_teacher.html')
-
+@login_required
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')
-
+@login_required
 def new_classrecord(request):
         return render(request, 'teacher_template/adviserTeacher/new_classrecord.html')
-
+@login_required
 def classes(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html')
 
@@ -473,41 +472,43 @@ def display_classrecord(request):
 
 @login_required
 def display_students(request):
-    # Get the currently logged-in user
     user = request.user
 
     if user.user_type == 2:
         try:
-            # Retrieve the teacher associated with the user
             teacher = Teacher.objects.get(user=user)
-            
-            # Filter students based on the teacher
             students = Student.objects.filter(teacher=teacher)
 
-            # You can also filter students by grade and section if needed
-            grade = request.GET.get('grade')  # Example: Get grade from request
-            section = request.GET.get('section')  # Example: Get section from request
-
-            if grade and section:
-                students = students.filter(grade=grade, section=section)
-
-            # Extract unique grades and sections from the students
             unique_grades = students.values_list('grade', flat=True).distinct()
             unique_sections = students.values_list('section', flat=True).distinct()
 
             context = {
-                'students': students,
                 'teacher': teacher,
-                'unique_grades': unique_grades,  # Pass unique grades to the template
-                'unique_sections': unique_sections,  # Pass unique sections to the template
-                'grade': grade,
-                'section': section,
+                'unique_grades_sections': zip(unique_grades, unique_sections),
             }
             return render(request, 'teacher_template/adviserTeacher/classes.html', context)
         except Teacher.DoesNotExist:
-            # Handle the case where the user has user_type=2 but is not associated with a teacher
             return render(request, 'teacher_template/adviserTeacher/classes.html')
     else:
-        # Handle the case where the user is not a teacher (user_type is not 2)
         return render(request, 'teacher_template/adviserTeacher/classes.html')
 
+
+
+    
+def fetch_students(request):
+    if request.method == 'POST':
+        grade = request.POST.get('grade')
+        section = request.POST.get('section')
+
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section)
+
+        # Render the student list template with the fetched students
+        context = {'students': students}
+        html_content = render_to_string('teacher_template/adviserTeacher/classes.html', context)
+        print(html_content)
+        # Return the HTML content as JSON response
+        return JsonResponse({'html_content': html_content})
+
+    # Handle other HTTP methods if needed
+    return JsonResponse({'error': 'Invalid request method'})
