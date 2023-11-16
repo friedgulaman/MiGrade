@@ -1,9 +1,39 @@
 {% extends 'teacher_template/teacher_base.html' %}
 {% block title %}MiGrade - Home{% endblock %}
 {% block main_content %}
+<style>
+  #user{
+    font-weight: bolder;
+  }
+  #_roles {
+  position: relative;
+}
+
+#_roles::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    border-radius: 2px;
+    background-color: #18272F;
+    bottom: 0;
+    left: 0;
+    transform-origin: right;
+    transform: scaleX(0);
+    transition: transform .3s ease-in-out;
+  }
+
+  #_roles:hover::before {
+  transform-origin: left;
+  transform: scaleX(1);
+}
+strong{
+  text-decoration: underline;
+}
+
+</style>
 <section class="content">
   <div class="container d-flex justify-content-end p-4">
-    <a class="nav-link" id="_roles" href="{% url 'home_adviser_teacher'%}">Home</a>
           <a id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
             <img class="img-xs rounded-circle" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
           <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
@@ -16,42 +46,41 @@
             <a class="dropdown-item"  href="{% url 'logout_user' %}"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
           </div>
         </div>
-
-        <div class="card m-5">
-              <div class="card-header d-flex justify-content-between align-center">
-              <h5 class="mt-1">Dashboard</h5>
-              <form method="post" action="{% url 'dashboard' %}">
-                {% csrf_token %}
-                <button type="submit" id="no-outline" class="text-decoration-none border-0 bg-transparent" title="Refresh">⟳</button>
-              </form>
-            </div>
-            <div class="col-sm-12">
-              <div class="statistics-details d-flex align-items-center justify-content-between p-5">
-                <div>
-                  <p class="statistics-title">Grade</p>
-                  <h3 class="rate-percentage">{{ grade.name }}</h3>
+        <div class="container d-flex justify-content-center align-items-center p-4">
+          <div class="card mb-3 p-5">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <img class="img-fluid" src="static/star-admin/images/home_teacher.svg" alt="Home Teacher">
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h5 class="card-title">Welcome, <span id="user">{{user}}</span></h5>
+                  <h5 class="card-description">Choose your role, as a teacher.</h5>
+                  <ul>
+                    <li>
+                      <p class="fw-light small-text mb-0">As an <strong>Adviser</strong>, you have access to class management tools and student information for the classes you oversee.</p>
+                    </li>
+                    <li>
+                      <p class="fw-light small-text mb-0">As a <strong>Subject Teacher</strong>, you are responsible for managing and delivering curriculum content for specific subjects. Your role includes grade recording, lesson planning, and student assessment.</p>
+                    </li>
+                  </ul>
+                  <div>
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle btn-md mb-0 me-0" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Roles:
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                        <a class="dropdown-item" id="_roles" href="{% url 'home_adviser_teacher'%}">Adviser</a>
+                        <a class="dropdown-item" id="_roles" href="{% url 'home_subject_teacher'%}">Subject Teacher</a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p class="statistics-title">Section</p>
-                  <h3 class="rate-percentage">{{ section.name }}</h3>
-                </div>
-                <div>
-                  <p class="statistics-title">Male Students</p>
-                  <h3 class="rate-percentage">{{ num_male_students }}</h3>
-                </div>
-                <div class="d-none d-md-block">
-                  <p class="statistics-title">Female Students</p>
-                  <h3 class="rate-percentage">{{ num_female_students }}</h3>
-                </div>
-                <div class="d-none d-md-block">
-                  <p class="statistics-title">Total</p>
-                  <h3 class="rate-percentage">{{ num_students }}</h3>
-                </div>  
               </div>
             </div>
-            </div>
-
- 
+          </div>
+        </div>
+        
 </section>
 
 {% endblock main_content %}
