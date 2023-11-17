@@ -1,10 +1,13 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
-{% load static %}
-
 {% block title %}
 New Class List
 {% endblock title %}
 {% block main_content %}
+<style>
+ .folder{
+    width: 240px;
+ }
+</style>
 <section class="content container mt-2">
     <div class="card">
         <div class="card-body">
@@ -20,30 +23,31 @@ New Class List
                     </div>
                     <form method="post">
                         {% csrf_token %}
-                    <div class="mt-5">
-                        <ul>
+                    <div class="mt-5 ">
+                        <ul class="d-flex justify-content-start align-items-center">
                             {% for grade, section in unique_grades_sections %}
-                                <li class="d-block">
-                                    <button type="button" class="folder d-flex justify-content-between align-items-center py-2 p-1 btn btn-secondary" onclick="showModal('{{ grade }}', '{{ section }}')">
-                                        <div class="ms-3">
-                                            <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
-                                                <g>
-                                                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
-                                                    <path d="M0 0h24v24H0z" fill="none"></path>
-                                                </g>
-                                            </svg>
-                                        </div>
-                                        <div class="ms-3">
-                                            {{ grade }} {{ section }}
-                                        </div>
-                                        <div class="ms-4">
-                                            <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="currentColor">
-                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
-                                                <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
-                                            </svg>
-                                        </div>
-                                    </button>
-                                </li>
+                            <li class="d-block me-3">
+                                <button type="button" class="folder d-flex justify-content-between align-items-center py-auto p-1 btn btn-secondary" onclick="showStudentList('{{ grade }}', '{{ section }}')">
+                                    <div class="ms-3">
+                                        <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                            <g>
+                                                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                                <path d="M0 0h24v24H0z" fill="none"></path>
+                                            </g>
+                                        </svg>
+                                    </div>
+                                    <div class="ms-3">
+                                        {{ grade }} ({{ section }})
+                                    </div>
+                                    <div class="ms-4">
+                                        <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="currentColor">
+                                            <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                            <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
+                                        </svg>
+                                    </div>
+                                </button>
+                            </li>
+                            
                             {% endfor %}
                         </ul>
                     </div>
@@ -53,93 +57,40 @@ New Class List
         </div>
     </div>
 <!-- ... (previous template code) ... -->
-
-<div class="modal fade" id="studentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content custom-modal-content"> <!-- Added custom class -->
+<!-- Add this modal code at the end of your HTML body -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Student List - <span id="modalGrade"></span> <span id="modalSection"></span></h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" onclick="hideModal()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title" id="exampleModalLabel">Student List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-<!-- student_list.html -->
-
-<div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>LRN</th>
-                <th>Sex</th>
-                <th>Birthday</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in students %}
-                <tr>
-                    <td>{{ student.name }}</td>
-                    <td>{{ student.lrn }}</td>
-                    <td>{{ student.sex }}</td>
-                    <td>{{ student.birthday }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
+            <div class="modal-body" id="myModalContent">
+                <!-- Content loaded dynamically using JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- ... (remaining template code) ... -->
 
-    
 </section>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 <script>
-    // Define the URLs
+    var showStudentList = function(grade, section) {
+        var url = "{% url 'student_list_for_class' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        window.location.href = url;
+    };
+
     var uploadPageURL = "{% url 'upload_adviser_teacher' %}";
-    var fetchStudentsURL = "{% url 'fetch_students' %}";
 
     document.getElementById("uploadButton").addEventListener("click", function() {
-        // Redirect to the upload page
-        window.location.href = uploadPageURL;
-    });
+    // Redirect to the upload page
+    window.location.href = uploadPageURL;
+});
 
-    // Manually show the modal
-    function showModal(grade, section) {
-        // Set the modal title
-        var modalTitle = "Student List - " + grade + " " + section;
-        $('#modalGrade').text(grade);
-        $('#modalSection').text(section);
-
-        // Fetch students using AJAX with CSRF token
-        var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
-        $.ajax({
-            type: 'POST',
-            url: fetchStudentsURL,
-            data: {
-                'grade': grade,
-                'section': section,
-                'csrfmiddlewaretoken': csrf_token
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Update the modal content with the fetched student list
-                $('#studentModal .modal-body').html(response.html_content);
-                // Show the modal
-                $('#studentModal').modal('show');
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    }
-
-    // Manually hide the modal
-    function hideModal() {
-        $('#studentModal').modal('hide');
-    }
 </script>
-
 {% endblock main_content %}

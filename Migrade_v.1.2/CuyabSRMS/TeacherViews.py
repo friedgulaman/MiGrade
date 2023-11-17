@@ -5,7 +5,6 @@ import io
 import re
 
 from CuyabSRMS.utils import transmuted_grade
-from CuyabSRMS import StudentViews
 from django import forms
 import openpyxl
 from django.contrib import messages
@@ -39,6 +38,8 @@ from django.template.loader import render_to_string
 from django.template import RequestContext
 #Grade
 from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+
 
 
 @login_required
@@ -469,46 +470,36 @@ def display_classrecord(request):
 
 
 
-
 @login_required
 def display_students(request):
     user = request.user
 
     if user.user_type == 2:
-        try:
-            teacher = Teacher.objects.get(user=user)
-            students = Student.objects.filter(teacher=teacher)
+        teacher = get_object_or_404(Teacher, user=user)
+        students = Student.objects.filter(teacher=teacher)
 
-            unique_grades = students.values_list('grade', flat=True).distinct()
-            unique_sections = students.values_list('section', flat=True).distinct()
+        unique_grades = students.values_list('grade', flat=True).distinct()
+        unique_sections = students.values_list('section', flat=True).distinct()
 
-            context = {
-                'teacher': teacher,
-                'unique_grades_sections': zip(unique_grades, unique_sections),
-            }
-            return render(request, 'teacher_template/adviserTeacher/classes.html', context)
-        except Teacher.DoesNotExist:
-            return render(request, 'teacher_template/adviserTeacher/classes.html')
-    else:
-        return render(request, 'teacher_template/adviserTeacher/classes.html')
+        context = {
+            'teacher': teacher,
+            'unique_grades_sections': zip(unique_grades, unique_sections),
+        }
+        return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
+    return render(request, 'teacher_template/adviserTeacher/classes.html')
 
-
+def student_list_for_class(request):
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
     
-def fetch_students(request):
-    if request.method == 'POST':
-        grade = request.POST.get('grade')
-        section = request.POST.get('section')
+    # Fetch students based on grade and section
+    students = Student.objects.filter(grade=grade, section=section)
 
-        # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section)
+    context = {
+        'grade': grade,
+        'section': section,
+        'students': students,
+    }
 
-        # Render the student list template with the fetched students
-        context = {'students': students}
-        html_content = render_to_string('teacher_template/adviserTeacher/classes.html', context)
-        print(html_content)
-        # Return the HTML content as JSON response
-        return JsonResponse({'html_content': html_content})
-
-    # Handle other HTTP methods if needed
-    return JsonResponse({'error': 'Invalid request method'})
+    return render(request, 'teacher_template/adviserTeacher/student_list.html', context)

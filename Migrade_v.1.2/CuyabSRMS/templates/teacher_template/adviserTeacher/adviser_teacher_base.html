@@ -14,18 +14,8 @@
   <link rel="stylesheet" href="{% static 'star-admin/vendors/typicons/typicons.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/simple-line-icons/css/simple-line-icons.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/css/vendor.bundle.base.css' %}">
-  <link rel="stylesheet" href="{% static 'star-admin/vendors/datatables.net-bs4/dataTables.bootstrap4.css' %}">
-  <link rel="stylesheet" href="{% static 'star-admin/js/select.dataTables.min.css' %}">
-  <!-- endinject -->
-  <!-- Plugin css for this page -->
-  <link rel="stylesheet" href="{% static 'star-admin/vendors/chart.js/Chart.min.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css' %}">
-  <link rel="stylesheet" href="{% static 'star-admin/vendors/progressbar.js/progressbar.min.css' %}">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
   <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="{% static 'star-admin/images/favicon.png' %}" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 </head>
 <style>
@@ -43,6 +33,25 @@
 #nav{
   background: white;
 }
+body {
+    height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;  /* For Firefox */
+    scrollbar-color: #ccc #f5f5f5;  /* For Firefox */
+}
+
+body::-webkit-scrollbar {
+    width: 10px;  /* For Chrome, Safari, and Opera */
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #ccc;  /* For Chrome, Safari, and Opera */
+}
+
+body::-webkit-scrollbar-track {
+    background-color: #f5f5f5;  /* For Chrome, Safari, and Opera */
+}
+
 </style>
 
 <body>

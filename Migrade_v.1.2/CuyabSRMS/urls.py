@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.urls import URLPattern, path, include
-from CuyabSRMS import AdminViews, TeacherViews, StudentViews
+from CuyabSRMS import AdminViews, TeacherViews
 from django.contrib import admin
 from . import views
 
@@ -72,13 +72,12 @@ urlpatterns = [
     path('display_classrecord', TeacherViews.display_classrecord, name='display_classrecord'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
 
-    path('fetch_students/', TeacherViews.fetch_students, name='fetch_students'),
+
     path('display_students/', TeacherViews.display_students, name='display_students'),
+    path('student_list_for_class/', TeacherViews.student_list_for_class, name='student_list_for_class'),
 
 
 
-    # Student
-    path('student_list/', StudentViews.student_list, name='student_list'),
 ]
 
 
