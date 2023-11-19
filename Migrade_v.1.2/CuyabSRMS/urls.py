@@ -77,7 +77,6 @@ urlpatterns = [
     path('student_list_for_class/', TeacherViews.student_list_for_class, name='student_list_for_class'),
 
 
-
 ]
 
 

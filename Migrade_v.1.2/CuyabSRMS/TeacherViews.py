@@ -16,7 +16,7 @@ from django.urls import reverse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-
+import pandas as pd
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
@@ -39,7 +39,7 @@ from django.template import RequestContext
 #Grade
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
-
+from django.core.files.uploadedfile import TemporaryUploadedFile
 
 
 @login_required
@@ -115,6 +115,7 @@ def process_google_sheet(spreadsheet_id, sheet_name):
                 range=f"{start_range}:{end_range}",  # Correct the range format
             ).execute()
             values = result.get('values', [])
+            print(values)
             return values
         
         def find_lrn_and_store_as_dict(sheet_values):
@@ -152,6 +153,7 @@ def process_google_sheet(spreadsheet_id, sheet_name):
 
         if existing_sheet_values:
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
+            
 
         return lrn_data
 
@@ -171,33 +173,119 @@ def get_sections(request):
 
     return JsonResponse({'sections': sections_data})
 
+def get_sheet_values(sheet, start_range, end_range):
+    values = []
+    for row in sheet.iter_rows(min_row=start_range[0], min_col=start_range[1], max_row=end_range[0], max_col=end_range[1]):
+        row_values = [cell.value for cell in row]
+        values.append(row_values)
+    return values
+
+def find_lrn_and_store_as_dict(sheet_values):
+    lrn_row_index = None
+    lrn_col_index = None
+    lrn_data = {}  # Initialize an empty dictionary to store LRN data
+
+    for i, row in enumerate(sheet_values):
+        if "LRN" in row:
+            lrn_row_index = i
+            lrn_col_index = row.index("LRN")
+            break
+
+    if lrn_row_index is not None:
+        current_lrn = None
+
+        for i in range(lrn_row_index + 1, len(sheet_values)):
+            row = sheet_values[i]
+            if lrn_col_index < len(row):
+                lrn_value = row[lrn_col_index]
+                if len(str(lrn_value)) == 12 and str(lrn_value).isdigit():
+                    current_lrn = lrn_value
+                    lrn_data[current_lrn] = []  # Initialize an empty list for the LRN
+                else:
+                    current_lrn = None  # Reset current LRN if it's not 12 digits
+
+                if current_lrn:
+                    non_empty_fields = [field for field in row if field is not None and str(field).strip() != '']
+                    lrn_data[current_lrn].append(non_empty_fields)  # Append non-empty fields to the LRN
+
+        return lrn_data
+    else:
+        print("Cell containing 'LRN' not found in the sheet.")
+        return lrn_data  # Return an empty dictionary if no LRN cell is found
+
 def upload(request):
     if request.method == 'POST':
         google_sheet_link = request.POST.get('google_sheet_link')
+        excel_file = request.FILES.get('excel_file')
 
-        # Extract the spreadsheet ID from the Google Sheet link using regular expression
-        spreadsheet_id_match = re.search(r'/d/([a-zA-Z0-9-_]+)', google_sheet_link)
-        
-        if spreadsheet_id_match:
-            spreadsheet_id = spreadsheet_id_match.group(1)
+        if google_sheet_link:
+            # Process Google Sheet
+            spreadsheet_id_match = re.search(r'/d/([a-zA-Z0-9-_]+)', google_sheet_link)
 
-            # Extract the sheet name if available
-            sheet_name_match = re.search(r'#gid=([0-9]+)', google_sheet_link)
-            sheet_name = sheet_name_match.group(1) if sheet_name_match else None
+            if spreadsheet_id_match:
+                spreadsheet_id = spreadsheet_id_match.group(1)
+                sheet_name_match = re.search(r'#gid=([0-9]+)', google_sheet_link)
+                sheet_name = sheet_name_match.group(1) if sheet_name_match else None
 
-            # Process the Google Sheet using your existing code
-            lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
+                lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
 
-            if lrn_data is not None:
+                if lrn_data is not None:
+                    return render(request, 'teacher_template/adviserTeacher/upload.html', {
+                        'lrn_data': lrn_data,
+                    })
+                else:
+                    messages.error(request, "Failed to process the Google Sheet")
+            else:
+                messages.error(request, "Invalid Google Sheet link")
+
+        elif excel_file:
+            # Check if the file has a valid Excel extension
+            valid_excel_extensions = ['.xls', '.xlsx']
+            file_extension = os.path.splitext(excel_file.name)[1].lower()
+
+            if file_extension not in valid_excel_extensions:
+                messages.error(request, "Invalid Excel file. Please upload a valid Excel file.")
+                return render(request, 'teacher_template/adviserTeacher/upload.html')
+
+            # Save the uploaded Excel file temporarily
+            temp_file_path = 'temp.xlsx'
+            with open(temp_file_path, 'wb') as temp_file:
+                for chunk in excel_file.chunks():
+                    temp_file.write(chunk)
+
+            # Convert .xls to .xlsx using pandas
+            xls_data = pd.read_excel(temp_file_path, sheet_name=None, header=None)
+            sheets = list(xls_data.keys())
+
+            if sheets:
+                # Use the first sheet in the Excel file
+                existing_sheet_name = sheets[0]
+            else:
+                os.remove(temp_file_path)  # Remove temporary file
+                return render(request, 'teacher_template/adviserTeacher/upload.html', {
+                    'message': "No sheets found in the Excel file",
+                })
+
+            xls_data[existing_sheet_name].to_excel(temp_file_path, index=False, header=None)
+
+            # Load the Excel workbook
+            workbook = openpyxl.load_workbook(temp_file_path)
+
+            # Get the values from the existing sheet
+            existing_sheet = workbook[existing_sheet_name]
+            existing_sheet_values = get_sheet_values(existing_sheet, (1, 1), (existing_sheet.max_row, existing_sheet.max_column))
+
+            if existing_sheet_values:
+                lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
                 return render(request, 'teacher_template/adviserTeacher/upload.html', {
                     'lrn_data': lrn_data,
                 })
             else:
-                messages.error(request, "Failed to process the Google Sheet")
+                os.remove(temp_file_path)  # Remove temporary file
+                messages.error(request, "Failed to process the Excel File")
         else:
-            messages.error(request, "Invalid Google Sheet link")
-
-    # Render the initial form if the request is not a POST or if there are form errors
+            messages.error(request, "Invalid Excel File")
+            
     return render(request, 'teacher_template/adviserTeacher/upload.html')
 
 @csrf_exempt

@@ -34,31 +34,75 @@ New Class List
 
 </style>
 <section class="content container mt-2">
-  
-  <div class="card p-5 text-center">
-    <div class="d-flex justify-content-between align-items-center">
-      <a class="back-button">&larr;</a>
-      <a class="help-toggle" title="Please go to your Google Sheets account, open the file, copy the URL, and paste it here."><i class="fas fa-question-circle"></i></a>
-    </div>
-    <h4>Upload SF1 Data</h4>
-    <p>Please paste the Google Sheet link containing your SF1 data below:</p>
-    <form method="post" action="{% url 'upload' %}" class="container text-center d-flex flex-column">
-      {% csrf_token %}
-      <input type="text" class="form-control" name="google_sheet_link" id="google_sheet_link" placeholder="Paste Here" required>
-      <button type="submit" id="upload_btn" class="btn btn-primary mt-3 container d-flex justify-content-center align-center">Upload</button>
-  </form>
-  
-  {% if messages %}
-  <div class="container text-center mt-3">
-      {% for message in messages %}
-      <div class="alert alert-danger" role="alert">
-          {{ message }}
+  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+    <ul class="nav nav-tabs text" role="tablist">
+        <li class="nav-item ">
+            <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#excel" role="tab"
+                aria-controls="excel" aria-selected="true">Excel File</a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#googlesheet" role="tab"
+                aria-selected="false">Google Sheet</a>
+        </li>
+    </ul>
+</div>
+
+<div class="tab-content tab-content-basic students-tab ">
+    <div class="tab-pane fade show active" id="excel" role="tabpanel" aria-labelledby="overview">
+      <div class="card p-5 text-center">
+        <div class="d-flex justify-content-between align-items-center">
+          <a class="back-button">&larr;</a>
+          <a class="help-toggle" title=""></i></a>
+        </div>
+        <h4>Upload Excel File</h4>
+        <p>Please upload the Excel file (.xls, .xlsx)</p>
+        <form method="post" action="{% url 'upload' %}" class="container text-center d-flex flex-column" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="file" class="form-control-sm" name="excel_file" id="excel_file" required>
+          <button type="submit" id="upload_btn" class="btn btn-primary mt-3 container d-flex justify-content-center align-center">Upload</button>
+      </form>
+      
+      
+      {% if messages %}
+      <div class="container text-center mt-3">
+          {% for message in messages %}
+          <div class="alert alert-danger" role="alert">
+              {{ message }}
+          </div>
+          {% endfor %}
       </div>
-      {% endfor %}
-  </div>
-  {% endif %}
-  
-  </div>
+      {% endif %}
+      
+      </div>
+    </div>
+    <div class="tab-pane fade show " id="googlesheet" role="tabpanel" aria-labelledby="googlesheet">
+      <div class="card p-5 text-center">
+        <div class="d-flex justify-content-end align-items-center"> 
+          <a class="help-toggle" title="Please go to your Google Sheets account, open the file, copy the URL, and paste it here."><i class="fas fa-question-circle"></i></a>
+        </div>
+        <h4>Upload SF1 Data</h4>
+        <p>Please paste the Google Sheet link containing your SF1 data below:</p>
+        <form method="post" action="{% url 'upload' %}" class="container text-center d-flex flex-column">
+          {% csrf_token %}
+          <input type="text" class="form-control" name="google_sheet_link" id="google_sheet_link" placeholder="Paste Here" required>
+          <button type="submit" id="upload_btn" class="btn btn-primary mt-3 container d-flex justify-content-center align-center">Upload</button>
+      </form>
+      
+      {% if messages %}
+      <div class="container text-center mt-3">
+          {% for message in messages %}
+          <div class="alert alert-danger" role="alert">
+              {{ message }}
+          </div>
+          {% endfor %}
+      </div>
+      {% endif %}
+      
+      </div>
+    </div>
+</div>
+
+
   <div id="excel-data-container">
     {% csrf_token %}
     <hr>
@@ -72,8 +116,8 @@ New Class List
             <th>Sex</th>
             <th>Birthday</th>
             <th>
-             <a class="select_grade_section text-danger" id="selectGradeSectionButton">Select Grade and
-              Section</a>
+              <a class="select_grade_section text-danger" id="selectGradeSectionButton" data-bs-toggle="modal" data-bs-target="#gradeSectionModal">Select Grade and Section</a>
+
             </th>
           </tr>
         </thead>
