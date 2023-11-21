@@ -38,8 +38,9 @@
         </ul>
         <div>
             <div class="btn-wrapper">
-                {% if grade_scores %}
-                <div>{{ grade_scores.0.grade }}</div>
+                {% if grade_score %}
+                <div>{{ grade_scores.grade }}</div>
+                <div>{{ grade_scores.section }}</div>
                 {% endif %}
             </div>
         </div>

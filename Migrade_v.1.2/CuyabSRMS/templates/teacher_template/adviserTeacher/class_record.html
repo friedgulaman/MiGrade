@@ -64,9 +64,14 @@ Adviser Teacher
         
         <div class="btn-wrapper">
             {% if students %}
-            <div>{{ students.0.grade }} {{ students.0.section }}</div>
+            <div>
+              <input type="text" id="hidden_grade" name="hidden_grade" value="{{ students.0.grade }}">
+              <input type="text" id="hidden_section" name="hidden_section" value="{{ students.0.section }}">
             {% endif %}
-         
+              <h3 id="subject" name="subject">{{ subject_name }}</h3>
+              <h3 id="quarter" name="quarter">{{ quarters }}</h3>
+            </div>
+            
         </div>
       </div>
     </div>

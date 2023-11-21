@@ -40,8 +40,8 @@ class Teacher(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Teacher: {self.first_name} {self.last_name}, Email: {self.email}, Middle Initial: {self.middle_ini}, Created: {self.created_at}"
-
+        return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+    
 class Student(models.Model):
     name = models.CharField(max_length=255)
     lrn = models.CharField(max_length=12, unique=True)
@@ -68,9 +68,37 @@ class Section(models.Model):
     def __str__(self):
         return self.name
 
+class Quarters(models.Model):
+    id = models.AutoField(primary_key=True)
+    quarters = models.CharField(max_length=30, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+    
+class Subject(models.Model):
+    id = models.AutoField(primary_key=True)  # Adding an 'id' field
+    name = models.CharField(max_length=100, unique=True)
+    written_works_percentage = models.PositiveIntegerField(default=40)
+    performance_task_percentage = models.PositiveIntegerField(default=40)
+    quarterly_assessment_percentage = models.PositiveIntegerField(default=20)
+
+    def __str__(self):
+        return self.name
+    
+    
+class ClassRecord(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    grade = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Grade
+    section = models.CharField(max_length=50, blank=True, null=True) # Add a foreign key to Section
+    subject = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Subject
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
+    quarters = models.CharField(max_length=50, blank=True, null=True)
 
 class GradeScores(models.Model):
     student_name = models.CharField(max_length=255, null=True, blank=True)
+    grade = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Grade
+    section = models.CharField(max_length=50, blank=True, null=True) # Add a foreign key to Section
     written_works_scores = models.JSONField()
     performance_task_scores = models.JSONField()
     quarterly_assessment_scores = models.JSONField()
@@ -90,8 +118,16 @@ class GradeScores(models.Model):
     weighted_score_quarterly = models.FloatField(default=0)
 
 
+
     def __str__(self):
         return self.student_name
+    
+    def get_class_record_id(self):
+        # Check if classRecord is not None before accessing its id
+        if self.classRecord:
+            return self.classRecord.id
+        else:
+            return None
 
 
 
@@ -184,34 +220,6 @@ class ExtractedData(models.Model):
         }
 
 
-class Subject(models.Model):
-    id = models.AutoField(primary_key=True)  # Adding an 'id' field
-    name = models.CharField(max_length=100, unique=True)
-    written_works_percentage = models.PositiveIntegerField(default=40)
-    performance_task_percentage = models.PositiveIntegerField(default=40)
-    quarterly_assessment_percentage = models.PositiveIntegerField(default=20)
-
-    def __str__(self):
-        return self.name
-
-class Quarters(models.Model):
-    id = models.AutoField(primary_key=True)
-    quarters = models.CharField(max_length=30, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-    
-class ClassRecord(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, unique=True)
-    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)  # Add a foreign key to Grade
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)  # Add a foreign key to Section
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)  # Add a foreign key to Subject
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
-
-    def __str__(self):
-        return self.name
-    
 
 class ActivityLog(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)

@@ -10,7 +10,7 @@ from django import forms
 import openpyxl
 from django.contrib import messages
 from django.shortcuts import render
-from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters
+from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -39,6 +39,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 
 #Grade
 from django.http import JsonResponse
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 
 @login_required
@@ -282,12 +284,20 @@ def class_record(request):
 
 
 def get_grade_details(request):
+
+    user = request.user
+
+    teacher = Teacher.objects.get(user=user)
     grades = Student.objects.values_list('grade', flat=True).distinct()
     sections = Student.objects.values_list('section', flat=True).distinct()
     subjects = Subject.objects.values_list('name', flat=True).distinct()
     quarters = Quarters.objects.values_list('quarters', flat=True).distinct()
+    
+
+
 
     context = {
+        'teacher': teacher,
         'grades': grades,
         'sections': sections,
         'subjects': subjects,
@@ -305,6 +315,23 @@ def get_students_by_grade_and_section(request):
         grade_name = request.POST.get("grade")
         section_name = request.POST.get("section")
         subject_name = request.POST.get("subject")
+        quarter_name = request.POST.get("quarter")
+        # teacher_id = request.POST.get("teacher")
+
+        user = request.user
+
+        teacher = get_object_or_404(Teacher, user=user)
+        teacher_identifier = str(teacher)
+
+        classrecord = ClassRecord(
+            name= grade_name + section_name + subject_name + quarter_name,
+            grade=grade_name,
+            section=section_name,
+            subject=subject_name,
+            quarters=quarter_name,
+            teacher=teacher,  # Assign the Teacher instance, not the ID
+        )
+        classrecord.save()
 
         # Query the database to retrieve students based on the selected grade and section
         students = Student.objects.filter(grade=grade_name, section=section_name)
@@ -334,6 +361,10 @@ def get_students_by_grade_and_section(request):
 
         context = {
             'students': students,
+            'subject_name': subject_name,
+            'quarters': quarter_name,
+            'grade_name': grade_name,
+            'section_name': section_name,
             'student_scores': student_scores,
             'written_works_percentage': weighted_written_works_percentage,
             'performance_task_percentage': weighted_performance_task_percentage,
@@ -347,8 +378,17 @@ def get_students_by_grade_and_section(request):
 
 def calculate_grades(request):
     if request.method == "POST":
+        # print(request.POST)
+        grade_name = request.POST.get("hidden_grade")
+        section_name = request.POST.get("hidden_section")
         print(request.POST)
-        students = Student.objects.all()
+        print(grade_name)
+        print(section_name)
+        # subject_name = request.POST.get("subject")
+        # quarter_name = request.POST.get("quarter")
+        
+
+        students = Student.objects.filter(grade=grade_name, section=section_name)
         
         for student in students:
             scores_written_works = []
@@ -428,13 +468,28 @@ def calculate_grades(request):
             initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
             transmuted_grades = transmuted_grade(initial_grades)
 
+
+
+
             # print(weight_input_written)
             # print(weight_input_performance)
             # print(weight_input_quarterly)
 
+
+            # class_record = ClassRecord(
+            #     grade =grade_name,
+            #     section = section_name,
+            #     quarter = quarter_name,
+            #     subject = subject_name,
+            # )
+
+            # class_record.save()
+
             # Create a new GradeScores object and populate its fields
             grade_scores = GradeScores(
                 student_name=student.name,
+                grade=grade_name,
+                section=section_name,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
                 quarterly_assessment_scores=scores_quarterly_assessment,
@@ -458,19 +513,56 @@ def calculate_grades(request):
             # Save the GradeScores object to the database
             grade_scores.save()
 
+            # grade_scores = GradeScores.objects.filter(grade=grade_name, section=section_name)
+
+            # context = {
+
+            #     'grade_scores': grade_scores
+            # }
+
+            # return render(request, "teacher_template/adviserTeacher/display_classrecord.html", context)
+
         # Redirect to a success page or render a response as needed
-        return redirect('display_classrecord')
+        # return redirect('display_classrecord')
+        return redirect('display_classrecord', grade=grade_name, section=section_name)
 
     return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
 
-def display_classrecord(request):
-    grade_scores = GradeScores.objects.all()
-    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
+def display_classrecord(request, grade=None, section=None):
+    # If grade and section are provided, filter the GradeScores
+    grade_scores = GradeScores.objects.filter(grade=grade, section=section)
 
+    context = {
+        'grade_scores': grade_scores,
+        'grade': grade,
+        'section': section,
+    }
 
+    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
 
+def view_classrecord(request):
+    # Assuming the user is logged in
+    user = request.user
 
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher)
+
+        context = {
+            'class_records': class_records,
+        }
+        print(class_records)
+
+        return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', context)
+    else:
+        # Handle the case where the user is not a teacher
+        return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
+    
 @login_required
 def display_students(request):
     # Get the currently logged-in user

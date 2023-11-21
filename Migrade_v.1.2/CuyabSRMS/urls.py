@@ -69,11 +69,12 @@ urlpatterns = [
     path('get_grade_details/', TeacherViews.get_grade_details, name='get_grade_details'),
     path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
-    path('display_classrecord', TeacherViews.display_classrecord, name='display_classrecord'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
-
-
+    path('display_classrecord/<str:grade>/<str:section>/', TeacherViews.display_classrecord, name='display_classrecord'), 
     path('display_students', TeacherViews.display_students, name='display_students'),
+    path('view_classrecord', TeacherViews.view_classrecord, name="view_classrecord"),
+    # urls.py
+
 
 
 

@@ -63,6 +63,7 @@ Adviser Teacher
                 {% endfor %}
             </select>
         </div>
+        <input type="hidden" id="teacher" name="teacher" value="{{ teacher.user.id }}">
         <div class="d-flex justify-content-end">
         <button type="submit" class="btn btn-primary mt-5">Get Students</button>
     </div>
