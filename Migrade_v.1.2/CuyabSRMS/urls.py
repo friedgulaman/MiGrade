@@ -26,11 +26,19 @@ urlpatterns = [
     path('get_user_details/', views.get_user_details),
     path('logout_user/', views.logout_user, name='logout_user'),
     path('profile_page/', views.profile_page, name='profile_page'),
+    path('update_profile_photo', views.update_profile_photo, name='update_profile_photo'),
+    path('update_teacher_profile', views.update_teacher_profile, name='update_teacher_profile'),
+    path('change_password/', views.change_password, name='change_password'), 
+    path('admin_profile_page/', views.admin_profile_page, name='admin_profile_page'),
+    path('admin_update_profile_photo', views.admin_update_profile_photo, name='admin_update_profile_photo'),
+    path('admin_update_profile', views.admin_update_profile, name='admin_update_profile'), 
+    path('admin_change_password/', views.admin_change_password, name='admin_change_password'),
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
     path('teachers_activity', views.teachers_activity, name='teachers_activity'),
-    path('update_profile_photo', views.update_profile_photo, name='update_profile_photo'),
-    path('update_teacher_profile', views.update_teacher_profile, name='update_teacher_profile'),       
-    path('change_password/', views.change_password, name='change_password'),
+    path('admin_activity', views.admin_activity, name='admin_activity'),
+    
+
+    
 
 
 

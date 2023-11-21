@@ -6,7 +6,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>CUYAB SRMS - MIGRADE</title>
+  <title>{% block title %}CUYAB SRMS - MIGRADE{% endblock %}</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="{% static 'star-admin/vendors/feather/feather.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/mdi/css/materialdesignicons.min.css' %}">
@@ -14,15 +14,9 @@
   <link rel="stylesheet" href="{% static 'star-admin/vendors/typicons/typicons.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/simple-line-icons/css/simple-line-icons.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/css/vendor.bundle.base.css' %}">
-  <!-- endinject -->
-  <!-- Plugin css for this page -->
-  <link rel="stylesheet" href="{% static 'star-admin/vendors/datatables.net-bs4/dataTables.bootstrap4.css' %}">
-  <link rel="stylesheet" href="{% static 'star-admin/js/select.dataTables.min.css' %}">
-  <!-- End plugin css for this page -->
-  <!-- inject:css -->
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
-  <!-- endinject -->
-  <link rel="shortcut icon" href="{% static 'star-admin/images/favicon.png' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 </head>
 <style>
   .description {
@@ -41,30 +35,16 @@
 <div class="container-scroller">
 
     <!-- partial:partials/_navbar.html -->
-    <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row bg bg-danger">
+    <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
         <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
           <div class="me-3">
             <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-bs-toggle="minimize">
               <span class="icon-menu"></span>
             </button>
           </div>
-          <div>
-            <a class="navbar-brand brand-logo" href="{% url 'home_admin' %}">
-              <img class="img-fluid fs-1" src="static/star-admin/images/logo_migrade_text.png" alt="logo" />
-            </a>
-            <a class="navbar-brand brand-logo-mini" href="{% url 'home_admin' %}">
-              <img class="img-fluid" src="static/star-admin/images/logo_migrade_mini.png" alt="logo" />
-            </a>
-          </div>
         </div>
         <div class="navbar-menu-wrapper d-flex align-items-top " id="nav"> 
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <form class="search-form" action="#">
-                <i class="icon-search"></i>
-                <input type="search" class="form-control" placeholder="Search Here" title="Search here">
-              </form>
-            </li>
             <li class="nav-item dropdown">
               <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
                 <i class="icon-mail icon-lg"></i>
@@ -151,8 +131,8 @@
                   <p class="mb-1 font-weight-semibold">{{ user }}</p>
                   <p class="fw-light text-muted mb-0">{{ user.email }}</p>
                 </div>
-                <a class="dropdown-item" href="{% url 'profile_page' %}"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-                <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
+                <a class="dropdown-item" href="{% url 'admin_profile_page' %}"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
+                <a class="dropdown-item" href="{% url 'admin_activity' %}"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
                 <a class="dropdown-item"  href="{% url 'logout_user' %}"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
               </div>
             </li>
@@ -217,7 +197,10 @@
   <script src="{% static 'star-admin/js/jquery.cookie.js' %}" type="text/javascript"></script>
   <script src="{% static 'star-admin/js/dashboard.js' %}"></script>
   <script src="{% static 'star-admin/js/Chart.roundedBarCharts.js' %}"></script>
-  <!-- End custom js for this page-->
+
+  <!-- New Custom Js File Migrade  -->
+  <script src="{% static 'migrade_js/js/upload_button.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 
 </html>
