@@ -591,3 +591,5 @@ def student_list_for_class(request):
     }
 
     return render(request, 'teacher_template/adviserTeacher/student_list.html', context)
+
+
