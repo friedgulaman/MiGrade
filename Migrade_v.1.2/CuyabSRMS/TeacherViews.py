@@ -41,6 +41,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from .forms import GradeScoresForm
 
 
 @login_required
@@ -381,9 +382,13 @@ def calculate_grades(request):
         # print(request.POST)
         grade_name = request.POST.get("hidden_grade")
         section_name = request.POST.get("hidden_section")
+        subject_name = request.POST.get("hidden_subject")
+        quarters_name = request.POST.get("hidden_quarter")
         print(request.POST)
         print(grade_name)
         print(section_name)
+
+        class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
         # quarter_name = request.POST.get("quarter")
         
@@ -469,27 +474,10 @@ def calculate_grades(request):
             transmuted_grades = transmuted_grade(initial_grades)
 
 
-
-
-            # print(weight_input_written)
-            # print(weight_input_performance)
-            # print(weight_input_quarterly)
-
-
-            # class_record = ClassRecord(
-            #     grade =grade_name,
-            #     section = section_name,
-            #     quarter = quarter_name,
-            #     subject = subject_name,
-            # )
-
-            # class_record.save()
-
             # Create a new GradeScores object and populate its fields
             grade_scores = GradeScores(
                 student_name=student.name,
-                grade=grade_name,
-                section=section_name,
+                class_record=class_record,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
                 quarterly_assessment_scores=scores_quarterly_assessment,
@@ -524,23 +512,27 @@ def calculate_grades(request):
 
         # Redirect to a success page or render a response as needed
         # return redirect('display_classrecord')
-        return redirect('display_classrecord', grade=grade_name, section=section_name)
+        return redirect('display_classrecord', class_record_id=class_record.id)
 
     return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
+def display_classrecord(request, class_record_id=None):
+    # If class_record_id is provided, retrieve the ClassRecord object
+    class_record = get_object_or_404(ClassRecord, id=class_record_id)
 
-def display_classrecord(request, grade=None, section=None):
-    # If grade and section are provided, filter the GradeScores
-    grade_scores = GradeScores.objects.filter(grade=grade, section=section)
+    # If class_record_id is not provided, you may want to handle this case differently
+    # For example, you can provide a list of available ClassRecord objects for the user to choose from
+
+    # Filter the GradeScores based on the retrieved ClassRecord object
+    grade_scores = GradeScores.objects.filter(class_record=class_record)
 
     context = {
+        'class_record': class_record,
         'grade_scores': grade_scores,
-        'grade': grade,
-        'section': section,
     }
 
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
-
+    
 def view_classrecord(request):
     # Assuming the user is logged in
     user = request.user
@@ -603,3 +595,84 @@ def display_students(request):
         # Handle the case where the user is not a teacher (user_type is not 2)
         return render(request, 'teacher_template/adviserTeacher/classes.html')
 
+def edit_record(request, record_id):
+    # Retrieve the specific record based on the record_id
+    record = GradeScores.objects.get(pk=record_id)
+
+    if request.method == 'POST':
+        form = GradeScoresForm(request.POST, instance=record)
+        if form.is_valid():
+            # Save the updated form data to the database
+            form.save()
+            # Redirect to the same page or another page after successful update
+            return redirect('edit_record', record_id=record_id)
+    else:
+        form = GradeScoresForm(instance=record)
+
+    context = {
+        'form': form,
+        'record': record,
+    }
+
+    return render(request, 'teacher_template/adviserTeacher/edit_records.html', context)
+
+
+def display_quarterly_summary(request, grade, section, subject):
+    class_records = ClassRecord.objects.filter(grade=grade, section=section, subject=subject)
+    
+    quarterly_summaries = []
+    for class_record in class_records:
+        grade_scores = GradeScores.objects.filter(class_record=class_record)
+        quarterly_summaries.append({
+            'class_record': class_record,
+            'grade_scores': grade_scores,
+        })
+
+    context = {
+        'quarterly_summaries': quarterly_summaries,
+    }
+
+    return render(request, "teacher_template/adviserTeacher/summary_of_quarterly_grade.html", context)
+
+def display_final_grades(request, grade, section):
+    students = Student.objects.filter(grade=grade, section=section)
+    subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+    quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
+
+    final_grades = []
+    for student in students:
+        student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
+
+        for subject in subjects:
+            subject_name = subject['subject']
+            subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+
+            # Retrieve initial grades per quarter
+            for quarter in quarters:
+                grade_score = GradeScores.objects.filter(
+                    class_record__grade=grade,
+                    class_record__section=section,
+                    class_record__subject=subject_name,
+                    class_record__quarters=quarter,
+                    student_name=student.name
+                ).first()
+
+                subject_info['quarter_grades'][quarter] = grade_score.initial_grades if grade_score else 0
+
+            # Calculate the final grade for the subject
+            subject_info['final_grade'] = sum(subject_info['quarter_grades'].values()) / len(subject_info['quarter_grades']) \
+                if len(subject_info['quarter_grades']) > 0 else 0
+
+            student_data['subjects'].append(subject_info)
+
+        # Append student data to the final grades
+        final_grades.append(student_data)
+
+    context = {
+        'grade': grade,
+        'section': section,
+        'final_grades': final_grades,
+    }
+
+
+    return render(request, "teacher_template/adviserTeacher/final_grades.html", context)

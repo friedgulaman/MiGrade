@@ -47,10 +47,12 @@ urlpatterns = [
     path('add_grade_section', AdminViews.add_grade_section, name='add_grade_section'),
     path('search/', AdminViews.search_students, name='search_students'),
     path('upload_documents/', AdminViews.upload_documents_ocr, name='upload_documents'),
-    path('save_edited_data/', AdminViews.save_edited_data, name='save_edited_data'),
     path('sf10/', AdminViews.sf10_views, name='sf10_view'),
     path('add_subject/', AdminViews.add_subject, name='add_subject'),
     path('subject_list/', AdminViews.subject_list, name='subject_list'),
+    # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
+    path('save/', AdminViews.save_edited_data, name='save_edited_data'),
+
 
 
 
@@ -70,11 +72,13 @@ urlpatterns = [
     path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
-    path('display_classrecord/<str:grade>/<str:section>/', TeacherViews.display_classrecord, name='display_classrecord'), 
+    path('display_classrecord/<int:class_record_id>/', TeacherViews.display_classrecord, name='display_classrecord'),
     path('display_students', TeacherViews.display_students, name='display_students'),
     path('view_classrecord', TeacherViews.view_classrecord, name="view_classrecord"),
+    path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
+    path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
+    path('display_final_grades/<str:grade>/<str:section>/', TeacherViews.display_final_grades, name='display_final_grades'),
     # urls.py
-
 
 
 

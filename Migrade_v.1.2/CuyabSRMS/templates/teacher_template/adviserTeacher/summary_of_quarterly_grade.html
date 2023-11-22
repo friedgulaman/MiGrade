@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quarterly Grades Summary</title>
+</head>
+<body>
+
+    <h2>Quarterly Grades Summary</h2>
+
+    {% for summary in quarterly_summaries %}
+      <h3>Class Record Information</h3>
+      <p>Grade: {{ summary.class_record.grade }}</p>
+      <p>Section: {{ summary.class_record.section }}</p>
+      <p>Subject: {{ summary.class_record.subject }}</p>
+      <p>Quarters: {{ summary.class_record.quarters}}</p>
+    
+      <h3>Student Grades Summary</h3>
+    
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Initial Grades</th>
+            <th>Transmuted Grades</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for grade_score in summary.grade_scores %}
+            <tr>
+              <td>{{ grade_score.student_name }}</td>
+              <td>{{ grade_score.initial_grades }}</td>
+              <td>{{ grade_score.transmuted_grades }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+    
+    <a href="{% url 'home_adviser_teacher' %}">Back to Home</a>
+
+</body>
+</html>

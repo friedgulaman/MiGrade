@@ -1,0 +1,48 @@
+<!-- final_grades.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Grades</title>
+</head>
+<body>
+
+<h1>Final Grades</h1>
+
+{% if final_grades %}
+    {% for subject in final_grades.0.subjects %}
+        <h2>{{ subject.name }} Final Grades</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Grade</th>
+                    <th>Section</th>
+                    <th>{{ subject.name }} - Final Grade</th>
+                    {% for quarter in subject.quarter_grades.keys %}
+                        <th> {{ quarter }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_data in final_grades %}
+                    <tr>
+                        <td>{{ student_data.id }}</td>
+                        <td>{{ student_data.name }}</td>
+                        <td>{{ student_data.grade }}</td>
+                        <td>{{ student_data.section }}</td>
+                        <td>{{ subject.final_grade|floatformat:2 }}</td>
+                        {% for grade in subject.quarter_grades.values %}
+                            <td>{{ grade|floatformat:2 }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+{% else %}
+    <p>No final grades found.</p>
+{% endif %}
+
+</body>
+</html>

@@ -97,8 +97,7 @@ class ClassRecord(models.Model):
 
 class GradeScores(models.Model):
     student_name = models.CharField(max_length=255, null=True, blank=True)
-    grade = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Grade
-    section = models.CharField(max_length=50, blank=True, null=True) # Add a foreign key to Section
+    class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
     written_works_scores = models.JSONField()
     performance_task_scores = models.JSONField()
     quarterly_assessment_scores = models.JSONField()
@@ -166,22 +165,22 @@ class ExtractedData(models.Model):
     sex = models.CharField(max_length=10, blank=True, null=True)
     name_of_school = models.CharField(max_length=255, blank=True, null=True)
 
-    def save_extracted_data(self, key_value_pairs):
-        self.last_name = key_value_pairs.get("LAST NAME", "")
-        self.first_name = key_value_pairs.get("FIRST NAME", "")
-        self.middle_name = key_value_pairs.get("MIDDLE NAME", "")
-        self.lrn = key_value_pairs.get("LRN", "")
-        self.school_year = key_value_pairs.get("SCHOOL YEAR", "")
-        birthdate_str = key_value_pairs.get("BIRTHDATE", "")
+    def save_extracted_data(self, extracted_data):
+        self.last_name = extracted_data.get('last_name', '')
+        self.first_name = extracted_data.get('first_name', '')
+        self.middle_name = extracted_data.get('middle_name', '')
+        self.lrn = extracted_data.get('lrn', '')
+        self.school_year = extracted_data.get('school_year', '')
+        birthdate_str = extracted_data.get('birthdate', '')
         # Convert birthdate string to datetime
         try:
             self.birthdate = datetime.strptime(birthdate_str, "%m/%d/%Y").date()
         except ValueError:
             self.birthdate = None  # Set to None if the birthdate format is invalid
-        self.classified_as_grade = key_value_pairs.get("Classified as Grade:", "")
-        self.general_average = key_value_pairs.get("GENERAL AVERAGE", "")
-        self.sex = key_value_pairs.get("SEX", "")
-        self.name_of_school = key_value_pairs.get("Name_of_School", "")
+        self.classified_as_grade = extracted_data.get('classified_as_grade', '')
+        self.general_average = extracted_data.get('general_average', '')
+        self.sex = extracted_data.get('sex', '')
+        self.name_of_school = extracted_data.get('name_of_school', '')
         self.save()
 
     def populate_data(self, data):

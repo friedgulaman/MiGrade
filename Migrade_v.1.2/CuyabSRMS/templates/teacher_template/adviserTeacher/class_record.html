@@ -30,10 +30,50 @@ Adviser Teacher
     }
 
   </style>
+  
       
   <section class="content container mt-2">
     <form method="post" action="{% url 'calculate_grades' %}">
         {% csrf_token %}
+
+        <div>
+          <label>Region</label>
+          <input type="text" id="" name="">
+          <label>Division</label>
+          <input type="text" id="" name="">
+          <label>School ID</label>
+          <input type="text" id="" name="">
+          <label>School Name</label>
+          <input type="text" id="" name="">
+          <label>District</label>
+          <input type="text" id="" name="">
+          <label>School Year</label>
+          <input type="text" id="" name="">
+          <label>Quarter</label>
+          <input type="text" id="" name="">
+          <label>Grade and Section</label>
+          <input type="text" id="" name="">
+          <label>Teacher</label>
+          <input type="text" id="" name="">
+          <label>Subject</label>
+          <input type="text" id="" name="">
+        </div>
+      <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs " role="tablist">
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Update/Edit</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Delete</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Save</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Download</a>
+          </li>
+        </ul>
+    </div>
     <div class="d-sm-flex align-items-center justify-content-between border-bottom">
       <ul class="nav nav-tabs " role="tablist">
         <li class="nav-item">
@@ -48,6 +88,7 @@ Adviser Teacher
         <!-- <li class="nav-item">
           <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#initial_grade" role="tab" aria-selected="false">Initial Grades</a>
         </li> -->
+        <li>      <button type="submit">Submit</button></li>
       </ul>
       <div>
 
@@ -68,8 +109,8 @@ Adviser Teacher
               <input type="text" id="hidden_grade" name="hidden_grade" value="{{ students.0.grade }}">
               <input type="text" id="hidden_section" name="hidden_section" value="{{ students.0.section }}">
             {% endif %}
-              <h3 id="subject" name="subject">{{ subject_name }}</h3>
-              <h3 id="quarter" name="quarter">{{ quarters }}</h3>
+              <input type="text" id="hidden_subject" name="hidden_subject" value="{{ subject_name }}">
+              <input type="text" id="hidden_quarter" name="hidden_quarter" value="{{ quarters }}">
             </div>
             
         </div>
@@ -302,7 +343,7 @@ Adviser Teacher
       </div>
       </div> -->
       </div>
-      <button type="submit">Submit</button>
+
     </form>
   </section>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
