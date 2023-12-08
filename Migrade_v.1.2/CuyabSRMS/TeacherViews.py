@@ -388,6 +388,9 @@ def calculate_grades(request):
         print(grade_name)
         print(section_name)
 
+        scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
+        total_ww_hps = request.POST.get("written_works_weight")
+
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
         # quarter_name = request.POST.get("quarter")
@@ -478,11 +481,13 @@ def calculate_grades(request):
             grade_scores = GradeScores(
                 student_name=student.name,
                 class_record=class_record,
+                scores_hps=scores_ww_hps,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
                 quarterly_assessment_scores=scores_quarterly_assessment,
                 initial_grades=initial_grades,
                 transmuted_grades=transmuted_grades,
+                total_hps=total_ww_hps,
                 total_score_written=total_score_written,
                 total_max_score_written=total_max_score_written,
                 total_score_performance=total_score_performance,
@@ -676,3 +681,80 @@ def display_final_grades(request, grade, section):
 
 
     return render(request, "teacher_template/adviserTeacher/final_grades.html", context)
+
+
+def update_score(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        student_name = request.POST.get('student_name')
+        new_score = request.POST.get('new_score')
+        column_index = int(request.POST.get('column_index'))
+        section_id = request.POST.get('section_id')  # Added section_id for differentiation
+        class_record_id = request.POST.get('class_record_id')
+        scores_hps_data = request.POST.getlist('scores_hps[]')  # Retrieve scores_hps data as a list
+
+        print("Request POST Data:", request.POST)
+        print("Class Record ID:", class_record_id)
+        print("Scores HPS Data:", scores_hps_data)  # Add this line for debugging
+
+        try:
+            # Retrieve the GradeScores object based on student name and class record id
+            grade_score = GradeScores.objects.get(
+                student_name=student_name,
+                class_record__id=class_record_id
+            )
+
+            print("Grade Score Found:", grade_score)  # Add this line for debugging
+        except GradeScores.DoesNotExist:
+            print(f"Not Found: /update_score/")
+            return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
+  # Add this line for debugging
+
+        # Determine the field to update based on the section_id
+        if section_id == 'written_works':
+            scores_field = 'written_works_scores'
+            total_field = 'total_score_written'
+            percentage_field = 'percentage_score_written'
+            weighted_field = 'weighted_score_written'
+            hps_field = 'scores_hps_written'  # Adjust with your actual field name for HPS
+        elif section_id == 'performance_task':
+            scores_field = 'performance_task_scores'
+            total_field = 'total_score_performance'
+            percentage_field = 'percentage_score_performance'
+            weighted_field = 'weighted_score_performance'
+            hps_field = 'scores_hps_performance'  # Adjust with your actual field name for HPS
+        elif section_id == 'quarterly_assessment':
+            scores_field = 'quarterly_assessment_scores'
+            total_field = 'total_score_quarterly'
+            percentage_field = 'percentage_score_quarterly'
+            weighted_field = 'weighted_score_quarterly'
+            hps_field = 'scores_hps_quarterly'  # Adjust with your actual field name for HPS
+        else:
+            return JsonResponse({'error': 'Invalid section_id'})
+
+        # Update the specific value in the scores list
+        scores_list = list(map(int, getattr(grade_score, scores_field)))
+        scores_list[column_index] = int(new_score)
+        setattr(grade_score, scores_field, scores_list)
+
+        # Update HPS data
+        hps_list = list(map(int, scores_hps_data))
+        setattr(grade_score, hps_field, hps_list)
+
+        # Recalculate total_score, percentage_score, and weighted_score
+        setattr(grade_score, total_field, sum(scores_list))
+        setattr(grade_score, percentage_field, (getattr(grade_score, total_field) / 100) * 100)
+        setattr(grade_score, weighted_field, getattr(grade_score, percentage_field) * 0.2)
+
+        grade_score.save()
+
+        # Return updated data as JSON response
+        response_data = {
+            'total_score': getattr(grade_score, total_field),
+            'percentage_score': getattr(grade_score, percentage_field),
+            'weighted_score': getattr(grade_score, weighted_field),
+            'scores_hps': getattr(grade_score, hps_field),
+        }
+
+        return JsonResponse(response_data)
+
+    return JsonResponse({'error': 'Invalid request'})

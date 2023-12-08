@@ -78,6 +78,7 @@ urlpatterns = [
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
     path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
     path('display_final_grades/<str:grade>/<str:section>/', TeacherViews.display_final_grades, name='display_final_grades'),
+    path('update_score/', TeacherViews.update_score, name='update_score'),
     # urls.py
 
 

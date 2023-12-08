@@ -98,11 +98,13 @@ class ClassRecord(models.Model):
 class GradeScores(models.Model):
     student_name = models.CharField(max_length=255, null=True, blank=True)
     class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
+    scores_hps = models.JSONField()
     written_works_scores = models.JSONField()
     performance_task_scores = models.JSONField()
     quarterly_assessment_scores = models.JSONField()
     initial_grades = models.FloatField(default=0)
     transmuted_grades = models.FloatField(default=0)
+    total_hps=models.FloatField(default=0)
     total_score_written = models.FloatField(default=0)
     total_max_score_written = models.FloatField(default=0)
     total_score_performance = models.FloatField(default=0)
@@ -127,7 +129,7 @@ class GradeScores(models.Model):
             return self.classRecord.id
         else:
             return None
-
+  
 
 
 @receiver(post_save, sender=CustomUser)
