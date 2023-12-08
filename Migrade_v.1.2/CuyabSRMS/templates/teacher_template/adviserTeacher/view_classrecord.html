@@ -4,7 +4,7 @@
     <title>Class Records</title>
 </head>
 <body>
-
+    <a href="{% url 'home_adviser_teacher' %}">Back to Home</a>
 <h1>Class Records</h1>
 
 {% if class_records %}
@@ -44,6 +44,12 @@
                         <a href="{% url 'display_final_grades' grade=record.grade section=record.section %}">
                             <button>Show Final Grades</button>
                         </a>
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Delete Class Record</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

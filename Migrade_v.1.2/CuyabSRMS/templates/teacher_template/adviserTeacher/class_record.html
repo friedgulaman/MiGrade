@@ -211,7 +211,7 @@ Adviser Teacher
                             {% for i in 1|num_range %}
                             <td><input name="max_performance_task_{{ i }}"></td>
                             {% endfor %}
-                            <td id="total_max_performance_task">Total</td>
+                            <td id="total_max_performance_task" name="total_max_performance_task">Total</td>
                             <th>100.00</th>
                             <td><input type="text" id="performance_task_weight" name="performance_task_weight" value="{{ performance_task_percentage }}" /></td>
                             <!-- <th>
@@ -270,7 +270,7 @@ Adviser Teacher
                         {% for i in 1|num_range_qa %}
                         <td><input  name="max_quarterly_assessment_{{ i }}"></td>
                         {% endfor %}
-                        <td id="total_max_quarterly">Total</td>
+                        <td id="total_max_quarterly" name="total_max_quarterly">Total</td>
                         <th>100.00</th>
                         <td> <input type="text" id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ quarterly_assessment_percentage }}" /></td>
                       

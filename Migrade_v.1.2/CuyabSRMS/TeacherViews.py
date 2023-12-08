@@ -389,7 +389,18 @@ def calculate_grades(request):
         print(section_name)
 
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
-        total_ww_hps = request.POST.get("written_works_weight")
+        scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
+        scores_qa_hps = [request.POST.get(f"max_quarterly_assessment_{i}") for i in range(1, 5)]
+        total_ww_hps = request.POST.get("total_max_written_works")
+        total_pt_hps = request.POST.get("total_max_performance_task")
+        total_qa_hps = request.POST.get("total_max_quarterly")
+        weight_written= request.POST.get("written_works_weight")
+        weight_performance= request.POST.get("performance_task_weight")
+        weight_quarterly= request.POST.get("quarterly_assessment_weight")
+
+        print(scores_pt_hps)
+        print(scores_qa_hps)
+        print(scores_ww_hps)
 
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
@@ -416,16 +427,16 @@ def calculate_grades(request):
 
             for i in range(1, 11):
                 # Retrieve scores and maximum scores for each component
-                written_works = request.POST.get(f"scores_written_{student.id}_{i}", "0")
-                max_written_works = request.POST.get(f"max_written_works_{i}", "0")  # Change this to the actual maximum score
-                performance_task = request.POST.get(f"scores_performance_task_{student.id}_{i}", "0")
-                max_performance_task = request.POST.get(f"max_performance_task_{i}", "0")  # Change this to the actual maximum score
+                written_works = request.POST.get(f"scores_written_{student.id}_{i}")
+                max_written_works = request.POST.get(f"max_written_works_{i}" )  # Change this to the actual maximum score
+                performance_task = request.POST.get(f"scores_performance_task_{student.id}_{i}" )
+                max_performance_task = request.POST.get(f"max_performance_task_{i}")  # Change this to the actual maximum score
                 # quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
                 # max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
                 
                 # Retrieve weights for each component
-                weight_input_written = float(request.POST.get(f"written_works_weight", "0"))  # Change this to the actual weight for written works
-                weight_input_performance = float(request.POST.get(f"performance_task_weight", "0"))  # Change this to the actual weight for performance tasks
+                weight_input_written = float(request.POST.get(f"written_works_weight", ))  # Change this to the actual weight for written works
+                weight_input_performance = float(request.POST.get(f"performance_task_weight" ))  # Change this to the actual weight for performance tasks
                 # weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
                 
                 scores_written_works.append(float(written_works) if written_works.isnumeric() else 0)
@@ -442,10 +453,10 @@ def calculate_grades(request):
             # Perform your calculations (as in your original code)
 
             for i in range(1, 5):
-                quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
-                max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
+                quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}")
+                max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}")  # Change this to the actual maximum score
                 
-                weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight", "0"))  # Change this to the actual weight for quarterly assessments
+                weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
                 scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
                 total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
                 total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
@@ -481,13 +492,17 @@ def calculate_grades(request):
             grade_scores = GradeScores(
                 student_name=student.name,
                 class_record=class_record,
-                scores_hps=scores_ww_hps,
+                scores_hps_written=scores_ww_hps,
+                scores_hps_performance=scores_pt_hps,
+                scores_hps_quarterly=scores_qa_hps,
+                total_ww_hps=total_ww_hps,
+                total_qa_hps=total_qa_hps,
+                total_pt_hps=total_pt_hps,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
                 quarterly_assessment_scores=scores_quarterly_assessment,
                 initial_grades=initial_grades,
                 transmuted_grades=transmuted_grades,
-                total_hps=total_ww_hps,
                 total_score_written=total_score_written,
                 total_max_score_written=total_max_score_written,
                 total_score_performance=total_score_performance,
@@ -497,10 +512,12 @@ def calculate_grades(request):
                 percentage_score_written=percentage_score_written,
                 percentage_score_performance=percentage_score_performance,
                 percentage_score_quarterly=percentage_score_quarterly,
-                
                 weighted_score_written=weighted_score_written,
                 weighted_score_performance=weighted_score_performance,
                 weighted_score_quarterly=weighted_score_quarterly,
+                weight_input_written=weight_input_written,
+                weight_input_performance=weight_input_performance,
+                weight_input_quarterly=weight_input_quarterly
             )
 
             # Save the GradeScores object to the database
@@ -737,7 +754,7 @@ def update_score(request):
         setattr(grade_score, scores_field, scores_list)
 
         # Update HPS data
-        hps_list = list(map(int, scores_hps_data))
+        hps_list = [int(float(score)) for score in scores_hps_data]
         setattr(grade_score, hps_field, hps_list)
 
         # Recalculate total_score, percentage_score, and weighted_score
@@ -758,3 +775,61 @@ def update_score(request):
         return JsonResponse(response_data)
 
     return JsonResponse({'error': 'Invalid request'})
+
+
+def update_highest_possible_scores(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        class_record_id = request.POST.get('class_record_id')
+        section_id = request.POST.get('section_id')
+        new_hps_data = request.POST.getlist('new_hps_data[]')
+
+        try:
+            # Retrieve GradeScores objects based on the given class record id
+            grade_scores = GradeScores.objects.filter(class_record_id=class_record_id)
+        except GradeScores.DoesNotExist:
+            return JsonResponse({'error': 'GradeScores not found for the given class record ID.'}, status=404)
+
+        # Determine the field to update based on the section_id
+        if section_id == 'written_works':
+            hps_field = 'scores_hps_written'
+            total_hps_field = 'total_ww_hps'
+        elif section_id == 'performance_task':
+            hps_field = 'scores_hps_performance'
+            total_hps_field = 'total_pt_hps'
+        elif section_id == 'quarterly_assessment':
+            hps_field = 'scores_hps_quarterly'
+            total_hps_field = 'total_qa_hps'
+        else:
+            return JsonResponse({'error': 'Invalid section_id'})
+
+        # Update the highest possible scores data for each GradeScores object
+        for grade_score in grade_scores:
+            # Convert the new_hps_data to a list of integers, handling empty strings
+            new_hps_list = [float(value) if value != '' else 0.0 for value in new_hps_data]
+
+            # Update the scores_hps field with the new list
+            setattr(grade_score, hps_field, new_hps_list)
+            grade_score.save()
+
+            # Update the total_hps_field
+            total_hps_value = sum(new_hps_list)
+            setattr(grade_score, total_hps_field, total_hps_value)
+            grade_score.save()
+
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'error': 'Invalid request'})
+
+
+def delete_classrecord(request, class_record_id):
+    class_record = get_object_or_404(ClassRecord, id=class_record_id)
+
+    if request.method == 'POST':
+        class_record.delete()
+        return redirect('class_records_list')  # Redirect to your class records list view
+
+    return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_record': class_record})
+
+def class_records_list(request):
+    class_records = ClassRecord.objects.all()
+    return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_records': class_records})

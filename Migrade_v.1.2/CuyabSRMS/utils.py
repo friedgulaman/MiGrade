@@ -80,7 +80,7 @@ def transmuted_grade(initial_grade):
                     elif 4.00 <= initial_grade <= 7.99:
                         return 61
                     elif 0 <= initial_grade <= 3.99:
-                        return 60
+                        return 0
                     else:
                         return initial_grade
                     
