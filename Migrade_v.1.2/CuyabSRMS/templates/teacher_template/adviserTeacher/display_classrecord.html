@@ -49,6 +49,7 @@
         </div>
     </div>
 
+
         <div class="tab-content tab-content-basic">
             <div class="tab-pane fade show active" id="written_works" role="tabpanel" aria-labelledby="home-tab">
                 <div class="mb-3">
@@ -99,9 +100,10 @@
                                     {% for score in record.written_works_scores %}
                                         <td class="score-cell" contenteditable="true">{{ score }}</td>
                                     {% endfor %}
-                                    <td>{{ record.total_score_written }}</td>
-                                    <td>{{ record.percentage_score_written }}</td>
-                                    <td>{{ record.weighted_score_written }}</td>
+                                    <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written }}</td>
+                                    <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written }}">
+                                    <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written }}</td>
+                                    <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -110,6 +112,7 @@
                     {% endif %}
                 </div>
             </div>
+
 
             <!-- Add similar sections for Performance Task, Quarterly Assessment, and Initial Grades -->
             <!-- Performance Task -->
@@ -148,7 +151,7 @@
                                     <td>100.00</td>
                                     {% for record in grade_scores %}
                                     {% if forloop.first %}
-                                    <td id="written_works_weight" name="written_works_weight">{{ record.weight_input_performance }}</td>
+                                    <td id="performance_task_weight" name="performance_task_weight">{{ record.weight_input_performance }}</td>
                                     {% endif %}
                                     {% endfor %}
                                 </tr>
@@ -162,9 +165,10 @@
                                     {% for score in record.performance_task_scores %}
                                     <td class="score-cell" contenteditable="true">{{ score }}</td>
                                     {% endfor %}
-                                    <td>{{ record.total_score_performance }}</td>
-                                    <td>{{ record.percentage_score_performance }}</td>
-                                    <td>{{ record.weighted_score_performance}}</td>
+                                    <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance }}</td>
+                                    <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance }}">
+                                    <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance }}</td>
+                                    <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -173,6 +177,7 @@
                     {% endif %}
                 </div>
             </div>
+
 
         <!-- Quarterly Assessment -->
         <div class="tab-pane fade show" id="quarterly_assessment" role="tabpanel" aria-labelledby="contact-tab">
@@ -204,7 +209,7 @@
                                 <td>100.00</td>
                                 {% for record in grade_scores %}
                                 {% if forloop.first %}
-                                <td id="written_works_weight" name="written_works_weight" value="{{ record.weight_input_quarterly }}">{{ record.weight_input_quarterly }}</td>
+                                <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ record.weight_input_quarterly }}">{{ record.weight_input_quarterly }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -218,9 +223,10 @@
                                 {% for score in record.quarterly_assessment_scores %}
                                 <td class="score-cell" contenteditable="true">{{ score }}</td>
                                 {% endfor %}
-                                <td>{{ record.total_score_quarterly}}</td>
-                                <td>{{ record.percentage_score_quarterly }}</td>
-                                <td>{{ record.weighted_score_quarterly }}</td>
+                                <td id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly}}</td>
+                                <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
+                                <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly }}</td>
+                                <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -229,6 +235,7 @@
                 {% endif %}
             </div>
         </div>
+
 
         <!-- Initial Grades -->
         <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
@@ -263,41 +270,99 @@
     </div>
 </section>
 
+
+
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
+
+
+    
 $(document).ready(function () {
+
+    function updateTotalMaxWrittenWorks() {
+            var totalMaxWrittenWorks = 0;
+            $('#written_works .highest-possible-scores[contenteditable="true"]').each(function () {
+                var score = parseFloat($(this).text()) || 0;
+                totalMaxWrittenWorks += score;
+            });
+    
+    
+            $('#total_max_written_works').text(totalMaxWrittenWorks.toFixed(2));
+        }
+    
+    
+        function updateTotalMaxPerformance() {
+            var totalMaxPerformance = 0;
+            $('#performance_task .highest-possible-scores[contenteditable="true"]').each(function () {
+                var score = parseFloat($(this).text()) || 0;
+                totalMaxPerformance += score;
+            });
+    
+    
+            $('#total_max_performance_task').text(totalMaxPerformance.toFixed(2));
+        }
+    
+    
+        function updateTotalQuarterly() {
+            var totalMaxQuarterly = 0;
+            $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
+                var score = parseFloat($(this).text()) || 0;
+                totalMaxQuarterly += score;
+            });
+    
+    
+            $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
+        }
+        updateTotalMaxWrittenWorks();
+        updateTotalMaxPerformance();
+        updateTotalQuarterly();
+
     // Add an event listener for the contenteditable cells
     $('.score-cell[contenteditable="true"]').blur(function () {
         // Get the updated score, column index, and section identifier
         var newScore = $(this).text();
-        var columnIndex = $(this).index() - 2;  // Adjust to 0-based indexing
+        var columnIndex = $(this).index() -2 ;  // Adjust to 0-based indexing
         var sectionId = $(this).closest('.tab-pane').attr('id');
 
         // Get the row, student name, and the corresponding cells
         var row = $(this).closest('tr');
         var studentName = row.find('td:eq(1)').text();
         var totalScoreCell, percentageScoreCell, weightedScoreCell;
+        var weightedScoreWrittenWorks = parseFloat($('#weighted_score_written_works').text());
+        var percentageScoreWrittenWorks = parseFloat($('#percentage_score_written_works').text());
+
+        var weightedScorePerformanceTask = parseFloat($('#weighted_score_performance_task').text());
+        var percentageScorePerformanceTask = parseFloat($('#percentage_score_performance_task').text());
+
+        var weightedScoreQuarterlyAssessment = parseFloat($('#weighted_score_quarterly_assessment').text());
+        var percentageScoreQuarterlyAssessment = parseFloat($('#percentage_score_quarterly_assessment').text());
 
         // Determine the corresponding cells based on the section identifier
-        if (sectionId === 'written_works' || sectionId === 'performance_task' || sectionId === 'quarterly_assessment') {
-            totalScoreCell = row.find('td:eq(12)');
+        if (sectionId === 'written_works' || sectionId === 'performance_task') {
+            totalScoreCell = row.find('td:eq(12)'); // Use the class to select all total-score cells
             percentageScoreCell = row.find('td:eq(13)');
             weightedScoreCell = row.find('td:eq(14)');
+        } else if (sectionId === 'quarterly_assessment'){
+            totalScoreCell = row.find('td:eq(6)'); // Use the class to select all total-score cells
+            percentageScoreCell = row.find('td:eq(7)');
+            weightedScoreCell = row.find('td:eq(8)');
+
         } else {
             return;  // Invalid section identifier
         }
 
         var classRecordId = $('input[name="class_record_id"]').val();
         var scoresHpsData = [];
+        var totalScoreValue = totalScoreCell.text();
+
+        console.log(totalScoreValue);
 
         // Get the Highest Possible Scores data from the table
-        row.find('td[contenteditable="true"]').not(':eq(1)').each(function () {
+        row.find('td[contenteditable="true"]').each(function () {
             scoresHpsData.push($(this).text());
         });
 
         // Send an AJAX request to update the score
-        console.log('Update Score Event Triggered:', newScore, columnIndex, sectionId, studentName);  // Logging
-
         $.ajax({
             type: "POST",
             url: "/update_score/",
@@ -308,15 +373,52 @@ $(document).ready(function () {
                 'column_index': columnIndex,
                 'section_id': sectionId,
                 'scores_hps': scoresHpsData,
+                'total_score_value': totalScoreValue,
+                'weighted_score_written_works': weightedScoreWrittenWorks,
+                'percentage_score_written_works': percentageScoreWrittenWorks,
+                'weighted_score_performance_task': weightedScorePerformanceTask,
+                'percentage_score_performance_task': percentageScorePerformanceTask,
+                'weighted_score_quarterly_assessment': weightedScoreQuarterlyAssessment,
+                'percentage_score_quarterly_assessment': percentageScoreQuarterlyAssessment,
                 'csrfmiddlewaretoken': '{{ csrf_token }}',
             },
             success: function (data) {
                 // Update the specific cells based on the column index and section identifier
                 if (columnIndex >= 0 && columnIndex <= 9) {
                     totalScoreCell.text(data.total_score);
-                    percentageScoreCell.text(data.percentage_score);
-                    weightedScoreCell.text(data.weighted_score);
+
+                    if (sectionId === 'written_works') {
+                        // Calculate the percentage score for written works
+                        var totalMaxWrittenWorks = parseFloat($('#total_max_written_works').text());
+                        var percentageWrittenWorks = (data.total_score / totalMaxWrittenWorks) * 100;
+                        var writtenWorksWeight = parseFloat($('#written_works_weight').text());
+                        var updatedWeightedScoreWritten = (percentageWrittenWorks / 100) * writtenWorksWeight;
+                     
+                        // Update the percentage and weighted score cells for written works
+                        percentageScoreCell.text(percentageWrittenWorks.toFixed(2));
+                        weightedScoreCell.text(updatedWeightedScoreWritten.toFixed(2));
+                    } else if (sectionId === 'performance_task') {
+                        // Calculate the percentage score for performance task
+                        var totalMaxPerformanceTask = parseFloat($('#total_max_performance_task').text());
+                        var percentagePerformanceTask = (data.total_score / totalMaxPerformanceTask) * 100;
+                        var performanceTaskWeight = parseFloat($('#performance_task_weight').text());
+                        var updatedWeightedScorePerformance = (percentagePerformanceTask / 100) * performanceTaskWeight;
+
+                        // Update the percentage and weighted score cells for performance task
+                        percentageScoreCell.text(percentagePerformanceTask.toFixed(2));
+                        weightedScoreCell.text(updatedWeightedScorePerformance.toFixed(2));
+                    } else if (sectionId === 'quarterly_assessment') {
+                        // ... (unchanged)
+                        var quarterlyAssessmentWeight = parseFloat($('#quarterly_assessment_weight').text());
+                        var updatedWeightedScoreQuarterly = (percentageQuarterly / 100) * quarterlyAssessmentWeight;
+
+                        // Update the percentage and weighted score cells for quarterly assessment
+                        percentageScoreCell.text(percentageQuarterly.toFixed(2));
+                        weightedScoreCell.text(updatedWeightedScoreQuarterly.toFixed(2));
+                    }
                 }
+
+
                 console.log('Update Score Success:', data);  // Logging
             },
             error: function (xhr, status, error) {
@@ -325,91 +427,66 @@ $(document).ready(function () {
             }
         });
     });
-
-    function updateTotalMaxWrittenWorks() {
-        var totalMaxWrittenWorks = 0;
-        $('#written_works .highest-possible-scores[contenteditable="true"]').each(function () {
-            var score = parseFloat($(this).text()) || 0;
-            totalMaxWrittenWorks += score;
-        });
-
-        $('#total_max_written_works').text(totalMaxWrittenWorks.toFixed(2));
-    }
-
-    function updateTotalMaxPerformance() {
-        var totalMaxPerformance = 0;
-        $('#performance_task .highest-possible-scores[contenteditable="true"]').each(function () {
-            var score = parseFloat($(this).text()) || 0;
-            totalMaxPerformance += score;
-        });
-
-        $('#total_max_performance_task').text(totalMaxPerformance.toFixed(2));
-    }
-
-    function updateTotalQuarterly() {
-        var totalMaxQuarterly = 0;
-        $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
-            var score = parseFloat($(this).text()) || 0;
-            totalMaxQuarterly += score;
-        });
-
-        $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
-    }
-    updateTotalMaxWrittenWorks();
-    updateTotalMaxPerformance();
-    updateTotalQuarterly();
-
-    // Add an event listener for the contenteditable cells in the highest possible scores row
-    $('.highest-possible-scores[contenteditable="true"]').blur(function () {
-        console.log('Blur event triggered for scores.');
-        console.log('Class Record ID:', $('input[name="class_record_id"]').val());
-        console.log('Section ID:', $(this).closest('.tab-pane').attr('id'));
-
-        updateTotalMaxWrittenWorks();
-        updateTotalMaxPerformance();
-        updateTotalQuarterly();
-        // Get the updated scores data
-        var newScoresData = [];
-        $(this).parent().find('.highest-possible-scores[contenteditable="true"]').each(function () {
-            newScoresData.push($(this).text());
-        });
-        var classRecordId = $('input[name="class_record_id"]').val();
-        var sectionId = $(this).closest('.tab-pane').attr('id');
-
-        console.log('New Scores Data:', newScoresData);
-        // Send an AJAX request to update the scores
-        $.ajax({
-            type: "POST",
-            url: "/update_highest_possible_scores/",
-            data: {
-                'class_record_id': classRecordId,
-                'section_id': sectionId,
-                'new_hps_data': newScoresData,
-                'csrfmiddlewaretoken': '{{ csrf_token }}',
-            },
-            success: function (data) {
-                if (columnIndex >= 0 && columnIndex <= 9) {
-                    totalScoreCell.text(data.total_score);
-                    var totalMaxWrittenWorks = parseFloat($('#total_max_written_works').text()) || 0;
-                    var totalScoreWritten = parseFloat(row.find('td:eq(10)').text()) || 0;  // Adjust to your actual column index
-                    var percentage = (totalMaxWrittenWorks / totalScoreWritten) * 100;
-                    percentageScoreCell.text(data.percentage_score);
-                    weightedScoreCell.text(data.weighted_score);
-
-                    // Update the total max values on the client side
-                    $('#total_max_written_works').text(data.total_ww_hps.toFixed(2));
-                    $('#total_max_performance_task').text(data.total_pt_hps.toFixed(2));
-                    $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+    
+    
+       
+    
+        // Add an event listener for the contenteditable cells in the highest possible scores row
+        $('.highest-possible-scores[contenteditable="true"]').blur(function () {
+            console.log('Blur event triggered for scores.');
+            console.log('Class Record ID:', $('input[name="class_record_id"]').val());
+            console.log('Section ID:', $(this).closest('.tab-pane').attr('id'));
+    
+    
+            updateTotalMaxWrittenWorks();
+            updateTotalMaxPerformance();
+            updateTotalQuarterly();
+            // Get the updated scores data
+            var newScoresData = [];
+            $(this).parent().find('.highest-possible-scores[contenteditable="true"]').each(function () {
+                newScoresData.push($(this).text());
+            });
+            var classRecordId = $('input[name="class_record_id"]').val();
+            var sectionId = $(this).closest('.tab-pane').attr('id');
+    
+    
+            console.log('New Scores Data:', newScoresData);
+            // Send an AJAX request to update the scores
+            $.ajax({
+                type: "POST",
+                url: "/update_highest_possible_scores/",
+                data: {
+                    'class_record_id': classRecordId,
+                    'section_id': sectionId,
+                    'new_hps_data': newScoresData,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function (data) {
+                    if (columnIndex >= 0 && columnIndex <= 9) {
+                        totalScoreCell.text(data.total_score);
+                        percentageScoreCell.text(data.percentage_score);
+                        weightedScoreCell.text(data.weighted_score);
+    
+    
+                        // Update the total max values on the client side
+                        $('#total_max_written_works').text(data.total_ww_hps.toFixed(2));
+                        $('#total_max_performance_task').text(data.total_pt_hps.toFixed(2));
+                        $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+                    }
+    
+    
+                    console.log('Update Score Success:', data);  
+                },
+                error: function () {
+                    console.error("Error updating scores.");
+                    alert("Error updating score. See console for details.");
                 }
-
-                console.log('Update Score Success:', data);  
-            },
-            error: function () {
-                console.error("Error updating scores.");
-                alert("Error updating score. See console for details.");
-            }
+            });
         });
     });
-});
-</script>
+    </script>
+    
+    
+    
+    
 {% endblock main_content %}

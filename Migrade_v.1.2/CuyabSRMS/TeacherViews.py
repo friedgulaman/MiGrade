@@ -439,14 +439,14 @@ def calculate_grades(request):
                 weight_input_performance = float(request.POST.get(f"performance_task_weight" ))  # Change this to the actual weight for performance tasks
                 # weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
                 
-                scores_written_works.append(float(written_works) if written_works.isnumeric() else 0)
-                scores_performance_task.append(float(performance_task) if performance_task.isnumeric() else 0)
+                scores_written_works.append(float(written_works) if written_works.isnumeric() else "")
+                scores_performance_task.append(float(performance_task) if performance_task.isnumeric() else "")
                 # scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
-
                 total_score_written += float(written_works) if written_works.isnumeric() else 0
                 total_max_score_written += float(max_written_works) if max_written_works.isnumeric() else 0
                 total_score_performance += float(performance_task) if performance_task.isnumeric() else 0
                 total_max_score_performance += float(max_performance_task) if max_performance_task.isnumeric() else 0
+
                 # total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
                 # total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
@@ -457,7 +457,7 @@ def calculate_grades(request):
                 max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}")  # Change this to the actual maximum score
                 
                 weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
-                scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
+                scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else "")
                 total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
                 total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
@@ -707,11 +707,11 @@ def update_score(request):
         column_index = int(request.POST.get('column_index'))
         section_id = request.POST.get('section_id')  # Added section_id for differentiation
         class_record_id = request.POST.get('class_record_id')
-        scores_hps_data = request.POST.getlist('scores_hps[]')  # Retrieve scores_hps data as a list
 
         print("Request POST Data:", request.POST)
         print("Class Record ID:", class_record_id)
-        print("Scores HPS Data:", scores_hps_data)  # Add this line for debugging
+        print(column_index)
+        print(section_id)  # Add this line for debugging
 
         try:
             # Retrieve the GradeScores object based on student name and class record id
@@ -724,46 +724,65 @@ def update_score(request):
         except GradeScores.DoesNotExist:
             print(f"Not Found: /update_score/")
             return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
-  # Add this line for debugging
 
-        # Determine the field to update based on the section_id
+            # Determine the field to update based on the section_id
         if section_id == 'written_works':
             scores_field = 'written_works_scores'
+            hps_field = 'scores_hps_written'  # Adjust with your actual field name for HPS
             total_field = 'total_score_written'
             percentage_field = 'percentage_score_written'
             weighted_field = 'weighted_score_written'
-            hps_field = 'scores_hps_written'  # Adjust with your actual field name for HPS
         elif section_id == 'performance_task':
             scores_field = 'performance_task_scores'
+            hps_field = 'scores_hps_performance'  # Adjust with your actual field name for HPS
             total_field = 'total_score_performance'
             percentage_field = 'percentage_score_performance'
             weighted_field = 'weighted_score_performance'
-            hps_field = 'scores_hps_performance'  # Adjust with your actual field name for HPS
         elif section_id == 'quarterly_assessment':
             scores_field = 'quarterly_assessment_scores'
+            hps_field = 'scores_hps_quarterly'  # Adjust with your actual field name for HPS
             total_field = 'total_score_quarterly'
             percentage_field = 'percentage_score_quarterly'
             weighted_field = 'weighted_score_quarterly'
-            hps_field = 'scores_hps_quarterly'  # Adjust with your actual field name for HPS
         else:
             return JsonResponse({'error': 'Invalid section_id'})
 
+        # Use a dynamic naming convention for total_field
+        #  # Ensure scores_list has enough elements, initialize with zeros if necessary
+        # scores_list = getattr(grade_score, scores_field, [0] * 10)
+
+       # Ensure scores_list has enough elements, initialize with zeros if necessary
+        scores_list = getattr(grade_score, scores_field, [0] * (column_index + 1))
+
         # Update the specific value in the scores list
-        scores_list = list(map(int, getattr(grade_score, scores_field)))
-        scores_list[column_index] = int(new_score)
+        if new_score != '':
+            scores_list[column_index] = int(new_score)
+        else:
+            scores_list[column_index] = 0  # Or any default value you prefer
+
+        # Save the updated scores list to the model
         setattr(grade_score, scores_field, scores_list)
 
-        # Update HPS data
-        hps_list = [int(float(score)) for score in scores_hps_data]
-        setattr(grade_score, hps_field, hps_list)
+        scores_list = [int(score) if score != '' else 0 for score in scores_list]
 
-        # Recalculate total_score, percentage_score, and weighted_score
-        setattr(grade_score, total_field, sum(scores_list))
-        setattr(grade_score, percentage_field, (getattr(grade_score, total_field) / 100) * 100)
-        setattr(grade_score, weighted_field, getattr(grade_score, percentage_field) * 0.2)
+        total_score = sum(scores_list)
+        percentage_score = (total_score / 100) * 100
+        weighted_score = percentage_score * 0.2
 
+        # Log the calculated values
+        print("Total Score:", total_score)
+        print("Percentage Score:", percentage_score)
+        print("Weighted Score:", weighted_score)
+
+        # Set the calculated values to the model fields
+        setattr(grade_score, total_field, total_score)
+        setattr(grade_score, percentage_field, percentage_score)
+        setattr(grade_score, weighted_field, weighted_score)
+
+        
+        print(scores_list)
+        print(total_field)
         grade_score.save()
-
         # Return updated data as JSON response
         response_data = {
             'total_score': getattr(grade_score, total_field),
@@ -805,14 +824,14 @@ def update_highest_possible_scores(request):
         # Update the highest possible scores data for each GradeScores object
         for grade_score in grade_scores:
             # Convert the new_hps_data to a list of integers, handling empty strings
-            new_hps_list = [float(value) if value != '' else 0.0 for value in new_hps_data]
+            new_hps_list = [int(float(value)) if value.strip() != '' else '' for value in new_hps_data]
 
             # Update the scores_hps field with the new list
             setattr(grade_score, hps_field, new_hps_list)
             grade_score.save()
 
             # Update the total_hps_field
-            total_hps_value = sum(new_hps_list)
+            total_hps_value = sum([int(value) for value in new_hps_list if isinstance(value, int) or (isinstance(value, str) and value.isdigit())])
             setattr(grade_score, total_hps_field, total_hps_value)
             grade_score.save()
 
