@@ -137,6 +137,21 @@ class GradeScores(models.Model):
         else:
             return None
   
+class FinalGrade(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    student_name = models.CharField(max_length=255)
+    grade = models.CharField(max_length=50)
+    section = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50)
+    quarter1 = models.FloatField()
+    quarter2 = models.FloatField()
+    quarter3 = models.FloatField()
+    quarter4 = models.FloatField()
+    final_grade = models.FloatField()
+
+    def __str__(self):
+        return f"FinalGrade: {self.student_name} - {self.subject}, Teacher: {self.teacher}, ClassRecord: {self.class_record}"
+
 
 
 @receiver(post_save, sender=CustomUser)

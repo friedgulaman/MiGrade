@@ -77,11 +77,13 @@ urlpatterns = [
     path('view_classrecord', TeacherViews.view_classrecord, name="view_classrecord"),
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
     path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
-    path('display_final_grades/<str:grade>/<str:section>/', TeacherViews.display_final_grades, name='display_final_grades'),
+    path('display_final_grades/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_final_grades, name='display_final_grades'),
     path('update_score/', TeacherViews.update_score, name='update_score'),
     path('update_highest_possible_scores/', TeacherViews.update_highest_possible_scores, name='update_highest_possible_scores'),
     path('class_records/<int:class_record_id>/delete/', TeacherViews.delete_classrecord, name='delete_classrecord'),
     path('class_records/', TeacherViews.class_records_list, name='class_records_list'),
+    path('display_initial_grades/<str:quarter_name>/', TeacherViews.display_initial_grades_view, name='display_initial_grades_view'),
+
    # urls.py
 
 

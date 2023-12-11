@@ -394,6 +394,14 @@ $(document).ready(function () {
                     percentageScoreCell.text(data.percentage_score);
                     weightedScoreCell.text(data.weighted_score);
 
+                    // Calculate and update the total initial grade
+                    var updatedWeightedScoreWritten = parseFloat($('#weighted_score_max_written_works').text()) || 0;
+                    var updatedWeightedScorePerformance = parseFloat($('#weighted_score_performance_task').text()) || 0;
+                    var updatedWeightedScoreQuarterly = parseFloat($('#weighted_score_quarterly_assessment').text()) || 0;
+
+                    var totalWeightedScore = updatedWeightedScoreWritten + updatedWeightedScorePerformance + updatedWeightedScoreQuarterly;
+                    $('#total_initial_grade').text(totalWeightedScore.toFixed(2));
+
                     if (sectionId === 'written_works') {
                         // Calculate the percentage score for written works
                         var totalMaxWrittenWorks = parseFloat($('#total_max_written_works').text());
@@ -425,7 +433,6 @@ $(document).ready(function () {
                         percentageScoreCell.text(percentageQuarterly.toFixed(2));
                         weightedScoreCell.text(updatedWeightedScoreQuarterly.toFixed(2));
                     }
-                    
                     
                 console.log('Update Score Success:', data);
                 console.log('Initial Grade:', totalWeightedScore);  // Logging

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Initial Grades</title>
+</head>
+<body>
+    <h2>Initial Grades for {{ quarter_name }}</h2>
+    {% if initial_grades %}
+        <ul>
+            {% for student_name, subjects in initial_grades.items %}
+                <li>{{ student_name }}:
+                    <ul>
+                        {% for subject, initial_grade in subjects.items %}
+                            <li>{{ subject }} - {{ initial_grade }}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No initial grades found for {{ quarter_name }}.</p>
+    {% endif %}
+</body>
+</html>

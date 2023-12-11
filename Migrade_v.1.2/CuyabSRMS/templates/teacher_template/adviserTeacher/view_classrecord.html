@@ -5,7 +5,43 @@
 </head>
 <body>
     <a href="{% url 'home_adviser_teacher' %}">Back to Home</a><br>
-    <a href="{% url 'get_grade_details' %}"> Create Class Record</a>
+    <a href="{% url 'get_grade_details' %}"> Create Class Record</a><br>
+    <a href="">Final Grade and General Average</a><br>
+
+    <script>
+        function changeQuarter() {
+            var selectedQuarter = document.getElementById("quarterSelection").value;
+    
+            // Assuming you have a URL named 'display_initial_grades'
+            var url = "{% url 'display_initial_grades_view' quarter_name='your_quarter_placeholder' %}";
+            
+            // Replace placeholder with the actual selected quarter
+            url = url.replace('your_quarter_placeholder', selectedQuarter);
+    
+            // Make an AJAX request to the Django view
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Update the page with the returned data
+                    document.getElementById("initialGradesSection").innerHTML = xhr.responseText;
+                }
+            };
+            xhr.open("GET", url, true);
+            xhr.send();
+        }
+    </script>
+   
+    <label for="quarterSelection">Choose Quarter:</label>
+    <select id="quarterSelection" onchange="changeQuarter()">
+        <option value="quarter1">1st Quarter</option>
+        <option value="quarter2">2nd Quarter</option>
+        <option value="quarter3">3rd Quarter</option>
+        <option value="quarter4">4th Quarter</option>
+    </select>
+
+    <!-- Update the button to include the quarter selection menu -->
+    <button onclick="changeQuarter()">Show Summary</button>
+
 
 <h1>Class Records</h1>
 
@@ -39,12 +75,12 @@
                     </td>
                     <td>
                         <a href="{% url 'display_quarterly_summary' grade=record.grade section=record.section subject=record.subject %}">
-                            <button>Quarterly Summary</button>
+                            <button>Quarterly Summary per Subject</button>
                         </a>
                     </td>
                     <td>
-                        <a href="{% url 'display_final_grades' grade=record.grade section=record.section %}">
-                            <button>Show Final Grades</button>
+                        <a href="{% url 'display_final_grades' grade=record.grade section=record.section subject=record.subject %}">
+                            <button>Show Final Grades per Subject </button>
                         </a>
                     </td>
                     <td>
