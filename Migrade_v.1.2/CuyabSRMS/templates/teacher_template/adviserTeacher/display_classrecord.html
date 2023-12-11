@@ -257,7 +257,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                <td>{{ record.initial_grades }}</td>
+                                <td id="total_initial_grade" name="total_initial_grade">{{ record.initial_grades }}</td>
                                 <td>{{ record.transmuted_grades }}</td>
                             </tr>
                             {% endfor %}
@@ -278,6 +278,7 @@
 
     
 $(document).ready(function () {
+
 
     function updateTotalMaxWrittenWorks() {
             var totalMaxWrittenWorks = 0;
@@ -327,15 +328,9 @@ $(document).ready(function () {
         // Get the row, student name, and the corresponding cells
         var row = $(this).closest('tr');
         var studentName = row.find('td:eq(1)').text();
-        var totalScoreCell, percentageScoreCell, weightedScoreCell;
-        var weightedScoreWrittenWorks = parseFloat($('#weighted_score_written_works').text());
-        var percentageScoreWrittenWorks = parseFloat($('#percentage_score_written_works').text());
+        var totalScoreCell, percentageScoreCell, weightedScoreCell, total_initial_grade_cell;
 
-        var weightedScorePerformanceTask = parseFloat($('#weighted_score_performance_task').text());
-        var percentageScorePerformanceTask = parseFloat($('#percentage_score_performance_task').text());
 
-        var weightedScoreQuarterlyAssessment = parseFloat($('#weighted_score_quarterly_assessment').text());
-        var percentageScoreQuarterlyAssessment = parseFloat($('#percentage_score_quarterly_assessment').text());
 
         // Determine the corresponding cells based on the section identifier
         if (sectionId === 'written_works' || sectionId === 'performance_task') {
@@ -346,7 +341,6 @@ $(document).ready(function () {
             totalScoreCell = row.find('td:eq(6)'); // Use the class to select all total-score cells
             percentageScoreCell = row.find('td:eq(7)');
             weightedScoreCell = row.find('td:eq(8)');
-
         } else {
             return;  // Invalid section identifier
         }
@@ -354,6 +348,16 @@ $(document).ready(function () {
         var classRecordId = $('input[name="class_record_id"]').val();
         var scoresHpsData = [];
         var totalScoreValue = totalScoreCell.text();
+
+        var total_max_written_works =  parseFloat($('#total_max_written_works').text());
+        var written_works_weight = parseFloat($('#written_works_weight').text());
+
+        var total_max_performance_task = parseFloat($('#total_max_performance_task').text());
+        var performance_task_weight = parseFloat($('#performance_task_weight').text());
+
+        var total_max_quarterly = parseFloat($('#total_max_quarterly').text());
+        var quarterly_assessment_weight = parseFloat($('#quarterly_assessment_weight').text());
+
 
         console.log(totalScoreValue);
 
@@ -374,18 +378,21 @@ $(document).ready(function () {
                 'section_id': sectionId,
                 'scores_hps': scoresHpsData,
                 'total_score_value': totalScoreValue,
-                'weighted_score_written_works': weightedScoreWrittenWorks,
-                'percentage_score_written_works': percentageScoreWrittenWorks,
-                'weighted_score_performance_task': weightedScorePerformanceTask,
-                'percentage_score_performance_task': percentageScorePerformanceTask,
-                'weighted_score_quarterly_assessment': weightedScoreQuarterlyAssessment,
-                'percentage_score_quarterly_assessment': percentageScoreQuarterlyAssessment,
+                'total_max_written_works': total_max_written_works,
+                'written_works_weight': written_works_weight,
+                'total_max_performance_task': total_max_performance_task,
+                'performance_task_weight': performance_task_weight,
+                'total_max_quarterly': total_max_quarterly,
+                'quarterly_assessment_weight': quarterly_assessment_weight,
                 'csrfmiddlewaretoken': '{{ csrf_token }}',
             },
             success: function (data) {
                 // Update the specific cells based on the column index and section identifier
                 if (columnIndex >= 0 && columnIndex <= 9) {
                     totalScoreCell.text(data.total_score);
+                    totalScoreCell.text(data.total_score);
+                    percentageScoreCell.text(data.percentage_score);
+                    weightedScoreCell.text(data.weighted_score);
 
                     if (sectionId === 'written_works') {
                         // Calculate the percentage score for written works
@@ -408,7 +415,9 @@ $(document).ready(function () {
                         percentageScoreCell.text(percentagePerformanceTask.toFixed(2));
                         weightedScoreCell.text(updatedWeightedScorePerformance.toFixed(2));
                     } else if (sectionId === 'quarterly_assessment') {
-                        // ... (unchanged)
+                        
+                        var totalMaxQuarterly = parseFloat($('#total_max_quarterly').text());
+                        var percentageQuarterly = (data.total_score / totalMaxQuarterly) * 100;
                         var quarterlyAssessmentWeight = parseFloat($('#quarterly_assessment_weight').text());
                         var updatedWeightedScoreQuarterly = (percentageQuarterly / 100) * quarterlyAssessmentWeight;
 
@@ -416,11 +425,11 @@ $(document).ready(function () {
                         percentageScoreCell.text(percentageQuarterly.toFixed(2));
                         weightedScoreCell.text(updatedWeightedScoreQuarterly.toFixed(2));
                     }
-                }
-
-
-                console.log('Update Score Success:', data);  // Logging
-            },
+                    
+                    
+                console.log('Update Score Success:', data);
+                console.log('Initial Grade:', totalWeightedScore);  // Logging
+            }},
             error: function (xhr, status, error) {
                 console.error('Error updating score:', error);  // Logging
                 alert("Error updating score. See console for details.");

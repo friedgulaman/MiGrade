@@ -707,6 +707,14 @@ def update_score(request):
         column_index = int(request.POST.get('column_index'))
         section_id = request.POST.get('section_id')  # Added section_id for differentiation
         class_record_id = request.POST.get('class_record_id')
+        scores_hps = request.POST.get('scores_hps')
+        # percentage_score_written_works = request.POST.get('percentage_score_written_works')
+        # percentage_score_performance_task = request.POST.get('percentage_score_performance_task')
+        # percentage_score_quarterly_assessment = request.POST.get('percentage_score_quarterly_assessment')
+        # weighted_score_written_works = request.POST.get('weighted_score_written_works')
+        # weighted_score_performance_task = request.POST.get('weighted_score_performance_task')
+        # weighted_score_quarterly_assessment = request.POST.get('weighted_score_quarterly_assessment')
+
 
         print("Request POST Data:", request.POST)
         print("Class Record ID:", class_record_id)
@@ -725,25 +733,45 @@ def update_score(request):
             print(f"Not Found: /update_score/")
             return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
 
-            # Determine the field to update based on the section_id
+        #     # Determine the field to update based on the section_id
+        # if section_id == 'written_works':
+        #     percentage_score = percentage_score_written_works
+        #     weighted_score = weighted_score_written_works
+        # elif section_id == 'performance_task':
+        #     percentage_score = percentage_score_performance_task
+        #     weighted_score = weighted_score_performance_task
+        # elif section_id == 'quarterly_assessment':
+        #     percentage_score = percentage_score_quarterly_assessment
+        #     weighted_score = percentage_score_quarterly_assessment
+        # else:
+        #     return JsonResponse({'error': 'Invalid section_id'})
+
+
+
         if section_id == 'written_works':
             scores_field = 'written_works_scores'
             hps_field = 'scores_hps_written'  # Adjust with your actual field name for HPS
             total_field = 'total_score_written'
             percentage_field = 'percentage_score_written'
             weighted_field = 'weighted_score_written'
+            max_field = 'total_ww_hps'  # Adjust with your actual field name for max score
+            weight_field = 'weight_input_written'  # Adjust with your actual field name for weight
         elif section_id == 'performance_task':
             scores_field = 'performance_task_scores'
             hps_field = 'scores_hps_performance'  # Adjust with your actual field name for HPS
             total_field = 'total_score_performance'
             percentage_field = 'percentage_score_performance'
             weighted_field = 'weighted_score_performance'
+            max_field = 'total_pt_hps'  # Adjust with your actual field name for max score
+            weight_field = 'weight_input_performance'  # Adjust with your actual field name for weight
         elif section_id == 'quarterly_assessment':
             scores_field = 'quarterly_assessment_scores'
             hps_field = 'scores_hps_quarterly'  # Adjust with your actual field name for HPS
             total_field = 'total_score_quarterly'
             percentage_field = 'percentage_score_quarterly'
             weighted_field = 'weighted_score_quarterly'
+            max_field = 'total_qa_hps'  # Adjust with your actual field name for max score
+            weight_field = 'weight_input_quarterly'  # Adjust with your actual field name for weight
         else:
             return JsonResponse({'error': 'Invalid section_id'})
 
@@ -766,13 +794,15 @@ def update_score(request):
         scores_list = [int(score) if score != '' else 0 for score in scores_list]
 
         total_score = sum(scores_list)
-        percentage_score = (total_score / 100) * 100
-        weighted_score = percentage_score * 0.2
+        percentage_score = (total_score / getattr(grade_score, max_field)) * 100
+        weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+       
 
         # Log the calculated values
         print("Total Score:", total_score)
         print("Percentage Score:", percentage_score)
         print("Weighted Score:", weighted_score)
+        print(scores_hps)
 
         # Set the calculated values to the model fields
         setattr(grade_score, total_field, total_score)
@@ -784,10 +814,31 @@ def update_score(request):
         print(total_field)
         grade_score.save()
         # Return updated data as JSON response
+        initial_grade = (
+            getattr(grade_score, 'weighted_score_written', 0) +
+            getattr(grade_score, 'weighted_score_performance', 0) +
+            getattr(grade_score, 'weighted_score_quarterly', 0)
+        )
+
+        initial_grade = round(initial_grade, 2)
+
+        transmuted_grades = transmuted_grade(initial_grade)
+
+        # Log the initial grade
+        print("Initial Grade:", initial_grade)
+        print("transmuted_grade:", transmuted_grades)
+
+        # Set the calculated initial grade to the model field
+        setattr(grade_score, 'initial_grades', initial_grade)
+        setattr(grade_score, 'transmuted_grades', transmuted_grades)
+        grade_score.save()
+
+        # Return updated data as JSON response
         response_data = {
             'total_score': getattr(grade_score, total_field),
             'percentage_score': getattr(grade_score, percentage_field),
             'weighted_score': getattr(grade_score, weighted_field),
+            'initial_grade': initial_grade,  # Add initial grade to the response
             'scores_hps': getattr(grade_score, hps_field),
         }
 
