@@ -39,7 +39,7 @@
             {% for student_data in final_grades %}
                 {% for subject_info in student_data.subjects %}
                     <tr>
-                        <td>{{ student_data.id }}</td>
+                        <td>{{ forloop.parentloop.counter }}</td>
                         <td>{{ student_data.name }}</td>
                         <td>{{ student_data.grade }}</td>
                         <td>{{ student_data.section }}</td>

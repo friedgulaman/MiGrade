@@ -1,7 +1,8 @@
 import openpyxl
 
 # Use the absolute path to the Excel file
-file_path = r'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1.xlsx'
+file_path = r'C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1.xlsx'
+
 workbook = openpyxl.load_workbook(file_path)
 
 # Print all sheet names
@@ -13,7 +14,7 @@ desired_sheet_name = 'Sheet1'  # Replace 'Sheet1' with the correct sheet name
 sheet = workbook[desired_sheet_name]
 
 # The value you want to write to cell CDEF7
-value_to_write = "maam gina"
+value_to_write = "ERIC R"
 
 # Specify the column and row coordinates (CDEF7 in this case)
 column_coordinates = 2  # Column index for 'CDEF' (0-based index)

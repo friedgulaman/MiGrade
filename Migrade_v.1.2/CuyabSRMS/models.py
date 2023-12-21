@@ -136,7 +136,15 @@ class GradeScores(models.Model):
             return self.classRecord.id
         else:
             return None
-  
+        
+    def get_subject_score(self, subject, quarter):
+        # Adjust this based on your actual field names
+        field_name = f'{subject.lower()}_{quarter.lower()}'
+        print(field_name)
+        return getattr(self, field_name, None)
+    
+
+    
 class FinalGrade(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     student_name = models.CharField(max_length=255)
@@ -150,10 +158,18 @@ class FinalGrade(models.Model):
     final_grade = models.FloatField()
 
     def __str__(self):
-        return f"FinalGrade: {self.student_name} - {self.subject}, Teacher: {self.teacher}, ClassRecord: {self.class_record}"
+        return f"FinalGrade: {self.student_name} - {self.subject}, Teacher: {self.teacher}"
 
+class GeneralAverage(models.Model):
+    student_name = models.CharField(max_length=255)  # Adjust the max_length as needed
+    grade = models.CharField(max_length=50)
+    section = models.CharField(max_length=50)
+    general_average = models.FloatField(null=True, blank=True)
 
-
+    def __str__(self):
+        return f"{self.student_name} - {self.grade} - {self.section} - General Average: {self.general_average}"
+    
+    
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == 2:  # Check if the user is a teacher

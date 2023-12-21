@@ -10,7 +10,7 @@ from django import forms
 import openpyxl
 from django.contrib import messages
 from django.shortcuts import render
-from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade
+from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -148,6 +148,8 @@ def process_google_sheet(spreadsheet_id, sheet_name):
                         lrn_data[current_lrn].append(non_empty_fields)
 
             return lrn_data
+        
+        print(lrn_data)
 
         existing_sheet_name = sheet_name
         existing_sheet_values = get_sheet_values(spreadsheet_id, "A1", "ZZ1000")
@@ -556,6 +558,7 @@ def display_classrecord(request, class_record_id=None):
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
     
 def view_classrecord(request):
+    
     # Assuming the user is logged in
     user = request.user
 
@@ -656,51 +659,85 @@ def display_quarterly_summary(request, grade, section, subject):
 
     return render(request, "teacher_template/adviserTeacher/summary_of_quarterly_grade.html", context)
 
-def display_initial_grades(quarter_name):
-    # Get all FinalGrades for the specified quarter
-    final_grades = FinalGrade.objects.filter(quarter1=quarter_name)
 
-    # Initialize a dictionary to store the initial grades
-    initial_grades_dict = {}
+def grade_summary(request, grade, section, quarter):
+    students = FinalGrade.objects.filter(grade=grade, section=section)
 
-    # Iterate through each FinalGrade
-    for grade in final_grades:
-        # Get the student name
-        student_name = grade.student_name
+    # Dictionary to store subject-wise grades for each student
+    subject_grades = {}
+    print(grade)
+    print(section)
+    print(quarter)
+    quarter_mapping = {
+        '1st Quarter': 'quarter1',
+        '2nd Quarter': 'quarter2',
+        '3rd Quarter': 'quarter3',
+        '4th Quarter': 'quarter4',
+    }
 
-        # Check if the student name is not in the dictionary, then add it
-        if student_name not in initial_grades_dict:
-            initial_grades_dict[student_name] = {}
+    # Fetch subject-wise grades for each student
+    for student in students:
+        subjects = get_subjects(student)
+        print(subjects)
+        subject_grades[student.student_name] = {}
+        for subject in subjects:
+            # Map the quarter name to the corresponding column name in the database
+            db_quarter = quarter_mapping.get(quarter, quarter)
+            subject_grades[student.student_name][subject] = get_subject_score(student, subject, db_quarter)
+            print(get_subject_score(student, subject, db_quarter))
 
-        # Get the subject and corresponding initial grade
-        subject = grade.subject
-        initial_grade = getattr(grade, quarter_name)  # Use getattr to dynamically get the quarter's grade
+    # Move the 'subjects' initialization outside the loop
+    subjects = get_subjects(student) if students else []
+    
+    context = {
+        'students': students,
+        'subject_grades': subject_grades,
+        'subjects': subjects,
+        'quarter': quarter,
+    }
 
-        # Add the subject and initial grade to the dictionary
-        initial_grades_dict[student_name][subject] = initial_grade
-
-    return initial_grades_dict
-
-
-# Assuming you have a view function
-def display_initial_grades_view(request, quarter_name):
-    initial_grades = display_initial_grades(quarter_name)
-    # Render the initial grades template to a string
-    initial_grades_html = render_to_string('teacher_template/adviserTeacher/summary_quarterly_grade_per_quarter.html', {'initial_grades': initial_grades})
-    # Return the HTML response
-    return HttpResponse(initial_grades_html)
+    return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
 
 
-def display_final_grades(request, grade, section, subject):
-    students = Student.objects.filter(grade=grade, section=section)
-    # Filter subjects to only include the specified subject
-    subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject).values('subject').distinct()
+
+def get_subject_score(student, subject, quarter):
+    try:
+        grade_instance = FinalGrade.objects.get(
+            student_name=student.student_name,
+            grade=student.grade,
+            section=student.section,
+            subject=subject,
+        )
+        return getattr(grade_instance, quarter, None)
+    except FinalGrade.DoesNotExist:
+        return None
+    
+def get_subjects(student):
+    # Fetch unique subjects for the given student from the GradeScores model
+    subjects = GradeScores.objects.filter(
+        class_record__grade=student.grade,
+        class_record__section=student.section,
+        student_name=student.student_name
+    ).values_list('class_record__subject', flat=True).distinct()
+
+    return [subject for subject in subjects if subject] 
+
+# def get_subject_grade(student, subject, quarter):
+#     # You need to adjust this function based on your actual model relationships and fields
+#     grade_score = GradeScores.objects.filter(
+#         class_record__grade=student.grade,
+#         class_record__section=student.section,
+#         class_record__subject=subject,
+#         class_record__quarters=quarter,
+#         student_name=student.student_name
+#     ).first()
+
+#     return getattr(grade_score, f'total_score_{subject.lower()}') if grade_score else None
+
+def calculate_save_final_grades(grade, section, subject, students, subjects):
     quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
 
-    final_grades = []
     for student in students:
-        student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
-
         for subject in subjects:
             subject_name = subject['subject']
             subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
@@ -734,20 +771,83 @@ def display_final_grades(request, grade, section, subject):
             subject_info['final_grade'] = sum(subject_info['quarter_grades'].values()) / len(subject_info['quarter_grades']) \
                 if len(subject_info['quarter_grades']) > 0 else 0
 
-            # Save final grades to the FinalGrade model
-            final_grade = FinalGrade(
+            # Check if a record already exists in the FinalGrade model
+            existing_final_grade = FinalGrade.objects.filter(
                 teacher=class_record.teacher,
                 student_name=student.name,
                 grade=grade,
                 section=section,
-                subject=subject_name,
-                quarter1=round(subject_info['quarter_grades']['1st Quarter'], 2),
-                quarter2=round(subject_info['quarter_grades']['2nd Quarter'], 2),
-                quarter3=round(subject_info['quarter_grades']['3rd Quarter'], 2),
-                quarter4=round(subject_info['quarter_grades']['4th Quarter'], 2),
-                final_grade=round(subject_info['final_grade'], 2)
-            )
-            final_grade.save()
+                subject=subject_name
+            ).first()
+
+            if existing_final_grade:
+                # Update existing record
+                existing_final_grade.quarter1 = round(subject_info['quarter_grades']['1st Quarter'], 2)
+                existing_final_grade.quarter2 = round(subject_info['quarter_grades']['2nd Quarter'], 2)
+                existing_final_grade.quarter3 = round(subject_info['quarter_grades']['3rd Quarter'], 2)
+                existing_final_grade.quarter4 = round(subject_info['quarter_grades']['4th Quarter'], 2)
+                existing_final_grade.final_grade = round(subject_info['final_grade'], 2)
+                existing_final_grade.save()
+            else:
+                # Insert new record
+                final_grade = FinalGrade(
+                    teacher=class_record.teacher,
+                    student_name=student.name,
+                    grade=grade,
+                    section=section,
+                    subject=subject_name,
+                    quarter1=round(subject_info['quarter_grades']['1st Quarter'], 2),
+                    quarter2=round(subject_info['quarter_grades']['2nd Quarter'], 2),
+                    quarter3=round(subject_info['quarter_grades']['3rd Quarter'], 2),
+                    quarter4=round(subject_info['quarter_grades']['4th Quarter'], 2),
+                    final_grade=round(subject_info['final_grade'], 2)
+                )
+                final_grade.save()
+
+
+
+def display_final_grades(request, grade, section, subject):
+    students = Student.objects.filter(grade=grade, section=section)
+    # Filter subjects to only include the specified subject
+    subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject).values('subject').distinct()
+
+    calculate_save_final_grades(grade, section, subject, students, subjects)
+
+    final_grades = []
+    for student in students:
+        student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
+
+        for subject in subjects:
+            subject_name = subject['subject']
+            subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+
+            # Retrieve final grades from the FinalGrade model
+            final_grade = FinalGrade.objects.filter(
+                teacher__classrecord__grade=grade,
+                teacher__classrecord__section=section,
+                student_name=student.name,
+                subject=subject_name
+            ).first()
+
+            if final_grade:
+                subject_info['quarter_grades']['1st Quarter'] = final_grade.quarter1
+                subject_info['quarter_grades']['2nd Quarter'] = final_grade.quarter2
+                subject_info['quarter_grades']['3rd Quarter'] = final_grade.quarter3
+                subject_info['quarter_grades']['4th Quarter'] = final_grade.quarter4
+                subject_info['final_grade'] = final_grade.final_grade
+
+            # Get the teacher's name from the ClassRecord
+            class_record = ClassRecord.objects.filter(
+                grade=grade,
+                section=section,
+                subject=subject_name
+            ).first()
+
+            # Ensure that the class_record and its teacher exist
+            if class_record and class_record.teacher:
+                subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
+            else:
+                subject_info['teacher_name'] = "Unknown Teacher"
 
             student_data['subjects'].append(subject_info)
 
@@ -762,7 +862,88 @@ def display_final_grades(request, grade, section, subject):
 
     return render(request, "teacher_template/adviserTeacher/final_grades.html", context)
 
+def save_general_average(student_data, grade, section):
+    # Check if 'general_average' key is present in student_data and is not None
+    if 'general_average' in student_data and student_data['general_average'] is not None:
+        # Extract relevant information from student_data
+        student_name = student_data['name']
+        general_average = round(student_data['general_average'], 2)
 
+        # Create or get the GeneralAverage object for the student
+        general_average_record, created = GeneralAverage.objects.get_or_create(
+            student_name=student_name,
+            grade=grade,
+            section=section,
+        )
+
+        # Set the general_average value and save the record
+        general_average_record.general_average = general_average
+        general_average_record.save()
+
+def display_all_final_grades(request, grade, section):
+    students = Student.objects.filter(grade=grade, section=section)
+    # Fetch all distinct subjects for the specified grade and section
+    subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+
+    final_grades = []
+    for student in students:
+        student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
+
+        for subject in subjects:
+            subject_name = subject['subject']
+            subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+
+            # Retrieve final grades from the FinalGrade model
+            final_grade = FinalGrade.objects.filter(
+                teacher__classrecord__grade=grade,
+                teacher__classrecord__section=section,
+                student_name=student.name,
+                subject=subject_name
+            ).first()
+
+            if final_grade:
+                subject_info['quarter_grades']['1st Quarter'] = final_grade.quarter1
+                subject_info['quarter_grades']['2nd Quarter'] = final_grade.quarter2
+                subject_info['quarter_grades']['3rd Quarter'] = final_grade.quarter3
+                subject_info['quarter_grades']['4th Quarter'] = final_grade.quarter4
+                subject_info['final_grade'] = final_grade.final_grade
+
+            # Get the teacher's name from the ClassRecord
+            class_record = ClassRecord.objects.filter(
+                grade=grade,
+                section=section,
+                subject=subject_name
+            ).first()
+
+            # Ensure that the class_record and its teacher exist
+            if class_record and class_record.teacher:
+                subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
+            else:
+                subject_info['teacher_name'] = "Unknown Teacher"
+
+            student_data['subjects'].append(subject_info)
+
+        # Append student data to the final grades
+        final_grades.append(student_data)
+
+    # Compute the general average for each student
+    for student_data in final_grades:
+        total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
+        num_subjects = len(student_data['subjects'])
+        student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
+        print(student_data['general_average'])
+        print(student_data)
+        print(grade)
+        print(section)
+        save_general_average(student_data, grade, section)
+        
+    context = {
+        'grade': grade,
+        'section': section,
+        'final_grades': final_grades,
+    }
+
+    return render(request, "teacher_template/adviserTeacher/all_final_grades.html", context)
 
 def update_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':

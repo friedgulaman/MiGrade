@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.urls import URLPattern, path, include
-from CuyabSRMS import AdminViews, TeacherViews, StudentViews
+from CuyabSRMS import AdminViews, TeacherViews, StudentViews, GenerationViews
 from django.contrib import admin
 from . import views
 
@@ -12,7 +12,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .ForgotPassword import ResetPasswordView
 from django.contrib.auth import views as auth_views
-
 
 
 urlpatterns = [
@@ -82,11 +81,15 @@ urlpatterns = [
     path('update_highest_possible_scores/', TeacherViews.update_highest_possible_scores, name='update_highest_possible_scores'),
     path('class_records/<int:class_record_id>/delete/', TeacherViews.delete_classrecord, name='delete_classrecord'),
     path('class_records/', TeacherViews.class_records_list, name='class_records_list'),
-    path('display_initial_grades/<str:quarter_name>/', TeacherViews.display_initial_grades_view, name='display_initial_grades_view'),
+    path('grade_summary/<str:grade>/<str:section>/<str:quarter>/', TeacherViews.grade_summary, name='grade_summary'),
+    path('all_final_grades/<str:grade>/<str:section>/', TeacherViews.display_all_final_grades, name='all_final_grades'),
 
    # urls.py
 
+    # Generation
 
+    path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
+         name='generate_excel_for_grades'),
 
     # Student
     path('student_list/', StudentViews.student_list, name='student_list'),
