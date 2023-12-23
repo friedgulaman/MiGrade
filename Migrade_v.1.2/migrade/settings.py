@@ -40,7 +40,12 @@ SECRET_KEY = 'django-insecure-wdke-rd%j16gdotni4rj$mgdqy__%d4#sin44zug-z67e!(xg0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70']
+
+ALLOWED_HOSTS = ['*']
+# http://127.0.0.1:8000/
+
+# ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70']
+
 
 
 
@@ -55,12 +60,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -89,17 +96,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'migrade.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
@@ -112,8 +108,16 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Optional
+    ],
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # or "django.contrib.sessions.backends.cache", etc.
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_NAME = 'sessionid_user'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -189,7 +193,4 @@ RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
 
 # Define the base directory where uploaded files will be stored
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-
-
-
 

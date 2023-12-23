@@ -1,0 +1,151 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% load static %}
+{% block title %}
+Student List for {{ grade }} {{ section }}
+{% endblock title %}
+
+{% block main_content %}
+<style>
+    .folder-icon {
+        color: #1F3BB3;
+    }
+
+    .student-icon {
+        font-size: 16px;
+    }
+
+    .students-tab {
+        height: 90vh;
+        overflow-y: hidden;
+    }
+
+    .students-tab:hover {
+        overflow-y: auto;
+    }
+
+    .students-tab::-webkit-scrollbar {
+        width: 10px;
+        /* For Chrome, Safari, and Opera */
+        display: none;
+        /* Hide the scrollbar by default */
+    }
+
+    .students-tab:hover::-webkit-scrollbar {
+        display: block;
+        /* Show the scrollbar on hover */
+    }
+
+    .students-tab::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        /* For Chrome, Safari, and Opera */
+    }
+
+    .students-tab::-webkit-scrollbar-track {
+        background-color: #f5f5f5;
+        /* For Chrome, Safari, and Opera */
+    }
+    .back-button{
+  color: #1027ac;
+  font-size: 30px;
+  text-decoration: none;
+  cursor: pointer;
+}
+</style>
+<section class="content container mt-2">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center p-4">
+                <i class="fas fa-folder fa-4x me-3 folder-icon"></i>
+                <div class="ms-2">
+                    <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }})</h4>
+                    <p class="d-flex align-content-center text-muted"><i
+                            class="mdi mdi-account me-1 student-icon "></i>{{ students|length }} students</p>
+                </div>
+            </div>
+            <div class=" me-4">
+                <a class="back-button" >&larr;</a>
+            </div>
+        </div>
+            <section class="content container mt-2 vh-100">
+                <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+                    <ul class="nav nav-tabs text" role="tablist">
+                        <li class="nav-item ">
+                            <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#students" role="tab"
+                                aria-controls="students" aria-selected="true">Students</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
+                                aria-selected="false">Class record</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterlygrade" role="tab"
+                                aria-selected="false">Quarterly Grade</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#rankings" role="tab"
+                                aria-selected="false">Rankings</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content tab-content-basic students-tab ">
+                    <div class="tab-pane fade show active" id="students" role="tabpanel" aria-labelledby="overview">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>LRN</th>
+                                    <th>Learners Name</th>
+                                    <th>Sex</th>
+                                    <th>Birthday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>
+                                        {{ forloop.counter }}
+                                    </td>
+                                    <td>
+                                        {{ student.lrn }}
+                                    </td>
+                                    <td>
+                                        {{ student.name }}
+                                    </td>
+                                    <td>
+                                        {{ student.sex }}
+                                    </td>
+                                    <td>
+                                        {{ student.birthday }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade show " id="classrecord" role="tabpanel" aria-labelledby="classrecord">
+                        2
+                    </div>
+                    <div class="tab-pane fade show " id="quarterlygrade" role="tabpanel"
+                        aria-labelledby="quarterlygrade">
+                        <h1>3</h1>
+                    </div>
+                    <div class="tab-pane fade show " id="rankings" role="tabpanel" aria-labelledby="rankings">
+                        <h1>4</h1>
+                    </div>
+                </div>
+
+
+
+            </section>
+        </div>
+    </div>
+</section>
+<script>
+    // JavaScript to handle the back button click event
+    document.querySelector(".back-button").addEventListener("click", function() {
+      window.history.back();
+    });
+  </script>
+{% endblock main_content %}

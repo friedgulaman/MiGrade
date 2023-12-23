@@ -504,3 +504,4 @@ def add_subject(request):
 def subject_list(request):
     subjects = Subject.objects.all()
     return render(request, 'admin_template/subject_list.html', {'subjects': subjects})
+
