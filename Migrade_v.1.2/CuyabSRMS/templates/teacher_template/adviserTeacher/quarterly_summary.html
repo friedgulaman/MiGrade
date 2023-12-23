@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grade Summary</title>
+</head>
+<body>
+    <h1>Grade Summary - {{ quarter }}</h1>
+
+    <table border="1">
+        <tr>
+            <th>Student Name</th>
+            {% for subject in subjects %}
+                <th>{{ subject }}</th>
+            {% endfor %}
+        </tr>
+        {% for student, grades in subject_grades.items %}
+            <tr>
+                <td>{{ student }}</td>
+                {% for grade in grades.values %}
+                    <td>{{ grade }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

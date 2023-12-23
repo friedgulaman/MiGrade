@@ -40,8 +40,8 @@ class Teacher(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Teacher: {self.first_name} {self.last_name}, Email: {self.email}, Middle Initial: {self.middle_ini}, Created: {self.created_at}"
-
+        return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+    
 class Student(models.Model):
     name = models.CharField(max_length=255)
     lrn = models.CharField(max_length=12, unique=True)
@@ -68,33 +68,108 @@ class Section(models.Model):
     def __str__(self):
         return self.name
 
+class Quarters(models.Model):
+    id = models.AutoField(primary_key=True)
+    quarters = models.CharField(max_length=30, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+    
+class Subject(models.Model):
+    id = models.AutoField(primary_key=True)  # Adding an 'id' field
+    name = models.CharField(max_length=100, unique=True)
+    written_works_percentage = models.PositiveIntegerField(default=40)
+    performance_task_percentage = models.PositiveIntegerField(default=40)
+    quarterly_assessment_percentage = models.PositiveIntegerField(default=20)
+
+    def __str__(self):
+        return self.name
+    
+    
+class ClassRecord(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    grade = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Grade
+    section = models.CharField(max_length=50, blank=True, null=True) # Add a foreign key to Section
+    subject = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Subject
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
+    quarters = models.CharField(max_length=50, blank=True, null=True)
 
 class GradeScores(models.Model):
     student_name = models.CharField(max_length=255, null=True, blank=True)
+    class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
+    scores_hps_written = models.JSONField()  # Adjust with your actual field type
+    scores_hps_performance = models.JSONField()  # Adjust with your actual field type
+    scores_hps_quarterly = models.JSONField()
+    total_ww_hps = models.FloatField(null=True, blank=True)
+    total_pt_hps = models.FloatField(null=True, blank=True)
+    total_qa_hps = models.FloatField(null=True, blank=True)
     written_works_scores = models.JSONField()
     performance_task_scores = models.JSONField()
     quarterly_assessment_scores = models.JSONField()
-    initial_grades = models.FloatField(default=0)
-    transmuted_grades = models.FloatField(default=0)
-    total_score_written = models.FloatField(default=0)
-    total_max_score_written = models.FloatField(default=0)
-    total_score_performance = models.FloatField(default=0)
-    total_max_score_performance = models.FloatField(default=0)
-    total_score_quarterly = models.FloatField(default=0)   
-    total_max_score_quarterly = models.FloatField(default=0)
-    percentage_score_written = models.FloatField(default=0)
-    percentage_score_performance = models.FloatField(default=0)
-    percentage_score_quarterly = models.FloatField(default=0)
-    weighted_score_written = models.FloatField(default=0)
-    weighted_score_performance = models.FloatField(default=0)
-    weighted_score_quarterly = models.FloatField(default=0)
+    initial_grades = models.FloatField(null=True, blank=True)
+    transmuted_grades = models.FloatField(null=True, blank=True)
+    total_score_written = models.FloatField(null=True, blank=True)
+    total_max_score_written = models.FloatField(null=True, blank=True)
+    total_score_performance = models.FloatField(null=True, blank=True)
+    total_max_score_performance = models.FloatField(null=True, blank=True)
+    total_score_quarterly = models.FloatField(null=True, blank=True) 
+    total_max_score_quarterly = models.FloatField(null=True, blank=True)
+    percentage_score_written = models.FloatField(null=True, blank=True)
+    percentage_score_performance = models.FloatField(null=True, blank=True)
+    percentage_score_quarterly = models.FloatField(null=True, blank=True)
+    weight_input_written = models.FloatField(null=True, blank=True)
+    weight_input_performance = models.FloatField(null=True, blank=True)
+    weight_input_quarterly = models.FloatField(null=True, blank=True)
+    weighted_score_written = models.FloatField(null=True, blank=True)
+    weighted_score_performance = models.FloatField(null=True, blank=True)
+    weighted_score_quarterly = models.FloatField(null=True, blank=True)
+
 
 
     def __str__(self):
         return self.student_name
+    
+    def get_class_record_id(self):
+        # Check if classRecord is not None before accessing its id
+        if self.classRecord:
+            return self.classRecord.id
+        else:
+            return None
+        
+    def get_subject_score(self, subject, quarter):
+        # Adjust this based on your actual field names
+        field_name = f'{subject.lower()}_{quarter.lower()}'
+        print(field_name)
+        return getattr(self, field_name, None)
+    
 
+    
+class FinalGrade(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    student_name = models.CharField(max_length=255)
+    grade = models.CharField(max_length=50)
+    section = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50)
+    quarter1 = models.FloatField()
+    quarter2 = models.FloatField()
+    quarter3 = models.FloatField()
+    quarter4 = models.FloatField()
+    final_grade = models.FloatField()
 
+    def __str__(self):
+        return f"FinalGrade: {self.student_name} - {self.subject}, Teacher: {self.teacher}"
 
+class GeneralAverage(models.Model):
+    student_name = models.CharField(max_length=255)  # Adjust the max_length as needed
+    grade = models.CharField(max_length=50)
+    section = models.CharField(max_length=50)
+    general_average = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.student_name} - {self.grade} - {self.section} - General Average: {self.general_average}"
+    
+    
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == 2:  # Check if the user is a teacher
@@ -130,22 +205,22 @@ class ExtractedData(models.Model):
     sex = models.CharField(max_length=10, blank=True, null=True)
     name_of_school = models.CharField(max_length=255, blank=True, null=True)
 
-    def save_extracted_data(self, key_value_pairs):
-        self.last_name = key_value_pairs.get("LAST NAME", "")
-        self.first_name = key_value_pairs.get("FIRST NAME", "")
-        self.middle_name = key_value_pairs.get("MIDDLE NAME", "")
-        self.lrn = key_value_pairs.get("LRN", "")
-        self.school_year = key_value_pairs.get("SCHOOL YEAR", "")
-        birthdate_str = key_value_pairs.get("BIRTHDATE", "")
+    def save_extracted_data(self, extracted_data):
+        self.last_name = extracted_data.get('last_name', '')
+        self.first_name = extracted_data.get('first_name', '')
+        self.middle_name = extracted_data.get('middle_name', '')
+        self.lrn = extracted_data.get('lrn', '')
+        self.school_year = extracted_data.get('school_year', '')
+        birthdate_str = extracted_data.get('birthdate', '')
         # Convert birthdate string to datetime
         try:
             self.birthdate = datetime.strptime(birthdate_str, "%m/%d/%Y").date()
         except ValueError:
             self.birthdate = None  # Set to None if the birthdate format is invalid
-        self.classified_as_grade = key_value_pairs.get("Classified as Grade:", "")
-        self.general_average = key_value_pairs.get("GENERAL AVERAGE", "")
-        self.sex = key_value_pairs.get("SEX", "")
-        self.name_of_school = key_value_pairs.get("Name_of_School", "")
+        self.classified_as_grade = extracted_data.get('classified_as_grade', '')
+        self.general_average = extracted_data.get('general_average', '')
+        self.sex = extracted_data.get('sex', '')
+        self.name_of_school = extracted_data.get('name_of_school', '')
         self.save()
 
     def populate_data(self, data):
@@ -184,34 +259,6 @@ class ExtractedData(models.Model):
         }
 
 
-class Subject(models.Model):
-    id = models.AutoField(primary_key=True)  # Adding an 'id' field
-    name = models.CharField(max_length=100, unique=True)
-    written_works_percentage = models.PositiveIntegerField(default=40)
-    performance_task_percentage = models.PositiveIntegerField(default=40)
-    quarterly_assessment_percentage = models.PositiveIntegerField(default=20)
-
-    def __str__(self):
-        return self.name
-
-class Quarters(models.Model):
-    id = models.AutoField(primary_key=True)
-    quarters = models.CharField(max_length=30, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-    
-class ClassRecord(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, unique=True)
-    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)  # Add a foreign key to Grade
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)  # Add a foreign key to Section
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)  # Add a foreign key to Subject
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
-
-    def __str__(self):
-        return self.name
-    
 
 class ActivityLog(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
