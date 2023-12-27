@@ -264,26 +264,23 @@ def upload(request):
                 for chunk in excel_file.chunks():
                     temp_file.write(chunk)
 
-            # Convert .xls to .xlsx using pandas
-            xls_data = pd.read_excel(temp_file_path, sheet_name=None, header=None)
-            sheets = list(xls_data.keys())
-
-            if sheets:
-                # Use the first sheet in the Excel file
-                existing_sheet_name = sheets[0]
-            else:
-                os.remove(temp_file_path)  # Remove temporary file
-                return render(request, 'teacher_template/adviserTeacher/upload.html', {
-                    'message': "No sheets found in the Excel file",
-                })
-
-            xls_data[existing_sheet_name].to_excel(temp_file_path, index=False, header=None)
-
             # Load the Excel workbook
-            workbook = openpyxl.load_workbook(temp_file_path)
+            try:
+                workbook = openpyxl.load_workbook(temp_file_path)
+            except Exception as e:
+                os.remove(temp_file_path)  # Remove temporary file
+                messages.error(request, f"Failed to load the Excel File: {str(e)}")
+                return render(request, 'teacher_template/adviserTeacher/upload.html')
 
             # Get the values from the existing sheet
-            existing_sheet = workbook[existing_sheet_name]
+            try:
+                existing_sheet_name = workbook.sheetnames[0]  # Use the first sheet
+                existing_sheet = workbook[existing_sheet_name]
+            except KeyError as e:
+                os.remove(temp_file_path)  # Remove temporary file
+                messages.error(request, f"Worksheet '{existing_sheet_name}' does not exist in the Excel File")
+                return render(request, 'teacher_template/adviserTeacher/upload.html')
+
             existing_sheet_values = get_sheet_values(existing_sheet, (1, 1), (existing_sheet.max_row, existing_sheet.max_column))
 
             if existing_sheet_values:
@@ -363,9 +360,11 @@ def save_json_data(request):
 
 
 def get_grades_and_sections(request):
-    # Retrieve a list of grades and sections that don't have a teacher associated
-    grades = Grade.objects.all().values('id', 'name')
-    sections = Section.objects.filter(teacher__isnull=True).values('id', 'name')
+    teacher = get_object_or_404(Teacher, user=request.user)  # Assuming you have a User associated with Teacher
+
+    # Retrieve a list of grades and sections that have the specific teacher
+    grades = Grade.objects.filter(sections__teacher=teacher).distinct().values('id', 'name')
+    sections = Section.objects.filter(teacher=teacher).values('id', 'name')
 
     # Convert the grades and sections to a dictionary
     data = {
@@ -684,16 +683,16 @@ def display_students(request):
         teacher = get_object_or_404(Teacher, user=user)
         students = Student.objects.filter(teacher=teacher)
 
-        unique_grades = students.values_list('grade', flat=True).distinct()
-        unique_sections = students.values_list('section', flat=True).distinct()
+        unique_combinations = students.values('grade', 'section').distinct()
 
         context = {
             'teacher': teacher,
-            'unique_grades_sections': zip(unique_grades, unique_sections),
+            'unique_grades_sections': unique_combinations,
         }
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
+
 
 def student_list_for_class(request):
     grade = request.GET.get('grade')

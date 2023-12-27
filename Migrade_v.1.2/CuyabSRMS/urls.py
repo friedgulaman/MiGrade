@@ -4,7 +4,7 @@ from django.urls import URLPattern, path, include
 
 from CuyabSRMS import AdminViews, TeacherViews
 
-from CuyabSRMS import AdminViews, TeacherViews, StudentViews, GenerationViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews
 
 from django.contrib import admin
 from . import views
@@ -148,8 +148,8 @@ urlpatterns = [
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
 
-    # Student
-    path('student_list/', StudentViews.student_list, name='student_list'),
+    # # Student
+    # path('student_list/', StudentViews.student_list, name='student_list'),
 
 ]
 
