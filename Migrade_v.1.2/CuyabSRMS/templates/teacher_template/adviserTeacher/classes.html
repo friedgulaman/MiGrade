@@ -4,9 +4,9 @@ New Class List
 {% endblock title %}
 {% block main_content %}
 <style>
- .folder{
-    width: 240px;
- }
+    .folder {
+        width: 240px;
+    }
 </style>
 <section class="content container mt-2">
     <div class="card">
@@ -23,34 +23,33 @@ New Class List
                     </div>
                     <form method="post">
                         {% csrf_token %}
-                    <div class="mt-5 ">
-                        <ul class="d-flex justify-content-start align-items-center">
-                            {% for grade, section in unique_grades_sections %}
-                            <li class="d-block me-3">
-                                <button type="button" class="folder d-flex justify-content-between align-items-center py-auto p-1 btn btn-secondary" onclick="showStudentList('{{ grade }}', '{{ section }}')">
-                                    <div class="ms-3">
-                                        <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
-                                            <g>
-                                                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
-                                                <path d="M0 0h24v24H0z" fill="none"></path>
-                                            </g>
-                                        </svg>
-                                    </div>
-                                    <div class="ms-3">
-                                        {{ grade }} ({{ section }})
-                                    </div>
-                                    <div class="ms-4">
-                                        <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="currentColor">
-                                            <path fill="none" d="M0 0h20v20H0V0z"></path>
-                                            <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
-                                        </svg>
-                                    </div>
-                                </button>
-                            </li>
-                            
-                            {% endfor %}
-                        </ul>
-                    </div>
+                        <div class="mt-5 ">
+                            <ul class="d-flex justify-content-start align-items-center">
+                                {% for grade_section in unique_grades_sections %}
+                                <li class="d-block me-3">
+                                    <button type="button" class="folder d-flex justify-content-between align-items-center py-auto p-1 btn btn-secondary" onclick="showStudentList('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                        <div class="ms-3">
+                                            <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                                <g>
+                                                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                                </g>
+                                            </svg>
+                                        </div>
+                                        <div class="ms-3">
+                                            {{ grade_section.grade }} ({{ grade_section.section }})
+                                        </div>
+                                        <div class="ms-4">
+                                            <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="currentColor">
+                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                                <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -67,10 +66,10 @@ New Class List
 
     var uploadPageURL = "{% url 'upload_adviser_teacher' %}";
 
-    document.getElementById("uploadButton").addEventListener("click", function() {
-    // Redirect to the upload page
-    window.location.href = uploadPageURL;
-});
+    document.getElementById("uploadButton").addEventListener("click", function () {
+        // Redirect to the upload page
+        window.location.href = uploadPageURL;
+    });
 
 </script>
 {% endblock main_content %}
