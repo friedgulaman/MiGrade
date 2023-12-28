@@ -564,17 +564,17 @@ def calculate_grades(request):
             total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
             if total_max_score_written > 0:
-                percentage_score_written = (total_score_written / total_max_score_written) * 100
+                percentage_score_written = round((total_score_written / total_max_score_written) * 100, 2)
             else:
                 percentage_score_written = 0
 
             if total_max_score_performance > 0:
-                percentage_score_performance = (total_score_performance / total_max_score_performance) * 100
+               percentage_score_performance = round((total_score_performance / total_max_score_performance) * 100, 2)
             else:
                 percentage_score_performance = 0
 
             if total_max_score_quarterly > 0:
-                percentage_score_quarterly = (total_score_quarterly / total_max_score_quarterly) * 100
+               percentage_score_quarterly = round((total_score_quarterly / total_max_score_quarterly) * 100, 2)
             else:
                 percentage_score_quarterly = 0
 
@@ -586,8 +586,15 @@ def calculate_grades(request):
             weighted_score_performance = (percentage_score_performance / 100) * weight_performance
             weighted_score_quarterly = (percentage_score_quarterly / 100) * weight_quarterly
 
+            rounded_weighted_score_written = round(weighted_score_written, 2)
+            rounded_weighted_score_performance = round(weighted_score_performance, 2)
+            rounded_weighted_score_quarterly = round(weighted_score_quarterly, 2)
+
             initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
             transmuted_grades = transmuted_grade(initial_grades)
+
+            rounded_initial_grades = round(initial_grades, 2)
+            rounded_transmuted_grades = round(transmuted_grades, 2)
 
 
             # Create a new GradeScores object and populate its fields
@@ -601,8 +608,8 @@ def calculate_grades(request):
                 total_pt_hps=total_pt_hps,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
-                initial_grades=initial_grades,
-                transmuted_grades=transmuted_grades,
+                initial_grades= rounded_initial_grades,
+                transmuted_grades= rounded_transmuted_grades,
                 total_score_written=total_score_written,
                 total_max_score_written=total_max_score_written,
                 total_score_performance=total_score_performance,
@@ -612,9 +619,9 @@ def calculate_grades(request):
                 percentage_score_written=percentage_score_written,
                 percentage_score_performance=percentage_score_performance,
                 percentage_score_quarterly=percentage_score_quarterly,
-                weighted_score_written=weighted_score_written,
-                weighted_score_performance=weighted_score_performance,
-                weighted_score_quarterly=weighted_score_quarterly,
+                weighted_score_written=rounded_weighted_score_written,
+                weighted_score_performance=rounded_weighted_score_performance,
+                weighted_score_quarterly=rounded_weighted_score_quarterly,
                 weight_input_written=weight_input_written,
                 weight_input_performance=weight_input_performance,
                 weight_input_quarterly=weight_input_quarterly
@@ -1133,9 +1140,17 @@ def update_score(request):
 
         scores_list = [int(score) if score != '' else 0 for score in scores_list]
 
-        total_score = sum(scores_list)
-        percentage_score = (total_score / getattr(grade_score, max_field)) * 100
-        weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+        if section_id == 'quarterly_assessment':
+            # For quarterly assessment, total_score is directly updated
+            total_score = int(new_score)
+            percentage_score = (total_score / getattr(grade_score, max_field)) * 100
+            weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+        else:
+            # For other sections, calculate total_score from scores_list
+            total_score = sum(scores_list)
+            percentage_score = (total_score / getattr(grade_score, max_field)) * 100
+            weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+
        
 
         # Log the calculated values
@@ -1146,8 +1161,8 @@ def update_score(request):
 
         # Set the calculated values to the model fields
         setattr(grade_score, total_field, total_score)
-        setattr(grade_score, percentage_field, percentage_score)
-        setattr(grade_score, weighted_field, weighted_score)
+        setattr(grade_score, percentage_field, round(percentage_score, 2))
+        setattr(grade_score, weighted_field, round(weighted_score,2))
 
         
         print(scores_list)
@@ -1168,6 +1183,11 @@ def update_score(request):
         print("Initial Grade:", initial_grade)
         print("transmuted_grade:", transmuted_grades)
 
+        if section_id == 'quarterly_assessment':
+            scores_hps_value = None  # or any other default value for quarterly assessment
+        else:
+            scores_hps_value = getattr(grade_score, hps_field)
+
         # Set the calculated initial grade to the model field
         setattr(grade_score, 'initial_grades', initial_grade)
         setattr(grade_score, 'transmuted_grades', transmuted_grades)
@@ -1179,7 +1199,7 @@ def update_score(request):
             'percentage_score': getattr(grade_score, percentage_field),
             'weighted_score': getattr(grade_score, weighted_field),
             'initial_grade': initial_grade,  # Add initial grade to the response
-            'scores_hps': getattr(grade_score, hps_field),
+            'scores_hps': scores_hps_value,
         }
 
         return JsonResponse(response_data)
