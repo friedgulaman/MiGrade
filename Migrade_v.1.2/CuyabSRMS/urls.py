@@ -148,8 +148,11 @@ urlpatterns = [
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
 
+<<<<<<< HEAD
+=======
     # # Student
     # path('student_list/', StudentViews.student_list, name='student_list'),
+>>>>>>> a8aabbfd03e5694bc14b18989748baa9bdc3ca0b
 
 ]
 
