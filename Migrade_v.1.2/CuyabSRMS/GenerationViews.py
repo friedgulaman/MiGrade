@@ -17,7 +17,6 @@ from .utils import (
 
 from .models import GradeScores
 
-
 def generate_excel_for_grades(request, grade, section, subject):
     # Get GradeScores for the specified grade, section, and subject
     grade_scores_queryset = GradeScores.objects.filter(class_record__grade=grade,
