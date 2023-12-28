@@ -24,4 +24,4 @@ class SubjectForm(forms.ModelForm):
 class GradeScoresForm(forms.ModelForm):
     class Meta:
         model = GradeScores
-        fields = ['written_works_scores', 'performance_task_scores', 'quarterly_assessment_scores', 'initial_grades', 'transmuted_grades']
+        fields = ['written_works_scores', 'performance_task_scores', 'initial_grades', 'transmuted_grades']

@@ -190,10 +190,6 @@
                             <tr>
                                 <th></th>
                                 <th>Name</th>
-                                <th>1</th>
-                                <th>2</th>
-                                <th>3</th>
-                                <th>4</th>
                                 <th>Total</th>
                                 <th>PS</th>
                                 <th>WS</th>
@@ -202,13 +198,10 @@
                             <tr>
                                 <td></td>
                                 <th>Highest possible scores</th>
-                                {% for score in grade_scores.0.scores_hps_quarterly %}
-                                    <td class="highest-possible-scores" contenteditable="true">{{ score }}</td>
-                                {% endfor %}
-                                <td id="total_max_quarterly" name="total_max_quarterly">Total</td>
-                                <td>100.00</td>
                                 {% for record in grade_scores %}
                                 {% if forloop.first %}
+                                <td contenteditable="true" id="total_max_quarterly" name="total_max_quarterly" value="{{ record.total_max_score_quarterly }}">{{ record.total_max_score_quarterly }}</td>
+                                <td>100.00</td>
                                 <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ record.weight_input_quarterly }}">{{ record.weight_input_quarterly }}</td>
                                 {% endif %}
                                 {% endfor %}
@@ -220,9 +213,6 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                {% for score in record.quarterly_assessment_scores %}
-                                <td class="score-cell" contenteditable="true">{{ score }}</td>
-                                {% endfor %}
                                 <td id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly}}</td>
                                 <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
                                 <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly }}</td>
@@ -304,19 +294,19 @@ $(document).ready(function () {
         }
     
     
-        function updateTotalQuarterly() {
-            var totalMaxQuarterly = 0;
-            $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
-                var score = parseFloat($(this).text()) || 0;
-                totalMaxQuarterly += score;
-            });
+        // function updateTotalQuarterly() {
+        //     var totalMaxQuarterly = 0;
+        //     $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
+        //         var score = parseFloat($(this).text()) || 0;
+        //         totalMaxQuarterly += score;
+        //     });
     
     
-            $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
-        }
+        //     $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
+        // }
         updateTotalMaxWrittenWorks();
         updateTotalMaxPerformance();
-        updateTotalQuarterly();
+        // updateTotalQuarterly();
 
     // Add an event listener for the contenteditable cells
     $('.score-cell[contenteditable="true"]').blur(function () {
@@ -355,7 +345,7 @@ $(document).ready(function () {
         var total_max_performance_task = parseFloat($('#total_max_performance_task').text());
         var performance_task_weight = parseFloat($('#performance_task_weight').text());
 
-        var total_max_quarterly = parseFloat($('#total_max_quarterly').text());
+        // var total_max_quarterly = parseFloat($('#total_max_quarterly').text());
         var quarterly_assessment_weight = parseFloat($('#quarterly_assessment_weight').text());
 
 
@@ -456,7 +446,7 @@ $(document).ready(function () {
     
             updateTotalMaxWrittenWorks();
             updateTotalMaxPerformance();
-            updateTotalQuarterly();
+            // updateTotalQuarterly();
             // Get the updated scores data
             var newScoresData = [];
             $(this).parent().find('.highest-possible-scores[contenteditable="true"]').each(function () {
@@ -487,7 +477,7 @@ $(document).ready(function () {
                         // Update the total max values on the client side
                         $('#total_max_written_works').text(data.total_ww_hps.toFixed(2));
                         $('#total_max_performance_task').text(data.total_pt_hps.toFixed(2));
-                        $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+                        // $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
                     }
     
     
