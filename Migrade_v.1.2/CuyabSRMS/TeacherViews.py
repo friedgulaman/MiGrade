@@ -5,7 +5,6 @@ import io
 import re
 
 from CuyabSRMS.utils import transmuted_grade
-from CuyabSRMS import StudentViews
 from django import forms
 import openpyxl
 from django.contrib import messages
@@ -17,7 +16,7 @@ from django.urls import reverse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-
+import pandas as pd
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
@@ -25,7 +24,8 @@ import logging
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-
+from django.db import IntegrityError
+from django.contrib import messages
 #OCR
 from .forms import DocumentUploadForm
 from .models import ProcessedDocument, ExtractedData
@@ -37,6 +37,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.template.loader import render_to_string
 
+from django.template import RequestContext
+#Grade
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+from django.core.files.uploadedfile import TemporaryUploadedFile
+
+
 #Grade
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -44,22 +51,23 @@ from django.shortcuts import get_object_or_404
 from .forms import GradeScoresForm
 
 
-@login_required
 
+@login_required
 def home_teacher(request):
     return render(request, 'teacher_template/home_teacher.html')
-
+@login_required
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')
-
+@login_required
 def new_classrecord(request):
         return render(request, 'teacher_template/adviserTeacher/new_classrecord.html')
-
+@login_required
 def classes(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html')
 
 
 # adviser
+@login_required
 def home_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
 
@@ -117,6 +125,7 @@ def process_google_sheet(spreadsheet_id, sheet_name):
                 range=f"{start_range}:{end_range}",  # Correct the range format
             ).execute()
             values = result.get('values', [])
+            print(values)
             return values
         
         def find_lrn_and_store_as_dict(sheet_values):
@@ -156,6 +165,7 @@ def process_google_sheet(spreadsheet_id, sheet_name):
 
         if existing_sheet_values:
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
+            
 
         return lrn_data
 
@@ -175,34 +185,116 @@ def get_sections(request):
 
     return JsonResponse({'sections': sections_data})
 
+def get_sheet_values(sheet, start_range, end_range):
+    values = []
+    for row in sheet.iter_rows(min_row=start_range[0], min_col=start_range[1], max_row=end_range[0], max_col=end_range[1]):
+        row_values = [cell.value for cell in row]
+        values.append(row_values)
+    return values
+
+def find_lrn_and_store_as_dict(sheet_values):
+    lrn_row_index = None
+    lrn_col_index = None
+    lrn_data = {}  # Initialize an empty dictionary to store LRN data
+
+    for i, row in enumerate(sheet_values):
+        if "LRN" in row:
+            lrn_row_index = i
+            lrn_col_index = row.index("LRN")
+            break
+
+    if lrn_row_index is not None:
+        current_lrn = None
+
+        for i in range(lrn_row_index + 1, len(sheet_values)):
+            row = sheet_values[i]
+            if lrn_col_index < len(row):
+                lrn_value = row[lrn_col_index]
+                if len(str(lrn_value)) == 12 and str(lrn_value).isdigit():
+                    current_lrn = lrn_value
+                    lrn_data[current_lrn] = []  # Initialize an empty list for the LRN
+                else:
+                    current_lrn = None  # Reset current LRN if it's not 12 digits
+
+                if current_lrn:
+                    non_empty_fields = [field for field in row if field is not None and str(field).strip() != '']
+                    lrn_data[current_lrn].append(non_empty_fields)  # Append non-empty fields to the LRN
+
+        return lrn_data
+    else:
+        print("Cell containing 'LRN' not found in the sheet.")
+        return lrn_data  # Return an empty dictionary if no LRN cell is found
+
 def upload(request):
     if request.method == 'POST':
         google_sheet_link = request.POST.get('google_sheet_link')
+        excel_file = request.FILES.get('excel_file')
 
-        # Extract the spreadsheet ID from the Google Sheet link using regular expression
-        spreadsheet_id_match = re.search(r'/d/([a-zA-Z0-9-_]+)', google_sheet_link)
-        
-        if spreadsheet_id_match:
-            spreadsheet_id = spreadsheet_id_match.group(1)
+        if google_sheet_link:
+            # Process Google Sheet
+            spreadsheet_id_match = re.search(r'/d/([a-zA-Z0-9-_]+)', google_sheet_link)
 
-            # Extract the sheet name if available
-            sheet_name_match = re.search(r'#gid=([0-9]+)', google_sheet_link)
-            sheet_name = sheet_name_match.group(1) if sheet_name_match else None
+            if spreadsheet_id_match:
+                spreadsheet_id = spreadsheet_id_match.group(1)
+                sheet_name_match = re.search(r'#gid=([0-9]+)', google_sheet_link)
+                sheet_name = sheet_name_match.group(1) if sheet_name_match else None
 
-            # Process the Google Sheet using your existing code
-            lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
-            print(lrn_data)
+                lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
 
-            if lrn_data is not None:
+                if lrn_data is not None:
+                    return render(request, 'teacher_template/adviserTeacher/upload.html', {
+                        'lrn_data': lrn_data,
+                    })
+                else:
+                    messages.error(request, "Failed to process the Google Sheet")
+            else:
+                messages.error(request, "Invalid Google Sheet link")
+
+        elif excel_file:
+            # Check if the file has a valid Excel extension
+            valid_excel_extensions = ['.xls', '.xlsx']
+            file_extension = os.path.splitext(excel_file.name)[1].lower()
+
+            if file_extension not in valid_excel_extensions:
+                messages.error(request, "Invalid Excel file. Please upload a valid Excel file.")
+                return render(request, 'teacher_template/adviserTeacher/upload.html')
+
+            # Save the uploaded Excel file temporarily
+            temp_file_path = 'temp.xlsx'
+            with open(temp_file_path, 'wb') as temp_file:
+                for chunk in excel_file.chunks():
+                    temp_file.write(chunk)
+
+            # Load the Excel workbook
+            try:
+                workbook = openpyxl.load_workbook(temp_file_path)
+            except Exception as e:
+                os.remove(temp_file_path)  # Remove temporary file
+                messages.error(request, f"Failed to load the Excel File: {str(e)}")
+                return render(request, 'teacher_template/adviserTeacher/upload.html')
+
+            # Get the values from the existing sheet
+            try:
+                existing_sheet_name = workbook.sheetnames[0]  # Use the first sheet
+                existing_sheet = workbook[existing_sheet_name]
+            except KeyError as e:
+                os.remove(temp_file_path)  # Remove temporary file
+                messages.error(request, f"Worksheet '{existing_sheet_name}' does not exist in the Excel File")
+                return render(request, 'teacher_template/adviserTeacher/upload.html')
+
+            existing_sheet_values = get_sheet_values(existing_sheet, (1, 1), (existing_sheet.max_row, existing_sheet.max_column))
+
+            if existing_sheet_values:
+                lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
                 return render(request, 'teacher_template/adviserTeacher/upload.html', {
                     'lrn_data': lrn_data,
                 })
             else:
-                messages.error(request, "Failed to process the Google Sheet")
+                os.remove(temp_file_path)  # Remove temporary file
+                messages.error(request, "Failed to process the Excel File")
         else:
-            messages.error(request, "Invalid Google Sheet link")
-
-    # Render the initial form if the request is not a POST or if there are form errors
+            messages.error(request, "Invalid Excel File")
+            
     return render(request, 'teacher_template/adviserTeacher/upload.html')
 
 @csrf_exempt
@@ -269,9 +361,11 @@ def save_json_data(request):
 
 
 def get_grades_and_sections(request):
-    # Retrieve a list of grades and sections that don't have a teacher associated
-    grades = Grade.objects.all().values('id', 'name')
-    sections = Section.objects.filter(teacher__isnull=True).values('id', 'name')
+    teacher = get_object_or_404(Teacher, user=request.user)  # Assuming you have a User associated with Teacher
+
+    # Retrieve a list of grades and sections that have the specific teacher
+    grades = Grade.objects.filter(sections__teacher=teacher).distinct().values('id', 'name')
+    sections = Section.objects.filter(teacher=teacher).values('id', 'name')
 
     # Convert the grades and sections to a dictionary
     data = {
@@ -311,70 +405,80 @@ def get_grade_details(request):
     # print("Distinct subjects:", subjects)
 
     return render(request, 'teacher_template/adviserTeacher/new_classrecord.html', context)
+   # Replace with the actual URL of your new_classrecord.html
 
 # views.py
 def get_students_by_grade_and_section(request):
     if request.method == "POST":
-        grade_name = request.POST.get("grade")
-        section_name = request.POST.get("section")
-        subject_name = request.POST.get("subject")
-        quarter_name = request.POST.get("quarter")
-        # teacher_id = request.POST.get("teacher")
+        try:
+            grade_name = request.POST.get("grade")
+            section_name = request.POST.get("section")
+            subject_name = request.POST.get("subject")
+            quarter_name = request.POST.get("quarter")
 
-        user = request.user
+            user = request.user
+            teacher = get_object_or_404(Teacher, user=user)
 
-        teacher = get_object_or_404(Teacher, user=user)
-        teacher_identifier = str(teacher)
+            # Use a more unique identifier for the class record name
+            classrecord_name = f'{grade_name}{section_name}{subject_name}{quarter_name}{teacher.id}'
 
-        classrecord = ClassRecord(
-            name= grade_name + section_name + subject_name + quarter_name,
-            grade=grade_name,
-            section=section_name,
-            subject=subject_name,
-            quarters=quarter_name,
-            teacher=teacher,  # Assign the Teacher instance, not the ID
-        )
-        classrecord.save()
+            classrecord = ClassRecord(
+                name=classrecord_name,
+                grade=grade_name,
+                section=section_name,
+                subject=subject_name,
+                quarters=quarter_name,
+                teacher=teacher,
+            )
 
-        # Query the database to retrieve students based on the selected grade and section
-        students = Student.objects.filter(grade=grade_name, section=section_name)
+            classrecord.save()
 
-        subject = Subject.objects.get(name=subject_name)
+            # Query the database to retrieve students based on the selected grade and section
+            students = Student.objects.filter(grade=grade_name, section=section_name)
 
-
-        weighted_written_works_percentage = subject.written_works_percentage
-        weighted_performance_task_percentage = subject.performance_task_percentage
-        weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
+            subject = Subject.objects.get(name=subject_name)
 
 
-        # Create a dictionary to store scores for each student
-        student_scores = {}
+            weighted_written_works_percentage = subject.written_works_percentage
+            weighted_performance_task_percentage = subject.performance_task_percentage
+            weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
 
-        # Loop through the students and retrieve their scores
-        for student in students:
-            # Assuming you have a field to store the student's name in the Student model
-            student_name = student.name
 
-            # Query the database to retrieve the scores for the current student
-            # You should modify this query based on your data model
-            scores = GradeScores.objects.filter(student_name=student_name)
+            # Create a dictionary to store scores for each student
+            student_scores = {}
 
-            # Store the scores in the dictionary with the student's name as the key
-            student_scores[student_name] = scores
+            # Loop through the students and retrieve their scores
+            for student in students:
+                # Assuming you have a field to store the student's name in the Student model
+                student_name = student.name
 
-        context = {
-            'students': students,
-            'subject_name': subject_name,
-            'quarters': quarter_name,
-            'grade_name': grade_name,
-            'section_name': section_name,
-            'student_scores': student_scores,
-            'written_works_percentage': weighted_written_works_percentage,
-            'performance_task_percentage': weighted_performance_task_percentage,
-            'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
-        }
+                # Query the database to retrieve the scores for the current student
+                # You should modify this query based on your data model
+                scores = GradeScores.objects.filter(student_name=student_name)
 
-        return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
+                # Store the scores in the dictionary with the student's name as the key
+                student_scores[student_name] = scores
+
+            context = {
+                'students': students,
+                'subject_name': subject_name,
+                'quarters': quarter_name,
+                'grade_name': grade_name,
+                'section_name': section_name,
+                'student_scores': student_scores,
+                'written_works_percentage': weighted_written_works_percentage,
+                'performance_task_percentage': weighted_performance_task_percentage,
+                'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
+            }
+
+            return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
+        
+        except IntegrityError as e:
+            error_message = 'Duplicate entry. The record already exists.'
+            messages.error(request, error_message)
+            messages.info(request, 'You are being redirected back to the previous page.')
+            return redirect('get_grade_details')
+
     
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
 
@@ -392,7 +496,6 @@ def calculate_grades(request):
 
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
         scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
-        scores_qa_hps = [request.POST.get(f"max_quarterly_assessment_{i}") for i in range(1, 5)]
         total_ww_hps = request.POST.get("total_max_written_works")
         total_pt_hps = request.POST.get("total_max_performance_task")
         total_qa_hps = request.POST.get("total_max_quarterly")
@@ -401,8 +504,8 @@ def calculate_grades(request):
         weight_quarterly= request.POST.get("quarterly_assessment_weight")
 
         print(scores_pt_hps)
-        print(scores_qa_hps)
         print(scores_ww_hps)
+        print(total_qa_hps)
 
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
@@ -414,7 +517,6 @@ def calculate_grades(request):
         for student in students:
             scores_written_works = []
             scores_performance_task = []
-            scores_quarterly_assessment = []
 
             total_score_written = 0
             total_max_score_written = 0
@@ -454,14 +556,12 @@ def calculate_grades(request):
 
             # Perform your calculations (as in your original code)
 
-            for i in range(1, 5):
-                quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}")
-                max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}")  # Change this to the actual maximum score
+            quarterly_assessment = request.POST.get(f"qa_total_{student.id}")
+            max_quarterly_assessment = request.POST.get(f"total_max_quarterly")  # Change this to the actual maximum score
                 
-                weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
-                scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else "")
-                total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-                total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
+            weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
+            total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
+            total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
             if total_max_score_written > 0:
                 percentage_score_written = (total_score_written / total_max_score_written) * 100
@@ -496,13 +596,11 @@ def calculate_grades(request):
                 class_record=class_record,
                 scores_hps_written=scores_ww_hps,
                 scores_hps_performance=scores_pt_hps,
-                scores_hps_quarterly=scores_qa_hps,
                 total_ww_hps=total_ww_hps,
                 total_qa_hps=total_qa_hps,
                 total_pt_hps=total_pt_hps,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
-                quarterly_assessment_scores=scores_quarterly_assessment,
                 initial_grades=initial_grades,
                 transmuted_grades=transmuted_grades,
                 total_score_written=total_score_written,
@@ -570,6 +668,7 @@ def view_classrecord(request):
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher)
 
+
         context = {
             'class_records': class_records,
         }
@@ -580,45 +679,41 @@ def view_classrecord(request):
         # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
     
+
 @login_required
 def display_students(request):
-    # Get the currently logged-in user
     user = request.user
 
     if user.user_type == 2:
-        try:
-            # Retrieve the teacher associated with the user
-            teacher = Teacher.objects.get(user=user)
-            
-            # Filter students based on the teacher
-            students = Student.objects.filter(teacher=teacher)
+        teacher = get_object_or_404(Teacher, user=user)
+        students = Student.objects.filter(teacher=teacher)
 
-            # You can also filter students by grade and section if needed
-            grade = request.GET.get('grade')  # Example: Get grade from request
-            section = request.GET.get('section')  # Example: Get section from request
+        unique_combinations = students.values('grade', 'section').distinct()
 
-            if grade and section:
-                students = students.filter(grade=grade, section=section)
+        context = {
+            'teacher': teacher,
+            'unique_grades_sections': unique_combinations,
+        }
+        return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
-            # Extract unique grades and sections from the students
-            unique_grades = students.values_list('grade', flat=True).distinct()
-            unique_sections = students.values_list('section', flat=True).distinct()
+    return render(request, 'teacher_template/adviserTeacher/classes.html')
 
-            context = {
-                'students': students,
-                'teacher': teacher,
-                'unique_grades': unique_grades,  # Pass unique grades to the template
-                'unique_sections': unique_sections,  # Pass unique sections to the template
-                'grade': grade,
-                'section': section,
-            }
-            return render(request, 'teacher_template/adviserTeacher/classes.html', context)
-        except Teacher.DoesNotExist:
-            # Handle the case where the user has user_type=2 but is not associated with a teacher
-            return render(request, 'teacher_template/adviserTeacher/classes.html')
-    else:
-        # Handle the case where the user is not a teacher (user_type is not 2)
-        return render(request, 'teacher_template/adviserTeacher/classes.html')
+
+def student_list_for_class(request):
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
+    
+    # Fetch students based on grade and section
+    students = Student.objects.filter(grade=grade, section=section)
+
+    context = {
+        'grade': grade,
+        'section': section,
+        'students': students,
+    }
+
+    return render(request, 'teacher_template/adviserTeacher/student_list.html', context)
+
 
 def edit_record(request, record_id):
     # Retrieve the specific record based on the record_id

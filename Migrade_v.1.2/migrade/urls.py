@@ -22,7 +22,6 @@ from django.conf.urls.static import static
 handler404 = 'CuyabSRMS.views.custom_404'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', include('CuyabSRMS.urls')),
 ]
 if settings.DEBUG:

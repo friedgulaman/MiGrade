@@ -7,5 +7,5 @@ def num_range(value, end=10):
     return range(value, end + 1)
 
 @register.filter
-def num_range_qa(value, end=4):
+def num_range_qa(value, end=1):
     return range(value, end + 1)
