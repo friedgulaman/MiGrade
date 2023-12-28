@@ -134,61 +134,61 @@ def write_scores_hps_performance(sheet, grade_scores_queryset):
 
         column_coordinate_weight_input_performance = 31
 
-def write_scores_hps_quarterly(sheet, grade_scores_queryset):
-    column_coordinate = 32
-    row_coordinate = 10
+# def write_scores_hps_quarterly(sheet, grade_scores_queryset):
+#     column_coordinate = 32
+#     row_coordinate = 10
 
-    while sheet.cell(row=row_coordinate, column=column_coordinate).value:
-        column_coordinate += 1
+#     while sheet.cell(row=row_coordinate, column=column_coordinate).value:
+#         column_coordinate += 1
 
-    for score in grade_scores_queryset:
-        values_to_write = score.scores_hps_quarterly
-        for value in values_to_write:
-            sheet.cell(row=row_coordinate, column=column_coordinate, value=value)
-            column_coordinate += 1
+#     for score in grade_scores_queryset:
+#         values_to_write = score.scores_hps_quarterly
+#         for value in values_to_write:
+#             sheet.cell(row=row_coordinate, column=column_coordinate, value=value)
+#             column_coordinate += 1
 
-        column_coordinate = 32
+#         column_coordinate = 32
 
-    # # TOTAL HIGHEST POSSIBLE SCORE IN PERFORMANCE TASKS
+#     # TOTAL HIGHEST POSSIBLE SCORE IN PERFORMANCE TASKS
         
-    # column_coordinates_total_scores_hps_performance = 
-    # row_coordinate_total_scores_hps_performance = 10
+#     column_coordinates_total_scores_hps_performance = 
+#     row_coordinate_total_scores_hps_performance = 10
 
-    # for scores_total_pt_hps in grade_scores_queryset:
-    #     values_to_write = scores_total_pt_hps.total_qa_hps
+#     for scores_total_pt_hps in grade_scores_queryset:
+#         values_to_write = scores_total_pt_hps.total_qa_hps
 
 
-    #     value_to_write = str(values_to_write)
+#         value_to_write = str(values_to_write)
 
-    #     sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
-    #     column_coordinates_total_scores_hps_performance += 1
+#         sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
+#         column_coordinates_total_scores_hps_performance += 1
 
-    #     column_coordinates_total_scores_hps_performance = 29
+#         column_coordinates_total_scores_hps_performance = 29
 
-    # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
-    column_coordinate_total_pt_ps = 32
-    row_coordinate_total_pt_ps = 10
+#     # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+#     column_coordinate_total_pt_ps = 32
+#     row_coordinate_total_pt_ps = 10
 
-    for scores_total_pt_ps in grade_scores_queryset:
-        value_to_write = 100
+#     for scores_total_pt_ps in grade_scores_queryset:
+#         value_to_write = 100
 
-        value_to_write = str(value_to_write)
-        sheet.cell(row=row_coordinate_total_pt_ps, column=column_coordinate_total_pt_ps, value=value_to_write)
-        column_coordinate_total_pt_ps += 1
+#         value_to_write = str(value_to_write)
+#         sheet.cell(row=row_coordinate_total_pt_ps, column=column_coordinate_total_pt_ps, value=value_to_write)
+#         column_coordinate_total_pt_ps += 1
 
-        column_coordinate_total_pt_ps = 32
+#         column_coordinate_total_pt_ps = 32
 
-    # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE
-    column_coordinate_weight_input_performance = 33
-    row_coordinate_weight_input_performance = 10
+#     # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE
+#     column_coordinate_weight_input_performance = 33
+#     row_coordinate_weight_input_performance = 10
 
-    for scores_weight_input_performance in grade_scores_queryset:
-        value_to_write = scores_weight_input_performance.weight_input_quarterly
-        value_to_write = str(value_to_write)
-        sheet.cell(row=row_coordinate_weight_input_performance, column=column_coordinate_weight_input_performance, value=value_to_write)
-        column_coordinate_weight_input_performance += 1
+#     for scores_weight_input_performance in grade_scores_queryset:
+#         value_to_write = scores_weight_input_performance.weight_input_quarterly
+#         value_to_write = str(value_to_write)
+#         sheet.cell(row=row_coordinate_weight_input_performance, column=column_coordinate_weight_input_performance, value=value_to_write)
+#         column_coordinate_weight_input_performance += 1
 
-        column_coordinate_weight_input_performance = 33
+#         column_coordinate_weight_input_performance = 33
 
 def write_quarterly_assessment_score(sheet, grade_scores_queryset):
     column_coordinates = 32
@@ -362,8 +362,8 @@ def generate_excel_for_grades(request, grade, section, subject):
         # Write scores_hps_performance
         write_scores_hps_performance(sheet, grade_scores_queryset)
 
-        # Write scores_hps_quarterly
-        write_scores_hps_quarterly(sheet, grade_scores_queryset)
+        # # Write scores_hps_quarterly
+        # write_scores_hps_quarterly(sheet, grade_scores_queryset)
 
         # Write Written_works_score
         write_written_works_scores(sheet, grade_scores_queryset)
