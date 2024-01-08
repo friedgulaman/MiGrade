@@ -224,65 +224,52 @@ def write_scores_hps_performance(sheet, grade_scores_queryset):
 
         column_coordinate_weight_input_performance = 31
 
-# def write_scores_hps_quarterly(sheet, grade_scores_queryset):
-#     column_coordinate = 32
-#     row_coordinate = 10
+def write_scores_hps_quarterly(sheet, grade_scores_queryset):
 
-#     while sheet.cell(row=row_coordinate, column=column_coordinate).value:
-#         column_coordinate += 1
-
-#     for score in grade_scores_queryset:
-#         values_to_write = score.scores_hps_quarterly
-#         for value in values_to_write:
-#             sheet.cell(row=row_coordinate, column=column_coordinate, value=value)
-#             column_coordinate += 1
-
-#         column_coordinate = 32
-
-    # # TOTAL HIGHEST POSSIBLE SCORE IN PERFORMANCE TASKS
+    # TOTAL HIGHEST POSSIBLE SCORE IN QUARTERLY ASSESSMENT
         
-    # column_coordinates_total_scores_hps_performance = 
-    # row_coordinate_total_scores_hps_performance = 10
+    column_coordinates_total_scores_hps_performance = 32
+    row_coordinate_total_scores_hps_performance = 10
 
-    # for scores_total_pt_hps in grade_scores_queryset:
-    #     values_to_write = scores_total_pt_hps.total_qa_hps
+    for scores_total_pt_hps in grade_scores_queryset:
+        values_to_write = scores_total_pt_hps.total_qa_hps
 
 
-    #     value_to_write = str(values_to_write)
+        value_to_write = str(values_to_write)
 
-    #     sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
-    #     column_coordinates_total_scores_hps_performance += 1
+        sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
+        column_coordinates_total_scores_hps_performance += 1
 
-    #     column_coordinates_total_scores_hps_performance = 29
+        column_coordinates_total_scores_hps_performance = 32
 
-    # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
-    # column_coordinate_total_pt_ps = 32
-    # row_coordinate_total_pt_ps = 10
+    # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN QUARTERLY ASSESSMENT
+    column_coordinate_total_pt_ps = 33
+    row_coordinate_total_pt_ps = 10
 
-    # for scores_total_pt_ps in grade_scores_queryset:
-    #     value_to_write = 100
+    for scores_total_pt_ps in grade_scores_queryset:
+        value_to_write = 100
 
-    #     value_to_write = str(value_to_write)
-    #     sheet.cell(row=row_coordinate_total_pt_ps, column=column_coordinate_total_pt_ps, value=value_to_write)
-    #     column_coordinate_total_pt_ps += 1
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_total_pt_ps, column=column_coordinate_total_pt_ps, value=value_to_write)
+        column_coordinate_total_pt_ps += 1
 
-    #     column_coordinate_total_pt_ps = 32
+        column_coordinate_total_pt_ps = 33
 
-    # # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE
-    # column_coordinate_weight_input_performance = 33
-    # row_coordinate_weight_input_performance = 10
+    # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE QUARTERLY ASSESSMENT
+    column_coordinate_weight_input_performance = 34
+    row_coordinate_weight_input_performance = 10
 
-    # for scores_weight_input_performance in grade_scores_queryset:
-    #     value_to_write = scores_weight_input_performance.weight_input_quarterly
-    #     value_to_write = str(value_to_write)
-    #     sheet.cell(row=row_coordinate_weight_input_performance, column=column_coordinate_weight_input_performance, value=value_to_write)
-    #     column_coordinate_weight_input_performance += 1
+    for scores_weight_input_performance in grade_scores_queryset:
+        value_to_write = scores_weight_input_performance.weight_input_quarterly
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_weight_input_performance, column=column_coordinate_weight_input_performance, value=value_to_write)
+        column_coordinate_weight_input_performance += 1
 
-    #     column_coordinate_weight_input_performance = 33
+        column_coordinate_weight_input_performance = 34
 
-def write_quarterly_assessment_score(sheet, grade_scores_queryset):
-    column_coordinates = 32
-    row_coordinates = 10
+# def write_quarterly_assessment_score(sheet, grade_scores_queryset):
+#     column_coordinates = 32
+#     row_coordinates = 10
 
 def write_written_works_scores(sheet, grade_scores_queryset):
     
@@ -349,7 +336,7 @@ def write_written_works_scores(sheet, grade_scores_queryset):
 
         if column_coordinates_weighted_score_written > max_column_index:
             column_coordinates_weighted_score_written = 18
-            row_coordinates_percentage_score_written += 1
+            row_coordinates_weighted_score_written += 1
 
 
 def write_performance_tasks_scores(sheet, grade_scores_queryset):
@@ -418,3 +405,106 @@ def write_performance_tasks_scores(sheet, grade_scores_queryset):
         if column_coordinates_weighted_score_performance > max_column_index:
             column_coordinates_weighted_score_performance = 31
             row_coordinates_weighted_score_performance += 1
+
+def write_quarterly_assessment_scores(sheet, grade_scores_queryset):
+    #    # PERFORMANCE TASKS SCORES
+    # column_coordinates = 19
+    # row_coordinates = 12
+    max_column_index = 31
+
+    # for score in grade_scores_queryset:
+    #     performance_tasks_scores_list = score.performance_task_scores
+
+    #     for value in performance_tasks_scores_list:
+    #         value_to_write = str(value)
+    #         sheet.cell(row=row_coordinates, column=column_coordinates, value=value_to_write)
+    #         column_coordinates += 1
+
+    #         # If we reach the last column, move to the next row
+    #         if column_coordinates > max_column_index:  # Update max_column_index with the actual maximum column index
+    #             column_coordinates = 19  # Reset column index to the starting column
+    #             row_coordinates += 1  # Move to the next row
+
+    # TOTAL QUARTERLY ASSESSMENT SCORE
+    column_coordinates_total_performance_tasks_score = 32
+    row_coordinates_total_performance_tasks_score = 12
+
+    for scores in grade_scores_queryset:
+        total_performance_tasks_score = scores.total_score_quarterly
+
+        # Convert the float value to a string
+        value_to_write = str(total_performance_tasks_score)
+
+        sheet.cell(row=row_coordinates_total_performance_tasks_score, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+        column_coordinates_total_performance_tasks_score += 1
+
+        if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+            column_coordinates_total_performance_tasks_score = 32  # Reset column index to the starting column
+            row_coordinates_total_performance_tasks_score += 1  
+
+        # TOTAL PERCENTAGE SCORE WRITTEN WORKS
+    column_coordinates_percentage_score_performance = 33
+    row_coordinates_percentage_score_performance = 12
+
+    for scores in grade_scores_queryset:
+        percentage_score_performance = scores.percentage_score_quarterly
+        rounded_percentage_score = round(percentage_score_performance, 2)  # You can adjust the number of decimal places as needed
+        value_to_write = str(rounded_percentage_score)
+        sheet.cell(row=row_coordinates_percentage_score_performance, column=column_coordinates_percentage_score_performance, value=value_to_write)
+        column_coordinates_percentage_score_performance += 1
+
+        if column_coordinates_percentage_score_performance > max_column_index:
+            column_coordinates_percentage_score_performance = 33
+            row_coordinates_percentage_score_performance += 1
+
+    # TOTAL WEIGHTED SCORE WRITTEN WORKS
+    column_coordinates_weighted_score_performance = 34
+    row_coordinates_weighted_score_performance = 12
+
+    for scores in grade_scores_queryset:
+        weighted_score_performance = scores.weighted_score_quarterly
+        rounded_weighted_score_performance = round(weighted_score_performance, 2)
+        value_to_write = str(rounded_weighted_score_performance)
+        sheet.cell(row=row_coordinates_weighted_score_performance, column=column_coordinates_weighted_score_performance, value=value_to_write)
+        column_coordinates_weighted_score_performance += 1
+
+        if column_coordinates_weighted_score_performance > max_column_index:
+            column_coordinates_weighted_score_performance = 34
+            row_coordinates_weighted_score_performance += 1
+    
+
+def write_initial_grade(sheet, grade_scores_queryset):
+    max_column_index = 35
+    column_coordinates_total_performance_tasks_score = 35
+    row_coordinates_total_performance_tasks_score = 12
+
+    for scores in grade_scores_queryset:
+        total_performance_tasks_score = scores.initial_grades
+
+        # Convert the float value to a string
+        value_to_write = str(total_performance_tasks_score)
+
+        sheet.cell(row=row_coordinates_total_performance_tasks_score, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+        column_coordinates_total_performance_tasks_score += 1
+
+        if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+            column_coordinates_total_performance_tasks_score = 35  # Reset column index to the starting column
+            row_coordinates_total_performance_tasks_score += 1  
+
+def write_transmuted_grade(sheet, grade_scores_queryset):
+    max_column_index = 36
+    column_coordinates_total_performance_tasks_score = 36 
+    row_coordinates_total_performance_tasks_score = 12
+
+    for scores in grade_scores_queryset:
+        total_performance_tasks_score = scores.transmuted_grades
+
+        # Convert the float value to a string
+        value_to_write = str(total_performance_tasks_score)
+
+        sheet.cell(row=row_coordinates_total_performance_tasks_score, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+        column_coordinates_total_performance_tasks_score += 1
+
+        if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+            column_coordinates_total_performance_tasks_score = 36  # Reset column index to the starting column
+            row_coordinates_total_performance_tasks_score += 1  

@@ -24,7 +24,8 @@ import logging
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-
+from django.db import IntegrityError
+from django.contrib import messages
 #OCR
 from .forms import DocumentUploadForm
 from .models import ProcessedDocument, ExtractedData
@@ -404,70 +405,80 @@ def get_grade_details(request):
     # print("Distinct subjects:", subjects)
 
     return render(request, 'teacher_template/adviserTeacher/new_classrecord.html', context)
+   # Replace with the actual URL of your new_classrecord.html
 
 # views.py
 def get_students_by_grade_and_section(request):
     if request.method == "POST":
-        grade_name = request.POST.get("grade")
-        section_name = request.POST.get("section")
-        subject_name = request.POST.get("subject")
-        quarter_name = request.POST.get("quarter")
-        # teacher_id = request.POST.get("teacher")
+        try:
+            grade_name = request.POST.get("grade")
+            section_name = request.POST.get("section")
+            subject_name = request.POST.get("subject")
+            quarter_name = request.POST.get("quarter")
 
-        user = request.user
+            user = request.user
+            teacher = get_object_or_404(Teacher, user=user)
 
-        teacher = get_object_or_404(Teacher, user=user)
-        teacher_identifier = str(teacher)
+            # Use a more unique identifier for the class record name
+            classrecord_name = f'{grade_name}{section_name}{subject_name}{quarter_name}{teacher.id}'
 
-        classrecord = ClassRecord(
-            name= grade_name + section_name + subject_name + quarter_name,
-            grade=grade_name,
-            section=section_name,
-            subject=subject_name,
-            quarters=quarter_name,
-            teacher=teacher,  # Assign the Teacher instance, not the ID
-        )
-        classrecord.save()
+            classrecord = ClassRecord(
+                name=classrecord_name,
+                grade=grade_name,
+                section=section_name,
+                subject=subject_name,
+                quarters=quarter_name,
+                teacher=teacher,
+            )
 
-        # Query the database to retrieve students based on the selected grade and section
-        students = Student.objects.filter(grade=grade_name, section=section_name)
+            classrecord.save()
 
-        subject = Subject.objects.get(name=subject_name)
+            # Query the database to retrieve students based on the selected grade and section
+            students = Student.objects.filter(grade=grade_name, section=section_name)
 
-
-        weighted_written_works_percentage = subject.written_works_percentage
-        weighted_performance_task_percentage = subject.performance_task_percentage
-        weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
+            subject = Subject.objects.get(name=subject_name)
 
 
-        # Create a dictionary to store scores for each student
-        student_scores = {}
+            weighted_written_works_percentage = subject.written_works_percentage
+            weighted_performance_task_percentage = subject.performance_task_percentage
+            weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
 
-        # Loop through the students and retrieve their scores
-        for student in students:
-            # Assuming you have a field to store the student's name in the Student model
-            student_name = student.name
 
-            # Query the database to retrieve the scores for the current student
-            # You should modify this query based on your data model
-            scores = GradeScores.objects.filter(student_name=student_name)
+            # Create a dictionary to store scores for each student
+            student_scores = {}
 
-            # Store the scores in the dictionary with the student's name as the key
-            student_scores[student_name] = scores
+            # Loop through the students and retrieve their scores
+            for student in students:
+                # Assuming you have a field to store the student's name in the Student model
+                student_name = student.name
 
-        context = {
-            'students': students,
-            'subject_name': subject_name,
-            'quarters': quarter_name,
-            'grade_name': grade_name,
-            'section_name': section_name,
-            'student_scores': student_scores,
-            'written_works_percentage': weighted_written_works_percentage,
-            'performance_task_percentage': weighted_performance_task_percentage,
-            'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
-        }
+                # Query the database to retrieve the scores for the current student
+                # You should modify this query based on your data model
+                scores = GradeScores.objects.filter(student_name=student_name)
 
-        return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
+                # Store the scores in the dictionary with the student's name as the key
+                student_scores[student_name] = scores
+
+            context = {
+                'students': students,
+                'subject_name': subject_name,
+                'quarters': quarter_name,
+                'grade_name': grade_name,
+                'section_name': section_name,
+                'student_scores': student_scores,
+                'written_works_percentage': weighted_written_works_percentage,
+                'performance_task_percentage': weighted_performance_task_percentage,
+                'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
+            }
+
+            return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
+        
+        except IntegrityError as e:
+            error_message = 'Duplicate entry. The record already exists.'
+            messages.error(request, error_message)
+            messages.info(request, 'You are being redirected back to the previous page.')
+            return redirect('get_grade_details')
+
     
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
 
@@ -485,7 +496,6 @@ def calculate_grades(request):
 
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
         scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
-        scores_qa_hps = [request.POST.get(f"max_quarterly_assessment_{i}") for i in range(1, 5)]
         total_ww_hps = request.POST.get("total_max_written_works")
         total_pt_hps = request.POST.get("total_max_performance_task")
         total_qa_hps = request.POST.get("total_max_quarterly")
@@ -494,8 +504,8 @@ def calculate_grades(request):
         weight_quarterly= request.POST.get("quarterly_assessment_weight")
 
         print(scores_pt_hps)
-        print(scores_qa_hps)
         print(scores_ww_hps)
+        print(total_qa_hps)
 
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
@@ -507,7 +517,6 @@ def calculate_grades(request):
         for student in students:
             scores_written_works = []
             scores_performance_task = []
-            scores_quarterly_assessment = []
 
             total_score_written = 0
             total_max_score_written = 0
@@ -547,27 +556,25 @@ def calculate_grades(request):
 
             # Perform your calculations (as in your original code)
 
-            for i in range(1, 5):
-                quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}")
-                max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}")  # Change this to the actual maximum score
+            quarterly_assessment = request.POST.get(f"qa_total_{student.id}")
+            max_quarterly_assessment = request.POST.get(f"total_max_quarterly")  # Change this to the actual maximum score
                 
-                weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
-                scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else "")
-                total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-                total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
+            weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
+            total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
+            total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
             if total_max_score_written > 0:
-                percentage_score_written = (total_score_written / total_max_score_written) * 100
+                percentage_score_written = round((total_score_written / total_max_score_written) * 100, 2)
             else:
                 percentage_score_written = 0
 
             if total_max_score_performance > 0:
-                percentage_score_performance = (total_score_performance / total_max_score_performance) * 100
+               percentage_score_performance = round((total_score_performance / total_max_score_performance) * 100, 2)
             else:
                 percentage_score_performance = 0
 
             if total_max_score_quarterly > 0:
-                percentage_score_quarterly = (total_score_quarterly / total_max_score_quarterly) * 100
+               percentage_score_quarterly = round((total_score_quarterly / total_max_score_quarterly) * 100, 2)
             else:
                 percentage_score_quarterly = 0
 
@@ -579,8 +586,15 @@ def calculate_grades(request):
             weighted_score_performance = (percentage_score_performance / 100) * weight_performance
             weighted_score_quarterly = (percentage_score_quarterly / 100) * weight_quarterly
 
+            rounded_weighted_score_written = round(weighted_score_written, 2)
+            rounded_weighted_score_performance = round(weighted_score_performance, 2)
+            rounded_weighted_score_quarterly = round(weighted_score_quarterly, 2)
+
             initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
             transmuted_grades = transmuted_grade(initial_grades)
+
+            rounded_initial_grades = round(initial_grades, 2)
+            rounded_transmuted_grades = round(transmuted_grades, 2)
 
 
             # Create a new GradeScores object and populate its fields
@@ -589,15 +603,13 @@ def calculate_grades(request):
                 class_record=class_record,
                 scores_hps_written=scores_ww_hps,
                 scores_hps_performance=scores_pt_hps,
-                scores_hps_quarterly=scores_qa_hps,
                 total_ww_hps=total_ww_hps,
                 total_qa_hps=total_qa_hps,
                 total_pt_hps=total_pt_hps,
                 written_works_scores=scores_written_works,
                 performance_task_scores=scores_performance_task,
-                quarterly_assessment_scores=scores_quarterly_assessment,
-                initial_grades=initial_grades,
-                transmuted_grades=transmuted_grades,
+                initial_grades= rounded_initial_grades,
+                transmuted_grades= rounded_transmuted_grades,
                 total_score_written=total_score_written,
                 total_max_score_written=total_max_score_written,
                 total_score_performance=total_score_performance,
@@ -607,9 +619,9 @@ def calculate_grades(request):
                 percentage_score_written=percentage_score_written,
                 percentage_score_performance=percentage_score_performance,
                 percentage_score_quarterly=percentage_score_quarterly,
-                weighted_score_written=weighted_score_written,
-                weighted_score_performance=weighted_score_performance,
-                weighted_score_quarterly=weighted_score_quarterly,
+                weighted_score_written=rounded_weighted_score_written,
+                weighted_score_performance=rounded_weighted_score_performance,
+                weighted_score_quarterly=rounded_weighted_score_quarterly,
                 weight_input_written=weight_input_written,
                 weight_input_performance=weight_input_performance,
                 weight_input_quarterly=weight_input_quarterly
@@ -1128,9 +1140,17 @@ def update_score(request):
 
         scores_list = [int(score) if score != '' else 0 for score in scores_list]
 
-        total_score = sum(scores_list)
-        percentage_score = (total_score / getattr(grade_score, max_field)) * 100
-        weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+        if section_id == 'quarterly_assessment':
+            # For quarterly assessment, total_score is directly updated
+            total_score = int(new_score)
+            percentage_score = (total_score / getattr(grade_score, max_field)) * 100
+            weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+        else:
+            # For other sections, calculate total_score from scores_list
+            total_score = sum(scores_list)
+            percentage_score = (total_score / getattr(grade_score, max_field)) * 100
+            weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
+
        
 
         # Log the calculated values
@@ -1141,8 +1161,8 @@ def update_score(request):
 
         # Set the calculated values to the model fields
         setattr(grade_score, total_field, total_score)
-        setattr(grade_score, percentage_field, percentage_score)
-        setattr(grade_score, weighted_field, weighted_score)
+        setattr(grade_score, percentage_field, round(percentage_score, 2))
+        setattr(grade_score, weighted_field, round(weighted_score,2))
 
         
         print(scores_list)
@@ -1163,6 +1183,11 @@ def update_score(request):
         print("Initial Grade:", initial_grade)
         print("transmuted_grade:", transmuted_grades)
 
+        if section_id == 'quarterly_assessment':
+            scores_hps_value = None  # or any other default value for quarterly assessment
+        else:
+            scores_hps_value = getattr(grade_score, hps_field)
+
         # Set the calculated initial grade to the model field
         setattr(grade_score, 'initial_grades', initial_grade)
         setattr(grade_score, 'transmuted_grades', transmuted_grades)
@@ -1174,7 +1199,7 @@ def update_score(request):
             'percentage_score': getattr(grade_score, percentage_field),
             'weighted_score': getattr(grade_score, weighted_field),
             'initial_grade': initial_grade,  # Add initial grade to the response
-            'scores_hps': getattr(grade_score, hps_field),
+            'scores_hps': scores_hps_value,
         }
 
         return JsonResponse(response_data)

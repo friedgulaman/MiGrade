@@ -2,7 +2,6 @@ from django import forms
 from django.contrib import admin
 from django.urls import URLPattern, path, include
 
-from CuyabSRMS import AdminViews, TeacherViews
 
 from CuyabSRMS import AdminViews, TeacherViews, GenerationViews
 
@@ -132,7 +131,7 @@ urlpatterns = [
     path('display_students', TeacherViews.display_students, name='display_students'),
     path('view_classrecord', TeacherViews.view_classrecord, name="view_classrecord"),
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
-    path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
+   path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
     path('display_final_grades/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_final_grades, name='display_final_grades'),
     path('update_score/', TeacherViews.update_score, name='update_score'),
     path('update_highest_possible_scores/', TeacherViews.update_highest_possible_scores, name='update_highest_possible_scores'),

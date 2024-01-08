@@ -100,13 +100,11 @@ class GradeScores(models.Model):
     class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
     scores_hps_written = models.JSONField()  # Adjust with your actual field type
     scores_hps_performance = models.JSONField()  # Adjust with your actual field type
-    scores_hps_quarterly = models.JSONField()
     total_ww_hps = models.FloatField(null=True, blank=True)
     total_pt_hps = models.FloatField(null=True, blank=True)
     total_qa_hps = models.FloatField(null=True, blank=True)
     written_works_scores = models.JSONField()
     performance_task_scores = models.JSONField()
-    quarterly_assessment_scores = models.JSONField()
     initial_grades = models.FloatField(null=True, blank=True)
     transmuted_grades = models.FloatField(null=True, blank=True)
     total_score_written = models.FloatField(null=True, blank=True)

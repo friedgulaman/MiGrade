@@ -74,6 +74,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 ROOT_URLCONF = 'migrade.urls'
 
 TEMPLATES = [
@@ -99,7 +101,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.1.4',
+        'NAME': 'migrade_v.1.3',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   
