@@ -665,29 +665,54 @@ Adviser Teacher
     <!-- QUARTERLY ASSESSMENT -->
 
     <!-- total hps qa -->
-    <script>
+   <!-- total hps qa -->
+  <!-- <script>
+    function calculateTotalQuarterlyAssessment() {
+        // Get all the input fields with names starting with "max_written_works_{{ i }}"
+        var inputFields = document.querySelectorAll('input[name^="max_quarterly_assessment_{{ i }}"]');
+        
+        var total = 0;
+
+        // Iterate through the input fields and sum their values
+        for (var i = 0; i < inputFields.length; i++) {
+            var value = parseFloat(inputFields[i].value) || 0;
+            total += value;
+        }
+
+        // Update the total in the target <td>
+        var totalElement = document.getElementById('total_max_quarterly');
+        totalElement.innerText = isNaN(total) ? 'None' : total;
+    }
+
+    // Attach the calculateTotal function to the input fields' change event
+    var inputFields = document.querySelectorAll('input[name^="max_quarterly_assessment_{{ i }}"]');
+    for (var i = 0; i < inputFields.length; i++) {
+        inputFields[i].addEventListener('change', calculateTotalQuarterlyAssessment);
+    }
+  </script> -->
+
+    <!-- <script>
       function calculateTotalQuarterlyAssessment() {
-          // Get all the input fields with names starting with "max_written_works_{{ i }}"
-          var inputFields = document.querySelectorAll('input[name^="max_quarterly_assessment_{{ i }}"]');
+          var totalElement = document.getElementById('total_max_quarterly');
           
-          var total = 0;
-      
-          // Iterate through the input fields and sum their values
-          for (var i = 0; i < inputFields.length; i++) {
-              var value = parseFloat(inputFields[i].value) || 0;
-              total += value;
+          // Get the value of the total_max_quarterly input field
+          var totalValue = parseFloat(totalElement.value);
+
+          // Check if the value is a valid number
+          if (isNaN(totalValue)) {
+              totalElement.value = 'None';
           }
-      
-          // Update the total in the target <td>
-          document.getElementById('total_max_quarterly').innerText = total;
       }
-      
+
       // Attach the calculateTotal function to the input fields' change event
-      var inputFields = document.querySelectorAll('input[name^="max_quarterly_assessment_{{ i }}"]');
-      for (var i = 0; i < inputFields.length; i++) {
-          inputFields[i].addEventListener('change', calculateTotalQuarterlyAssessment);
-      }
-      </script>
+      document.addEventListener('DOMContentLoaded', function() {
+          calculateTotalQuarterlyAssessment();
+          
+          // Attach the function to the input field's input event for dynamic updates
+          var totalElement = document.getElementById('total_max_quarterly');
+          totalElement.addEventListener('input', calculateTotalQuarterlyAssessment);
+      });
+  </script> -->
 
     <!-- total score qa -->
     <script>

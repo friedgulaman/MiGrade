@@ -24,13 +24,15 @@ def generate_excel_for_grades(request, grade, section, subject):
                                                         class_record__subject=subject)
 
     # Original file path
-    original_file_path = r'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\migrade_v.1.2\TEMPLATE - SF1.xlsx'
+    original_file_path = r'C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1.xlsx'
+
+    # C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2
 
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     
     # Create a copy of the Excel file with a timestamp in its name
-    copied_file_path = fr'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\migrade_v.1.2\TEMPLATE - SF1_copy_{timestamp}.xlsx'
+    copied_file_path = fr'C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1_copy_{timestamp}.xlsx'
     shutil.copyfile(original_file_path, copied_file_path)
 
     try:

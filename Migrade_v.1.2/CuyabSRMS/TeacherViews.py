@@ -498,13 +498,15 @@ def calculate_grades(request):
         scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
         total_ww_hps = request.POST.get("total_max_written_works")
         total_pt_hps = request.POST.get("total_max_performance_task")
-        total_qa_hps = request.POST.get("total_max_quarterly")
+        total_qa_hps = request.POST.get("total_max_quarterly") or None
         weight_written= request.POST.get("written_works_weight")
         weight_performance= request.POST.get("performance_task_weight")
         weight_quarterly= request.POST.get("quarterly_assessment_weight")
 
         print(scores_pt_hps)
         print(scores_ww_hps)
+        print(total_ww_hps)
+        print(total_pt_hps)
         print(total_qa_hps)
 
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
@@ -1131,9 +1133,9 @@ def update_score(request):
 
         # Update the specific value in the scores list
         if new_score != '':
-            scores_list[column_index] = int(new_score)
+            scores_list[column_index] = int(float(new_score))
         else:
-            scores_list[column_index] = 0  # Or any default value you prefer
+            scores_list[column_index] = 0   # Or any default value you prefer
 
         # Save the updated scores list to the model
         setattr(grade_score, scores_field, scores_list)
@@ -1142,8 +1144,9 @@ def update_score(request):
 
         if section_id == 'quarterly_assessment':
             # For quarterly assessment, total_score is directly updated
-            total_score = int(new_score)
-            percentage_score = (total_score / getattr(grade_score, max_field)) * 100
+            total_score = int(float(new_score))
+            max_value = getattr(grade_score, max_field)
+            percentage_score = (total_score / max_value) * 100 if max_value is not None and max_value != 0 else 0
             weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
         else:
             # For other sections, calculate total_score from scores_list
@@ -1160,7 +1163,7 @@ def update_score(request):
         print(scores_hps)
 
         # Set the calculated values to the model fields
-        setattr(grade_score, total_field, total_score)
+        setattr(grade_score, total_field, int(float(total_score)))
         setattr(grade_score, percentage_field, round(percentage_score, 2))
         setattr(grade_score, weighted_field, round(weighted_score,2))
 
