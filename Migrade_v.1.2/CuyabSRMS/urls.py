@@ -148,6 +148,11 @@ urlpatterns = [
          name='generate_excel_for_grades'),
 
 
+
+    # # Student
+    # path('student_list/', StudentViews.student_list, name='student_list'),
+
+
 ]
 
 
