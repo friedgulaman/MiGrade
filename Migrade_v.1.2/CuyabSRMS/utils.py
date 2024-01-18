@@ -1,6 +1,9 @@
 from .models import ActivityLog
 
 def transmuted_grade(initial_grade):
+                    if initial_grade is None:
+                        return None
+                    
                     if 98.40 <= initial_grade <= 99.99:
                         return 99
                     elif 96.80 <= initial_grade <= 98.39:

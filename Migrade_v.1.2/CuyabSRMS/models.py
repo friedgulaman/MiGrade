@@ -96,7 +96,7 @@ class ClassRecord(models.Model):
     quarters = models.CharField(max_length=50, blank=True, null=True)
 
 class GradeScores(models.Model):
-    student_name = models.CharField(max_length=255, null=True, blank=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
     scores_hps_written = models.JSONField()  # Adjust with your actual field type
     scores_hps_performance = models.JSONField()  # Adjust with your actual field type
@@ -140,6 +140,8 @@ class GradeScores(models.Model):
         field_name = f'{subject.lower()}_{quarter.lower()}'
         print(field_name)
         return getattr(self, field_name, None)
+    
+    
     
 
     
