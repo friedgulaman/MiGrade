@@ -817,7 +817,7 @@ def grade_summary(request, grade, section, quarter):
 def get_subject_score(student, subject, quarter):
     try:
         grade_instance = FinalGrade.objects.get(
-            student_name=student.student_name,
+            student_name=student.student_name,  # Update this line
             grade=student.grade,
             section=student.section,
             subject=subject,
@@ -831,10 +831,10 @@ def get_subjects(student):
     subjects = GradeScores.objects.filter(
         class_record__grade=student.grade,
         class_record__section=student.section,
-        student_name=student.student_name
+        student__name=student.student_name
     ).values_list('class_record__subject', flat=True).distinct()
 
-    return [subject for subject in subjects if subject] 
+    return [subject for subject in subjects if subject]
 
 # def get_subject_grade(student, subject, quarter):
 #     # You need to adjust this function based on your actual model relationships and fields
@@ -863,7 +863,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                     class_record__section=section,
                     class_record__subject=subject_name,
                     class_record__quarters=quarter,
-                    student_name=student.name
+                    student__name=student.name
                 ).first()
 
                 subject_info['quarter_grades'][quarter] = grade_score.initial_grades if grade_score else 0
@@ -882,9 +882,14 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                 subject_info['teacher_name'] = "Unknown Teacher"
 
             # Calculate the final grade for the subject
-            subject_info['final_grade'] = sum(subject_info['quarter_grades'].values()) / len(subject_info['quarter_grades']) \
-                if len(subject_info['quarter_grades']) > 0 else 0
+            quarter_grades_values = subject_info['quarter_grades'].values()
 
+            # Convert filtered values to a list before calculating the sum and length
+            filtered_values = list(filter(lambda x: x is not None, quarter_grades_values))
+
+            subject_info['final_grade'] = sum(filtered_values) / len(filtered_values) \
+                if filtered_values else 0
+            
             # Check if a record already exists in the FinalGrade model
             existing_final_grade = FinalGrade.objects.filter(
                 teacher=class_record.teacher,
@@ -896,11 +901,11 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
 
             if existing_final_grade:
                 # Update existing record
-                existing_final_grade.quarter1 = round(subject_info['quarter_grades']['1st Quarter'], 2)
-                existing_final_grade.quarter2 = round(subject_info['quarter_grades']['2nd Quarter'], 2)
-                existing_final_grade.quarter3 = round(subject_info['quarter_grades']['3rd Quarter'], 2)
-                existing_final_grade.quarter4 = round(subject_info['quarter_grades']['4th Quarter'], 2)
-                existing_final_grade.final_grade = round(subject_info['final_grade'], 2)
+                existing_final_grade.quarter1 = round(subject_info['quarter_grades']['1st Quarter'] or 0, 2)
+                existing_final_grade.quarter2 = round(subject_info['quarter_grades']['2nd Quarter'] or 0, 2)
+                existing_final_grade.quarter3 = round(subject_info['quarter_grades']['3rd Quarter'] or 0, 2)
+                existing_final_grade.quarter4 = round(subject_info['quarter_grades']['4th Quarter'] or 0, 2)
+                existing_final_grade.final_grade = round(subject_info['final_grade'] or 0, 2)
                 existing_final_grade.save()
             else:
                 # Insert new record
@@ -910,11 +915,11 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                     grade=grade,
                     section=section,
                     subject=subject_name,
-                    quarter1=round(subject_info['quarter_grades']['1st Quarter'], 2),
-                    quarter2=round(subject_info['quarter_grades']['2nd Quarter'], 2),
-                    quarter3=round(subject_info['quarter_grades']['3rd Quarter'], 2),
-                    quarter4=round(subject_info['quarter_grades']['4th Quarter'], 2),
-                    final_grade=round(subject_info['final_grade'], 2)
+                    quarter1=round(subject_info['quarter_grades']['1st Quarter'] or 0, 2),
+                    quarter2=round(subject_info['quarter_grades']['2nd Quarter'] or 0, 2),
+                    quarter3=round(subject_info['quarter_grades']['3rd Quarter'] or 0, 2),
+                    quarter4=round(subject_info['quarter_grades']['4th Quarter'] or 0, 2),
+                    final_grade=round(subject_info['final_grade'] or 0, 2)
                 )
                 final_grade.save()
 
@@ -939,9 +944,9 @@ def display_final_grades(request, grade, section, subject):
             final_grade = FinalGrade.objects.filter(
                 teacher__classrecord__grade=grade,
                 teacher__classrecord__section=section,
-                student_name=student.name,
+                student_name=student.name,  # Assuming 'student' is the correct field name
                 subject=subject_name
-            ).first()
+            ).first()   
 
             if final_grade:
                 subject_info['quarter_grades']['1st Quarter'] = final_grade.quarter1
@@ -1080,11 +1085,12 @@ def update_score(request):
         # print(column_index)
         # print(section_id)  # Add this line for debugging
 
+        student = Student.objects.get(name=student_name)
 
         try:
             # Retrieve the GradeScores object based on student name and class record id
             grade_score = GradeScores.objects.get(
-                student_name=student_name,
+                   student=student,
                 class_record__id=class_record_id
             )
 

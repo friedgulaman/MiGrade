@@ -30,7 +30,7 @@
         <tbody>
           {% for grade_score in summary.grade_scores %}
             <tr>
-              <td>{{ grade_score.student_name }}</td>
+              <td>{{ grade_score.student.name }}</td>
               <td>{{ grade_score.initial_grades }}</td>
               <td>{{ grade_score.transmuted_grades }}</td>
             </tr>

@@ -246,7 +246,7 @@
                             {% for record in grade_scores %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
+                                <td>{{ record.student.name }}</td>
                                 <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
                                 <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
                             </tr>

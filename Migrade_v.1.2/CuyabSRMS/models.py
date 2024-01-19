@@ -124,9 +124,9 @@ class GradeScores(models.Model):
     weighted_score_quarterly = models.FloatField(null=True, blank=True)
 
 
-
     def __str__(self):
-        return self.student_name
+        return self.student.name
+
     
     def get_class_record_id(self):
         # Check if classRecord is not None before accessing its id

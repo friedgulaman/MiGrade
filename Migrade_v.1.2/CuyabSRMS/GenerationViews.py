@@ -58,10 +58,10 @@ def generate_excel_for_grades(request, grade, section, subject):
         # Write Written_works_score
         write_written_works_scores(sheet, grade_scores_queryset)
 
-        #Write performance_tasks_score
+        # #Write performance_tasks_score
         write_performance_tasks_scores(sheet, grade_scores_queryset)
 
-        #Write quarterly assessment score
+        # #Write quarterly assessment score
         write_quarterly_assessment_scores(sheet, grade_scores_queryset)
 
         #Write Initial Grade
