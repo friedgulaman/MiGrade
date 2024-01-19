@@ -14,10 +14,50 @@
         color: red;
         text-align: center;
     }
+    .table-responsive {
+        width: 100%; /* Adjust the width as needed */
+        margin: 0 auto; /* Center the table within its container */
+    }
+
+    .table {
+        width: 100%; /* Make the table fill the available width */
+    }
+
+    .back-button {
+    color: #1027ac;
+    font-size: 30px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+    
 </style>
-<a href="{% url 'home_adviser_teacher' %}">Back to Home</a>
 <section class="content container mt-2">
-    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+      <div class="mt-5 border-bottom">
+        <div class="card-body ">
+            <div class="d-flex justify-content-between align-items-center m-2 p-3 ">
+          <h3 >Class Record Information</h3>
+          <a class="back-button ">&larr;</a>
+          </div>
+          <div class="row text-primary d-flex justify-content-between align-items-center text-center">
+            <div class="col">
+              <p class="card-text "><strong class="text-muted">Grade:</strong> {{ class_record.grade }}</p>
+            </div>
+            <div class="col">
+              <p class="card-text"><strong class="text-muted">Section:</strong> {{ class_record.section }}</p>
+            </div>
+            <div class="col">
+              <p class="card-text"><strong class="text-muted">Subject:</strong> {{ class_record.subject }}</p>
+            </div>
+            <div class="col">
+              <p class="card-text"><strong class="text-muted">Quarters:</strong> {{ class_record.quarters }}</p>
+            </div>
+            <div class="col">
+                <p class="card-text"><strong class="text-muted">Class Record Id:</strong> {{ class_record.id }}</p>
+              </div>
+          </div>
+        </div>
+      </div>
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom accent-cyan mt-5">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#written_works" role="tab"
@@ -36,17 +76,7 @@
                     aria-selected="false">Initial Grades</a>
             </li>
         </ul>
-        <div>
-            <div class="btn-wrapper">
-                {% if class_record %}
-                    <div>Grade: {{ class_record.grade }}</div>
-                    <div>Section: {{ class_record.section }}</div>
-                    <div>Quarters: {{ class_record.quarters }}</div>
-                    <div>ClassRecord ID: {{ class_record.id }}</div>
-                    <div><input type="hidden" name="class_record_id" value="{{ class_record.id }}"></div>
-                {% endif %}
-            </div>
-        </div>
+
     </div>
 
 
@@ -265,7 +295,10 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
 
-
+ // JavaScript to handle the back button click event
+ document.querySelector(".back-button").addEventListener("click", function () {
+    window.history.back();
+  });
     
 $(document).ready(function () {
 

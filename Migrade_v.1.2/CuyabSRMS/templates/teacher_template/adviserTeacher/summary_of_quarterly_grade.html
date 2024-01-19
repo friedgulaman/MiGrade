@@ -1,45 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quarterly Grades Summary</title>
-</head>
-<body>
-  <a href="{% url 'home_adviser_teacher' %}">Back to Home</a>
+{% extends 'teacher_template/teacher_base.html' %}
 
+{% block title %}
+View Class Record
+{% endblock title %}
+
+{% block main_content %}
+<style>
+  .back-button {
+    color: #1027ac;
+    font-size: 30px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+</style>
+<section class="content container mt-2">
+  <div class="d-flex justify-content-between align-items-center m-0 p-4">
     <h2>Quarterly Grades Summary</h2>
+    <a class="back-button">&larr;</a>
+  </div>
 
-    {% for summary in quarterly_summaries %}
-      <h3>Class Record Information</h3>
-      <p>Grade: {{ summary.class_record.grade }}</p>
-      <p>Section: {{ summary.class_record.section }}</p>
-      <p>Subject: {{ summary.class_record.subject }}</p>
-      <p>Quarters: {{ summary.class_record.quarters}}</p>
-    
-      <h3>Student Grades Summary</h3>
-    
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Student Name</th>
-            <th>Initial Grades</th>
-            <th>Transmuted Grades</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for grade_score in summary.grade_scores %}
+
+  <div class="card">
+    <div class="card-body ">
+      <h3 class="card-title">Class Record Information</h3>
+      <div class="row text-primary text-center">
+        <div class="col-md-3">
+          <p class="card-text "><strong class="text-muted">Grade:</strong> {{ class_record.grade }}</p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Section:</strong> {{ class_record.section }}</p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Subject:</strong> {{ class_record.subject }}</p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Quarters:</strong> {{ class_record.quarters }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <h3 class="card-title">Student Grades Summary</h3>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
             <tr>
-              <td>{{ grade_score.student_name }}</td>
+
+              <th>Student Name</th>
+              <th>Initial Grades</th>
+              <th>Transmuted Grades</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grade_score in grade_scores %}
+            <tr>
+              <td> {{ forloop.counter }}. {{ grade_score.student_name }}</td>
               <td>{{ grade_score.initial_grades }}</td>
               <td>{{ grade_score.transmuted_grades }}</td>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% endfor %}
-    
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
+<script>
+  // JavaScript to handle the back button click event
+  document.querySelector(".back-button").addEventListener("click", function () {
+    window.history.back();
+  });
 
-</body>
-</html>
+</script>
+{% endblock main_content %}

@@ -682,6 +682,7 @@ def view_classrecord(request):
         print(class_records)
 
         return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', context)
+    
     else:
         # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
@@ -694,6 +695,7 @@ def display_students(request):
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
         students = Student.objects.filter(teacher=teacher)
+        
 
         unique_combinations = students.values('grade', 'section').distinct()
 
@@ -707,16 +709,36 @@ def display_students(request):
 
 
 def student_list_for_class(request):
-    grade = request.GET.get('grade')
-    section = request.GET.get('section')
-    
-    # Fetch students based on grade and section
-    students = Student.objects.filter(grade=grade, section=section)
+    # Assuming the user is logged in
+    user = request.user
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher)
+
+        grade = request.GET.get('grade')
+        section = request.GET.get('section')
+        
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section)
+
+        # Fetch distinct subjects based on grade and section
+        subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+
+        
 
     context = {
         'grade': grade,
         'section': section,
         'students': students,
+        'class_records': class_records,
+        'subjects': subjects,
+        
+        
     }
 
     return render(request, 'teacher_template/adviserTeacher/student_list.html', context)
@@ -744,19 +766,17 @@ def edit_record(request, record_id):
     return render(request, 'teacher_template/adviserTeacher/edit_records.html', context)
 
 
-def display_quarterly_summary(request, grade, section, subject):
-    class_records = ClassRecord.objects.filter(grade=grade, section=section, subject=subject)
-    
-    quarterly_summaries = []
-    for class_record in class_records:
-        grade_scores = GradeScores.objects.filter(class_record=class_record)
-        quarterly_summaries.append({
-            'class_record': class_record,
-            'grade_scores': grade_scores,
-        })
+def display_quarterly_summary(request, grade, section, subject, class_record_id):
+    # Retrieve the specific class record based on the provided class_record_id
+    class_record = get_object_or_404(ClassRecord, id=class_record_id, grade=grade, section=section, subject=subject)
 
+    # Retrieve grade scores related to the class record
+    grade_scores = GradeScores.objects.filter(class_record=class_record)
+
+    
     context = {
-        'quarterly_summaries': quarterly_summaries,
+        'class_record': class_record,
+        'grade_scores': grade_scores,
     }
 
     return render(request, "teacher_template/adviserTeacher/summary_of_quarterly_grade.html", context)
@@ -1263,3 +1283,6 @@ def delete_classrecord(request, class_record_id):
 def class_records_list(request):
     class_records = ClassRecord.objects.all()
     return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_records': class_records})
+
+
+

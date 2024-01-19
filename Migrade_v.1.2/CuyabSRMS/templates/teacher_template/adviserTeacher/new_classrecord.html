@@ -1,80 +1,81 @@
-{% extends 'teacher_template/teacher_base.html' %}
-{% block page_title %}
-Adviser Teacher
-{% endblock page_title %}
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+    New Class Record
+{% endblock title %}
 {% block main_content %}
 <style>
-    .back-button{
-  color: #1027ac;
-  font-size: 30px;
-  text-decoration: none;
-  cursor: pointer;
-}
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
 </style>
-<section>
-    <div class="container p-5">
-        <div class="d-flex justify-content-between align-items-center">
-        <h3>Choose Grade &  Section</h3>
-        <a class="back-button" >&larr;</a>
-    </div>
-    <div class="row py-4">
-    
-    <div class="col-6">
-        <img class="img-fluid p-5" src="static/star-admin/images/home_teacher.svg" alt="Home Teacher">
-    </div>
-    <form method="post" action="{% url 'students' %}" class="col-6">
-        {% csrf_token %}
-        <div class="form-group mb-4">
-            <label for="grade">Grade</label>
-            <select class="form-control" id="grade" name="grade">
-                <option value="">Select Grade</option>
-                {% for grade in grades %}
-                    <option value="{{ grade }}">{{ grade }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group mb-4">
-            <label for="section">Section</label>
-            <select class="form-control" id="section" name="section">
-                <option value="">Select Section</option>
-                {% for section in sections %}
-                    <option value="{{ section }}">{{ section }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <div class="form-group mb-4">
-            <label for="subject">Subject</label>
-            <select class="form-control" id="subject" name="subject">
-                <option value="">Select Subject</option>
-                {% for subject in subjects %}
-                    <option value="{{ subject }}">{{ subject }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group mb-4">
-            <label for="grade">Quarter</label>
-            <select class="form-control" id="quarter" name="quarter">
-                <option value="">Select Quarter</option>
-                {% for quarter in quarters %}
-                    <option value="{{ quarter }}">{{ quarter}}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <input type="hidden" id="teacher" name="teacher" value="{{ teacher.user.id }}">
-        <div class="d-flex justify-content-end">
-        <button type="submit" class="btn btn-primary mt-5">Get Students</button>
-    </div>
-    </form>
+<section class="container p-5">
+    <div class="d-flex justify-content-between align-items-center mb-5 p-2">
+    <h3>Create New Class Record</h3>
+    <a class="back-button" >&larr;</a>
 </div>
-    </div>
+    <form method="post" action="{% url 'students' %}">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group mb-4">
+                        <label for="grade">Grade</label>
+                        <select class="form-control" id="grade" name="grade">
+                            <option value="">Select Grade</option>
+                            {% for grade in grades %}
+                                <option value="{{ grade }}">{{ grade }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="subject">Subject</label>
+                        <select class="form-control" id="subject" name="subject">
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject }}">{{ subject }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="form-group mb-4">
+                        <label for="section">Section</label>
+                        <select class="form-control" id="section" name="section">
+                            <option value="">Select Section</option>
+                            {% for section in sections %}
+                                <option value="{{ section }}">{{ section }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="grade">Quarter</label>
+                        <select class="form-control" id="quarter" name="quarter">
+                            <option value="">Select Quarter</option>
+                            {% for quarter in quarters %}
+                                <option value="{{ quarter }}">{{ quarter }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" id="teacher" name="teacher" value="{{ teacher.user.id }}">
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary mt-1">Create</button>
+            </div>
+        </div>
+    </form>
 </section>
 <script>
     // JavaScript to handle the back button click event
-    document.querySelector(".back-button").addEventListener("click", function() {
-      window.history.back();
+    document.querySelector(".back-button").addEventListener("click", function () {
+        window.history.back();
     });
-  </script>
+</script>
 {% endblock main_content %}

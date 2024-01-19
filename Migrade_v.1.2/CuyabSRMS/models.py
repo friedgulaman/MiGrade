@@ -94,6 +94,7 @@ class ClassRecord(models.Model):
     subject = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Subject
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
     quarters = models.CharField(max_length=50, blank=True, null=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
 class GradeScores(models.Model):
     student_name = models.CharField(max_length=255, null=True, blank=True)
