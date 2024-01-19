@@ -1,6 +1,9 @@
 from .models import ActivityLog
 
 def transmuted_grade(initial_grade):
+                    if initial_grade is None:
+                        return None
+                    
                     if 98.40 <= initial_grade <= 99.99:
                         return 99
                     elif 96.80 <= initial_grade <= 98.39:
@@ -105,7 +108,7 @@ def write_student_names(sheet, grade_scores_queryset):
         row_coordinates_student_name += 1
 
     for score_student_name in grade_scores_queryset:
-        value_to_write = score_student_name.student_name
+        value_to_write = score_student_name.student.name
         sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=value_to_write)
         row_coordinates_student_name += 1
 
@@ -299,7 +302,7 @@ def write_written_works_scores(sheet, grade_scores_queryset):
         total_written_works_score = scores.total_score_written
 
         # Convert the float value to a string
-        value_to_write = str(total_written_works_score)
+        value_to_write = str(total_written_works_score) if total_written_works_score is not None else ""
 
         sheet.cell(row=row_coordinates_total_written_works_score, column=column_coordinates_total_written_works_score, value=value_to_write)
         column_coordinates_total_written_works_score += 1
@@ -308,36 +311,45 @@ def write_written_works_scores(sheet, grade_scores_queryset):
             column_coordinates_total_written_works_score = 16  # Reset column index to the starting column
             row_coordinates_total_written_works_score += 1
 
-    # TOTAL PERCENTAGE SCORE WRITTEN WORKS
-    column_coordinates_percentage_score_written = 17
-    row_coordinates_percentage_score_written = 12
+        # TOTAL PERCENTAGE SCORE WRITTEN WORKS
+        column_coordinates_percentage_score_written = 17
+        row_coordinates_percentage_score_written = 12
 
-    for scores in grade_scores_queryset:
-        percentage_score_written = scores.percentage_score_written
-        rounded_percentage_score = round(percentage_score_written, 2)  # You can adjust the number of decimal places as needed
-        value_to_write = str(rounded_percentage_score)
-        sheet.cell(row=row_coordinates_percentage_score_written, column=column_coordinates_percentage_score_written, value=value_to_write)
-        column_coordinates_percentage_score_written += 1
+        for scores in grade_scores_queryset:
+            percentage_score_written = scores.percentage_score_written
 
-        if column_coordinates_percentage_score_written > max_column_index:
-            column_coordinates_percentage_score_written = 17
-            row_coordinates_percentage_score_written += 1
+            if percentage_score_written is not None:
+                rounded_percentage_score = round(percentage_score_written, 2)
+                value_to_write = str(rounded_percentage_score)
+            else:
+                value_to_write = ""  # or any other placeholder for None
 
-    # TOTAL WEIGHTED SCORE WRITTEN WORKS
-    column_coordinates_weighted_score_written = 18
-    row_coordinates_weighted_score_written = 12
+            sheet.cell(row=row_coordinates_percentage_score_written, column=column_coordinates_percentage_score_written, value=value_to_write)
+            column_coordinates_percentage_score_written += 1
 
-    for scores in grade_scores_queryset:
-        weighted_score_written = scores.weighted_score_written
-        rounded_weighted_score_written = round(weighted_score_written, 2)
-        value_to_write = str(rounded_weighted_score_written)
-        sheet.cell(row=row_coordinates_weighted_score_written, column=column_coordinates_weighted_score_written, value=value_to_write)
-        column_coordinates_weighted_score_written += 1
+            if column_coordinates_percentage_score_written > max_column_index:
+                column_coordinates_percentage_score_written = 17
+                row_coordinates_percentage_score_written += 1
 
-        if column_coordinates_weighted_score_written > max_column_index:
-            column_coordinates_weighted_score_written = 18
-            row_coordinates_weighted_score_written += 1
+        # TOTAL WEIGHTED SCORE WRITTEN WORKS
+        column_coordinates_weighted_score_written = 18
+        row_coordinates_weighted_score_written = 12
 
+        for scores in grade_scores_queryset:
+            weighted_score_written = scores.weighted_score_written
+
+            if weighted_score_written is not None:
+                rounded_weighted_score_written = round(weighted_score_written, 2)
+                value_to_write = str(rounded_weighted_score_written)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            sheet.cell(row=row_coordinates_weighted_score_written, column=column_coordinates_weighted_score_written, value=value_to_write)
+            column_coordinates_weighted_score_written += 1
+
+            if column_coordinates_weighted_score_written > max_column_index:
+                column_coordinates_weighted_score_written = 18
+                row_coordinates_weighted_score_written += 1
 
 def write_performance_tasks_scores(sheet, grade_scores_queryset):
 
@@ -359,52 +371,64 @@ def write_performance_tasks_scores(sheet, grade_scores_queryset):
                 column_coordinates = 19  # Reset column index to the starting column
                 row_coordinates += 1  # Move to the next row
 
-    # TOTAL PERFORMANCE TASKS SCORE
-    column_coordinates_total_performance_tasks_score = 29
-    row_coordinates_total_performance_tasks_score = 12
+        # TOTAL PERFORMANCE TASKS SCORE
+        column_coordinates_total_performance_tasks_score = 29
+        row_coordinates_total_performance_tasks_score = 12
 
-    for scores in grade_scores_queryset:
-        total_performance_tasks_score = scores.total_score_performance
+        for scores in grade_scores_queryset:
+            total_performance_tasks_score = scores.total_score_performance
 
-        # Convert the float value to a string
-        value_to_write = str(total_performance_tasks_score)
+            # Convert the float value to a string or set to empty string if None
+            value_to_write = str(total_performance_tasks_score) if total_performance_tasks_score is not None else ""
 
-        sheet.cell(row=row_coordinates_total_performance_tasks_score, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
-        column_coordinates_total_performance_tasks_score += 1
+            sheet.cell(row=row_coordinates_total_performance_tasks_score, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
 
-        if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
-            column_coordinates_total_performance_tasks_score = 29  # Reset column index to the starting column
-            row_coordinates_total_performance_tasks_score += 1  
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 29  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score += 1  
 
-        # TOTAL PERCENTAGE SCORE WRITTEN WORKS
-    column_coordinates_percentage_score_performance = 30
-    row_coordinates_percentage_score_performance = 12
-
-    for scores in grade_scores_queryset:
-        percentage_score_performance = scores.percentage_score_performance
-        rounded_percentage_score = round(percentage_score_performance, 2)  # You can adjust the number of decimal places as needed
-        value_to_write = str(rounded_percentage_score)
-        sheet.cell(row=row_coordinates_percentage_score_performance, column=column_coordinates_percentage_score_performance, value=value_to_write)
-        column_coordinates_percentage_score_performance += 1
-
-        if column_coordinates_percentage_score_performance > max_column_index:
+            # TOTAL PERCENTAGE SCORE WRITTEN WORKS
             column_coordinates_percentage_score_performance = 30
-            row_coordinates_percentage_score_performance += 1
+            row_coordinates_percentage_score_performance = 12
 
-    # TOTAL WEIGHTED SCORE WRITTEN WORKS
-    column_coordinates_weighted_score_performance = 31
-    row_coordinates_weighted_score_performance = 12
+            for scores in grade_scores_queryset:
+                percentage_score_performance = scores.percentage_score_performance
 
-    for scores in grade_scores_queryset:
-        weighted_score_performance = scores.weighted_score_performance
-        rounded_weighted_score_performance = round(weighted_score_performance, 2)
-        value_to_write = str(rounded_weighted_score_performance)
-        sheet.cell(row=row_coordinates_weighted_score_performance, column=column_coordinates_weighted_score_performance, value=value_to_write)
-        column_coordinates_weighted_score_performance += 1
+                # Check if the value is not None before rounding
+                if percentage_score_performance is not None:
+                    rounded_percentage_score = round(percentage_score_performance, 2)
+                    value_to_write = str(rounded_percentage_score)
+                else:
+                    value_to_write = ""  # or any other placeholder for None
 
-        if column_coordinates_weighted_score_performance > max_column_index:
-            column_coordinates_weighted_score_performance = 31
-            row_coordinates_weighted_score_performance += 1
+                sheet.cell(row=row_coordinates_percentage_score_performance, column=column_coordinates_percentage_score_performance, value=value_to_write)
+                column_coordinates_percentage_score_performance += 1
+
+                if column_coordinates_percentage_score_performance > max_column_index:
+                    column_coordinates_percentage_score_performance = 30
+                    row_coordinates_percentage_score_performance += 1
+
+        # TOTAL WEIGHTED SCORE WRITTEN WORKS
+        column_coordinates_weighted_score_performance = 31
+        row_coordinates_weighted_score_performance = 12
+
+        for scores in grade_scores_queryset:
+            weighted_score_performance = scores.weighted_score_performance
+
+            # Check if the value is not None before rounding
+            if weighted_score_performance is not None:
+                rounded_weighted_score_performance = round(weighted_score_performance, 2)
+                value_to_write = str(rounded_weighted_score_performance)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            sheet.cell(row=row_coordinates_weighted_score_performance, column=column_coordinates_weighted_score_performance, value=value_to_write)
+            column_coordinates_weighted_score_performance += 1
+
+            if column_coordinates_weighted_score_performance > max_column_index:
+                column_coordinates_weighted_score_performance = 31
+                row_coordinates_weighted_score_performance += 1
 
 def write_quarterly_assessment_scores(sheet, grade_scores_queryset):
     #    # PERFORMANCE TASKS SCORES
@@ -432,8 +456,8 @@ def write_quarterly_assessment_scores(sheet, grade_scores_queryset):
     for scores in grade_scores_queryset:
         total_performance_tasks_score = scores.total_score_quarterly
 
-        # Convert the float value to a string
-        value_to_write = str(total_performance_tasks_score)
+        # Convert the float value to a string or set to empty string if None
+        value_to_write = str(total_performance_tasks_score) if total_performance_tasks_score is not None else ""
 
         sheet.cell(row=row_coordinates_total_performance_tasks_score, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
         column_coordinates_total_performance_tasks_score += 1
@@ -443,19 +467,25 @@ def write_quarterly_assessment_scores(sheet, grade_scores_queryset):
             row_coordinates_total_performance_tasks_score += 1  
 
         # TOTAL PERCENTAGE SCORE WRITTEN WORKS
-    column_coordinates_percentage_score_performance = 33
-    row_coordinates_percentage_score_performance = 12
+        column_coordinates_percentage_score_performance = 33
+        row_coordinates_percentage_score_performance = 12
 
-    for scores in grade_scores_queryset:
-        percentage_score_performance = scores.percentage_score_quarterly
-        rounded_percentage_score = round(percentage_score_performance, 2)  # You can adjust the number of decimal places as needed
-        value_to_write = str(rounded_percentage_score)
-        sheet.cell(row=row_coordinates_percentage_score_performance, column=column_coordinates_percentage_score_performance, value=value_to_write)
-        column_coordinates_percentage_score_performance += 1
+        for scores in grade_scores_queryset:
+            percentage_score_quarterly = scores.percentage_score_quarterly
 
-        if column_coordinates_percentage_score_performance > max_column_index:
-            column_coordinates_percentage_score_performance = 33
-            row_coordinates_percentage_score_performance += 1
+            # Check if the value is not None before rounding
+            if percentage_score_quarterly is not None:
+                rounded_percentage_score = round(percentage_score_quarterly, 2)
+                value_to_write = str(rounded_percentage_score)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            sheet.cell(row=row_coordinates_percentage_score_performance, column=column_coordinates_percentage_score_performance, value=value_to_write)
+            column_coordinates_percentage_score_performance += 1
+
+            if column_coordinates_percentage_score_performance > max_column_index:
+                column_coordinates_percentage_score_performance = 33
+                row_coordinates_percentage_score_performance += 1
 
     # TOTAL WEIGHTED SCORE WRITTEN WORKS
     column_coordinates_weighted_score_performance = 34
@@ -463,8 +493,14 @@ def write_quarterly_assessment_scores(sheet, grade_scores_queryset):
 
     for scores in grade_scores_queryset:
         weighted_score_performance = scores.weighted_score_quarterly
-        rounded_weighted_score_performance = round(weighted_score_performance, 2)
-        value_to_write = str(rounded_weighted_score_performance)
+
+        # Check if the value is not None before rounding
+        if weighted_score_performance is not None:
+            rounded_weighted_score_performance = round(weighted_score_performance, 2)
+            value_to_write = str(rounded_weighted_score_performance)
+        else:
+            value_to_write = ""  # or any other placeholder for None
+
         sheet.cell(row=row_coordinates_weighted_score_performance, column=column_coordinates_weighted_score_performance, value=value_to_write)
         column_coordinates_weighted_score_performance += 1
 

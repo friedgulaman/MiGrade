@@ -126,14 +126,14 @@
                             {% for record in grade_scores %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{ record.student_name }}</td>
+                                    <td>{{ record.student.name }}</td>
                                     {% for score in record.written_works_scores %}
                                         <td class="score-cell" contenteditable="true">{{ score }}</td>
                                     {% endfor %}
-                                    <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written }}</td>
-                                    <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written }}">
-                                    <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written }}</td>
-                                    <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written }}</td>
+                                    <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written|default:'' }}</td>
+                                    <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written|default:'' }}">
+                                    <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written|default:'' }}</td>
+                                    <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written|default:'' }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -191,14 +191,14 @@
                                 {% for record in grade_scores %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{ record.student_name }}</td>
+                                    <td>{{ record.student.name }}</td>
                                     {% for score in record.performance_task_scores %}
                                     <td class="score-cell" contenteditable="true">{{ score }}</td>
                                     {% endfor %}
-                                    <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance }}</td>
-                                    <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance }}">
-                                    <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance }}</td>
-                                    <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance}}</td>
+                                    <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance|default:'' }}</td>
+                                    <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance|default:'' }}">
+                                    <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance|default:'' }}</td>
+                                    <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance|default:'' }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -230,9 +230,9 @@
                                 <th>Highest possible scores</th>
                                 {% for record in grade_scores %}
                                 {% if forloop.first %}
-                                <td contenteditable="true" id="total_max_quarterly" name="total_max_quarterly" value="{{ record.total_max_score_quarterly }}">{{ record.total_max_score_quarterly }}</td>
+                                <td contenteditable="true" id="total_max_quarterly" name="total_max_quarterly" value="{% if record.total_max_score_quarterly %}{{ record.total_max_score_quarterly }}{% else %}{{ '' }}{% endif %}">{{ record.total_qa_hps }}</td>
                                 <td>100.00</td>
-                                <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ record.weight_input_quarterly }}">{{ record.weight_input_quarterly }}</td>
+                                <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{% if record.weight_input_quarterly %}{{ record.weight_input_quarterly }}{% else %}{{ '' }}{% endif %}">{{ record.weight_input_quarterly }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -242,11 +242,11 @@
                             {% for record in grade_scores %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
-                                <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly}}</td>
+                                <td>{{ record.student.name }}</td>
+                                <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly|default:'' }}</td>
                                 <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
-                                <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly }}</td>
-                                <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly }}</td>
+                                <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly|default:'' }}</td>
+                            <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly|default:'' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -276,9 +276,9 @@
                             {% for record in grade_scores %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
-                                <td id="total_initial_grade" name="total_initial_grade">{{ record.initial_grades }}</td>
-                                <td>{{ record.transmuted_grades }}</td>
+                                <td>{{ record.student.name }}</td>
+                                <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -293,13 +293,170 @@
 
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<<<<<<< HEAD
 <script>
 
  // JavaScript to handle the back button click event
  document.querySelector(".back-button").addEventListener("click", function () {
     window.history.back();
   });
+=======
+
+>>>>>>> ada3c9eee875d4319534d628b587c3da9d012101
     
+<script>
+
+    // Add an event listener for the arrow keys in quarterly assessment
+$('.table tbody tr td[contenteditable="true"]').keydown(function (e) {
+    var currentCell = $(this);
+    var currentRow = currentCell.closest('tr');
+    var currentColumnIndex = currentCell.index();
+
+    switch (e.which) {
+
+        case 38: // Up arrow
+            e.preventDefault();
+            navigateUp(currentRow, currentColumnIndex);
+            break;
+
+        case 40: // Down arrow
+            e.preventDefault();
+            navigateDown(currentRow, currentColumnIndex);
+            break;
+
+        default:
+            return; // Exit if not an arrow key
+    }
+});
+
+function navigateUp(row, columnIndex) {
+    var prevRow = row.prev('tr');
+    if (prevRow.length > 0) {
+        prevRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+
+function navigateDown(row, columnIndex) {
+    var nextRow = row.next('tr');
+    if (nextRow.length > 0) {
+        nextRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+$('.score-cell[contenteditable="true"]').keydown(function(e) {
+    var currentCell = $(this);
+    var currentRow = currentCell.closest('tr');
+    var currentColumnIndex = currentCell.index();
+
+    switch (e.which) {
+        case 37: // Left arrow
+            e.preventDefault();
+            navigateLeft(currentRow, currentColumnIndex);
+            break;
+
+        case 39: // Right arrow
+            e.preventDefault();
+            navigateRight(currentRow, currentColumnIndex);
+            break;
+
+        case 38: // Up arrow
+            e.preventDefault();
+            navigateUp(currentRow, currentColumnIndex);
+            break;
+
+        case 40: // Down arrow
+            e.preventDefault();
+            navigateDown(currentRow, currentColumnIndex);
+            break;
+
+        default:
+            return; // Exit if not an arrow key
+    }
+});
+
+function navigateLeft(row, columnIndex) {
+    if (columnIndex > 2) {
+        row.find('td:eq(' + (columnIndex - 1) + ')').focus();
+    }
+}
+
+function navigateRight(row, columnIndex) {
+    if (columnIndex < 13) {
+        row.find('td:eq(' + (columnIndex + 1) + ')').focus();
+    }
+}
+
+function navigateUp(row, columnIndex) {
+    var prevRow = row.prev('tr');
+    if (prevRow.length > 0) {
+        prevRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+
+function navigateDown(row, columnIndex) {
+    var nextRow = row.next('tr');
+    if (nextRow.length > 0) {
+        nextRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+
+// Add an event listener for the arrow keys in highest possible scores
+$('.highest-possible-scores[contenteditable="true"]').keydown(function(e) {
+    var currentCell = $(this);
+    var currentRow = currentCell.closest('tr');
+    var currentColumnIndex = currentCell.index();
+
+    switch (e.which) {
+        case 37: // Left arrow
+            e.preventDefault();
+            navigateLeftHPS(currentRow, currentColumnIndex);
+            break;
+
+        case 39: // Right arrow
+            e.preventDefault();
+            navigateRightHPS(currentRow, currentColumnIndex);
+            break;
+
+        case 38: // Up arrow
+            e.preventDefault();
+            navigateUpHPS(currentRow, currentColumnIndex);
+            break;
+
+        case 40: // Down arrow
+            e.preventDefault();
+            navigateDownHPS(currentRow, currentColumnIndex);
+            break;
+
+        default:
+            return; // Exit if not an arrow key
+    }
+});
+
+function navigateLeftHPS(row, columnIndex) {
+    if (columnIndex > 2) {
+        row.find('td.highest-possible-scores:eq(' + (columnIndex - 3) + ')').focus();
+    }
+}
+
+function navigateRightHPS(row, columnIndex) {
+    if (columnIndex < 13) {
+        row.find('td.highest-possible-scores:eq(' + (columnIndex - 1 ) + ')').focus();
+    }
+}
+
+function navigateUpHPS(row, columnIndex) {
+    var prevRow = row.prev('tr');
+    if (prevRow.length > 0) {
+        prevRow.find('td.highest-possible-scores:eq(' + columnIndex + ')').focus();
+    }
+}
+
+function navigateDownHPS(row, columnIndex) {
+    var nextRow = row.next('tr');
+    if (nextRow.length > 0) {
+        nextRow.find('td.highest-possible-scores:eq(' + columnIndex + ')').focus();
+    }
+}
+
 $(document).ready(function () {
 
 
@@ -341,10 +498,27 @@ $(document).ready(function () {
         updateTotalMaxPerformance();
         // updateTotalQuarterly();
 
+    $(document).ready(function() {
+    // Retrieve the stored section ID from local storage
+    var storedSectionId = localStorage.getItem('activeSection');
+
+    // If a section ID is found, set the corresponding tab as active
+    if (storedSectionId) {
+        $('.nav-tabs a[href="#' + storedSectionId + '"]').tab('show');
+    }
+
+    // Clear the stored section ID after using it
+    localStorage.removeItem('activeSection');
+    });
+
     // Add an event listener for the contenteditable cells
     $('.score-cell[contenteditable="true"]').blur(function () {
         // Get the updated score, column index, and section identifier
         var newScore = $(this).text();
+
+        if (newScore.trim() === '') {
+        return;  // Do not update if the input is empty
+        }
         var columnIndex = $(this).index() -2 ;  // Adjust to 0-based indexing
         var sectionId = $(this).closest('.tab-pane').attr('id');
 
@@ -410,9 +584,28 @@ $(document).ready(function () {
                 'csrfmiddlewaretoken': '{{ csrf_token }}',
             },
             success: function (data) {
+
+                if (data.success === false) {
+                    alert(data.error);
+
+                    // Get the section ID dynamically based on the active section
+                    var sectionId = $('.tab-pane.active').attr('id');
+
+                    // If the sectionId is undefined, you may need to adjust this based on your HTML structure
+                    if (!sectionId) {
+                        console.error('Unable to determine the active section ID.');
+                        return;
+                    }
+
+                    // Store the section ID in local storage
+                    localStorage.setItem('activeSection', sectionId);
+
+                    // Reload the page with the fragment identifier
+                    location.reload(true);
+                } else {
+                
                 // Update the specific cells based on the column index and section identifier
                 if (columnIndex >= 0 && columnIndex <= 9) {
-                    totalScoreCell.text(data.total_score);
                     totalScoreCell.text(data.total_score);
                     percentageScoreCell.text(data.percentage_score);
                     weightedScoreCell.text(data.weighted_score);
@@ -459,7 +652,7 @@ $(document).ready(function () {
                     
                 console.log('Update Score Success:', data);
                 console.log('Initial Grade:', totalWeightedScore);  // Logging
-            }},
+            }}},
             error: function (xhr, status, error) {
                 console.error('Error updating score:', error);  // Logging
                 alert("Error updating score. See console for details.");
@@ -470,6 +663,9 @@ $(document).ready(function () {
     $('#totalScoreQuarterly[contenteditable="true"]').blur(function () {
         // Get the updated score, column index, and section identifier
         var newScore = $(this).text();
+        if (newScore.trim() === '') {
+        return;  // Do not update if the input is empty
+        }
         var sectionId = 'quarterly_assessment';
         var classRecordId = $('input[name="class_record_id"]').val();
         var columnIndex = $(this).index() -2 ;  // Section identifier for quarterly assessment
@@ -505,6 +701,25 @@ $(document).ready(function () {
                 'csrfmiddlewaretoken': '{{ csrf_token }}',
             },
             success: function (data) {
+
+                  if (data.success === false) {
+                    alert(data.error);
+
+                    // Get the section ID dynamically based on the active section
+                    var sectionId = $('.tab-pane.active').attr('id');
+
+                    // If the sectionId is undefined, you may need to adjust this based on your HTML structure
+                    if (!sectionId) {
+                        console.error('Unable to determine the active section ID.');
+                        return;
+                    }
+
+                    // Store the section ID in local storage
+                    localStorage.setItem('activeSection', sectionId);
+
+                    // Reload the page with the fragment identifier
+                    location.reload(true);
+                } else {
                 // Update the total score cell with the returned value from the server
                 totalScoreCell.text(data.total_score);
 
@@ -518,7 +733,7 @@ $(document).ready(function () {
 
                 console.log('Update Score Success:', data);
                 console.log('Initial Grade:', totalWeightedScore);  // Logging
-            },
+            }},
             error: function (xhr, status, error) {
                 console.error('Error updating score:', error);  // Logging
                 alert("Error updating score. See console for details.");
@@ -529,23 +744,26 @@ $(document).ready(function () {
        
     
         // Add an event listener for the contenteditable cells in the highest possible scores row
-        $('.highest-possible-scores[contenteditable="true"]').blur(function () {
+        $('.highest-possible-scores[contenteditable="true"]').on('input', function ()  {
             console.log('Blur event triggered for scores.');
             console.log('Class Record ID:', $('input[name="class_record_id"]').val());
             console.log('Section ID:', $(this).closest('.tab-pane').attr('id'));
-    
+            
     
             updateTotalMaxWrittenWorks();
             updateTotalMaxPerformance();
             // updateTotalQuarterly();
             // Get the updated scores data
+
+
             var newScoresData = [];
             $(this).parent().find('.highest-possible-scores[contenteditable="true"]').each(function () {
                 newScoresData.push($(this).text());
             });
+
             var classRecordId = $('input[name="class_record_id"]').val();
             var sectionId = $(this).closest('.tab-pane').attr('id');
-    
+            
     
             console.log('New Scores Data:', newScoresData);
             // Send an AJAX request to update the scores
@@ -581,8 +799,50 @@ $(document).ready(function () {
             });
         });
     });
-    </script>
+    $(document).ready(function () {
+    // Add an event listener for the contenteditable change in #total_max_quarterly
+    $('#total_max_quarterly').on('input', function () {
+        // Get the new value from the contenteditable element
+        var newScore = $(this).text().trim();
+        var classRecordId = $('input[name="class_record_id"]').val();
+
+        // Make an AJAX request to update the score
+        $.ajax({
+            type: 'POST',
+            url: '/update_total_max_quarterly/',  // Adjust the URL to match your actual endpoint
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                'class_record_id': classRecordId,
+                'new_score': newScore,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                // Add other necessary data here like student_name, section_id, etc.
+            },
+            success: function (data) {
+                    if (columnIndex >= 0 && columnIndex <= 9) {
+                        totalScoreCell.text(data.total_score);
+                        percentageScoreCell.text(data.percentage_score);
+                        weightedScoreCell.text(data.weighted_score);
     
+    
+                        // Update the total max values on the client side
+                      
+                        $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+                    }
+    
+    
+                    console.log('Update Score Success:', data);  
+                },
+            error: function (error) {
+                console.log('Error updating score:', error);
+                // Handle errors if needed
+            }
+        });
+    });
+});
+    </script>
+
     
     
     

@@ -287,15 +287,15 @@ def upload_documents_ocr(request):
         form = DocumentUploadForm(request.POST, request.FILES)
         if form.is_valid():
             # Replace 'YOUR_PROJECT_ID' with your Google Cloud project ID.
-            project_id = '359239664082'
+            project_id = '1083879771832'
 
 
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"doc-ai-ocr-b135d04e24a7.json"
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
 
             client = documentai.DocumentProcessorServiceClient()
 
             # Define the processor resource name.
-            processor_name = f"projects/{project_id}/locations/us/processors/6ff59e15c7cbbbc3"
+            processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
 
             uploaded_file = request.FILES['document']
 
