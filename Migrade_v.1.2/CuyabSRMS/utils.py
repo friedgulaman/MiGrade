@@ -4,7 +4,7 @@ import openpyxl
 import pandas as pd
 import shutil
 from datetime import datetime
-
+from openpyxl.styles import Font
 from .models import GradeScores
 
 
@@ -149,7 +149,7 @@ def write_scores_hps_written(sheet, grade_scores_queryset):
         values_to_write = scores_total_ww_hps.total_ww_hps
 
 
-        value_to_write = str(values_to_write)
+        value_to_write = str(values_to_write) if values_to_write is not None and values_to_write !=0 else ""
 
         sheet.cell(row=row_coordinate_total_scores_hps_written, column=column_coordinates_total_scores_hps_written, value=value_to_write)
         column_coordinates_total_scores_hps_written += 1
@@ -205,7 +205,7 @@ def write_scores_hps_performance(sheet, grade_scores_queryset):
         values_to_write = scores_total_pt_hps.total_pt_hps
 
 
-        value_to_write = str(values_to_write)
+        value_to_write = str(values_to_write) if values_to_write is not None and values_to_write !=0 else ""
 
         sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
         column_coordinates_total_scores_hps_performance += 1
@@ -248,7 +248,7 @@ def write_scores_hps_quarterly(sheet, grade_scores_queryset):
         values_to_write = scores_total_pt_hps.total_qa_hps
 
 
-        value_to_write = str(values_to_write)
+        value_to_write = str(values_to_write) if values_to_write is not None and values_to_write !=0 else ""
 
         sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
         column_coordinates_total_scores_hps_performance += 1
@@ -784,4 +784,35 @@ def write_transmuted_grade(sheet, grade_scores_queryset):
         else:
             print(f"Unknown sex for student: {scores.student.name}")
             continue
+
+def write_sf9_data(sheet, student):
+    # Assuming Y16 is the cell where you want to write the student's name
+    column_coordinates_student_name = 17  # Column Y
+    row_coordinates_student_name = 22
+    column_coordinates_lrn = 19
+    row_coordinates_lrn = 24
+    row_coordinates_sex = 26
+    column_coordinates_sex = 20
+    row_coordinates_grade = 28
+    column_coordinates_grade = 17
+    row_coordinates_section = 28
+    column_coordinates_section = 20
+    row_coordinates_age = 26
+    column_coordinates_age = 17
+    # birthdate = student.birthday
+
+    # Get the current date
+    current_date = datetime.now()
+
+    # Calculate the age
+    # age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
+
+    # Write the student's name to the specified cell
+    sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
+    sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
+    sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "")
+    sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "")
+    sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "")
+    # sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
+    print(student.name)
 

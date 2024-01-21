@@ -1,4 +1,7 @@
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from .models import Student
+import os
 import openpyxl
 import pandas as pd
 import shutil
@@ -13,7 +16,9 @@ from .utils import (
     write_quarterly_assessment_scores,
     write_initial_grade,
     write_transmuted_grade,
+    write_sf9_data
 )
+
 
 from .models import GradeScores
 
@@ -23,16 +28,22 @@ def generate_excel_for_grades(request, grade, section, subject):
                                                         class_record__section=section,
                                                         class_record__subject=subject)
 
-    # Original file path
-    original_file_path = r'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1.xlsx'
+        # Original file path
+    excel_file_name = "TEMPLATE - SF1.xlsx"
 
-    # C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2
+    # Get the current working directory
+    current_directory = os.getcwd()
 
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    
-    # Create a copy of the Excel file with a timestamp in its name
-    copied_file_path = fr'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1_copy_{timestamp}.xlsx'
+
+    # Create the path for the original file
+    original_file_path = os.path.join(current_directory, excel_file_name)
+
+    # Create a path for the copied file with a timestamp
+    copied_file_path = os.path.join(current_directory, f'TEMPLATE - SF1_copy_{timestamp}.xlsx')
+
+    # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
     try:
@@ -76,6 +87,57 @@ def generate_excel_for_grades(request, grade, section, subject):
         # Create an HTTP response with the updated Excel file
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename=grades_export_{timestamp}.xlsx'
+
+        with open(copied_file_path, 'rb') as excel_file:
+            response.write(excel_file.read())
+
+        return response
+
+    except Exception as e:
+        # Handle exceptions, such as a corrupted file
+        return HttpResponse(f"An error occurred: {e}")
+    
+
+def generate_excel_for_sf9(request, student_id):
+    # Retrieve the student object
+    student = get_object_or_404(Student, id=student_id)
+
+    # Original file path for SF9 template
+        # Original file path
+    excel_file_name = "ELEM SF9 (Learner's Progress Report Card).xlsx"
+
+    # Get the current working directory
+    current_directory = os.getcwd()
+
+    # Generate a timestamp for the copy
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+
+    # Create the path for the original file
+    original_file_path = os.path.join(current_directory, excel_file_name)
+
+    # Create a path for the copied file with a timestamp
+    copied_file_path = os.path.join(current_directory, f'SF9{timestamp}.xlsx')
+
+    # Copy the Excel file
+    shutil.copyfile(original_file_path, copied_file_path)
+
+    try:
+        # Open the copied SF9 Excel file
+        workbook = openpyxl.load_workbook(copied_file_path)
+
+        # Select the desired sheet (use the correct sheet name from the output)
+        desired_sheet_name = 'FRONT'
+        sheet = workbook[desired_sheet_name]
+
+        # Write SF9-specific data using a utility function (update this function based on your needs)
+        write_sf9_data(sheet, student)
+
+        # Save the changes to the SF9 workbook
+        workbook.save(copied_file_path)
+
+        # Create an HTTP response with the updated SF9 Excel file
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename=sf9_export_{timestamp}.xlsx'
 
         with open(copied_file_path, 'rb') as excel_file:
             response.write(excel_file.read())

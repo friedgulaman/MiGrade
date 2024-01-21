@@ -31,10 +31,12 @@ import openpyxl
 from django.utils import timezone
 import datetime
 from datetime import datetime
+from dateutil import parser
 
 
 from django.contrib.auth.decorators import login_required
-
+from django.http import FileResponse
+import base64
 
 @login_required
 def home_admin(request):
@@ -387,13 +389,20 @@ def upload_documents_ocr(request):
                 if birthdate_index is not None:
                     birthdate_str = data_by_type['Raw Value'][birthdate_index]
                     try:
-                        my_data.birthdate = datetime.strptime(birthdate_str, "%m/%d/%Y").date()
+                        # Provide a specific format string based on the expected format
+                        my_data.birthdate = parser.parse(birthdate_str, format="%b. %d, %Y").date()
                     except ValueError as e:
                         print(f"Error parsing birthdate: {e}")
 
             my_data.save()
-          
 
+            # response = FileResponse(open(processed_document.document.path, 'rb'), content_type='application/pdf')
+            # response['Content-Disposition'] = f'inline; filename="{uploaded_file.name}"'
+            # return response
+
+            pdf_content_base64 = base64.b64encode(content).decode('utf-8')
+
+        
         return render(request, 'admin_template/edit_extracted_data.html', {
                 # 'extracted_data': extracted_data_for_review,
                 'document_text': text,
@@ -403,7 +412,8 @@ def upload_documents_ocr(request):
                 'download_link': processed_document.document.url,
                 'data_by_type': data_by_type,
                 # 'extracted_text': extracted_text 
-                'extracted_data': my_data
+                'extracted_data': my_data,
+                'pdf_content_base64': pdf_content_base64, 
             })
     else: 
         form = DocumentUploadForm()
@@ -477,12 +487,29 @@ def save_edited_data(request):
         return HttpResponse("Invalid request method")
 
 def sf10_views(request):
-    # Query the ExtractedData model to retrieve all records
-    all_extracted_data = ExtractedData.objects.all()
+    # Retrieve the search query from the request's GET parameters
+    search_query = request.GET.get('search', '')
 
-    # Pass the extracted data to the template context
+    # If a search query is present, filter the ExtractedData model
+    if search_query:
+        # You can customize the fields you want to search on
+        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average']
+        
+        # Use Q objects to create a complex OR query
+        query = Q()
+        for field in search_fields:
+            query |= Q(**{f'{field}__icontains': search_query})
+
+        # Filter the ExtractedData model based on the search query
+        all_extracted_data = ExtractedData.objects.filter(query)
+    else:
+        # If no search query, retrieve all records
+        all_extracted_data = ExtractedData.objects.all()
+
+    # Pass the filtered data and search query to the template context
     context = {
         'all_extracted_data': all_extracted_data,
+        'search_query': search_query,
     }
 
     # Render the sf10.html template with the context data

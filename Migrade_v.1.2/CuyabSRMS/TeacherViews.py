@@ -719,6 +719,15 @@ def display_students(request):
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
 
+def sf9(request):
+    # Query all students from the database
+    all_students = Student.objects.all()
+
+    # Pass the queryset to the template context
+    context = {'all_students': all_students}
+
+    # Render the template with the context
+    return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
 
 def student_list_for_class(request):
     # Assuming the user is logged in
