@@ -24,7 +24,7 @@ def generate_excel_for_grades(request, grade, section, subject):
                                                         class_record__subject=subject)
 
     # Original file path
-    original_file_path = r'C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1.xlsx'
+    original_file_path = r'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1.xlsx'
 
     # C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2
 
@@ -32,7 +32,7 @@ def generate_excel_for_grades(request, grade, section, subject):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     
     # Create a copy of the Excel file with a timestamp in its name
-    copied_file_path = fr'C:\Users\Administrator\Documents\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1_copy_{timestamp}.xlsx'
+    copied_file_path = fr'C:\Users\angelo\Documents\GitHub\ces_migrade\MiGrade\Migrade_v.1.2\TEMPLATE - SF1_copy_{timestamp}.xlsx'
     shutil.copyfile(original_file_path, copied_file_path)
 
     try:
@@ -44,16 +44,16 @@ def generate_excel_for_grades(request, grade, section, subject):
         sheet = workbook[desired_sheet_name]
 
         # # Write student names
-        # write_student_names(sheet, grade_scores_queryset)
+        write_student_names(sheet, grade_scores_queryset)
 
-        # # Write scores_hps_written
-        # write_scores_hps_written(sheet, grade_scores_queryset)
+        # Write scores_hps_written
+        write_scores_hps_written(sheet, grade_scores_queryset)
 
-        # # Write scores_hps_performance
-        # write_scores_hps_performance(sheet, grade_scores_queryset)
+        # Write scores_hps_performance
+        write_scores_hps_performance(sheet, grade_scores_queryset)
 
-        # # Write scores_hps_quarterly
-        # write_scores_hps_quarterly(sheet, grade_scores_queryset)
+        # Write scores_hps_quarterly
+        write_scores_hps_quarterly(sheet, grade_scores_queryset)
 
         # Write Written_works_score
         write_written_works_scores(sheet, grade_scores_queryset)

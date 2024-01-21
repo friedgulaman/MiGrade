@@ -224,7 +224,12 @@ Student List for {{ grade }} {{ section }}
                         </div>
                     </div>
                     <div class="tab-pane fade show " id="rankings" role="tabpanel" aria-labelledby="rankings">
-                        <h1>4</h1>
+                        <h2>Top 10 Students by Initial Grade:</h2>
+                        <ol>
+                          {% for student in ranked_students %}
+                            <li>{{ student.student__name }} - Initial Grade: {{ student.initial_grades }}</li>
+                          {% endfor %}
+                        </ol>
                     </div>
                 </div>
 

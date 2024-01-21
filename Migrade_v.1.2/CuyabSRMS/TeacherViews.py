@@ -741,7 +741,12 @@ def student_list_for_class(request):
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
-        
+        ranked_students = (
+            GradeScores.objects
+            .filter(class_record__grade=grade, class_record__section=section)
+            .order_by('initial_grades')  # Order by initial grades in descending order
+            .values('student__id', 'student__name', 'initial_grades')
+        )
 
     context = {
         'grade': grade,
@@ -749,7 +754,7 @@ def student_list_for_class(request):
         'students': students,
         'class_records': class_records,
         'subjects': subjects,
-        
+        'ranked_students': ranked_students,
         
     }
 
