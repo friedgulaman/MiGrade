@@ -1182,11 +1182,17 @@ def update_score(request):
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the written score.'})
 
-                if new_score_numeric > hps_written:
+                # Check if hps_written is a valid numeric value
+                try:
+                    hps_written_numeric = int(float(hps_written))
+                except ValueError:
+                    # Handle the case where hps_written is not a valid numeric value
+                    return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score. Please provide a valid numeric value.'})
+
+                if new_score_numeric > hps_written_numeric:
                     # Set the score to an empty string if the condition is met
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Written score cannot exceed HPS score.'})
-
         # Add similar logic for performance_task
 
         elif section_id == 'performance_task':
@@ -1201,7 +1207,14 @@ def update_score(request):
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the performance task score.'})
 
-                if new_score_numeric > hps_performance:
+                # Check if hps_performance is a valid numeric value
+                try:
+                    hps_performance_numeric = int(float(hps_performance))
+                except ValueError:
+                    # Handle the case where hps_performance is not a valid numeric value
+                    return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score score. Please provide a valid numeric value.'})
+
+                if new_score_numeric > hps_performance_numeric:
                     # Set the score to an empty string if the condition is met
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Performance task score cannot exceed HPS score.'})

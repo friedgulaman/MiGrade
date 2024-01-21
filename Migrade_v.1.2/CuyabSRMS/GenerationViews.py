@@ -44,30 +44,30 @@ def generate_excel_for_grades(request, grade, section, subject):
         sheet = workbook[desired_sheet_name]
 
         # # Write student names
-        write_student_names(sheet, grade_scores_queryset)
+        # write_student_names(sheet, grade_scores_queryset)
 
-        # Write scores_hps_written
-        write_scores_hps_written(sheet, grade_scores_queryset)
+        # # Write scores_hps_written
+        # write_scores_hps_written(sheet, grade_scores_queryset)
 
-        # Write scores_hps_performance
-        write_scores_hps_performance(sheet, grade_scores_queryset)
+        # # Write scores_hps_performance
+        # write_scores_hps_performance(sheet, grade_scores_queryset)
 
-        # Write scores_hps_quarterly
-        write_scores_hps_quarterly(sheet, grade_scores_queryset)
+        # # Write scores_hps_quarterly
+        # write_scores_hps_quarterly(sheet, grade_scores_queryset)
 
         # Write Written_works_score
         write_written_works_scores(sheet, grade_scores_queryset)
 
-        # #Write performance_tasks_score
+        # Write performance_tasks_score
         write_performance_tasks_scores(sheet, grade_scores_queryset)
 
-        # #Write quarterly assessment score
+        # Write quarterly assessment score
         write_quarterly_assessment_scores(sheet, grade_scores_queryset)
 
-        #Write Initial Grade
+        # Write Initial Grade
         write_initial_grade(sheet, grade_scores_queryset)
 
-        #Write transmuted Grade
+        # Write transmuted Grade
         write_transmuted_grade(sheet, grade_scores_queryset)
 
         # Save the changes to the workbook

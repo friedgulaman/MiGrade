@@ -5,11 +5,12 @@
 {% block main_content %}
 <style>
     .table, th {
-        border: solid 1px;
+        border: solid 2px;
     }
     td {
-        border: solid 1px;
+        border: solid 2px;
     }
+
     #components {
         color: red;
         text-align: center;
@@ -53,6 +54,7 @@
             </div>
             <div class="col">
                 <p class="card-text"><strong class="text-muted">Class Record Id:</strong> {{ class_record.id }}</p>
+                <input type="hidden" name="class_record_id" value="{{ class_record.id }}">
               </div>
           </div>
         </div>
@@ -123,18 +125,55 @@
                             {% endif %}
                         </thead>
                         <tbody>
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>MALE</th>
+                                {% load custom_filters %}
+                                {% for i in 1|th %}
+                                <th></th>
+                                {% endfor %}
+
+
+                            </tr>
                             {% for record in grade_scores %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ record.student.name }}</td>
-                                    {% for score in record.written_works_scores %}
-                                        <td class="score-cell" contenteditable="true">{{ score }}</td>
-                                    {% endfor %}
-                                    <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written|default:'' }}</td>
-                                    <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written|default:'' }}">
-                                    <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written|default:'' }}</td>
-                                    <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written|default:'' }}</td>
-                                </tr>
+                                {% if record.student.sex == 'M' %}                           
+                                    <tr class="male-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        {% for score in record.written_works_scores %}
+                                            <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                        {% endfor %}
+                                        <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written|default:'' }}">
+                                        <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written|default:'' }}</td>
+                                        <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>FEMALE</th>
+                                {% load custom_filters %}
+                                {% for i in 1|th %}
+                                <th></th>
+                                {% endfor %}
+                            </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'F' %}
+                                    <tr class="female-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        {% for score in record.written_works_scores %}
+                                            <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                        {% endfor %}
+                                        <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written|default:'' }}">
+                                        <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written|default:'' }}</td>
+                                        <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                         </table>
@@ -188,18 +227,55 @@
                             {% endif %}
                             </thead>
                             <tbody>
-                                {% for record in grade_scores %}
+                                <tr></tr>
                                 <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ record.student.name }}</td>
-                                    {% for score in record.performance_task_scores %}
-                                    <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                    <th></th>
+                                    <th>MALE</th>
+                                    {% load custom_filters %}
+                                    {% for i in 1|th %}
+                                    <th></th>
                                     {% endfor %}
-                                    <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance|default:'' }}</td>
-                                    <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance|default:'' }}">
-                                    <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance|default:'' }}</td>
-                                    <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance|default:'' }}</td>
+
                                 </tr>
+                                {% for record in grade_scores %}
+                                    {% if record.student.sex == 'M' %}
+                                        <tr class="male-row">
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ record.student.name }}</td>
+                                            {% for score in record.performance_task_scores %}
+                                                <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                            {% endfor %}
+                                            <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance|default:'' }}</td>
+                                            <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance|default:'' }}">
+                                            <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance|default:'' }}</td>
+                                            <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance|default:'' }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                <tr></tr>
+                                <tr>
+                                    <th></th>
+                                    <th>FEMALE</th>
+                                    {% load custom_filters %}
+                                    {% for i in 1|th %}
+                                    <th></th>
+                                    {% endfor %}
+
+                                </tr>
+                                {% for record in grade_scores %}
+                                    {% if record.student.sex == 'F' %}
+                                        <tr class="female-row">
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ record.student.name }}</td>
+                                            {% for score in record.performance_task_scores %}
+                                                <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                            {% endfor %}
+                                            <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance|default:'' }}</td>
+                                            <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance|default:'' }}">
+                                            <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance|default:'' }}</td>
+                                            <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance|default:'' }}</td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -239,15 +315,42 @@
                         {% endif %}
                         </thead>
                         <tbody>
-                            {% for record in grade_scores %}
+                            <tr></tr>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student.name }}</td>
-                                <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly|default:'' }}</td>
-                                <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
-                                <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly|default:'' }}</td>
-                            <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly|default:'' }}</td>
+                                <th></th>
+                                <th>MALE</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'M' %}
+                                    <tr class="male-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
+                                        <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly|default:'' }}</td>
+                                        <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>FEMALE</th>
+                            </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'F' %}
+                                    <tr class="female-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
+                                        <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly|default:'' }}</td>
+                                        <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -273,13 +376,40 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for record in grade_scores %}
+                            <tr></tr>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student.name }}</td>
-                                <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
-                                <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                <th></th>
+                                <th>MALE</th>
+                                <th></th>
+                                <th></th>
+                                
                             </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'M' %}
+                                    <tr class="male-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                        <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>FEMALE</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'F' %}
+                                    <tr class="female-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                        <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -293,18 +423,43 @@
 
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<<<<<<< HEAD
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if the page was reloaded after clicking the "Initial Grade" tab
+      var activeSection = localStorage.getItem('activeSection');
+  
+      // If the page was reloaded and the active section is "Initial Grade," set it as active
+      if (activeSection === 'initial_grade') {
+        var initialGradeTab = document.querySelector('[href="#initial_grade"]');
+        if (initialGradeTab) {
+          initialGradeTab.click();
+        }
+      }
+  
+      // Add an event listener to the "Initial Grade" tab
+      var initialGradeTab = document.querySelector('[href="#initial_grade"]');
+      if (initialGradeTab) {
+        initialGradeTab.addEventListener('click', function() {
+          // Store the active section in local storage
+          localStorage.setItem('activeSection', 'initial_grade');
+  
+          // Reload the page when the "Initial Grade" tab is clicked
+          location.reload(true);
+        });
+      }
+    });
+  </script>
+
 <script>
 
  // JavaScript to handle the back button click event
  document.querySelector(".back-button").addEventListener("click", function () {
     window.history.back();
   });
-=======
 
->>>>>>> ada3c9eee875d4319534d628b587c3da9d012101
-    
+</script>
 <script>
+
 
     // Add an event listener for the arrow keys in quarterly assessment
 $('.table tbody tr td[contenteditable="true"]').keydown(function (e) {
