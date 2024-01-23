@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from .models import Student
+from .models import Student, FinalGrade
 import os
 import openpyxl
 import pandas as pd
@@ -16,7 +16,8 @@ from .utils import (
     write_quarterly_assessment_scores,
     write_initial_grade,
     write_transmuted_grade,
-    write_sf9_data
+    write_sf9_data,
+    write_sf9_grades
 )
 
 
@@ -27,6 +28,8 @@ def generate_excel_for_grades(request, grade, section, subject):
     grade_scores_queryset = GradeScores.objects.filter(class_record__grade=grade,
                                                         class_record__section=section,
                                                         class_record__subject=subject)
+    
+    
 
         # Original file path
     excel_file_name = "TEMPLATE - SF1.xlsx"
@@ -102,6 +105,8 @@ def generate_excel_for_sf9(request, student_id):
     # Retrieve the student object
     student = get_object_or_404(Student, id=student_id)
 
+    final_grade = FinalGrade.objects.filter(student=student).first()
+
     # Original file path for SF9 template
         # Original file path
     excel_file_name = "ELEM SF9 (Learner's Progress Report Card).xlsx"
@@ -126,11 +131,20 @@ def generate_excel_for_sf9(request, student_id):
         workbook = openpyxl.load_workbook(copied_file_path)
 
         # Select the desired sheet (use the correct sheet name from the output)
-        desired_sheet_name = 'FRONT'
-        sheet = workbook[desired_sheet_name]
+        front_sheet_name = 'FRONT'
+        front_sheet = workbook[front_sheet_name]
+
+        back_sheet_name = 'BACK'
+        back_sheet = workbook[back_sheet_name]
+
+
+
+
 
         # Write SF9-specific data using a utility function (update this function based on your needs)
-        write_sf9_data(sheet, student)
+        write_sf9_data(front_sheet, student)
+
+        write_sf9_grades(back_sheet, final_grade)
 
         # Save the changes to the SF9 workbook
         workbook.save(copied_file_path)

@@ -138,17 +138,20 @@ class GradeScores(models.Model):
         
     def get_subject_score(self, subject, quarter):
         # Adjust this based on your actual field names
-        field_name = f'{subject.lower()}_{quarter.lower()}'
+        field_name = f'scores_{subject.lower()}_{quarter.lower()}'
         print(field_name)
-        return getattr(self, field_name, None)
-    
+        subject_scores = getattr(self, field_name, None)
+        
+        # Assuming subject_scores is a dictionary where keys are student names
+        # and values are scores, return the score for the current student
+        return subject_scores.get(self.student.name, None) if subject_scores else None
     
     
 
     
 class FinalGrade(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    student_name = models.CharField(max_length=255)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Change this line
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
     subject = models.CharField(max_length=50)
@@ -159,10 +162,10 @@ class FinalGrade(models.Model):
     final_grade = models.FloatField()
 
     def __str__(self):
-        return f"FinalGrade: {self.student_name} - {self.subject}, Teacher: {self.teacher}"
+        return f"FinalGrade: {self.student.name} - {self.subject}, Teacher: {self.teacher}"
 
 class GeneralAverage(models.Model):
-    student_name = models.CharField(max_length=255)  # Adjust the max_length as needed
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
     general_average = models.FloatField(null=True, blank=True)

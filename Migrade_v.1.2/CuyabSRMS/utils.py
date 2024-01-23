@@ -785,7 +785,7 @@ def write_transmuted_grade(sheet, grade_scores_queryset):
             print(f"Unknown sex for student: {scores.student.name}")
             continue
 
-def write_sf9_data(sheet, student):
+def write_sf9_data(front_sheet, student):
     # Assuming Y16 is the cell where you want to write the student's name
     column_coordinates_student_name = 17  # Column Y
     row_coordinates_student_name = 22
@@ -804,15 +804,52 @@ def write_sf9_data(sheet, student):
     # Get the current date
     current_date = datetime.now()
 
+    bold_font = Font(bold=True, name='Aparajita')
+
     # Calculate the age
     # age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
 
     # Write the student's name to the specified cell
-    sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
-    sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
-    sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "")
-    sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "")
-    sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "")
+    front_sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
+    front_sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
+    front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
     # sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
     print(student.name)
+
+
+
+def write_sf9_grades(back_sheet, final_grade):
+    # Assuming the subject you want is "Filipino"
+    subject_name = "English"
+
+    # Get the 1st quarter score for the specified subject
+    filipino_1st_quarter_score = getattr(final_grade, 'quarter1', None)
+    filipino_2nd_quarter_score = getattr(final_grade, 'quarter2', None)
+    filipino_3rd_quarter_score = getattr(final_grade, 'quarter3', None)
+    filipino_4th_quarter_score = getattr(final_grade, 'quarter4', None)
+    filipino_final_grade_score = getattr(final_grade, 'final_grade', None)
+
+
+    # Specify the coordinates for writing the score
+    
+    row_coordinates_filipino= 7
+    column_coordinates_filipino_1st_quarter = 14
+    column_coordinates_filipino_2nd_quarter = 15
+    column_coordinates_filipino_3rd_quarter = 16
+    column_coordinates_filipino_4th_quarter = 17
+    column_coordinates_filipino_final_grade = 18
+
+    # Write the score to the specified cell
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_1st_quarter, value=filipino_1st_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_2nd_quarter, value=filipino_2nd_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_3rd_quarter, value=filipino_3rd_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_4th_quarter, value=filipino_4th_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_final_grade, value=filipino_final_grade_score)
+
+
+
+
+
 
