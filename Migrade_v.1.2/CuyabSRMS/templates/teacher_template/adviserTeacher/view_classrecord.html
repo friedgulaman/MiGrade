@@ -45,7 +45,7 @@ View Class Record
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item"
                                 href="{% url 'grade_summary' grade=record.grade section=record.section quarter=record.quarters %}">Show
-                                Quarterly Summary per Subject </a>
+                                Quarterly Summary for All Subject </a>
                             <a class="dropdown-item"
                                 href="{% url 'all_final_grades' grade=record.grade section=record.section %}">ALL FINAL
                                 GRADES</a>
@@ -89,6 +89,20 @@ View Class Record
 
             // Log the click event (optional)
             console.log('Dropdown item clicked:', $(this).text());
+        });
+    });
+</script>
+<script>
+    // You can use JavaScript to make an AJAX request or other methods to trigger the view
+    // This example assumes you're using jQuery for simplicity
+    $(document).ready(function() {
+        // Adjust the URL based on your actual URL structure
+        var url = "{% url 'display_final_grades' grade=record.grade section=record.section subject=record.subject %}";
+
+        // Make an AJAX request to the display_final_grades view
+        $.get(url, function(data) {
+            // Handle the response if needed
+            console.log(data);
         });
     });
 </script>
