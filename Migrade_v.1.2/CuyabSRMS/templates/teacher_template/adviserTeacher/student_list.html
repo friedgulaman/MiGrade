@@ -57,13 +57,41 @@ Student List for {{ grade }} {{ section }}
         cursor: pointer;
         color: #1027ac;
     }
+    .delete-record {
+    text-decoration: none;
+    cursor: pointer;
+    color: red;
+    border: none;
+    background: none;
+    transition: color 0.3s; /* Smooth color transition */
+
+    /* Shake animation on hover */
+    position: relative;
+}
+
+.delete-record:hover {
+    color: darkred; /* Change color on hover */
+    animation: shake 0.5s;
+}
+
+/* Define the shake animation */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
 </style>
 <section class="content container mt-2">
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center p-4">
+                    <a  href="{% url 'display_students' %}">
                     <i class="fas fa-folder fa-4x me-3 folder-icon"></i>
+                </a>
                     <div class="ms-2">
                         <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }})</h4>
                         <p class="d-flex align-content-center text-muted"><i
@@ -157,6 +185,7 @@ Student List for {{ grade }} {{ section }}
                                                         <th>Date Modified</th>
                                                         <th>Quarter</th>
                                                         <th>Subject</th>
+                                                        <th></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -169,6 +198,16 @@ Student List for {{ grade }} {{ section }}
                                                         <td>{{ record.date_modified }}</td>
                                                         <td>{{ record.quarters }}</td>
                                                         <td>{{ record.subject }}</td>
+                                                        <td>
+                                                            <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}"
+                                                                style="display:inline;">
+                                                                {% csrf_token %}
+                                                                <button type="button" class="delete-record" data-record-id="{{ record.id }}">
+                                                                    <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                        
                                                     </tr>
                                                     {% endfor %}
                                                     {% else %}
@@ -243,6 +282,26 @@ Student List for {{ grade }} {{ section }}
         window.history.back();
     });
 
-
+    $(document).ready(function () {
+        $('.delete-record').click(function () {
+            var recordId = $(this).data('record-id');
+            
+            // Confirm deletion (you may customize this part)
+            if (confirm('Are you sure you want to delete this record?')) {
+                $.ajax({
+                    url: '{% url "delete_classrecord" class_record_id=999 %}'.replace('999', recordId),
+                    type: 'post',
+                    data: $('#deleteForm_' + recordId).serialize(),
+                    success: function () {
+                        // Update the content or redirect to the last URL as needed
+                        location.reload();  // Reload the page, you may replace this with more specific updates
+                    },
+                    error: function () {
+                        alert('An error occurred while deleting the record.');
+                    }
+                });
+            }
+        });
+    });
 </script>
 {% endblock main_content %}

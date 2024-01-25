@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.1.3',
+        'NAME': 'migrade_v.1.4',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   
@@ -196,3 +196,4 @@ RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
 # Define the base directory where uploaded files will be stored
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # or any large number that suits your needs
