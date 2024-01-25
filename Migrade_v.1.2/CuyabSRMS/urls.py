@@ -142,7 +142,7 @@ urlpatterns = [
     path('all_final_grades/<str:grade>/<str:section>/', TeacherViews.display_all_final_grades, name='all_final_grades'),
     path('update_total_max_quarterly/', TeacherViews.update_total_max_quarterly, name='update_total_max_quarterly'),
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
-    path('sf9/', TeacherViews.sf9, name='sf9'),
+    # path('sf9/', TeacherViews.sf9, name='sf9'),
    # urls.py
 
     # Generation

@@ -1,3 +1,4 @@
+
 import json
 import os
 
@@ -49,11 +50,9 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .forms import GradeScoresForm
-<<<<<<< HEAD
 from django.views.decorators.http import require_POST
-=======
+from django.utils import translation
 from django.db import transaction
->>>>>>> refs/remotes/origin/Main-try
 
 
 
@@ -795,7 +794,6 @@ def display_students(request):
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
 
-<<<<<<< HEAD
 @login_required
 def delete_student(request, grade, section):
     user = request.user
@@ -819,17 +817,6 @@ def delete_student(request, grade, section):
 
     # If the user is not a teacher or if the permissions check fails
     return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
-=======
-def sf9(request):
-    # Query all students from the database
-    all_students = Student.objects.all()
-
-    # Pass the queryset to the template context
-    context = {'all_students': all_students}
-
-    # Render the template with the context
-    return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
->>>>>>> refs/remotes/origin/Main-try
 
 def student_list_for_class(request):
     # Assuming the user is logged in
