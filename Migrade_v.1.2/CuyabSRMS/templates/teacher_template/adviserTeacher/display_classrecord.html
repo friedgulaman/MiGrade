@@ -423,36 +423,6 @@
 
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<<<<<<< HEAD
-=======
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Check if the page was reloaded after clicking the "Initial Grade" tab
-      var activeSection = localStorage.getItem('activeSection');
-  
-      // If the page was reloaded and the active section is "Initial Grade," set it as active
-      if (activeSection === 'initial_grade') {
-        var initialGradeTab = document.querySelector('[href="#initial_grade"]');
-        if (initialGradeTab) {
-          initialGradeTab.click();
-        }
-      }
-  
-      // Add an event listener to the "Initial Grade" tab
-      var initialGradeTab = document.querySelector('[href="#initial_grade"]');
-      if (initialGradeTab) {
-        initialGradeTab.addEventListener('click', function() {
-          // Store the active section in local storage
-          localStorage.setItem('activeSection', 'initial_grade');
-  
-          // Reload the page when the "Initial Grade" tab is clicked
-          location.reload(true);
-        });
-      }
-    });
-  </script>
-
->>>>>>> refs/remotes/origin/Main-try
 <script>
 
  // JavaScript to handle the back button click event
@@ -460,12 +430,6 @@
     window.history.back();
   });
 
-<<<<<<< HEAD
-
-=======
-</script>
-<script>
->>>>>>> refs/remotes/origin/Main-try
 
 
     // Add an event listener for the arrow keys in quarterly assessment
