@@ -43,9 +43,9 @@ View Class Record
                                 href="{% url 'display_final_grades' grade=record.grade section=record.section subject=record.subject %}">Show
                                 Final Grades per Subject</a>
                             <div class="dropdown-divider"></div>
-                            <!-- <a class="dropdown-item"
+                            <a class="dropdown-item"
                                 href="{% url 'grade_summary' grade=record.grade section=record.section quarter=record.quarters %}">Show
-                                Quarterly Summary per Subject </a> -->
+                                Quarterly Summary for All Subject </a>
                             <a class="dropdown-item"
                                 href="{% url 'all_final_grades' grade=record.grade section=record.section %}">ALL FINAL
                                 GRADES</a>
@@ -92,5 +92,6 @@ View Class Record
         });
     });
 </script>
+
 
 {% endblock main_content %}

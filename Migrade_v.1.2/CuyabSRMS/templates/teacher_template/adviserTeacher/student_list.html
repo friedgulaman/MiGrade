@@ -262,8 +262,13 @@ Student List for {{ grade }} {{ section }}
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade show " id="rankings" role="tabpanel" aria-labelledby="rankings">
-                        <h1>4</h1>
+                    <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
+                        <h2>Top 10 Students by General Average:</h2>
+                        <ol>
+                            {% for student in top_students %}
+                                <li>{{ student.student.name }} - General Average: {{ student.general_average }}</li>
+                            {% endfor %}
+                        </ol>
                     </div>
                 </div>
 

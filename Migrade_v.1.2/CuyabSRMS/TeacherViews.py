@@ -49,7 +49,11 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .forms import GradeScoresForm
+<<<<<<< HEAD
 from django.views.decorators.http import require_POST
+=======
+from django.db import transaction
+>>>>>>> refs/remotes/origin/Main-try
 
 
 
@@ -791,6 +795,7 @@ def display_students(request):
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
 
+<<<<<<< HEAD
 @login_required
 def delete_student(request, grade, section):
     user = request.user
@@ -814,6 +819,17 @@ def delete_student(request, grade, section):
 
     # If the user is not a teacher or if the permissions check fails
     return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
+=======
+def sf9(request):
+    # Query all students from the database
+    all_students = Student.objects.all()
+
+    # Pass the queryset to the template context
+    context = {'all_students': all_students}
+
+    # Render the template with the context
+    return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
+>>>>>>> refs/remotes/origin/Main-try
 
 def student_list_for_class(request):
     # Assuming the user is logged in
@@ -836,15 +852,18 @@ def student_list_for_class(request):
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
-        
-
+        top_students = (
+            GeneralAverage.objects.filter(grade=grade, section=section)
+            .order_by('-general_average')[:10]
+            
+        )
     context = {
         'grade': grade,
         'section': section,
         'students': students,
         'class_records': class_records,
         'subjects': subjects,
-        
+        'top_students': top_students,
         
     }
 
@@ -906,17 +925,17 @@ def grade_summary(request, grade, section, quarter):
 
     # Fetch subject-wise grades for each student
     for student in students:
-        subjects = get_subjects(student)
+        subjects = get_subjects(student.student)  # Update this line
         print(subjects)
-        subject_grades[student.student_name] = {}
+        subject_grades[student.student.name] = {}
         for subject in subjects:
             # Map the quarter name to the corresponding column name in the database
             db_quarter = quarter_mapping.get(quarter, quarter)
-            subject_grades[student.student_name][subject] = get_subject_score(student, subject, db_quarter)
-            print(get_subject_score(student, subject, db_quarter))
+            subject_grades[student.student.name][subject] = get_subject_score(student.student, subject, db_quarter)
+            print(get_subject_score(student.student, subject, db_quarter))
 
     # Move the 'subjects' initialization outside the loop
-    subjects = get_subjects(student) if students else []
+    subjects = get_subjects(students.first().student) if students else []  # Update this line
     
     context = {
         'students': students,
@@ -927,12 +946,10 @@ def grade_summary(request, grade, section, quarter):
 
     return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
 
-
-
 def get_subject_score(student, subject, quarter):
     try:
         grade_instance = FinalGrade.objects.get(
-            student_name=student.student_name,  # Update this line
+            student_id=student,  # Update this line
             grade=student.grade,
             section=student.section,
             subject=subject,
@@ -944,24 +961,12 @@ def get_subject_score(student, subject, quarter):
 def get_subjects(student):
     # Fetch unique subjects for the given student from the GradeScores model
     subjects = GradeScores.objects.filter(
-        class_record__grade=student.grade,
-        class_record__section=student.section,
-        student__name=student.student_name
+        student=student,  # Update this line to use the actual Student object
     ).values_list('class_record__subject', flat=True).distinct()
 
     return [subject for subject in subjects if subject]
 
-# def get_subject_grade(student, subject, quarter):
-#     # You need to adjust this function based on your actual model relationships and fields
-#     grade_score = GradeScores.objects.filter(
-#         class_record__grade=student.grade,
-#         class_record__section=student.section,
-#         class_record__subject=subject,
-#         class_record__quarters=quarter,
-#         student_name=student.student_name
-#     ).first()
 
-#     return getattr(grade_score, f'total_score_{subject.lower()}') if grade_score else None
 
 def calculate_save_final_grades(grade, section, subject, students, subjects):
     quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
@@ -978,7 +983,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                     class_record__section=section,
                     class_record__subject=subject_name,
                     class_record__quarters=quarter,
-                    student__name=student.name
+                    student=student
                 ).first()
 
                 subject_info['quarter_grades'][quarter] = grade_score.initial_grades if grade_score else 0
@@ -1008,7 +1013,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
             # Check if a record already exists in the FinalGrade model
             existing_final_grade = FinalGrade.objects.filter(
                 teacher=class_record.teacher,
-                student_name=student.name,
+                student=student,
                 grade=grade,
                 section=section,
                 subject=subject_name
@@ -1026,7 +1031,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                 # Insert new record
                 final_grade = FinalGrade(
                     teacher=class_record.teacher,
-                    student_name=student.name,
+                    student=student,
                     grade=grade,
                     section=section,
                     subject=subject_name,
@@ -1037,8 +1042,6 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                     final_grade=round(subject_info['final_grade'] or 0, 2)
                 )
                 final_grade.save()
-
-
 
 def display_final_grades(request, grade, section, subject):
     students = Student.objects.filter(grade=grade, section=section)
@@ -1059,7 +1062,7 @@ def display_final_grades(request, grade, section, subject):
             final_grade = FinalGrade.objects.filter(
                 teacher__classrecord__grade=grade,
                 teacher__classrecord__section=section,
-                student_name=student.name,  # Assuming 'student' is the correct field name
+                student=student,
                 subject=subject_name
             ).first()   
 
@@ -1100,19 +1103,30 @@ def save_general_average(student_data, grade, section):
     # Check if 'general_average' key is present in student_data and is not None
     if 'general_average' in student_data and student_data['general_average'] is not None:
         # Extract relevant information from student_data
-        student_name = student_data['name']
+        student = student_data['student']
         general_average = round(student_data['general_average'], 2)
 
-        # Create or get the GeneralAverage object for the student
-        general_average_record, created = GeneralAverage.objects.get_or_create(
-            student_name=student_name,
+        # Filter GeneralAverage objects based on student, grade, and section
+        general_average_records = GeneralAverage.objects.filter(
+            student=student,
             grade=grade,
             section=section,
         )
 
-        # Set the general_average value and save the record
-        general_average_record.general_average = general_average
-        general_average_record.save()
+        # Check if any records exist
+        if general_average_records.exists():
+            # Update the first record
+            general_average_record = general_average_records.first()
+            general_average_record.general_average = general_average
+            general_average_record.save()
+        else:
+            # Create a new record if none exist
+            general_average_record = GeneralAverage.objects.create(
+                student=student,
+                grade=grade,
+                section=section,
+                general_average=general_average
+            )
 
 def display_all_final_grades(request, grade, section):
     students = Student.objects.filter(grade=grade, section=section)
@@ -1121,7 +1135,7 @@ def display_all_final_grades(request, grade, section):
 
     final_grades = []
     for student in students:
-        student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
+        student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': [], 'student': student}
 
         for subject in subjects:
             subject_name = subject['subject']
@@ -1131,7 +1145,7 @@ def display_all_final_grades(request, grade, section):
             final_grade = FinalGrade.objects.filter(
                 teacher__classrecord__grade=grade,
                 teacher__classrecord__section=section,
-                student_name=student.name,
+                student=student,
                 subject=subject_name
             ).first()
 
@@ -1165,10 +1179,6 @@ def display_all_final_grades(request, grade, section):
         total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
         num_subjects = len(student_data['subjects'])
         student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
-        print(student_data['general_average'])
-        print(student_data)
-        print(grade)
-        print(section)
         save_general_average(student_data, grade, section)
         
     context = {
@@ -1179,6 +1189,7 @@ def display_all_final_grades(request, grade, section):
 
     return render(request, "teacher_template/adviserTeacher/all_final_grades.html", context)
 
+@transaction.atomic
 def update_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         student_name = request.POST.get('student_name')
@@ -1277,11 +1288,17 @@ def update_score(request):
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the written score.'})
 
-                if new_score_numeric > hps_written:
+                # Check if hps_written is a valid numeric value
+                try:
+                    hps_written_numeric = int(float(hps_written))
+                except ValueError:
+                    # Handle the case where hps_written is not a valid numeric value
+                    return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score. Please provide a valid numeric value.'})
+
+                if new_score_numeric > hps_written_numeric:
                     # Set the score to an empty string if the condition is met
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Written score cannot exceed HPS score.'})
-
         # Add similar logic for performance_task
 
         elif section_id == 'performance_task':
@@ -1296,7 +1313,14 @@ def update_score(request):
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the performance task score.'})
 
-                if new_score_numeric > hps_performance:
+                # Check if hps_performance is a valid numeric value
+                try:
+                    hps_performance_numeric = int(float(hps_performance))
+                except ValueError:
+                    # Handle the case where hps_performance is not a valid numeric value
+                    return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score score. Please provide a valid numeric value.'})
+
+                if new_score_numeric > hps_performance_numeric:
                     # Set the score to an empty string if the condition is met
                     setattr(grade_score, scores_field, [0] * (column_index + 1))
                     return JsonResponse({'success': False, 'error': 'Invalid score. Performance task score cannot exceed HPS score.'})
@@ -1394,6 +1418,11 @@ def update_score(request):
         setattr(grade_score, 'initial_grades', initial_grade)
         setattr(grade_score, 'transmuted_grades', transmuted_grades)
         grade_score.save()
+
+        class_record = grade_score.class_record
+
+        # Save the changes to ClassRecord
+        class_record.save()
 
         # Return updated data as JSON response
         response_data = {
