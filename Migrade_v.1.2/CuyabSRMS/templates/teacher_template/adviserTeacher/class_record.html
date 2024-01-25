@@ -4,15 +4,9 @@ Adviser Teacher
 {% endblock page_title %}
 {% block main_content %}
 <style>
-<<<<<<< HEAD
     .table,
     th {
         border: solid 1px;
-=======
-    .table, th{
-        border: solid 2px;
-        border-collapse: collapse; /
->>>>>>> refs/remotes/origin/Main-try
     }
 
     td {
@@ -49,79 +43,7 @@ Adviser Teacher
 <section class="content container mt-2">
     <form method="post" action="{% url 'calculate_grades' %}">
         {% csrf_token %}
-<<<<<<< HEAD
         <div class="btn-wrapper" style="display: none;">
-=======
-
-        <div>
-          <label>Region</label>
-          <input type="text" id="" name="">
-          <label>Division</label>
-          <input type="text" id="" name="">
-          <label>School ID</label>
-          <input type="text" id="" name="">
-          <label>School Name</label>
-          <input type="text" id="" name="">
-          <label>District</label>
-          <input type="text" id="" name="">
-          <label>School Year</label>
-          <input type="text" id="" name="">
-          <label>Quarter</label>
-          <input type="text" id="" name="">
-          <label>Grade and Section</label>
-          <input type="text" id="" name="">
-          <label>Teacher</label>
-          <input type="text" id="" name="">
-          <label>Subject</label>
-          <input type="text" id="" name="">
-        </div>
-      <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-        <ul class="nav nav-tabs " role="tablist">
-          <li class="nav-item">
-            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Update/Edit</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Delete</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Save</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Download</a>
-          </li>
-        </ul>
-    </div>
-    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-      <ul class="nav nav-tabs " role="tablist">
-        <li class="nav-item">
-          <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#written_works" role="tab" aria-controls="overview" aria-selected="true">Written Works</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#performance_task" role="tab" aria-selected="false">Performance Task</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly_assessment" role="tab" aria-selected="false">Quarterly Assessment</a>
-        </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#initial_grade" role="tab" aria-selected="false">Initial Grades</a>
-        </li> -->
-        <li>       <button id="submitButton" type="submit" style="display: none;">Submit</button></li>
-      </ul>
-      <div>
-
-        <!-- <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-          <ul class="nav nav-tabs" role="tablist" id="myTabs">
-            <li class="nav-item">
-              <a class="nav-link active" id="tab-0-tab" data-bs-toggle="tab" href="#tab-0" role="tab" aria-controls="tab-0" aria-selected="true">Tab 1</a>
-            </li>
-          </ul>
-          <div>
-            <button id="addTabButton" class="btn btn-primary">Add Tab</button>
-          </div>
-        </div> -->
-        
-        <div class="btn-wrapper">
->>>>>>> refs/remotes/origin/Main-try
             {% if students %}
             <div>
               <input type="text" id="hidden_grade" name="hidden_grade" value="{{ students.0.grade }}">
@@ -133,98 +55,11 @@ Adviser Teacher
         </div>
         <div class="p-4">
             {% if students %}
-<<<<<<< HEAD
             <div>
               <h4 class="text-muted">{{ students.0.grade }} {{ students.0.section }}
             {% endif %}
               <span class="text-primary ms-2" > {{ quarters }} - {{ subject_name }} </span>
               </h4> 
-=======
-            <div class="table-responsive">
-              <div id="components">WRITTEN WORKS</div>
-              <table class="table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Name</th>
-                        <th>1</th>
-                        <th>2</th>
-                        <th>3</th>
-                        <th>4</th>
-                        <th>5</th>
-                        <th>6</th>
-                        <th>7</th>
-                        <th>8</th>
-                        <th>9</th>
-                        <th>10</th>
-                        <th>Total</th>
-                        <th>PS</th>
-                        <th>WS</th>
-                    </tr>
-                    <tr>
-                      <th></th>
-                      <th>Highest possible scores</th>
-                      {% load custom_filters %}
-                      {% for i in 1|num_range %}
-                          <td><input  name="max_written_works_{{ i }}"></td>
-                      {% endfor %}
-                      <td id="total_max_written_works" name="total_max_written_works">Total</td>
-                      <th>100.00</th>
-                      <td><input type="text" id="written_works_weight" name="written_works_weight" value="{{ written_works_percentage }}" /></td>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr>
-                      <th></th>
-                      <th>MALE</th>
-                      {% load custom_filters %}
-                      {% for i in 1|th %}
-                          <td></td>
-                      {% endfor %}
-                  </tr>
-                  {% for student in students %}
-                      {% if student.sex == 'M' %}
-                          <tr class="male-row">
-                              <td>{{ number }}</td>
-                              <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                              {% load custom_filters %}
-                              {% for i in 1|num_range %}
-                                  <td><input class="score-input-ww" name="scores_written_{{ student.id }}_{{ i }}"></td>
-                              {% endfor %}
-                              <td><input id="total_{{ student.id }}" name="total_{{ student.id }}">Total</td>
-                              <td><input id="ps_{{ student.id }}" name="ps_{{ student.id }}"></td>
-                              <td><input id="ws_{{ student.id }}" name="ws_{{ student.id }}"></td>
-                          </tr>
-                      {% endif %}
-                  {% endfor %}
-                  <tr></tr>
-                  <tr>
-                      <th></th>
-                      <th>FEMALE</th>
-                      {% load custom_filters %}
-                      {% for i in 1|th %}
-                      <th></th>
-                      {% endfor %}
-                  </tr>
-                  {% for student in students %}
-                      {% if student.sex == 'F' %}
-                          <tr class="female-row">
-                              <td>{{ number }}</td>
-                              <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                              {% load custom_filters %}
-                              {% for i in 1|num_range %}
-                                  <td><input class="score-input-ww" name="scores_written_{{ student.id }}_{{ i }}"></td>
-                              {% endfor %}
-                              <td><input id="total_{{ student.id }}" name="total_{{ student.id }}">Total</td>
-                              <td><input id="ps_{{ student.id }}" name="ps_{{ student.id }}"></td>
-                              <td><input id="ws_{{ student.id }}" name="ws_{{ student.id }}"></td>
-                          </tr>
-                      {% endif %}
-                  {% endfor %}
-              </tbody>
-              
-              </table>
->>>>>>> refs/remotes/origin/Main-try
             </div>
 
         </div>
@@ -362,7 +197,6 @@ Adviser Teacher
                                     <option value="0.2">20%</option>
                                 </select>
                             </th> -->
-<<<<<<< HEAD
                                 </tr>
                             </thead>
                             <tbody>
@@ -387,61 +221,6 @@ Adviser Teacher
                     </div>
                     {% endif %}
                 </div>
-=======
-                        </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th></th>
-                        <th>MALE</th>
-                        {% load custom_filters %}
-                        {% for i in 1|th %}
-                            <td></td>
-                        {% endfor %}
-                    </tr>
-                      {% for student in students %}
-                          {% if student.sex == 'M' %}
-                              <tr class="male-row">
-                                  <td>{{ number }}</td>
-                                  <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                                  {% load custom_filters %}
-                                  {% for i in 1|num_range %}
-                                      <td><input class="score-input-pt" name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
-                                  {% endfor %}
-                                  <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total</td>
-                                  <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
-                                  <td><input id="pt_ws_{{ student.id }}" name="pt_ws_{{ student.id }}"></td>
-                              </tr>
-                          {% endif %}
-                      {% endfor %}
-                      <tr></tr>
-                      <tr>
-                          <th></th>
-                          <th>FEMALE</th>
-                          {% load custom_filters %}
-                          {% for i in 1|th %}
-                          <th></th>
-                          {% endfor %}
-                      </tr>
-                      {% for student in students %}
-                          {% if student.sex == 'F' %}
-                              <tr class="female-row">
-                                  <td>{{ number }}</td>
-                                  <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                                  {% load custom_filters %}
-                                  {% for i in 1|num_range %}
-                                      <td><input class="score-input-pt" name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
-                                  {% endfor %}
-                                  <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total</td>
-                                  <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
-                                  <td><input id="pt_ws_{{ student.id }}" name="pt_ws_{{ student.id }}"></td>
-                              </tr>
-                          {% endif %}
-                      {% endfor %}
-                  </tbody>
-                  
-                </table>
->>>>>>> refs/remotes/origin/Main-try
             </div>
 
 
@@ -485,7 +264,6 @@ Adviser Teacher
                     </tr>
                     {% endfor %}
                 </tbody> -->
-<<<<<<< HEAD
                             <tbody>
                                 {% for student in students %}
                                 <tr>
@@ -506,54 +284,6 @@ Adviser Teacher
 
 
             <!-- <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
-=======
-                <tbody>
-                  <tr>
-                    <th></th>
-                    <th>MALE</th>
-                    <th></th>
-                    <th></th>
-                    
-                </tr>
-                  {% for student in students %}
-                      {% if student.sex == 'M' %}
-                          <tr class="male-row">
-                              <td>{{ number }}</td>
-                              <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                              <td><input id="qa_total_{{ student.id }}" name="qa_total_{{ student.id }}"></td>
-                              <td><input id="qa_ps_{{ student.id }}" name="qa_ps_{{ student.id }}"></td>
-                              <td><input id="qa_ws_{{ student.id }}" name="qa_ws_{{ student.id }}"></td>
-                          </tr>
-                      {% endif %}
-                  {% endfor %}
-                  <tr></tr>
-                  <tr>
-                      <th></th>
-                      <th>FEMALE</th>
-                      <th></th>
-                      <th></th>
-                  </tr>
-                  {% for student in students %}
-                      {% if student.sex == 'F' %}
-                          <tr class="female-row">
-                              <td>{{ number }}</td>
-                              <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                              <td><input id="qa_total_{{ student.id }}" name="qa_total_{{ student.id }}"></td>
-                              <td><input id="qa_ps_{{ student.id }}" name="qa_ps_{{ student.id }}"></td>
-                              <td><input id="qa_ws_{{ student.id }}" name="qa_ws_{{ student.id }}"></td>
-                          </tr>
-                      {% endif %}
-                  {% endfor %}
-              </tbody>
-              </table>
-          </div>
-          {% endif %}
-      </div>
-      </div>
-  
-  
-      <!-- <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
->>>>>>> refs/remotes/origin/Main-try
         <div class="mb-3">
           {% if students %}
           <div class="table-responsive" >
@@ -626,7 +356,6 @@ Adviser Teacher
         </div>
 
     </form>
-<<<<<<< HEAD
 </section>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -807,19 +536,10 @@ Adviser Teacher
                 wsInput.value = ws.toFixed(2); // Optionally, you can round to 2 decimal places
             });
         });
-=======
-  </section>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
-    $(document).ready(function () {
-        // Simulate a click on the submit button
-        $("#submitButton").click();
->>>>>>> refs/remotes/origin/Main-try
     });
 </script>
 
 
-<<<<<<< HEAD
 
 <!-- WRITTEN WORKS -->
 
@@ -1157,6 +877,3 @@ Adviser Teacher
 </script>
 
 {% endblock main_content %}
-=======
-{% endblock main_content %}
->>>>>>> refs/remotes/origin/Main-try
