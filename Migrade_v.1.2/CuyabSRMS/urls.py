@@ -86,7 +86,8 @@ urlpatterns = [
     path('subject_list/', AdminViews.subject_list, name='subject_list'),
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', AdminViews.save_edited_data, name='save_edited_data'),
-
+    path('update_subject/<int:subject_id>/', AdminViews.update_subject, name='update_subject'),
+    path('delete_subject/<int:subject_id>/', AdminViews.delete_subject, name='delete_subject'),
 
 
 

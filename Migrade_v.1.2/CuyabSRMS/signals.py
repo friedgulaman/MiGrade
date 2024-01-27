@@ -19,10 +19,10 @@ def calculate_and_save_final_grades(sender, instance, created, **kwargs):
         subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject).values('subject').distinct()
 
         # Log a message to check if the signal is triggered
-        print(f"Signal triggered for ClassRecord: {instance}")
-        print(grade)
-        print(section)
-        print(subject)
+        # print(f"Signal triggered for ClassRecord: {instance}")
+        # print(grade)
+        # print(section)
+        # print(subject)
         # Call your calculation function
         # calculate_save_final_grades(grade, section, subject, students, subjects)
 
@@ -42,10 +42,10 @@ def calculate_and_save_final_grades(sender, instance, created, **kwargs):
         subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject).values('subject').distinct()
 
         # Log a message to check if the signal is triggered
-        print(f"Signal triggered for ClassRecord: {instance}")
-        print(grade)
-        print(section)
-        print(subject)
+        # print(f"Signal triggered for ClassRecord: {instance}")
+        # print(grade)
+        # print(section)
+        # print(subject)
         # Call your calculation function
         # calculate_save_final_grades(grade, section, subject, students, subjects)
 

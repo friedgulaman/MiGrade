@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from .models import CustomUser, Student, Teacher, Grade, Section
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
@@ -531,4 +531,22 @@ def add_subject(request):
 def subject_list(request):
     subjects = Subject.objects.all()
     return render(request, 'admin_template/subject_list.html', {'subjects': subjects})
+
+def update_subject(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        form = SubjectForm(request.POST, instance=subject)
+        if form.is_valid():
+            form.save()
+            return redirect('subject_list')
+    else:
+        form = SubjectForm(instance=subject)
+    return render(request, 'admin_template/update_subject.html', {'form': form})
+
+def delete_subject(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        subject.delete()
+        return redirect('subject_list')
+    return render(request, 'admin_template/delete_subject_confirm.html', {'subject': subject})
 

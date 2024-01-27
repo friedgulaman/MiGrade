@@ -1,0 +1,13 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Confirm Subject Deletion
+{% endblock page_title %}
+{% block main_content %}
+  <h1>Confirm Subject Deletion</h1>
+  <p>Are you sure you want to delete "{{ subject.name }}"?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a href="{% url 'subject_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock main_content %}

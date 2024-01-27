@@ -172,7 +172,15 @@ class GeneralAverage(models.Model):
 
     def __str__(self):
         return f"{self.student_name} - {self.grade} - {self.section} - General Average: {self.general_average}"
-    
+
+class QuarterlyGrades(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    quarter = models.CharField(max_length=100)
+    grades = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"{self.student.name}'s grades for {self.quarter}"
+
     
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):

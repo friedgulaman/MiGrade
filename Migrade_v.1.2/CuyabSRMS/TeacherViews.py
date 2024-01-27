@@ -9,7 +9,7 @@ from django import forms
 import openpyxl
 from django.contrib import messages
 from django.shortcuts import render
-from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage
+from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -50,7 +50,8 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .forms import GradeScoresForm
 from django.db import transaction
-
+from statistics import mean
+from django.core.exceptions import MultipleObjectsReturned
 
 
 @login_required
@@ -807,14 +808,13 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
     return render(request, "teacher_template/adviserTeacher/summary_of_quarterly_grade.html", context)
 
 
+
+
 def grade_summary(request, grade, section, quarter):
     students = FinalGrade.objects.filter(grade=grade, section=section)
 
     # Dictionary to store subject-wise grades for each student
     subject_grades = {}
-    print(grade)
-    print(section)
-    print(quarter)
     quarter_mapping = {
         '1st Quarter': 'quarter1',
         '2nd Quarter': 'quarter2',
@@ -824,26 +824,50 @@ def grade_summary(request, grade, section, quarter):
 
     # Fetch subject-wise grades for each student
     for student in students:
-        subjects = get_subjects(student.student)  # Update this line
-        print(subjects)
+        subjects = get_subjects(student.student)
         subject_grades[student.student.name] = {}
         for subject in subjects:
-            # Map the quarter name to the corresponding column name in the database
             db_quarter = quarter_mapping.get(quarter, quarter)
             subject_grades[student.student.name][subject] = get_subject_score(student.student, subject, db_quarter)
-            print(get_subject_score(student.student, subject, db_quarter))
 
-    # Move the 'subjects' initialization outside the loop
-    subjects = get_subjects(students.first().student) if students else []  # Update this line
-    
+        # Check if QuarterlyGrades entry already exists for this student and quarter
+        existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
+        if not existing_entry:
+            # Save grades to QuarterlyGrades model
+            QuarterlyGrades.objects.create(
+                student=student.student,
+                quarter=quarter,
+                grades=subject_grades[student.student.name]
+            )
+        elif existing_entry.grades != subject_grades[student.student.name]:
+            # Update the existing entry if the grades are different
+            existing_entry.grades = subject_grades[student.student.name]
+            existing_entry.save()
+
+    # Calculate average scores
+    average_scores = {}
+    for student in students:
+        grades = subject_grades.get(student.student.name, {})
+        average_scores[student.student.name] = round(mean(value for value in grades.values() if value is not None))
+
+    # Handle missing students
+    for student in students:
+        if student.student.name not in average_scores:
+            average_scores[student.student.name] = 'N/A'
+
+    subjects = get_subjects(students.first().student) if students else []
+
     context = {
         'students': students,
         'subject_grades': subject_grades,
         'subjects': subjects,
         'quarter': quarter,
+        'average_scores': average_scores,
     }
 
     return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
+
+
 
 def get_subject_score(student, subject, quarter):
     try:
@@ -855,6 +879,10 @@ def get_subject_score(student, subject, quarter):
         )
         return getattr(grade_instance, quarter, None)
     except FinalGrade.DoesNotExist:
+        return None
+    except MultipleObjectsReturned:
+        # Handle the case where multiple objects are returned
+        # For example, you can log a warning or return a default value
         return None
     
 def get_subjects(student):

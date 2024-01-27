@@ -1,10 +1,11 @@
 {% extends 'admin_template/admin_base.html' %}
 {% block page_title %}
-Add Teacher
+Subject List
 {% endblock page_title %}
 {% block main_content %}
   <h1>Subject List</h1>
   <table class="table">
+    <a href="{% url 'add_subject' %}" class="btn btn-primary">Add Subject</a>
     <thead>
       <tr>
         <th scope="col">No.</th>
@@ -12,6 +13,7 @@ Add Teacher
         <th scope="col">Written Works Percentage</th>
         <th scope="col">Performance Task Percentage</th>
         <th scope="col">Quarterly Assessment Percentage</th>
+        <th scope="col">Actions</th> <!-- Added Actions column -->
       </tr>
     </thead>
     <tbody>
@@ -22,11 +24,12 @@ Add Teacher
           <td>{{ subject.written_works_percentage }}%</td>
           <td>{{ subject.performance_task_percentage }}%</td>
           <td>{{ subject.quarterly_assessment_percentage }}%</td>
+          <td>
+            <a href="{% url 'update_subject' subject.id %}" class="btn btn-primary">Edit</a> <!-- Edit button -->
+            <a href="{% url 'delete_subject' subject.id %}" class="btn btn-danger">Delete</a> <!-- Delete button -->
+          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-  <a href="{% url 'add_subject' %}" class="btn btn-primary">Add Subject</a>
-  
-
 {% endblock main_content %}

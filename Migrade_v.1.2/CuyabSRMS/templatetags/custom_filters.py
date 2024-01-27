@@ -13,3 +13,9 @@ def num_range_qa(value, end=1):
 @register.filter
 def th(value, end=13):
     return range(value, end + 1)
+
+@register.filter
+def get_item(dictionary, key):
+    if isinstance(dictionary, dict):
+        return dictionary.get(key, None)
+    return None
