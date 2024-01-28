@@ -552,9 +552,37 @@ def calculate_grades(request):
     return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
 
+<<<<<<< Updated upstream
 def display_classrecord(request):
     grade_scores = GradeScores.objects.all()
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
+=======
+    # If class_record_id is not provided, you may want to handle this case differently
+    # For example, you can provide a list of available ClassRecord objects for the user to choose from
+
+    # Filter the GradeScores based on the retrieved ClassRecord object
+    grade_scores = GradeScores.objects.filter(class_record=class_record)
+
+    context = {
+        'class_record': class_record,
+        'grade_scores': grade_scores,
+    }
+
+    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
+
+def view_classrecord(request):
+    
+    # Assuming the user is logged in
+    user = request.user
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher)
+>>>>>>> Stashed changes
 
 
 
@@ -584,6 +612,31 @@ def student_list_for_class(request):
     # Fetch students based on grade and section
     students = Student.objects.filter(grade=grade, section=section)
 
+<<<<<<< Updated upstream
+=======
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        grade = request.GET.get('grade')
+        section = request.GET.get('section')
+        
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
+
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section)
+
+        # Fetch distinct subjects based on grade and section
+        subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+
+        top_students = (
+            GeneralAverage.objects.filter(grade=grade, section=section)
+            .order_by('-general_average')[:10]
+            
+        )
+>>>>>>> Stashed changes
     context = {
         'grade': grade,
         'section': section,
