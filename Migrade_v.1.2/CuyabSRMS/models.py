@@ -46,9 +46,14 @@ class Student(models.Model):
     name = models.CharField(max_length=255)
     lrn = models.CharField(max_length=12, unique=True)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
-    birthday = models.CharField(max_length=10, default='N/A' )
+    birthday = models.CharField(max_length=10, default='N/A')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    grade = models.CharField(max_length=50, null=True, blank=True)
+    school_id = models.CharField(max_length=50, null=True, blank=True)
+    division = models.CharField(max_length=255, null=True, blank=True)
+    district = models.CharField(max_length=255, null=True, blank=True)
+    school_name = models.CharField(max_length=255, null=True, blank=True)
+    school_year = models.CharField(max_length=50, null=True, blank=True)
+    grade = models.CharField(max_length=50, null=True, blank=True) 
     section = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):

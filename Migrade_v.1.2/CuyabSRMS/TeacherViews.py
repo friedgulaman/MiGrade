@@ -1,3 +1,4 @@
+
 import json
 import os
 
@@ -49,6 +50,8 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .forms import GradeScoresForm
+from django.views.decorators.http import require_POST
+from django.utils import translation
 from django.db import transaction
 from statistics import mean
 from django.core.exceptions import MultipleObjectsReturned
@@ -112,24 +115,33 @@ def process_google_sheet(spreadsheet_id, sheet_name):
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
     SERVICE_ACCOUNT_FILE = 'keys.json'
 
-    creds = None
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-
-    lrn_data = None
 
     try:
         service = build('sheets', 'v4', credentials=creds)
 
         def get_sheet_values(spreadsheet_id, start_range, end_range):
             result = service.spreadsheets().values().get(
-                spreadsheetId=spreadsheet_id,  # Use the provided spreadsheet_id
-                range=f"{start_range}:{end_range}",  # Correct the range format
+                spreadsheetId=spreadsheet_id,
+                range=f"{start_range}:{end_range}",
             ).execute()
             values = result.get('values', [])
-            print(values)
             return values
-        
+
+        def get_rows(sheet_values):
+            rows_list = []
+
+            for i in range(5):
+                if i < len(sheet_values):
+                    row = sheet_values[i]
+                    non_empty_values = [value.strip() for value in row if value.strip() != '']
+                    rows_list.append(non_empty_values)
+                else:
+                    rows_list.append([])
+
+            return rows_list
+
         def find_lrn_and_store_as_dict(sheet_values):
             lrn_row_index = None
             lrn_col_index = None
@@ -159,23 +171,41 @@ def process_google_sheet(spreadsheet_id, sheet_name):
                         lrn_data[current_lrn].append(non_empty_fields)
 
             return lrn_data
-        
-        print(lrn_data)
 
-        existing_sheet_name = sheet_name
+        # Get the values from the existing sheet
         existing_sheet_values = get_sheet_values(spreadsheet_id, "A1", "ZZ1000")
 
         if existing_sheet_values:
+            rows_list = get_rows(existing_sheet_values)
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
-            
 
-        return lrn_data
+            # Extract key-value pairs from the first few rows of the sheet
+            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Section"]
+            key_value_pairs = {}
 
+            for i, row in enumerate(rows_list, start=1):
+                # Inside the process_google_sheet function
+                for term in terms_to_find:
+                    if term in row:
+                        index = row.index(term)
+                        if index + 1 < len(row):
+                            key_value_pairs[term.replace(" ", "_")] = row[index + 1]
+                        else:
+                            key_value_pairs[term.replace(" ", "_")] = None
+
+
+            # Print LRN data and key-value pairs
+            print("LRN Data:")
+            print(lrn_data)
+            print("Key-Value Pairs:")
+            print(key_value_pairs)
+
+            return {'lrn_data': lrn_data, 'key_value_pairs': key_value_pairs}
+        else:
+            return None
     except Exception as e:
-        logging.error(f"An error occurred while processing the Google Sheet: {str(e)}")
-        return None  # Return None or handle the error as needed
-
-
+        print(f"An error occurred in process_google_sheet: {e}")
+        return None
 def get_sections(request):
     grade_id = request.GET.get('grade_id')
     
@@ -197,7 +227,7 @@ def get_sheet_values(sheet, start_range, end_range):
 def find_lrn_and_store_as_dict(sheet_values):
     lrn_row_index = None
     lrn_col_index = None
-    lrn_data = {}  # Initialize an empty dictionary to store LRN data
+    lrn_data = {}
 
     for i, row in enumerate(sheet_values):
         if "LRN" in row:
@@ -214,19 +244,66 @@ def find_lrn_and_store_as_dict(sheet_values):
                 lrn_value = row[lrn_col_index]
                 if len(str(lrn_value)) == 12 and str(lrn_value).isdigit():
                     current_lrn = lrn_value
-                    lrn_data[current_lrn] = []  # Initialize an empty list for the LRN
+                    lrn_data[current_lrn] = []
                 else:
-                    current_lrn = None  # Reset current LRN if it's not 12 digits
+                    current_lrn = None
 
                 if current_lrn:
                     non_empty_fields = [field for field in row if field is not None and str(field).strip() != '']
-                    lrn_data[current_lrn].append(non_empty_fields)  # Append non-empty fields to the LRN
+                    lrn_data[current_lrn].append(non_empty_fields)
 
-        return lrn_data
-    else:
-        print("Cell containing 'LRN' not found in the sheet.")
-        return lrn_data  # Return an empty dictionary if no LRN cell is found
+    return lrn_data
 
+def get_rows(sheet_values):
+    rows_list = list(sheet_values)[:5]  # Convert the generator to a list and take the first 5 rows
+
+    for i in range(5 - len(rows_list)):
+        rows_list.append([])
+
+    # Remove empty fields from each row and strip white spaces
+    non_empty_rows = [[str(cell.value).strip() for cell in row if cell.value is not None] for row in rows_list]
+
+    return non_empty_rows
+
+def process_excel_file(file_path):
+    try:
+        workbook = openpyxl.load_workbook(file_path)
+        existing_sheet_name = workbook.sheetnames[0]  # Use the first sheet
+        existing_sheet = workbook[existing_sheet_name]
+        existing_sheet_values = get_sheet_values(existing_sheet, (1, 1), (existing_sheet.max_row, existing_sheet.max_column))
+        row_list = get_rows(existing_sheet.iter_rows())
+
+        if existing_sheet_values:
+            lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
+
+            # Extract key-value pairs from the first few rows of the sheet
+            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Grade", "Section"]
+            key_value_pairs = {}
+
+            for i, row in enumerate(row_list, start=1):
+                print(f"Processing Row {i}: {row}")  # Add this line to debug
+
+                for term in terms_to_find:
+                    if term in row:
+                        index = row.index(term)
+                        if index + 1 < len(row):
+                            key_value_pairs[term.replace(" ", "_")] = row[index + 1]
+                        else:
+                            key_value_pairs[term.replace(" ", "_")] = None
+
+            # Print LRN data and key-value pairs
+            print("LRN Data:")
+            print(lrn_data)
+            print("Key-Value Pairs:")
+            print(key_value_pairs)
+
+            return {'lrn_data': lrn_data, 'key_value_pairs': key_value_pairs}
+        else:
+            return None
+    except Exception as e:
+        print(f"An error occurred in process_excel_file: {e}")
+        return None
+    
 def upload(request):
     if request.method == 'POST':
         google_sheet_link = request.POST.get('google_sheet_link')
@@ -241,19 +318,17 @@ def upload(request):
                 sheet_name_match = re.search(r'#gid=([0-9]+)', google_sheet_link)
                 sheet_name = sheet_name_match.group(1) if sheet_name_match else None
 
-                lrn_data = process_google_sheet(spreadsheet_id, sheet_name)
+                result_data = process_google_sheet(spreadsheet_id, sheet_name)
 
-                if lrn_data is not None:
-                    return render(request, 'teacher_template/adviserTeacher/upload.html', {
-                        'lrn_data': lrn_data,
-                    })
+                if result_data is not None:
+                    return render(request, 'teacher_template/adviserTeacher/upload.html', result_data)
                 else:
                     messages.error(request, "Failed to process the Google Sheet")
             else:
                 messages.error(request, "Invalid Google Sheet link")
-
         elif excel_file:
-            # Check if the file has a valid Excel extension
+            # Save the uploaded Excel file temporarily
+            temp_file_path = 'temp.xlsx'
             valid_excel_extensions = ['.xls', '.xlsx']
             file_extension = os.path.splitext(excel_file.name)[1].lower()
 
@@ -261,43 +336,32 @@ def upload(request):
                 messages.error(request, "Invalid Excel file. Please upload a valid Excel file.")
                 return render(request, 'teacher_template/adviserTeacher/upload.html')
 
-            # Save the uploaded Excel file temporarily
-            temp_file_path = 'temp.xlsx'
-            with open(temp_file_path, 'wb') as temp_file:
-                for chunk in excel_file.chunks():
-                    temp_file.write(chunk)
-
-            # Load the Excel workbook
-            try:
-                workbook = openpyxl.load_workbook(temp_file_path)
-            except Exception as e:
-                os.remove(temp_file_path)  # Remove temporary file
-                messages.error(request, f"Failed to load the Excel File: {str(e)}")
-                return render(request, 'teacher_template/adviserTeacher/upload.html')
-
-            # Get the values from the existing sheet
-            try:
-                existing_sheet_name = workbook.sheetnames[0]  # Use the first sheet
-                existing_sheet = workbook[existing_sheet_name]
-            except KeyError as e:
-                os.remove(temp_file_path)  # Remove temporary file
-                messages.error(request, f"Worksheet '{existing_sheet_name}' does not exist in the Excel File")
-                return render(request, 'teacher_template/adviserTeacher/upload.html')
-
-            existing_sheet_values = get_sheet_values(existing_sheet, (1, 1), (existing_sheet.max_row, existing_sheet.max_column))
-
-            if existing_sheet_values:
-                lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
-                return render(request, 'teacher_template/adviserTeacher/upload.html', {
-                    'lrn_data': lrn_data,
-                })
+            # If the file is in .xls format, convert it to .xlsx
+            if file_extension == '.xls':
+                df = pd.read_excel(excel_file)
+                df.to_excel(temp_file_path, index=False)
             else:
-                os.remove(temp_file_path)  # Remove temporary file
+                with open(temp_file_path, 'wb') as temp_file:
+                    for chunk in excel_file.chunks():
+                        temp_file.write(chunk)
+
+            # Process Excel file
+            result_data = process_excel_file(temp_file_path)
+
+            if result_data is not None:
+                print("LRN Data:")
+                print(result_data['lrn_data'])
+                print("Key-Value Pairs:")
+                print(result_data['key_value_pairs'])
+                return render(request, 'teacher_template/adviserTeacher/upload.html', result_data)
+            else:
                 messages.error(request, "Failed to process the Excel File")
+
         else:
-            messages.error(request, "Invalid Excel File")
-            
+            messages.error(request, "Invalid file")
+
     return render(request, 'teacher_template/adviserTeacher/upload.html')
+
 
 @csrf_exempt
 @login_required
@@ -311,14 +375,16 @@ def save_json_data(request):
             received_data = json.loads(request.body)
             teacher = request.user.teacher  # Get the currently logged-in teacher
 
-            # Get the selected grade and section from the request data
-            selected_grade = received_data.get('selectedGrade', '')
-            selected_section = received_data.get('selectedSection', '')
+            # Get the data from the request
+            school_id = received_data.get('school_id', '')
+            district = received_data.get('district', '')
+            division = received_data.get('division', '')
+            school_name = received_data.get('school_name', '')
+            school_year = received_data.get('school_year', '')
+            grade = received_data.get('grade', '')
+            section = received_data.get('section', '')
+            
 
-            # Update the Grade and Section tables with teacher ID
-            teacher.grade = selected_grade
-            teacher.section = selected_section
-            teacher.save()
 
             for item in received_data['rows']:
                 lrn = item.get('LRN')
@@ -334,8 +400,11 @@ def save_json_data(request):
                         'sex': sex,
                         'birthday': birthday,
                         'teacher': teacher,
-                        'grade': selected_grade,
-                        'section': selected_section,
+                        'school_id': school_id,
+                        'district': district,
+                        'division': division,
+                        'school_name': school_name,
+                        'school_year': school_year
                     }
                 )
 
@@ -343,14 +412,18 @@ def save_json_data(request):
                 student.name = name
                 student.sex = sex
                 student.birthday = birthday
+                student.school_id = school_id
+                student.division = division
+                student.district = district
+                student.school_name = school_name
+                student.school_year = school_year
+                student.grade = grade
+                student.section = section
+
                 # Update other fields as necessary
 
                 student.save()
 
-                # Update the 'teacher' field in the 'Section' model
-                section = Section.objects.get(name=selected_section, grade__name=selected_grade)
-                section.teacher = teacher
-                section.save()
 
             response_data = {'message': 'JSON data saved successfully'}
             return JsonResponse(response_data)
@@ -360,6 +433,7 @@ def save_json_data(request):
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
+
 
 
 def get_grades_and_sections(request):
@@ -721,15 +795,29 @@ def display_students(request):
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
 
-def sf9(request):
-    # Query all students from the database
-    all_students = Student.objects.all()
+@login_required
+def delete_student(request, grade, section):
+    user = request.user
 
-    # Pass the queryset to the template context
-    context = {'all_students': all_students}
+    if user.user_type == 2:
+        teacher = get_object_or_404(Teacher, user=user)
+        students = Student.objects.filter(grade=grade, section=section, teacher=teacher)
 
-    # Render the template with the context
-    return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
+        if students.exists():
+            # Assuming you have some permission checks here before deleting
+            students.delete()
+
+            # Delete associated ClassRecord records
+            ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
+
+                # Redirect to a different page after deletion
+            return redirect('display_students')  # Replace with your actual view name
+        else:
+            # Redirect to a different page if no students found
+            return redirect('display_students')  # Replace with your actual view name
+
+    # If the user is not a teacher or if the permissions check fails
+    return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
 
 def student_list_for_class(request):
     # Assuming the user is logged in
@@ -1503,16 +1591,17 @@ def validate_score(request):
 
     return JsonResponse({'error': 'Invalid request'})
 
-
+display_students
+@require_POST
 def delete_classrecord(request, class_record_id):
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
 
-    if request.method == 'POST':
-        class_record.delete()
-        return redirect('class_records_list')  # Redirect to your class records list view
+    # Assuming you have some permission checks here before deleting
+    class_record.delete()
 
-    return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_record': class_record})
+    return JsonResponse({'message': 'Record deleted successfully'})
 
+# Your other views remain the same
 def class_records_list(request):
     class_records = ClassRecord.objects.all()
     return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_records': class_records})
