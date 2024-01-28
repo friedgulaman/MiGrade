@@ -29,9 +29,29 @@ upload
         td {
             background-color: #ffffff;
         }
+        .search-form {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            padding: 8px;
+        }
+
+        .search-button {
+            padding: 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+    <form class="search-form" method="GET" action="">
+        <input type="text" name="search" class="search-input" placeholder="Search..." value="{{ search_query }}">
+        <button type="submit" class="search-button">Search</button>
+    </form>
+    </div>
+
+    <div class="table">
     <table>
         <tr>
             <th>Last Name</th>
@@ -68,5 +88,6 @@ upload
         </tr>
         {% endfor %}
     </table>
+    </div>
 </body>
 {% endblock main_content %}

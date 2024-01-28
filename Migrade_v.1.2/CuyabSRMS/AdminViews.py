@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from .models import CustomUser, Student, Teacher, Grade, Section
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
@@ -31,10 +31,12 @@ import openpyxl
 from django.utils import timezone
 import datetime
 from datetime import datetime
+from dateutil import parser
 
 
 from django.contrib.auth.decorators import login_required
-
+from django.http import FileResponse
+import base64
 
 @login_required
 def home_admin(request):
@@ -287,15 +289,15 @@ def upload_documents_ocr(request):
         form = DocumentUploadForm(request.POST, request.FILES)
         if form.is_valid():
             # Replace 'YOUR_PROJECT_ID' with your Google Cloud project ID.
-            project_id = '359239664082'
+            project_id = '1083879771832'
 
 
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"doc-ai-ocr-b135d04e24a7.json"
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
 
             client = documentai.DocumentProcessorServiceClient()
 
             # Define the processor resource name.
-            processor_name = f"projects/{project_id}/locations/us/processors/6ff59e15c7cbbbc3"
+            processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
 
             uploaded_file = request.FILES['document']
 
@@ -387,13 +389,20 @@ def upload_documents_ocr(request):
                 if birthdate_index is not None:
                     birthdate_str = data_by_type['Raw Value'][birthdate_index]
                     try:
-                        my_data.birthdate = datetime.strptime(birthdate_str, "%m/%d/%Y").date()
+                        # Provide a specific format string based on the expected format
+                        my_data.birthdate = parser.parse(birthdate_str, format="%b. %d, %Y").date()
                     except ValueError as e:
                         print(f"Error parsing birthdate: {e}")
 
             my_data.save()
-          
 
+            # response = FileResponse(open(processed_document.document.path, 'rb'), content_type='application/pdf')
+            # response['Content-Disposition'] = f'inline; filename="{uploaded_file.name}"'
+            # return response
+
+            pdf_content_base64 = base64.b64encode(content).decode('utf-8')
+
+        
         return render(request, 'admin_template/edit_extracted_data.html', {
                 # 'extracted_data': extracted_data_for_review,
                 'document_text': text,
@@ -403,7 +412,8 @@ def upload_documents_ocr(request):
                 'download_link': processed_document.document.url,
                 'data_by_type': data_by_type,
                 # 'extracted_text': extracted_text 
-                'extracted_data': my_data
+                'extracted_data': my_data,
+                'pdf_content_base64': pdf_content_base64, 
             })
     else: 
         form = DocumentUploadForm()
@@ -477,12 +487,29 @@ def save_edited_data(request):
         return HttpResponse("Invalid request method")
 
 def sf10_views(request):
-    # Query the ExtractedData model to retrieve all records
-    all_extracted_data = ExtractedData.objects.all()
+    # Retrieve the search query from the request's GET parameters
+    search_query = request.GET.get('search', '')
 
-    # Pass the extracted data to the template context
+    # If a search query is present, filter the ExtractedData model
+    if search_query:
+        # You can customize the fields you want to search on
+        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average']
+        
+        # Use Q objects to create a complex OR query
+        query = Q()
+        for field in search_fields:
+            query |= Q(**{f'{field}__icontains': search_query})
+
+        # Filter the ExtractedData model based on the search query
+        all_extracted_data = ExtractedData.objects.filter(query)
+    else:
+        # If no search query, retrieve all records
+        all_extracted_data = ExtractedData.objects.all()
+
+    # Pass the filtered data and search query to the template context
     context = {
         'all_extracted_data': all_extracted_data,
+        'search_query': search_query,
     }
 
     # Render the sf10.html template with the context data
@@ -504,4 +531,22 @@ def add_subject(request):
 def subject_list(request):
     subjects = Subject.objects.all()
     return render(request, 'admin_template/subject_list.html', {'subjects': subjects})
+
+def update_subject(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        form = SubjectForm(request.POST, instance=subject)
+        if form.is_valid():
+            form.save()
+            return redirect('subject_list')
+    else:
+        form = SubjectForm(instance=subject)
+    return render(request, 'admin_template/update_subject.html', {'form': form})
+
+def delete_subject(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        subject.delete()
+        return redirect('subject_list')
+    return render(request, 'admin_template/delete_subject_confirm.html', {'subject': subject})
 

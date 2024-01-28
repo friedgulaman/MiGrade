@@ -5,19 +5,60 @@
 {% block main_content %}
 <style>
     .table, th {
-        border: solid 1px;
+        border: solid 2px;
     }
     td {
-        border: solid 1px;
+        border: solid 2px;
     }
+
     #components {
         color: red;
         text-align: center;
     }
+    .table-responsive {
+        width: 100%; /* Adjust the width as needed */
+        margin: 0 auto; /* Center the table within its container */
+    }
+
+    .table {
+        width: 100%; /* Make the table fill the available width */
+    }
+
+    .back-button {
+    color: #1027ac;
+    font-size: 30px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+    
 </style>
-<a href="{% url 'home_adviser_teacher' %}">Back to Home</a>
 <section class="content container mt-2">
-    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+      <div class="mt-5 border-bottom">
+        <div class="card-body ">
+            <div class="d-flex justify-content-between align-items-center m-2 p-3 ">
+          <h3 >Class Record Information</h3>    
+          </div>
+          <div class="row text-primary d-flex justify-content-between align-items-center text-center">
+            <div class="col">
+              <p class="card-text "><strong class="text-muted">Grade:</strong> {{ class_record.grade }}</p>
+            </div>
+            <div class="col">
+              <p class="card-text"><strong class="text-muted">Section:</strong> {{ class_record.section }}</p>
+            </div>
+            <div class="col">
+              <p class="card-text"><strong class="text-muted">Subject:</strong> {{ class_record.subject }}</p>
+            </div>
+            <div class="col">
+              <p class="card-text"><strong class="text-muted">Quarters:</strong> {{ class_record.quarters }}</p>
+            </div>
+            <div class="col">
+                <p class="card-text"><strong class="text-muted">Class Record Id:</strong> {{ class_record.id }}</p>
+                <input type="hidden" name="class_record_id" value="{{ class_record.id }}">
+              </div>
+          </div>
+        </div>
+      </div>
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom accent-cyan mt-5">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#written_works" role="tab"
@@ -36,17 +77,7 @@
                     aria-selected="false">Initial Grades</a>
             </li>
         </ul>
-        <div>
-            <div class="btn-wrapper">
-                {% if class_record %}
-                    <div>Grade: {{ class_record.grade }}</div>
-                    <div>Section: {{ class_record.section }}</div>
-                    <div>Quarters: {{ class_record.quarters }}</div>
-                    <div>ClassRecord ID: {{ class_record.id }}</div>
-                    <div><input type="hidden" name="class_record_id" value="{{ class_record.id }}"></div>
-                {% endif %}
-            </div>
-        </div>
+
     </div>
 
 
@@ -93,18 +124,55 @@
                             {% endif %}
                         </thead>
                         <tbody>
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>MALE</th>
+                                {% load custom_filters %}
+                                {% for i in 1|th %}
+                                <th></th>
+                                {% endfor %}
+
+
+                            </tr>
                             {% for record in grade_scores %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ record.student_name }}</td>
-                                    {% for score in record.written_works_scores %}
-                                        <td class="score-cell" contenteditable="true">{{ score }}</td>
-                                    {% endfor %}
-                                    <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written }}</td>
-                                    <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written }}">
-                                    <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written }}</td>
-                                    <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written }}</td>
-                                </tr>
+                                {% if record.student.sex == 'M' %}                           
+                                    <tr class="male-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        {% for score in record.written_works_scores %}
+                                            <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                        {% endfor %}
+                                        <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written|default:'' }}">
+                                        <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written|default:'' }}</td>
+                                        <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>FEMALE</th>
+                                {% load custom_filters %}
+                                {% for i in 1|th %}
+                                <th></th>
+                                {% endfor %}
+                            </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'F' %}
+                                    <tr class="female-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        {% for score in record.written_works_scores %}
+                                            <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                        {% endfor %}
+                                        <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written|default:'' }}">
+                                        <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written|default:'' }}</td>
+                                        <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                         </table>
@@ -158,18 +226,55 @@
                             {% endif %}
                             </thead>
                             <tbody>
-                                {% for record in grade_scores %}
+                                <tr></tr>
                                 <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ record.student_name }}</td>
-                                    {% for score in record.performance_task_scores %}
-                                    <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                    <th></th>
+                                    <th>MALE</th>
+                                    {% load custom_filters %}
+                                    {% for i in 1|th %}
+                                    <th></th>
                                     {% endfor %}
-                                    <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance }}</td>
-                                    <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance }}">
-                                    <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance }}</td>
-                                    <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance}}</td>
+
                                 </tr>
+                                {% for record in grade_scores %}
+                                    {% if record.student.sex == 'M' %}
+                                        <tr class="male-row">
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ record.student.name }}</td>
+                                            {% for score in record.performance_task_scores %}
+                                                <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                            {% endfor %}
+                                            <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance|default:'' }}</td>
+                                            <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance|default:'' }}">
+                                            <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance|default:'' }}</td>
+                                            <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance|default:'' }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                <tr></tr>
+                                <tr>
+                                    <th></th>
+                                    <th>FEMALE</th>
+                                    {% load custom_filters %}
+                                    {% for i in 1|th %}
+                                    <th></th>
+                                    {% endfor %}
+
+                                </tr>
+                                {% for record in grade_scores %}
+                                    {% if record.student.sex == 'F' %}
+                                        <tr class="female-row">
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ record.student.name }}</td>
+                                            {% for score in record.performance_task_scores %}
+                                                <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                            {% endfor %}
+                                            <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance|default:'' }}</td>
+                                            <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance|default:'' }}">
+                                            <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance|default:'' }}</td>
+                                            <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance|default:'' }}</td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -190,10 +295,6 @@
                             <tr>
                                 <th></th>
                                 <th>Name</th>
-                                <th>1</th>
-                                <th>2</th>
-                                <th>3</th>
-                                <th>4</th>
                                 <th>Total</th>
                                 <th>PS</th>
                                 <th>WS</th>
@@ -202,32 +303,53 @@
                             <tr>
                                 <td></td>
                                 <th>Highest possible scores</th>
-                                {% for score in grade_scores.0.scores_hps_quarterly %}
-                                    <td class="highest-possible-scores" contenteditable="true">{{ score }}</td>
-                                {% endfor %}
-                                <td id="total_max_quarterly" name="total_max_quarterly">Total</td>
-                                <td>100.00</td>
                                 {% for record in grade_scores %}
                                 {% if forloop.first %}
-                                <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ record.weight_input_quarterly }}">{{ record.weight_input_quarterly }}</td>
+                                <td contenteditable="true" id="total_max_quarterly" name="total_max_quarterly" value="{% if record.total_max_score_quarterly %}{{ record.total_max_score_quarterly }}{% else %}{{ '' }}{% endif %}">{{ record.total_qa_hps }}</td>
+                                <td>100.00</td>
+                                <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{% if record.weight_input_quarterly %}{{ record.weight_input_quarterly }}{% else %}{{ '' }}{% endif %}">{{ record.weight_input_quarterly }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
                         {% endif %}
                         </thead>
                         <tbody>
-                            {% for record in grade_scores %}
+                            <tr></tr>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
-                                {% for score in record.quarterly_assessment_scores %}
-                                <td class="score-cell" contenteditable="true">{{ score }}</td>
-                                {% endfor %}
-                                <td id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly}}</td>
-                                <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
-                                <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly }}</td>
-                                <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly }}</td>
+                                <th></th>
+                                <th>MALE</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'M' %}
+                                    <tr class="male-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
+                                        <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly|default:'' }}</td>
+                                        <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>FEMALE</th>
+                            </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'F' %}
+                                    <tr class="female-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td contenteditable="true" id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly|default:'' }}</td>
+                                        <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
+                                        <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly|default:'' }}</td>
+                                        <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly|default:'' }}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -253,13 +375,40 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for record in grade_scores %}
+                            <tr></tr>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
-                                <td id="total_initial_grade" name="total_initial_grade">{{ record.initial_grades }}</td>
-                                <td>{{ record.transmuted_grades }}</td>
+                                <th></th>
+                                <th>MALE</th>
+                                <th></th>
+                                <th></th>
+                                
                             </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'M' %}
+                                    <tr class="male-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                        <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr></tr>
+                            <tr>
+                                <th></th>
+                                <th>FEMALE</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                            {% for record in grade_scores %}
+                                {% if record.student.sex == 'F' %}
+                                    <tr class="female-row">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.student.name }}</td>
+                                        <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                        <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -275,8 +424,164 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
 
+ // JavaScript to handle the back button click event
+ document.querySelector(".back-button").addEventListener("click", function () {
+    window.location.href = "display_students";
+  });
 
-    
+
+
+    // Add an event listener for the arrow keys in quarterly assessment
+$('.table tbody tr td[contenteditable="true"]').keydown(function (e) {
+    var currentCell = $(this);
+    var currentRow = currentCell.closest('tr');
+    var currentColumnIndex = currentCell.index();
+
+    switch (e.which) {
+
+        case 38: // Up arrow
+            e.preventDefault();
+            navigateUp(currentRow, currentColumnIndex);
+            break;
+
+        case 40: // Down arrow
+            e.preventDefault();
+            navigateDown(currentRow, currentColumnIndex);
+            break;
+
+        default:
+            return; // Exit if not an arrow key
+    }
+});
+
+function navigateUp(row, columnIndex) {
+    var prevRow = row.prev('tr');
+    if (prevRow.length > 0) {
+        prevRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+
+function navigateDown(row, columnIndex) {
+    var nextRow = row.next('tr');
+    if (nextRow.length > 0) {
+        nextRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+$('.score-cell[contenteditable="true"]').keydown(function(e) {
+    var currentCell = $(this);
+    var currentRow = currentCell.closest('tr');
+    var currentColumnIndex = currentCell.index();
+
+    switch (e.which) {
+        case 37: // Left arrow
+            e.preventDefault();
+            navigateLeft(currentRow, currentColumnIndex);
+            break;
+
+        case 39: // Right arrow
+            e.preventDefault();
+            navigateRight(currentRow, currentColumnIndex);
+            break;
+
+        case 38: // Up arrow
+            e.preventDefault();
+            navigateUp(currentRow, currentColumnIndex);
+            break;
+
+        case 40: // Down arrow
+            e.preventDefault();
+            navigateDown(currentRow, currentColumnIndex);
+            break;
+
+        default:
+            return; // Exit if not an arrow key
+    }
+});
+
+function navigateLeft(row, columnIndex) {
+    if (columnIndex > 2) {
+        row.find('td:eq(' + (columnIndex - 1) + ')').focus();
+    }
+}
+
+function navigateRight(row, columnIndex) {
+    if (columnIndex < 13) {
+        row.find('td:eq(' + (columnIndex + 1) + ')').focus();
+    }
+}
+
+function navigateUp(row, columnIndex) {
+    var prevRow = row.prev('tr');
+    if (prevRow.length > 0) {
+        prevRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+
+function navigateDown(row, columnIndex) {
+    var nextRow = row.next('tr');
+    if (nextRow.length > 0) {
+        nextRow.find('td:eq(' + columnIndex + ')').focus();
+    }
+}
+
+// Add an event listener for the arrow keys in highest possible scores
+$('.highest-possible-scores[contenteditable="true"]').keydown(function(e) {
+    var currentCell = $(this);
+    var currentRow = currentCell.closest('tr');
+    var currentColumnIndex = currentCell.index();
+
+    switch (e.which) {
+        case 37: // Left arrow
+            e.preventDefault();
+            navigateLeftHPS(currentRow, currentColumnIndex);
+            break;
+
+        case 39: // Right arrow
+            e.preventDefault();
+            navigateRightHPS(currentRow, currentColumnIndex);
+            break;
+
+        case 38: // Up arrow
+            e.preventDefault();
+            navigateUpHPS(currentRow, currentColumnIndex);
+            break;
+
+        case 40: // Down arrow
+            e.preventDefault();
+            navigateDownHPS(currentRow, currentColumnIndex);
+            break;
+
+        default:
+            return; // Exit if not an arrow key
+    }
+});
+
+function navigateLeftHPS(row, columnIndex) {
+    if (columnIndex > 2) {
+        row.find('td.highest-possible-scores:eq(' + (columnIndex - 3) + ')').focus();
+    }
+}
+
+function navigateRightHPS(row, columnIndex) {
+    if (columnIndex < 13) {
+        row.find('td.highest-possible-scores:eq(' + (columnIndex - 1 ) + ')').focus();
+    }
+}
+
+function navigateUpHPS(row, columnIndex) {
+    var prevRow = row.prev('tr');
+    if (prevRow.length > 0) {
+        prevRow.find('td.highest-possible-scores:eq(' + columnIndex + ')').focus();
+    }
+}
+
+function navigateDownHPS(row, columnIndex) {
+    var nextRow = row.next('tr');
+    if (nextRow.length > 0) {
+        nextRow.find('td.highest-possible-scores:eq(' + columnIndex + ')').focus();
+    }
+}
+
 $(document).ready(function () {
 
 
@@ -304,24 +609,41 @@ $(document).ready(function () {
         }
     
     
-        function updateTotalQuarterly() {
-            var totalMaxQuarterly = 0;
-            $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
-                var score = parseFloat($(this).text()) || 0;
-                totalMaxQuarterly += score;
-            });
+        // function updateTotalQuarterly() {
+        //     var totalMaxQuarterly = 0;
+        //     $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
+        //         var score = parseFloat($(this).text()) || 0;
+        //         totalMaxQuarterly += score;
+        //     });
     
     
-            $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
-        }
+        //     $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
+        // }
         updateTotalMaxWrittenWorks();
         updateTotalMaxPerformance();
-        updateTotalQuarterly();
+        // updateTotalQuarterly();
+
+    $(document).ready(function() {
+    // Retrieve the stored section ID from local storage
+    var storedSectionId = localStorage.getItem('activeSection');
+
+    // If a section ID is found, set the corresponding tab as active
+    if (storedSectionId) {
+        $('.nav-tabs a[href="#' + storedSectionId + '"]').tab('show');
+    }
+
+    // Clear the stored section ID after using it
+    localStorage.removeItem('activeSection');
+    });
 
     // Add an event listener for the contenteditable cells
     $('.score-cell[contenteditable="true"]').blur(function () {
         // Get the updated score, column index, and section identifier
         var newScore = $(this).text();
+
+        if (newScore.trim() === '') {
+        return;  // Do not update if the input is empty
+        }
         var columnIndex = $(this).index() -2 ;  // Adjust to 0-based indexing
         var sectionId = $(this).closest('.tab-pane').attr('id');
 
@@ -338,9 +660,9 @@ $(document).ready(function () {
             percentageScoreCell = row.find('td:eq(13)');
             weightedScoreCell = row.find('td:eq(14)');
         } else if (sectionId === 'quarterly_assessment'){
-            totalScoreCell = row.find('td:eq(6)'); // Use the class to select all total-score cells
-            percentageScoreCell = row.find('td:eq(7)');
-            weightedScoreCell = row.find('td:eq(8)');
+            totalScoreCell = row.find('td:eq(2)'); // Use the class to select all total-score cells
+            percentageScoreCell = row.find('td:eq(3)');
+            weightedScoreCell = row.find('td:eq(4)');
         } else {
             return;  // Invalid section identifier
         }
@@ -387,9 +709,28 @@ $(document).ready(function () {
                 'csrfmiddlewaretoken': '{{ csrf_token }}',
             },
             success: function (data) {
+
+                if (data.success === false) {
+                    alert(data.error);
+
+                    // Get the section ID dynamically based on the active section
+                    var sectionId = $('.tab-pane.active').attr('id');
+
+                    // If the sectionId is undefined, you may need to adjust this based on your HTML structure
+                    if (!sectionId) {
+                        console.error('Unable to determine the active section ID.');
+                        return;
+                    }
+
+                    // Store the section ID in local storage
+                    localStorage.setItem('activeSection', sectionId);
+
+                    // Reload the page with the fragment identifier
+                    location.reload(true);
+                } else {
+                
                 // Update the specific cells based on the column index and section identifier
                 if (columnIndex >= 0 && columnIndex <= 9) {
-                    totalScoreCell.text(data.total_score);
                     totalScoreCell.text(data.total_score);
                     percentageScoreCell.text(data.percentage_score);
                     weightedScoreCell.text(data.weighted_score);
@@ -436,6 +777,87 @@ $(document).ready(function () {
                     
                 console.log('Update Score Success:', data);
                 console.log('Initial Grade:', totalWeightedScore);  // Logging
+            }}},
+            error: function (xhr, status, error) {
+                console.error('Error updating score:', error);  // Logging
+                alert("Error updating score. See console for details.");
+            }
+        });
+    });
+    
+    $('#totalScoreQuarterly[contenteditable="true"]').blur(function () {
+        // Get the updated score, column index, and section identifier
+        var newScore = $(this).text();
+        if (newScore.trim() === '') {
+        return;  // Do not update if the input is empty
+        }
+        var sectionId = 'quarterly_assessment';
+        var classRecordId = $('input[name="class_record_id"]').val();
+        var columnIndex = $(this).index() -2 ;  // Section identifier for quarterly assessment
+
+        // Get the row, student name, and the corresponding cells
+        var row = $(this).closest('tr');
+        var totalScoreCell = $(this);
+        var percentageScoreCell = row.find('td[id^="percentage_score_quarterly_assessment"]');
+        var weightedScoreCell = row.find('td[id^="weighted_score_quarterly_assessment"]');
+
+        // Get the total_max_quarterly and quarterly_assessment_weight from the DOM
+        var totalMaxQuarterly = parseFloat($('#total_max_quarterly').text());
+        var quarterlyAssessmentWeight = parseFloat($('#quarterly_assessment_weight').text());
+
+        // Calculate the percentage score and weighted score
+        var percentageQuarterly = (parseFloat(newScore) / totalMaxQuarterly) * 100;
+        var weightedScoreQuarterly = (percentageQuarterly / 100) * quarterlyAssessmentWeight;
+
+        // Update the cells with the calculated values
+        percentageScoreCell.text(percentageQuarterly.toFixed(2));
+        weightedScoreCell.text(weightedScoreQuarterly.toFixed(2));
+
+        // Send an AJAX request to update the score
+        $.ajax({
+            type: "POST",
+            url: "/update_score/",
+            data: {
+                'class_record_id': classRecordId,
+                'student_name': row.find('td:eq(1)').text(),
+                'column_index': columnIndex,
+                'new_score': newScore,
+                'section_id': sectionId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function (data) {
+
+                  if (data.success === false) {
+                    alert(data.error);
+
+                    // Get the section ID dynamically based on the active section
+                    var sectionId = $('.tab-pane.active').attr('id');
+
+                    // If the sectionId is undefined, you may need to adjust this based on your HTML structure
+                    if (!sectionId) {
+                        console.error('Unable to determine the active section ID.');
+                        return;
+                    }
+
+                    // Store the section ID in local storage
+                    localStorage.setItem('activeSection', sectionId);
+
+                    // Reload the page with the fragment identifier
+                    location.reload(true);
+                } else {
+                // Update the total score cell with the returned value from the server
+                totalScoreCell.text(data.total_score);
+
+                // Calculate and update the total initial grade
+                var updatedWeightedScoreWritten = parseFloat($('#weighted_score_max_written_works').text()) || 0;
+                var updatedWeightedScorePerformance = parseFloat($('#weighted_score_performance_task').text()) || 0;
+                var updatedWeightedScoreQuarterly = parseFloat($('#weighted_score_quarterly_assessment').text()) || 0;
+
+                var totalWeightedScore = updatedWeightedScoreWritten + updatedWeightedScorePerformance + updatedWeightedScoreQuarterly;
+                $('#total_initial_grade').text(totalWeightedScore.toFixed(2));
+
+                console.log('Update Score Success:', data);
+                console.log('Initial Grade:', totalWeightedScore);  // Logging
             }},
             error: function (xhr, status, error) {
                 console.error('Error updating score:', error);  // Logging
@@ -444,27 +866,29 @@ $(document).ready(function () {
         });
     });
     
-    
        
     
         // Add an event listener for the contenteditable cells in the highest possible scores row
-        $('.highest-possible-scores[contenteditable="true"]').blur(function () {
+        $('.highest-possible-scores[contenteditable="true"]').on('input', function ()  {
             console.log('Blur event triggered for scores.');
             console.log('Class Record ID:', $('input[name="class_record_id"]').val());
             console.log('Section ID:', $(this).closest('.tab-pane').attr('id'));
-    
+            
     
             updateTotalMaxWrittenWorks();
             updateTotalMaxPerformance();
-            updateTotalQuarterly();
+            // updateTotalQuarterly();
             // Get the updated scores data
+
+
             var newScoresData = [];
             $(this).parent().find('.highest-possible-scores[contenteditable="true"]').each(function () {
                 newScoresData.push($(this).text());
             });
+
             var classRecordId = $('input[name="class_record_id"]').val();
             var sectionId = $(this).closest('.tab-pane').attr('id');
-    
+            
     
             console.log('New Scores Data:', newScoresData);
             // Send an AJAX request to update the scores
@@ -487,7 +911,7 @@ $(document).ready(function () {
                         // Update the total max values on the client side
                         $('#total_max_written_works').text(data.total_ww_hps.toFixed(2));
                         $('#total_max_performance_task').text(data.total_pt_hps.toFixed(2));
-                        $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+                        // $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
                     }
     
     
@@ -500,8 +924,50 @@ $(document).ready(function () {
             });
         });
     });
-    </script>
+    $(document).ready(function () {
+    // Add an event listener for the contenteditable change in #total_max_quarterly
+    $('#total_max_quarterly').on('input', function () {
+        // Get the new value from the contenteditable element
+        var newScore = $(this).text().trim();
+        var classRecordId = $('input[name="class_record_id"]').val();
+
+        // Make an AJAX request to update the score
+        $.ajax({
+            type: 'POST',
+            url: '/update_total_max_quarterly/',  // Adjust the URL to match your actual endpoint
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            data: {
+                'class_record_id': classRecordId,
+                'new_score': newScore,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                // Add other necessary data here like student_name, section_id, etc.
+            },
+            success: function (data) {
+                    if (columnIndex >= 0 && columnIndex <= 9) {
+                        totalScoreCell.text(data.total_score);
+                        percentageScoreCell.text(data.percentage_score);
+                        weightedScoreCell.text(data.weighted_score);
     
+    
+                        // Update the total max values on the client side
+                      
+                        $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+                    }
+    
+    
+                    console.log('Update Score Success:', data);  
+                },
+            error: function (error) {
+                console.log('Error updating score:', error);
+                // Handle errors if needed
+            }
+        });
+    });
+});
+    </script>
+
     
     
     

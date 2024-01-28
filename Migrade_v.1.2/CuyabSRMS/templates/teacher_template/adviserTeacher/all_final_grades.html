@@ -12,30 +12,29 @@
     <table border="1">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>#</th>
                 <th>Name</th>
                 <th>Grade</th>
                 <th>Section</th>
-                {% for subject in subjects %}
-                    <th>{{ subject.subject }}</th>
-                    <th>Teacher ({{ subject.subject }})</th>
-                    <th colspan="4">Quarters ({{ subject.subject }})</th>
-                    <th>Subject - Final Grade ({{ subject.subject }})</th>
-                {% endfor %}
+                {% if final_grades.0.subjects %}
+                    {% for subject_info in final_grades.0.subjects %}
+                        <th colspan="5">{{ subject_info.name }}</th>
+                    {% endfor %}
+                {% endif %}
                 <th>General Average</th>
+
+
             </tr>
             <tr>
+                <th>ID</th>
                 <th></th>
                 <th></th>
                 <th></th>
-                <th></th>
-                {% for subject in subjects %}
-                    <th></th>
-                    <th></th>
-                    <th>1st Quarter</th>
-                    <th>2nd Quarter</th>
-                    <th>3rd Quarter</th>
-                    <th>4th Quarter</th>
+                {% for subject_info in final_grades.0.subjects %}
+                    <th>1</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
                     <th>Final Grade</th>
                 {% endfor %}
                 <th></th>
@@ -49,8 +48,6 @@
                     <td>{{ student_data.grade }}</td>
                     <td>{{ student_data.section }}</td>
                     {% for subject_info in student_data.subjects %}
-                        <td>{{ subject_info.name }}</td>
-                        <td>{{ subject_info.teacher_name }}</td>
                         {% for quarter, grade in subject_info.quarter_grades.items %}
                             <td>{{ grade|floatformat:2 }}</td>
                         {% endfor %}
