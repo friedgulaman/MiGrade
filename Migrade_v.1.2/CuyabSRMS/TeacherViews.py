@@ -753,6 +753,11 @@ def display_classrecord(request, class_record_id=None):
     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
 
+
+def display_classrecord(request):
+    grade_scores = GradeScores.objects.all()
+    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
+
     # If class_record_id is not provided, you may want to handle this case differently
     # For example, you can provide a list of available ClassRecord objects for the user to choose from
 
@@ -765,7 +770,7 @@ def display_classrecord(request, class_record_id=None):
     }
 
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
-    
+
 def view_classrecord(request):
     
     # Assuming the user is logged in
@@ -778,7 +783,6 @@ def view_classrecord(request):
 
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher)
-
 
         context = {
             'class_records': class_records,
@@ -855,6 +859,21 @@ def student_list_for_class(request):
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
 
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        grade = request.GET.get('grade')
+        section = request.GET.get('section')
+        
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
+
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section)
+
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
@@ -863,6 +882,7 @@ def student_list_for_class(request):
             .order_by('-general_average')[:10]
             
         )
+
     context = {
         'grade': grade,
         'section': section,
@@ -919,7 +939,7 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 def grade_summary(request, grade, section, quarter):
     students = FinalGrade.objects.filter(grade=grade, section=section)
 
-    # Dictionary to store subject-wise grades for each student
+    # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
         '1st Quarter': 'quarter1',
@@ -932,9 +952,19 @@ def grade_summary(request, grade, section, quarter):
     for student in students:
         subjects = get_subjects(student.student)
         subject_grades[student.student.name] = {}
+        grades = []  # List to store grades for calculating mean
         for subject in subjects:
             db_quarter = quarter_mapping.get(quarter, quarter)
-            subject_grades[student.student.name][subject] = get_subject_score(student.student, subject, db_quarter)
+            subject_grade = get_subject_score(student.student, subject, db_quarter)
+            subject_grades[student.student.name][subject] = subject_grade
+            if subject_grade is not None:
+                grades.append(subject_grade)
+
+        # Calculate average score
+        if grades:
+            subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
+        else:
+            subject_grades[student.student.name]['average_score'] = None
 
         # Check if QuarterlyGrades entry already exists for this student and quarter
         existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
@@ -950,17 +980,6 @@ def grade_summary(request, grade, section, quarter):
             existing_entry.grades = subject_grades[student.student.name]
             existing_entry.save()
 
-    # Calculate average scores
-    average_scores = {}
-    for student in students:
-        grades = subject_grades.get(student.student.name, {})
-        average_scores[student.student.name] = round(mean(value for value in grades.values() if value is not None))
-
-    # Handle missing students
-    for student in students:
-        if student.student.name not in average_scores:
-            average_scores[student.student.name] = 'N/A'
-
     subjects = get_subjects(students.first().student) if students else []
 
     context = {
@@ -968,11 +987,9 @@ def grade_summary(request, grade, section, quarter):
         'subject_grades': subject_grades,
         'subjects': subjects,
         'quarter': quarter,
-        'average_scores': average_scores,
     }
 
     return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
-
 
 
 def get_subject_score(student, subject, quarter):

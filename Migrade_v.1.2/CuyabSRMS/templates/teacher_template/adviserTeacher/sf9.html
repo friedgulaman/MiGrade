@@ -41,6 +41,7 @@
 
                 <table>
                     <tr>
+                        <th>ID</th>
                         <th>Name</th>
                         <th>LRN</th>
                         <th>Sex</th>
@@ -49,6 +50,7 @@
                     </tr>
                     {% for student in section_group.list %}
                         <tr>
+                            <td>{{ forloop.counter }}</td> 
                             <td>{{ student.name }}</td>
                             <td>{{ student.lrn }}</td>
                             <td>{{ student.get_sex_display }}</td>
