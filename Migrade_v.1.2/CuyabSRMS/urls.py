@@ -130,10 +130,10 @@ urlpatterns = [
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
     path('display_classrecord/<int:class_record_id>/', TeacherViews.display_classrecord, name='display_classrecord'),
     path('display_students', TeacherViews.display_students, name='display_students'),
-    path('view_classrecord', TeacherViews.view_classrecord, name="view_classrecord"),
+    path('delete_student/<str:grade>/<str:section>/',TeacherViews.delete_student, name='delete_student'),
+    path('view_classrecord', TeacherViews.view_classrecord, name='view_classrecord'),
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
     path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
-    # path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
     path('display_final_grades/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_final_grades, name='display_final_grades'),
     path('update_score/', TeacherViews.update_score, name='update_score'),
     path('update_highest_possible_scores/', TeacherViews.update_highest_possible_scores, name='update_highest_possible_scores'),
@@ -143,7 +143,7 @@ urlpatterns = [
     path('all_final_grades/<str:grade>/<str:section>/', TeacherViews.display_all_final_grades, name='all_final_grades'),
     path('update_total_max_quarterly/', TeacherViews.update_total_max_quarterly, name='update_total_max_quarterly'),
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
-    path('sf9/', TeacherViews.sf9, name='sf9'),
+    # path('sf9/', TeacherViews.sf9, name='sf9'),
    # urls.py
 
     # Generation
