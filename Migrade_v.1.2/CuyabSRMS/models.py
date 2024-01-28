@@ -156,15 +156,10 @@ class GradeScores(models.Model):
     
 class FinalGrade(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Change this line
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
-    subject = models.CharField(max_length=50)
-    quarter1 = models.FloatField()
-    quarter2 = models.FloatField()
-    quarter3 = models.FloatField()
-    quarter4 = models.FloatField()
-    final_grade = models.FloatField()
+    final_grade = models.JSONField()
 
     def __str__(self):
         return f"FinalGrade: {self.student.name} - {self.subject}, Teacher: {self.teacher}"
