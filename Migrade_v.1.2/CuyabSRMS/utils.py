@@ -825,7 +825,7 @@ def write_sf9_data(front_sheet, student):
 
 
 def write_sf9_grades(back_sheet, final_grade):
-    # Assuming the subject you want is "Filipino"
+    # Assuming the subject you want is "AP"
     subject_name = "AP"
 
     # Construct attribute names for each quarter and final grade based on the subject name
@@ -838,20 +838,24 @@ def write_sf9_grades(back_sheet, final_grade):
     }
 
     # Get the scores for the specified subject
-    filipino_1st_quarter_score = getattr(final_grade, attribute_names['1st Quarter'], None)
-    filipino_2nd_quarter_score = getattr(final_grade, attribute_names['2nd Quarter'], None)
-    filipino_3rd_quarter_score = getattr(final_grade, attribute_names['3rd Quarter'], None)
-    filipino_4th_quarter_score = getattr(final_grade, attribute_names['4th Quarter'], None)
-    filipino_final_grade_score = getattr(final_grade, attribute_names['Final Grade'], None)
+    filipino_1st_quarter_score = None
+    filipino_2nd_quarter_score = None
+    filipino_3rd_quarter_score = None
+    filipino_4th_quarter_score = None
+    filipino_final_grade_score = None
 
-
-    print(filipino_1st_quarter_score)
-    print(filipino_2nd_quarter_score)
-    print(filipino_final_grade_score)
+    for entry in final_grade:
+        if entry['subject'] == subject_name:
+            filipino_1st_quarter_score = entry['quarter_grades']['1st Quarter']
+            print(filipino_1st_quarter_score)
+            filipino_2nd_quarter_score = entry['quarter_grades']['2nd Quarter']
+            filipino_3rd_quarter_score = entry['quarter_grades']['3rd Quarter']
+            filipino_4th_quarter_score = entry['quarter_grades']['4th Quarter']
+            filipino_final_grade_score = entry['final_grade']
+            break
 
     # Specify the coordinates for writing the score
-    
-    row_coordinates_filipino= 7
+    row_coordinates_filipino = 7
     column_coordinates_filipino_1st_quarter = 14
     column_coordinates_filipino_2nd_quarter = 15
     column_coordinates_filipino_3rd_quarter = 16
@@ -864,7 +868,6 @@ def write_sf9_grades(back_sheet, final_grade):
     back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_3rd_quarter, value=filipino_3rd_quarter_score)
     back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_4th_quarter, value=filipino_4th_quarter_score)
     back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_final_grade, value=filipino_final_grade_score)
-
 
 
 
