@@ -820,17 +820,34 @@ def write_sf9_data(front_sheet, student):
 
 
 
+
+
+
+
 def write_sf9_grades(back_sheet, final_grade):
     # Assuming the subject you want is "Filipino"
-    subject_name = "English"
+    subject_name = "AP"
 
-    # Get the 1st quarter score for the specified subject
-    filipino_1st_quarter_score = getattr(final_grade, 'quarter1', None)
-    filipino_2nd_quarter_score = getattr(final_grade, 'quarter2', None)
-    filipino_3rd_quarter_score = getattr(final_grade, 'quarter3', None)
-    filipino_4th_quarter_score = getattr(final_grade, 'quarter4', None)
-    filipino_final_grade_score = getattr(final_grade, 'final_grade', None)
+    # Construct attribute names for each quarter and final grade based on the subject name
+    attribute_names = {
+        '1st Quarter': f'{subject_name.lower().replace(" ", "_")}_1st_quarter',
+        '2nd Quarter': f'{subject_name.lower().replace(" ", "_")}_2nd_quarter',
+        '3rd Quarter': f'{subject_name.lower().replace(" ", "_")}_3rd_quarter',
+        '4th Quarter': f'{subject_name.lower().replace(" ", "_")}_4th_quarter',
+        'Final Grade': f'{subject_name.lower().replace(" ", "_")}_final_grade',
+    }
 
+    # Get the scores for the specified subject
+    filipino_1st_quarter_score = getattr(final_grade, attribute_names['1st Quarter'], None)
+    filipino_2nd_quarter_score = getattr(final_grade, attribute_names['2nd Quarter'], None)
+    filipino_3rd_quarter_score = getattr(final_grade, attribute_names['3rd Quarter'], None)
+    filipino_4th_quarter_score = getattr(final_grade, attribute_names['4th Quarter'], None)
+    filipino_final_grade_score = getattr(final_grade, attribute_names['Final Grade'], None)
+
+
+    print(filipino_1st_quarter_score)
+    print(filipino_2nd_quarter_score)
+    print(filipino_final_grade_score)
 
     # Specify the coordinates for writing the score
     

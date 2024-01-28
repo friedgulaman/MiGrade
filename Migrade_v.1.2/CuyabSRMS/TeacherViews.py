@@ -813,7 +813,7 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 def grade_summary(request, grade, section, quarter):
     students = FinalGrade.objects.filter(grade=grade, section=section)
 
-    # Dictionary to store subject-wise grades for each student
+    # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
         '1st Quarter': 'quarter1',
@@ -826,9 +826,19 @@ def grade_summary(request, grade, section, quarter):
     for student in students:
         subjects = get_subjects(student.student)
         subject_grades[student.student.name] = {}
+        grades = []  # List to store grades for calculating mean
         for subject in subjects:
             db_quarter = quarter_mapping.get(quarter, quarter)
-            subject_grades[student.student.name][subject] = get_subject_score(student.student, subject, db_quarter)
+            subject_grade = get_subject_score(student.student, subject, db_quarter)
+            subject_grades[student.student.name][subject] = subject_grade
+            if subject_grade is not None:
+                grades.append(subject_grade)
+
+        # Calculate average score
+        if grades:
+            subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
+        else:
+            subject_grades[student.student.name]['average_score'] = None
 
         # Check if QuarterlyGrades entry already exists for this student and quarter
         existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
@@ -844,17 +854,6 @@ def grade_summary(request, grade, section, quarter):
             existing_entry.grades = subject_grades[student.student.name]
             existing_entry.save()
 
-    # Calculate average scores
-    average_scores = {}
-    for student in students:
-        grades = subject_grades.get(student.student.name, {})
-        average_scores[student.student.name] = round(mean(value for value in grades.values() if value is not None))
-
-    # Handle missing students
-    for student in students:
-        if student.student.name not in average_scores:
-            average_scores[student.student.name] = 'N/A'
-
     subjects = get_subjects(students.first().student) if students else []
 
     context = {
@@ -862,11 +861,9 @@ def grade_summary(request, grade, section, quarter):
         'subject_grades': subject_grades,
         'subjects': subjects,
         'quarter': quarter,
-        'average_scores': average_scores,
     }
 
     return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
-
 
 
 def get_subject_score(student, subject, quarter):
