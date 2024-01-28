@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from .models import Student, FinalGrade
+from .models import Student, FinalGrade, GeneralAverage
 import os
 import openpyxl
 import pandas as pd
@@ -107,6 +107,8 @@ def generate_excel_for_sf9(request, student_id):
 
     final_grade = FinalGrade.objects.filter(student=student).first()
 
+    general_average = GeneralAverage.objects.filter(student=student).first()
+
     # Original file path for SF9 template
         # Original file path
     excel_file_name = "ELEM SF9 (Learner's Progress Report Card).xlsx"
@@ -144,7 +146,7 @@ def generate_excel_for_sf9(request, student_id):
         # Write SF9-specific data using a utility function (update this function based on your needs)
     write_sf9_data(front_sheet, student)
 
-    write_sf9_grades(back_sheet, final_grade)
+    write_sf9_grades(back_sheet, final_grade, general_average)
 
         # Save the changes to the SF9 workbook
     workbook.save(copied_file_path)

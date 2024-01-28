@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import URLPattern, path, include
 
 
-from CuyabSRMS import AdminViews, TeacherViews, GenerationViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews
 
 from django.contrib import admin
 from . import views
@@ -150,9 +150,13 @@ urlpatterns = [
 
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
-    path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9')
+    path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9'),
 
-
+    #Archived
+    path('archived-records/', ArchivedViews.archived_records, name='archived_records'),
+    path('restore-archived-record/<int:archived_record_id>/', ArchivedViews.restore_archived_record, name='restore_archived_record'),
+    path('archive-class-record/<int:class_record_id>/', ArchivedViews.archive_class_record, name='archive_class_record'),
+   
 
     # # Student
     # path('student_list/', StudentViews.student_list, name='student_list'),

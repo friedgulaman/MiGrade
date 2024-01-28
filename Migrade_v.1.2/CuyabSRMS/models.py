@@ -281,3 +281,29 @@ class ActivityLog(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.action}'
 
+
+class ArchivedClassRecord(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    grade = models.CharField(max_length=50, blank=True, null=True)
+    section = models.CharField(max_length=50, blank=True, null=True)
+    subject = models.CharField(max_length=50, blank=True, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    quarters = models.CharField(max_length=50, blank=True, null=True)
+    date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
+
+    def restore(self):
+        """
+        Method to restore the archived class record.
+        """
+        # Create a new instance of the ClassRecord using archived data
+        class_record = ClassRecord.objects.create(
+            name=self.name,
+            grade=self.grade,
+            section=self.section,
+            subject=self.subject,
+            teacher=self.teacher,
+            quarters=self.quarters
+        )
+        # Delete the archived record after restoration
+        self.delete()
