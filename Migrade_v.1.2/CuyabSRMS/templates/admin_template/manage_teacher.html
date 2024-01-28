@@ -1,0 +1,377 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Add Teacher
+{% endblock page_title %}
+{% block main_content %}
+<style>
+    .delete-btn {
+    text-decoration: none;
+    cursor: pointer;
+    color: red;
+    border: none;
+    background: none;
+    transition: color 0.3s; /* Smooth color transition */
+
+    /* Shake animation on hover */
+    position: relative;
+}
+
+.delete-btn:hover {
+    color: darkred; /* Change color on hover */
+    animation: shake 0.5s;
+}
+
+/* Define the shake animation */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+</style>
+<section class=" container p-3">
+    <h3 class="mb-4">Manage Teacher</h3>
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+      <ul class="nav nav-tabs text" role="tablist">
+        <li class="nav-ite m">
+          <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
+            aria-controls="create" aria-selected="true">Create</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+            aria-selected="false">Display</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#update" role="tab"
+            aria-selected="false">Update</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#delete" role="tab"
+            aria-selected="false">Delete</a>
+        </li>
+      </ul>
+    </div>
+  
+    <div class="tab-content tab-content-basic">
+      <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+        <div class="container-fluid p-3 ">
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title">Add Teacher</h4>
+                <form method="post" action="{% url 'add_teacher_save' %}" class="forms-sample" id="addTeacherForm">
+        
+                  {% csrf_token %}
+        
+                  <!-- Display Messages -->
+                  {% if messages %}
+                  <div class="form-group">
+                    {% for message in messages %}
+                      {% if message.tags == "error" %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                          {{ message }}
+                          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+        
+                  <div class="form-group">
+                    <label for="exampleInputUsername1">Username</label>
+                    <input type="text" name="username" class="form-control" id="exampleInputUsername1" placeholder="Username" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input type="email" name="email" class="form-control" id="exampleInputEmail1" placeholder="Email" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputFirstName">First Name</label>
+                    <input type="text" name="first_name" class="form-control" id="exampleInputFirstName" placeholder="First Name" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputLastName">Last Name</label>
+                    <input type="text" name="last_name" class="form-control" id="exampleInputLastName" placeholder="Last Name" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputMiddleInitial">Middle Initial</label>
+                    <input type="text" name="middle_ini" class="form-control" id="exampleInputMiddleInitial" placeholder="Middle Initial" required>
+                  </div>
+                  
+                  <div class="form-group" style="display: none;">
+                    <label for="exampleInputPassword1">Password</label>
+                    <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required disabled>
+                    <small class="form-text text-muted">Default password will be set automatically. Field is disabled.</small>
+                </div>
+                
+                  <button type="submit" class="btn btn-primary me-2">Submit</button>
+                  <button class="btn btn-light">Cancel</button>
+                </form>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">List of Teachers</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Teacher</th>
+                                    <th>Grade</th>
+                                    <th>Section</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in teachers %}
+                                {% if teacher.sections.all %}
+                                {% for section in teacher.sections.all %}
+                                    <tr>
+                                        <td>{{ teacher.user.id }}</td>
+                                        <td>
+                                            {{ teacher.user.first_name }} {{ teacher.user.last_name }}
+                                        </td>
+                                       
+                                                <td class="text-muted">{{ section.grade.name }}</td>
+                                                <td class="text-muted">{{ section.name }}</td>
+                                            {% endfor %}
+                                        {% else %}
+                                        <td>{{ teacher.user.id }}</td>
+                                        <td>
+                                            {{ teacher.user.first_name }} {{ teacher.user.last_name }}
+                                        </td>
+                                            <td class="text-muted">Not assigned</td>
+                                            <td class="text-muted">Not assigned</td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+      
+      
+    <div class="tab-pane fade show " id="update" role="tabpanel" aria-labelledby="update">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Update Teachers</h4>
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Teacher</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for teacher in teachers %}
+                                <tr>
+                               <td>{{ teacher.user.id }}</td>
+                                    <td>
+                                        <a href="#" class="teacher-link" data-toggle="modal" data-target="#updateModal" data-teacher-id="{{ teacher.id }}">
+                                            {{ teacher.user.first_name }} {{ teacher.user.last_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ teacher.user.email }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!-- Update Teacher Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Update Teacher Information</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateForm">
+                        {% csrf_token %}
+                        <input type="hidden" id="teacherId" name="teacherId">
+                        <div class="form-group">
+                            <label for="firstName">First Name:</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name:</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade show" id="delete" role="tabpanel" aria-labelledby="delete">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Delete Teachers</h4>
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Teacher</th>
+                                <th>Email</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for teacher in teachers %}
+                                <tr class="teacher-row" data-teacher-id="{{ teacher.id }}">
+                                    <td>{{ teacher.user.id }}</td>
+                                    <td>
+                                        {{ teacher.user.first_name }} {{ teacher.user.last_name }}
+                                    </td>
+                                    <td>{{ teacher.user.email }}</td>
+                                    <td>
+                                        
+                                        <button type="button" class="delete-btn" data-teacher-id="{{ teacher.id }}">
+                                            <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+  
+  </section>
+<!-- Add this in the head section of your HTML file -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Intercept the form submission
+    $('#addTeacherForm').submit(function (e) {
+      e.preventDefault(); // Prevent the form from submitting the traditional way
+
+      // Send an AJAX request
+      $.ajax({
+        type: 'POST',
+        url: $(this).attr('action'),
+        data: new FormData(this),
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          // Display success/error message
+          if (response.success) {
+            alert(response.message); // You can replace this with a more sophisticated notification system
+            // Optionally, you can redirect the user to another page on success
+            window.location.href = '{% url "teachers" %}';
+          } else {
+            alert(response.message);
+          }
+        },
+        error: function (error) {
+          console.error('Error:', error);
+        }
+      });
+    });
+  });
+</script>
+<script>
+  $(document).ready(function () {
+
+   
+    // Handle click on teacher link
+    $('.teacher-link').click(function () {
+      var teacherId = $(this).data('teacher-id');
+      $('#updateModal').modal('show');
+      $.ajax({
+        url: '/get-teacher-data/',
+        type: 'GET',
+        data: { 'teacherId': teacherId },
+        success: function (data) {
+          // Populate the modal with existing data
+          $('#teacherId').val(data.id);
+          $('#firstName').val(data.first_name);
+          $('#lastName').val(data.last_name);
+        },
+        error: function (error) {
+          console.error('Error fetching teacher data:', error);
+        }
+      });
+    });
+
+    // Handle form submission for updating teacher
+    $('#updateForm').submit(function (e) {
+      e.preventDefault();
+      $.ajax({
+        url: '/update-teacher/',
+        type: 'POST',
+        data: $(this).serialize(),
+        success: function (data) {
+          
+          // Update the teacher name in the table
+          var teacherId = $('#teacherId').val();
+          var newName = $('#firstName').val() + ' ' + $('#lastName').val();
+          $(`.teacher-link[data-teacher-id="${teacherId}"]`).text(newName);
+          alert('Updated successfully to ' + newName);
+         
+          // Close the modal
+          $('#updateModal').modal('hide');
+        },
+        error: function (error) {
+          console.error('Error updating teacher data:', error);
+        }
+      });
+    });
+  });
+</script>
+<script>
+    $(document).ready(function () {
+      // Handle click on delete button
+      $('.delete-btn').click(function () {
+        var teacherId = $(this).data('teacher-id');
+        
+        // Ask for confirmation before deleting
+        var confirmDelete = confirm('Are you sure you want to delete this teacher?');
+        
+        if (confirmDelete) {
+          $.ajax({
+            url: '/delete-teacher/',
+            type: 'POST',
+            data: { 'teacherId': teacherId },
+            success: function (data) {
+              // Remove the deleted teacher row from the table
+              $(`.teacher-row[data-teacher-id="${teacherId}"]`).remove();
+              alert('Teacher deleted successfully');
+            },
+            error: function (error) {
+              console.error('Error deleting teacher:', error);
+            }
+          });
+        }
+      });
+    });
+</script>
+
+  
+{% endblock main_content %}

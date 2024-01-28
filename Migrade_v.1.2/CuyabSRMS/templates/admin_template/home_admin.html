@@ -12,6 +12,29 @@ Home
     margin: 50px auto;
   }
 
+  .content {
+    max-width: 58rem;
+    overflow: hidden; /* Hide the scrollbar by default */
+}
+
+.content:hover {
+    overflow: scroll; /* Display the scrollbar on hover */
+}
+
+/* Customize scrollbar appearance */
+.content::-webkit-scrollbar {
+    width: 8px; /* Adjust the width of the scrollbar */ 
+}
+
+.content::-webkit-scrollbar-thumb {
+    background-color: #989898; /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Rounded corners of the thumb */
+}
+
+.content::-webkit-scrollbar-track {
+    background-color: white; /* Color of the scrollbar track */
+}
+
   /* Bootstrap 5 text input with search icon */
 
   .has-search .form-control {
@@ -33,6 +56,12 @@ Home
   .card {
     max-width: 110px;
     padding: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
   }
   @keyframes fadeIn {
     from {
@@ -46,9 +75,13 @@ Home
   .card:hover{
     animation: fadeIn .2s
   }
-  .card-text{
-    font-size: 10px;
-  }
+  .card-text {
+    font-size: clamp(8px, 2.5vw, 10px);
+}
+
+.card-body {
+  flex: 1; 
+}
   .card, .card-text{
     text-align: center;
   }
@@ -61,7 +94,7 @@ Home
   }
   
 </style>
-<section class="content container mt-2">
+<section class="content container mt-2 vh-100">
   <div class="d-flex flex-column justify-content-center align-items-center" style="height: 80vh;">
     <div class="d-flex justify-content-center align-items-center">
       <img class="img-fluid p-4" src="static/star-admin/images/logo_migrade_text.png" alt="logo" />
@@ -71,70 +104,127 @@ Home
       <span class="fa fa-search form-control-feedback"></span>
       <input type="text" class="form-control" placeholder="Search for students, teachers, subjects, etc...">
     </div>
-    <div>
-      <div class="row row-cols-6 g-1">
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title">1776</h6>
-              <p class="card-text">
-                Students
-              </p>
-            </div>
+    <div class="row row-cols-4 g-1">
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title">{{ total_students }}</h6>
+            <p class="card-text text-truncate">
+              Students
+            </p>
           </div>
         </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title text-danger">432</h6>
-              <p class="card-text">
-                Students
-              </p>
-            </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title text-danger">{{ total_teachers }}</h6>
+            <p class="card-text text-truncate">
+              Teachers
+            </p>
           </div>
         </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title">123</h6>
-              <p class="card-text">
-                Students
-              </p>
-            </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title">{{ total_grades }}</h6>
+            <p class="card-text text-truncate">
+              Grades
+            </p>
           </div>
         </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title text-success">2455</h6>
-              <p class="card-text">
-                Students
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title text-primary">5232</h6>
-              <p class="card-text">
-                Students
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title">544</h6>
-              <p class="card-text">
-                Students
-              </p>
-            </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title text-success">{{ total_subjects }}</h6>
+            <p class="card-text text-truncate">
+              Subjects
+            </p>
           </div>
         </div>
       </div>
     </div>
+    
+  </div>
+  <div class="container">
+    <div class="col-lg-6 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">No. of Enrollees</h4>
+          <canvas id="studentsChart" width="400" height="200"></canvas>
+        </div>
+      </div>
   </div>
 </section>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+      // Fetch data using AJAX
+      $.ajax({
+          url: 'chart-data/',
+          type: 'GET',
+          dataType: 'json',
+          success: function (data) {
+              updateChart(data);
+          },
+          error: function (error) {
+              console.error('Error fetching data:', error);
+          }
+      });
+
+      // Function to update the Chart.js chart
+      function updateChart(data) {
+          const ctx = document.getElementById('studentsChart').getContext('2d');
+          
+
+          new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: data.labels,
+                  datasets: [{
+                      label: 'Number of Students',
+                      data: data.values,
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 1,
+                    
+                  }]
+              },
+              options: {
+                scales: {
+                  x: {
+                    min: 0// This should make the x-axis start at zero
+                  },
+                  y: {
+                    beginAtZero: true
+                  }
+                },
+          layout: {
+            padding: {
+              left: 50, // Adjust the left padding to add more space
+              right: 50,
+              top: 0,
+              bottom: 0
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          }
+        }
+      });
+      }
+      // Initial fetch and update
+    fetchDataAndUpdateChart();
+
+    // Set interval to fetch data and update the chart every 10 seconds
+    setInterval(fetchDataAndUpdateChart, 10000);  
+  });
+</script>
+
 {% endblock main_content %}

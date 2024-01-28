@@ -10,18 +10,11 @@
           <li class="nav-item nav-category">Manage</li>
           <!-- Teacher -->
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-teacher" aria-expanded="false" aria-controls="ui-teacher">
+            <a class="nav-link" href="{% url 'teachers' %}">
               <i class="menu-icon mdi mdi-floor-plan"></i>
               <span class="menu-title">Teacher</span>
               <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-teacher">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'add_teacher' %}">Add Teacher</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'assign_teacher' %}">Assign Teacher</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'list_of_teachers' %}">Teachers</a></li>
-              </ul>
-            </div>
           </li>
           <!-- Grade Levels & Sections -->
           <li class="nav-item">

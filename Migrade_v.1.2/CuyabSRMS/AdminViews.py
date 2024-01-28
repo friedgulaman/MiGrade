@@ -37,31 +37,103 @@ from dateutil import parser
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 import base64
+from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
 
 @login_required
 def home_admin(request):
     # Retrieve the grades queryset
     grades = Grade.objects.all()
     teachers = Teacher.objects.all()
-
-    # Retrieve all sections for each grade
     sections = Section.objects.all()
-
-    # Include the grades and sections in the context
+    total_teachers = Teacher.objects.count()
+    total_students = Student.objects.count()
+    total_grades = Grade.objects.count()
+    total_sections = Section.objects.count()
+    total_subjects = Subject.objects.count()
+   
     context = {
         'grades': grades,
         'sections': sections,
         'teachers': teachers,
+        'total_teachers': total_teachers,
+        'total_students': total_students,
+        'total_grades': total_grades,
+        'total_sections': total_sections,
+        'total_subjects': total_subjects,
     }
     return render(request, 'admin_template/home_admin.html', context)
 
 def add_teacher(request):
     return render(request, 'admin_template/add_teacher.html')
 
+def teachers(request):
+    grades = Grade.objects.all()
+    teachers = Teacher.objects.all()
+    sections = Section.objects.all()
+    students = Student.objects.all()
+
+    # Include the grades and sections in the context
+    context = {
+        'grades': grades,
+        'sections': sections,
+        'teachers': teachers,
+        'students': students,
+    }
+    return render(request, 'admin_template/manage_teacher.html', context)
+
+@require_GET
+def get_teacher_data(request):
+    teacher_id = request.GET.get('teacherId')
+    teacher = get_object_or_404(Teacher, id=teacher_id)
+    data = {
+        'id': teacher.id,
+        'first_name': teacher.user.first_name,
+        'last_name': teacher.user.last_name,
+    }
+    return JsonResponse(data)
+
+@require_POST
+def update_teacher(request):
+    teacher_id = request.POST.get('teacherId')
+    first_name = request.POST.get('firstName')
+    last_name = request.POST.get('lastName')
+
+    teacher = get_object_or_404(Teacher, id=teacher_id)
+    teacher.user.first_name = first_name
+    teacher.user.last_name = last_name
+    teacher.user.save()
+
+    return JsonResponse({'message': 'Teacher updated successfully'})
+@csrf_exempt
+@login_required
+def delete_teacher(request):
+    if request.method == 'POST':
+        teacher_id = request.POST.get('teacherId')
+
+        # Check if the teacher exists
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+
+        try:
+            # Perform the teacher deletion
+            user_id = teacher.user.id  # Get the associated user ID
+            teacher.delete()
+
+            # Delete the associated CustomUser
+            user = get_object_or_404(get_user_model(), id=user_id)
+            user.delete()
+
+            response_data = {'message': 'Teacher and associated user deleted successfully'}
+            return JsonResponse(response_data)
+        except Exception as e:
+            response_data = {'message': f'Error deleting teacher and user: {str(e)}'}
+            return JsonResponse(response_data, status=500)
+
 def add_teacher_save(request):
     if request.method != "POST":
         messages.error(request, "Invalid Method ")
-        return redirect('add_teacher')
+        return redirect('teachers')
     else:
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
@@ -80,31 +152,16 @@ def add_teacher_save(request):
                 last_name=last_name,
                 middle_ini=middle_ini,
                 user_type=2,  # This represents a teacher user
-                profile_image=''
             )
 
-            # No need to create a Teacher object here
-            # The Teacher object will be associated with the CustomUser automatically
-
-            messages.success(request, "Teacher Added Successfully!")
-            return redirect('add_teacher')
+            return JsonResponse({'success': True, 'message': 'Teacher Added Successfully!'})
         except IntegrityError:
             messages.error(request, "Failed to Add Teacher!")
-            return redirect('add_teacher')
+
+            # Return a JSON response for error
+            return JsonResponse({'success': False, 'message': 'Failed to Add Teacher!'})
         
 
-def teacherList(request):
-    grades = Grade.objects.all()
-    teachers = Teacher.objects.all()
-    sections = Section.objects.all()
-
-    # Include the grades and sections in the context
-    context = {
-        'grades': grades,
-        'sections': sections,
-        'teachers': teachers,
-    }
-    return render(request, 'admin_template/list_of_teacher.html', context)
 
 
 

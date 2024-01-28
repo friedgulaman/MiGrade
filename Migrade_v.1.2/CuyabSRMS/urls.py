@@ -4,7 +4,7 @@ from django.urls import URLPattern, path, include
 
 
 from CuyabSRMS import AdminViews, TeacherViews, GenerationViews
-
+from .DashboardViews import StudentChartDataView
 from django.contrib import admin
 from . import views
 
@@ -52,10 +52,12 @@ urlpatterns = [
    
     # Admin Views
     path('home_admin', admin_required(AdminViews.home_admin), name="home_admin"),
+    path('teachers', admin_required(AdminViews.teachers), name="teachers"),
+    path('get-teacher-data/', admin_required(AdminViews.get_teacher_data), name='get_teacher_data'),
+    path('update-teacher/', admin_required(AdminViews.update_teacher), name='update_teacher'),
+    path('delete-teacher/', admin_required(AdminViews.delete_teacher), name='delete_teacher'),
     path('add_teacher', admin_required(AdminViews.add_teacher), name="add_teacher"),
     path('add_teacher_save', admin_required(AdminViews.add_teacher_save), name="add_teacher_save"),
-    path('assign_teacher', admin_required(AdminViews.assign_teacher), name="assign_teacher"),
-    path('list_of_teachers', admin_required(AdminViews.teacherList), name="list_of_teachers"),
     path('submit_grade_section', admin_required(AdminViews.submit_grade_section), name='submit_grade_section'),
     path('get_sections/', admin_required(AdminViews.get_sections), name='get_sections'),
     path('assign_teacher', admin_required(AdminViews.assign_teacher), name="assign_teacher"),
@@ -72,8 +74,6 @@ urlpatterns = [
     path('home_admin', AdminViews.home_admin, name="home_admin"),
     path('add_teacher', AdminViews.add_teacher, name="add_teacher"),
     path('add_teacher_save', AdminViews.add_teacher_save, name="add_teacher_save"),
-    path('assign_teacher', AdminViews.assign_teacher, name="assign_teacher"),
-    path('list_of_teachers', AdminViews.teacherList, name="list_of_teachers"),
     path('submit_grade_section', AdminViews.submit_grade_section, name='submit_grade_section'),
     path('get_sections/', AdminViews.get_sections, name='get_sections'),
     path('assign_teacher', AdminViews.assign_teacher, name="assign_teacher"),
@@ -150,14 +150,14 @@ urlpatterns = [
 
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
-    path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9')
+    path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9'),
 
 
 
     # # Student
     # path('student_list/', StudentViews.student_list, name='student_list'),
 
-
+   path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
 ]
 
 
