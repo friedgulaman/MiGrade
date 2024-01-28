@@ -259,6 +259,28 @@ def search_students(request):
 #     else:
 #         # Handle GET request, redirect user to the upload document page
 #         return render(request, 'teacher_template/adviserTeacher/upload_document.html', {'form': DocumentUploadForm()})
+# def edit_extracted_data(request):
+#     if request.method == 'POST':
+#         # Assuming extracted_data is sent as POST data, retrieve it
+#         extracted_data = {
+#              'last_name': request.POST.get('Last_Name', ''),
+#             'first_name': request.POST.get('First_Name', ''),
+#             'middle_name': request.POST.get('Middle_Name', ''),
+#             'sex': request.POST.get('SEX', ''),
+#             'classified_as_grade': request.POST.get('Classified_as_Grade', ''),
+#             'lrn': request.POST.get('LRN', ''),
+#             'name_of_school': request.POST.get('Name_of_School', ''),
+#             'school_year': request.POST.get('School_Year', ''),
+#             'general_average': request.POST.get('General_Average', ''),
+#             'birthdate': request.POST.get('Birthdate', ''),
+#         }
+
+#         print("Extracted Data:", extracted_data)
+#         # Render the edit page with the extracted data for verification
+#         return render(request, 'admin_template/edit_extracted_data.html', {'extracted_data': extracted_data})
+#     else:
+#         # Handle GET request if necessary
+#         return HttpResponse("Invalid request method")
 
 def upload_documents_ocr(request):
     if request.method == 'POST':
@@ -345,14 +367,19 @@ def upload_documents_ocr(request):
                 'Birthdate': 'birthdate',
             }
 
-            multi_value_fields = {}
+            last_values = {}
 
+            for i in range(len(data_by_type['Type'])):
+                data_type = data_by_type['Type'][i]
+                raw_value = data_by_type['Raw Value'][i]
+
+                # Update the last value for the type
+                last_values[data_type] = {'value': raw_value}
+
+            # Set the last values to the corresponding fields in my_data
             for key, field_name in key_mapping.items():
-                indices = [i for i, item in enumerate(data_by_type['Type']) if item == key]
-                if indices:
-                    values = [data_by_type['Raw Value'][index] for index in indices]
-                    combined_value = ", ".join(values)
-                    setattr(my_data, field_name, combined_value)
+                if key in last_values:
+                    setattr(my_data, field_name, last_values[key]['value'])
 
             # Handle birthdate separately
             if 'Birthdate' in key_mapping:
@@ -365,122 +392,7 @@ def upload_documents_ocr(request):
                         print(f"Error parsing birthdate: {e}")
 
             my_data.save()
-                    # Extract specific data using regular expressions
-        #     key_phrases = {
-        #         "LAST NAME": r"(?i)LAST\s*NAME:\s*([^\n]+)(?:\s*NAME\s*EXTN\s*\([^)]*\))?",
-        #         "FIRST NAME": r"(?i)FIRST\s*NAME:\s*([^\n]+)(?:\s*NAME\s*EXTN\s*\([^)]*\))?",
-        #         "MIDDLE NAME": r"(?i)MIDDLE\s*NAME:\s*([^\n]+)",
-        #         "LRN": r"Learner\s*Reference\s*Number\s*\(LRN\):\s*(\d+)",
-        #         "SCHOOL YEAR": r"School\s*Year:\s*(\b\d{4}-\d{4}\b)",
-        #         "BIRTHDATE": r"Birthdate\s*\(mm/dd/yyyy\):\s*([\d/]+)",
-        #         "Classified as Grade:": r"(?i)Classified\s*as\s*Grade:?\s*(\d+|(?:one|two|three|four|five|six|seven|eight|nine)|[IVXLCDM]+)",
-        #         "GENERAL AVERAGE": r"General Average\s+(.\d+)",
-        #         "SEX": r"Sex:?\s*([A-Z]+)"
-
-        #     }     
-            
-        #     key_value_pairs = {}
-
-        #     # Iterate through the key phrases and extract the information
-        #     for key, pattern in key_phrases.items():
-        #         matches = re.finditer(pattern, text)
-        #         extracted_values = []
-        #         for match in matches:
-        #             # Remove the unwanted part from the extracted first names
-        #             first_name = match.group(1).strip().split("NAME EXTN.")[0].strip()
-        #             extracted_values.append(first_name)
-        #         key_value_pairs[key] = ', '.join(extracted_values)
-
-
-        #     # Save extracted data to JSON file
-        #     with open("extracted_data.json", "w") as json_file:
-        #         json.dump(key_value_pairs, json_file, indent=4)
-
-        #     # Assuming you create a ProcessedDocument instance
-            # processed_document = ProcessedDocument()
-            # processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
-            # processed_document.save()
-
-        #     extracted_data_instance, created = ExtractedData.objects.get_or_create(
-        #         processed_document=processed_document
-        #     )
-        #     extracted_data_instance.save_extracted_data(key_value_pairs)
-
-        # # # Save the ProcessedDocument instance
-        # #     processed_document.save()
-
-            # Create ExtractedData instance and save extracted data
-            # extracted_data_instance = ExtractedData(processed_document=processed_document)
-            # extracted_data_instance.save_extracted_data(key_value_pairs)
-
-            # Construct the URL of the uploaded document.
-            # uploaded_document_path = os.path.join(settings.MEDIA_URL, str(processed_document.document))
-
-            # all_extracted_data = ExtractedData.objects.all().order_by('last_name')
-
-       
-
-            # # Iterate through the key phrases and extract the information
-            # extracted_data_for_review = {}
-            # for key, pattern in key_phrases.items():
-            #     matches = re.finditer(pattern, text)
-            #     extracted_values = []
-            #     for match in matches:
-            #         # Remove the unwanted part from the extracted first names
-            #         first_name = match.group(1).strip().split("NAME EXTN.")[0].strip()
-            #         extracted_values.append(first_name)
-            # extracted_data_for_review[key] = ', '.join(extracted_values)
-
-            # # Print the extracted data for review in the console
-            # print("Extracted Data for Review:")
-            # print(extracted_data_for_review)
-
-            # extracted_data_for_excel = {}
-            # for key, pattern in key_phrases.items():
-            #     matches = re.finditer(pattern, text)
-            #     extracted_values = []
-            #     for match in matches:
-            #         # Remove the unwanted part from the extracted first names
-            #         first_name = match.group(1).strip().split("NAME EXTN.")[0].strip()
-            #         extracted_values.append(first_name)
-            #     extracted_data_for_excel[key] = ', '.join(extracted_values)
-
-            # # Create a new workbook and add data to it
-            # workbook = openpyxl.Workbook()
-            # sheet = workbook.active
-
-            # # Write extracted data to the Excel sheet
-            # for idx, (key, value) in enumerate(extracted_data_for_excel.items(), start=1):
-            #     sheet.cell(row=idx, column=1, value=key)
-            #     sheet.cell(row=idx, column=2, value=value)
-
-            # processed_document_filename = processed_document.document.name
-
-            # timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-            # subdirectory = 'excel-files'
-
-            # # Generate the file name with the timestamp
-            # excel_file_name = f"{os.path.splitext(os.path.basename(processed_document_filename))[0]}_{timestamp}.xlsx"
-
-            # # Join the subdirectory and file name with the MEDIA_ROOT directory
-            # excel_file_path = os.path.join(settings.MEDIA_ROOT, subdirectory, excel_file_name)
-
-            # # Ensure the subdirectory exists; create it if not
-            # os.makedirs(os.path.dirname(excel_file_path), exist_ok=True)
-
-            # # Save the workbook to the specified path
-            # workbook.save(excel_file_path)
-
-            # print("Data successfully written to Excel file:", excel_file_path)
-
-            # extracted_data_for_review = {}  # Modify this line based on your extracted data
-            # extracted_text = " ".join(extracted_data_for_review.values()) 
-            # print(processed_document.document.url)
-            # Render the 'processed_document.html' template with the extracted text and document URL.
-            # return render(request, 'admin_template/edit_extracted_data.html', {'document_text': text, 'uploaded_document_url': uploaded_document_path, 'all_extracted_data': all_extracted_data,})
-        # return render(request, 'admin_template/edit_extracted_data.html', {'extracted_data': extracted_data_for_review, 'document_text': text, 'uploaded_document_url': uploaded_document_path, 'all_extracted_data': all_extracted_data,})
-            # download_link = reverse('download_document', args=[processed_document.id])
+          
 
         return render(request, 'admin_template/edit_extracted_data.html', {
                 # 'extracted_data': extracted_data_for_review,
@@ -489,9 +401,11 @@ def upload_documents_ocr(request):
                 # 'all_extracted_data': all_extracted_data,
                 'processed_document': processed_document,
                 'download_link': processed_document.document.url,
+                'data_by_type': data_by_type,
                 # 'extracted_text': extracted_text 
+                'extracted_data': my_data
             })
-    else:
+    else: 
         form = DocumentUploadForm()
 
     return render(request, 'admin_template/upload_documents.html', {'form': form})
@@ -502,36 +416,65 @@ def save_edited_data(request):
     if request.method == 'POST':
         # Assuming extracted_data is sent as POST data, retrieve it
         extracted_data = {
-            "REGION": request.POST.get("REGION"),
-            "DIVISION": request.POST.get("DIVISION"),
-            "SCHOOL YEAR": request.POST.get("SCHOOL YEAR"),
-            "SCHOOL NAME": request.POST.get("SCHOOL NAME"),
-            "SCHOOL ID": request.POST.get("SCHOOL ID"),
-            "GRADE_SECTION": request.POST.get("GRADE SECTION"),
-            "LAST NAME": request.POST.get("LAST NAME", ""),  # Provide a default empty string
-            "FIRST NAME": request.POST.get("FIRST NAME", ""),
-            "MIDDLE NAME": request.POST.get("MIDDLE NAME", "") ,
+            'last_name': request.POST.get('Last_Name', ''),
+            'first_name': request.POST.get('First_Name', ''),
+            'middle_name': request.POST.get('Middle_Name', ''),
+            'sex': request.POST.get('SEX', ''),
+            'classified_as_grade': request.POST.get('Classified_as_Grade', ''),
+            'lrn': request.POST.get('LRN', ''),
+            'name_of_school': request.POST.get('Name_of_School', ''),
+            'school_year': request.POST.get('School_Year', ''),
+            'general_average': request.POST.get('General_Average', ''),
+            'birthdate': request.POST.get('Birthdate', ''),
         }
 
-        # Create a new ProcessedDocument instance
-        processed_document = ProcessedDocument.objects.create()
+        # Retrieve the existing ProcessedDocument instance based on some criteria
+        # For example, assuming you have a unique identifier like an ID:
+        processed_document_id = request.POST.get('processed_document_id')
+        print(f"Processed Document ID: {processed_document_id}")
+        processed_document = ProcessedDocument.objects.get(pk=processed_document_id)
 
-        # Create an ExtractedData instance and save the extracted data
-        extracted_data_instance = ExtractedData(processed_document=processed_document)
-        extracted_data_instance.save_extracted_data(extracted_data)
+        # Retrieve the existing ExtractedData instance based on the associated ProcessedDocument
+        try:
+            extracted_data_instance = ExtractedData.objects.get(processed_document=processed_document)
+        except ExtractedData.DoesNotExist:
+            # Handle the case where the ExtractedData instance does not exist
+            return HttpResponse("ExtractedData instance not found.")
 
-        print(extracted_data)
-        # Create a custom success message
-        success_message = "Data has been successfully saved!"
+        # Update the fields of the existing ExtractedData instance
+        extracted_data_instance.last_name = extracted_data['last_name']
+        extracted_data_instance.first_name = extracted_data['first_name']
+        extracted_data_instance.middle_name = extracted_data['middle_name']
+        extracted_data_instance.sex = extracted_data['sex']
+        extracted_data_instance.classified_as_grade = extracted_data['classified_as_grade']
+        extracted_data_instance.lrn = extracted_data['lrn']
+        extracted_data_instance.name_of_school = extracted_data['name_of_school']
+        extracted_data_instance.school_year = extracted_data['school_year']
+        extracted_data_instance.general_average = extracted_data['general_average']
 
-        # Send an HTTP response with the success message
-        return HttpResponse(success_message)
+        birthdate_str = request.POST.get('Birthdate', '')
+
+        # Convert the birthdate string to the "YYYY-MM-DD" format
+        try:
+            birthdate_obj = datetime.strptime(birthdate_str, "%b. %d, %Y")
+            formatted_birthdate = birthdate_obj.strftime("%Y-%m-%d")
+        except ValueError:
+            # Handle the case where the date string is not in the expecsted format
+            return HttpResponse("Invalid birthdate format.")
+
+        # Update the birthdate field of the existing ExtractedData instance
+        extracted_data_instance.birthdate = formatted_birthdate
+
+        # ... update other fields
+
+        # Save the changes
+        extracted_data_instance.save()
+
+        return redirect('sf10_view')
 
     else:
         # Handle GET request if necessary
         return HttpResponse("Invalid request method")
-    
-
 
 def sf10_views(request):
     # Query the ExtractedData model to retrieve all records

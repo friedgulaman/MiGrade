@@ -30,10 +30,50 @@ Adviser Teacher
     }
 
   </style>
+  
       
   <section class="content container mt-2">
     <form method="post" action="{% url 'calculate_grades' %}">
         {% csrf_token %}
+
+        <div>
+          <label>Region</label>
+          <input type="text" id="" name="">
+          <label>Division</label>
+          <input type="text" id="" name="">
+          <label>School ID</label>
+          <input type="text" id="" name="">
+          <label>School Name</label>
+          <input type="text" id="" name="">
+          <label>District</label>
+          <input type="text" id="" name="">
+          <label>School Year</label>
+          <input type="text" id="" name="">
+          <label>Quarter</label>
+          <input type="text" id="" name="">
+          <label>Grade and Section</label>
+          <input type="text" id="" name="">
+          <label>Teacher</label>
+          <input type="text" id="" name="">
+          <label>Subject</label>
+          <input type="text" id="" name="">
+        </div>
+      <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs " role="tablist">
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Update/Edit</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Delete</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Save</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="" role="tab" aria-selected="false">Download</a>
+          </li>
+        </ul>
+    </div>
     <div class="d-sm-flex align-items-center justify-content-between border-bottom">
       <ul class="nav nav-tabs " role="tablist">
         <li class="nav-item">
@@ -48,6 +88,7 @@ Adviser Teacher
         <!-- <li class="nav-item">
           <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#initial_grade" role="tab" aria-selected="false">Initial Grades</a>
         </li> -->
+        <li>      <button type="submit">Submit</button></li>
       </ul>
       <div>
 
@@ -64,9 +105,14 @@ Adviser Teacher
         
         <div class="btn-wrapper">
             {% if students %}
-            <div>{{ students.0.grade }} {{ students.0.section }}</div>
+            <div>
+              <input type="text" id="hidden_grade" name="hidden_grade" value="{{ students.0.grade }}">
+              <input type="text" id="hidden_section" name="hidden_section" value="{{ students.0.section }}">
             {% endif %}
-         
+              <input type="text" id="hidden_subject" name="hidden_subject" value="{{ subject_name }}">
+              <input type="text" id="hidden_quarter" name="hidden_quarter" value="{{ quarters }}">
+            </div>
+            
         </div>
       </div>
     </div>
@@ -103,7 +149,7 @@ Adviser Teacher
                         {% for i in 1|num_range %}
                         <td><input  name="max_written_works_{{ i }}"></td>
                         {% endfor %}
-                        <td id="total_max_written_works">Total</td>
+                        <td id="total_max_written_works" name="total_max_written_works">Total</td>
                         <th>100.00</th>
                         <td><input type="text" id="written_works_weight" name="written_works_weight" value="{{ written_works_percentage }}" /></td>
                         
@@ -165,7 +211,7 @@ Adviser Teacher
                             {% for i in 1|num_range %}
                             <td><input name="max_performance_task_{{ i }}"></td>
                             {% endfor %}
-                            <td id="total_max_performance_task">Total</td>
+                            <td id="total_max_performance_task" name="total_max_performance_task">Total</td>
                             <th>100.00</th>
                             <td><input type="text" id="performance_task_weight" name="performance_task_weight" value="{{ performance_task_percentage }}" /></td>
                             <!-- <th>
@@ -224,7 +270,7 @@ Adviser Teacher
                         {% for i in 1|num_range_qa %}
                         <td><input  name="max_quarterly_assessment_{{ i }}"></td>
                         {% endfor %}
-                        <td id="total_max_quarterly">Total</td>
+                        <td id="total_max_quarterly" name="total_max_quarterly">Total</td>
                         <th>100.00</th>
                         <td> <input type="text" id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ quarterly_assessment_percentage }}" /></td>
                       
@@ -297,7 +343,7 @@ Adviser Teacher
       </div>
       </div> -->
       </div>
-      <button type="submit">Submit</button>
+
     </form>
   </section>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

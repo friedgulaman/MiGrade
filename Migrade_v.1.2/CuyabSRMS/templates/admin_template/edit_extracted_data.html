@@ -1,34 +1,92 @@
 <!-- edit_extracted_data.html -->
-{% extends 'admin_template/admin_base.html' %}   
-{% block page_title %}
-upload
-{% endblock page_title %}
-{% block main_content %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Extracted Data</title>
+    <title>Data Verification</title>
 </head>
-
 <body>
-    {% if extracted_data %}
-    <h1>Edit Extracted Data</h1>
+    <h1>Data Verification</h1>
+
     <form method="post" action="{% url 'save_edited_data' %}">
         {% csrf_token %}
-        {% for key, value in extracted_data.items %}
-            <label for="{{ key }}">{{ key }}</label>
-            <input type="text" id   ="{{ key }}" name="{{ key }}" placeholder="Enter {{ key }}" value="{{ value }}"><br>
-        {% endfor %}
-        <input type="submit" value="Save">
+        <div>
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="Last_Name" value="{{ extracted_data.last_name }}" required>
+        </div>
+
+        <!-- First Name -->
+        <div>
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="First_Name" value="{{ extracted_data.first_name }}" required>
+        </div>
+
+        <!-- Middle Name -->
+        <div>
+            <label for="middle_name">Middle Name:</label>
+            <input type="text" id="middle_name" name="Middle_Name" value="{{ extracted_data.middle_name }}">
+        </div>
+
+        <!-- SEX -->
+        <div>
+            <label for="sex">Sex:</label>
+            <input type="text" id="sex" name="SEX" value="{{ extracted_data.sex }}">
+        </div>
+
+        <!-- Classified as Grade -->
+        <div>
+            <label for="classified_as_grade">Classified as Grade:</label>
+            <input type="text" id="classified_as_grade" name="Classified_as_Grade" value="{{ extracted_data.classified_as_grade }}">
+        </div>
+
+        <!-- LRN -->
+        <div>
+            <label for="lrn">LRN:</label>
+            <input type="text" id="lrn" name="LRN" value="{{ extracted_data.lrn }}">
+        </div>
+
+        <!-- Name of School -->
+        <div>
+            <label for="name_of_school">Name of School:</label>
+            <input type="text" id="name_of_school" name="Name_of_School" value="{{ extracted_data.name_of_school }}">
+        </div>
+
+        <!-- School Year -->
+        <div>
+            <label for="school_year">School Year:</label>
+            <input type="text" id="school_year" name="School_Year" value="{{ extracted_data.school_year }}">
+        </div>
+
+        <!-- General Average -->
+        <div>
+            <label for="general_average">General Average:</label>
+            <input type="text" id="general_average" name="General_Average" value="{{ extracted_data.general_average }}">
+        </div>
+
+        <!-- Birthdate -->
+        <div>
+            <label for="birthdate">Birthdate:</label>
+            <input type="text" id="birthdate" name="Birthdate" value="{{ extracted_data.birthdate }}">
+        </div>
+        <input type="hidden" id="processed_document_id" name="processed_document_id" value="{{ extracted_data.processed_document_id }}">
+        <!-- Add similar input fields for other data points -->
+        <div>
+            <button type="submit">Save Data</button>
+        </div>
     </form>
-{% else %}
-    <p>No data available.</p>
-{% endif %}
+
+    <!-- Display the extracted data for verification -->
+    <h2>Extracted Data for Verification:</h2>
+    <p>Document Text: {{ extracted_data.document_text }}</p>
+    <p>Uploaded Document URL: {{ extracted_data.uploaded_document_url }}</p>
+    <!-- Display other extracted data points as needed -->
+    <div>
+        <h2>PDF Viewer:</h2>
+        <embed src="{{ extracted_data.uploaded_document_url }}" type="application/pdf" width="100%" height="600px">
+        <!-- Alternatively, you can use an iframe -->
+        <iframe src="{{ extracted_data.uploaded_document_url }}" width="100%" height="600px"></iframe>
+    </div>
 
 </body>
-
 </html>
-{% endblock main_content %}

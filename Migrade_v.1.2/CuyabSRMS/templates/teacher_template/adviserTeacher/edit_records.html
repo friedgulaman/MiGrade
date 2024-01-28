@@ -1,0 +1,14 @@
+{% extends 'teacher_template/teacher_base.html' %}
+{% block page_title %}
+    Edit Records
+{% endblock page_title %}
+{% block main_content %}
+    <h2>Edit Records</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update</button>
+    </form>
+    <a href="{% url 'display_classrecord' class_record_id=record.class_record.id %}">Cancel</a>
+</section>
+{% endblock main_content %}

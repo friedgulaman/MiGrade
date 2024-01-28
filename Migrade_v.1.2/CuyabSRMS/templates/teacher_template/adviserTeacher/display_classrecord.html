@@ -15,7 +15,7 @@
         text-align: center;
     }
 </style>
-
+<a href="{% url 'home_adviser_teacher' %}">Back to Home</a>
 <section class="content container mt-2">
     <div class="d-sm-flex align-items-center justify-content-between border-bottom">
         <ul class="nav nav-tabs" role="tablist">
@@ -38,105 +38,146 @@
         </ul>
         <div>
             <div class="btn-wrapper">
-                {% if grade_scores %}
-                <div>{{ grade_scores.0.grade }}</div>
+                {% if class_record %}
+                    <div>Grade: {{ class_record.grade }}</div>
+                    <div>Section: {{ class_record.section }}</div>
+                    <div>Quarters: {{ class_record.quarters }}</div>
+                    <div>ClassRecord ID: {{ class_record.id }}</div>
+                    <div><input type="hidden" name="class_record_id" value="{{ class_record.id }}"></div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="tab-content tab-content-basic">
-        <div class="tab-pane fade show active" id="written_works" role="tabpanel" aria-labelledby="home-tab">
-            <div class="mb-3">
-                {% if grade_scores %}
-                <div class="table-responsive">
-                    <div id="components">WRITTEN WORKS</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Name</th>
-                                <th>1</th>
-                                <th>2</th>
-                                <th>3</th>
-                                <th>4</th>
-                                <th>5</th>
-                                <th>6</th>
-                                <th>7</th>
-                                <th>8</th>
-                                <th>9</th>
-                                <th>10</th>
-                                <th>Total</th>
-                                <th>PS</th>
-                                <th>WS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for record in grade_scores %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
-                                {% for score in record.written_works_scores %}
-                                    <td>{{ score }}</td>
-                                {% endfor %}
-                                <td>{{ record.total_score_written }}</td>
-                                <td>{{ record.percentage_score_written }}</td>
-                                <td>{{ record.weighted_score_written }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% endif %}
-            </div>
-        </div>
 
-        <!-- Add similar sections for Performance Task, Quarterly Assessment, and Initial Grades -->
-        <!-- Performance Task -->
-        <div class="tab-pane fade show" id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
-            <div class="mb-3">
-                {% if grade_scores %}
-                <div class="table-responsive">
-                    <div id="components">PERFORMANCE TASK</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Name</th>
-                                <th>1</th>
-                                <th>2</th>
-                                <th>3</th>
-                                <th>4</th>
-                                <th>5</th>
-                                <th>6</th>
-                                <th>7</th>
-                                <th>8</th>
-                                <th>9</th>
-                                <th>10</th>
-                                <th>Total</th>
-                                <th>PS</th>
-                                <th>WS</th>
-                            </tr>
+        <div class="tab-content tab-content-basic">
+            <div class="tab-pane fade show active" id="written_works" role="tabpanel" aria-labelledby="home-tab">
+                <div class="mb-3">
+                    {% if grade_scores %}
+                    <div class="table-responsive">
+                        <div id="components">WRITTEN WORKS</div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>1</th>
+                                    <th>2</th>
+                                    <th>3</th>
+                                    <th>4</th>
+                                    <th>5</th>
+                                    <th>6</th>
+                                    <th>7</th>
+                                    <th>8</th>
+                                    <th>9</th>
+                                    <th>10</th>
+                                    <th>Total</th>
+                                    <th>PS</th>
+                                    <th>WS</th>
+                                </tr>
+                                {% if grade_scores %}
+                                <tr>
+                                    <td></td>
+                                    <th>Highest possible scores</th>
+                                    {% for score in grade_scores.0.scores_hps_written %}
+                                        <td class="highest-possible-scores" contenteditable="true">{{ score }}</td>
+                                    {% endfor %}
+                                    <td id="total_max_written_works" name="total_max_written_works">Total</td>
+                                    <td>100.00</td>
+                                    {% for record in grade_scores %}
+                                    {% if forloop.first %}
+                                    <td id="written_works_weight" name="written_works_weight" value="{{ record.weight_input_written }}">{{ record.weight_input_written }}</td>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endif %}
                         </thead>
                         <tbody>
                             {% for record in grade_scores %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ record.student_name }}</td>
-                                {% for score in record.performance_task_scores %}
-                                    <td>{{ score }}</td>
-                                {% endfor %}
-                                <td>{{ record.total_score_performance }}</td>
-                                <td>{{ record.percentage_score_performance }}</td>
-                                <td>{{ record.weighted_score_performance}}</td>
-                            </tr>
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ record.student_name }}</td>
+                                    {% for score in record.written_works_scores %}
+                                        <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                    {% endfor %}
+                                    <td id="totalScoreWritten" name="totalScoreWritten">{{ record.total_score_written }}</td>
+                                    <input type="hidden" id="id_total_score_written" value="{{ record.total_score_written }}">
+                                    <td id="percentage_score_written_works" name="percentagescore_written_works">{{ record.percentage_score_written }}</td>
+                                    <td id="weighted_score_written_works" name="weighted_score_written_works">{{ record.weighted_score_written }}</td>
+                                </tr>
                             {% endfor %}
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
-        </div>
+
+
+            <!-- Add similar sections for Performance Task, Quarterly Assessment, and Initial Grades -->
+            <!-- Performance Task -->
+            <div class="tab-pane fade show" id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="mb-3">
+                    {% if grade_scores %}
+                    <div class="table-responsive">
+                        <div id="components">PERFORMANCE TASK</div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>1</th>
+                                    <th>2</th>
+                                    <th>3</th>
+                                    <th>4</th>
+                                    <th>5</th>
+                                    <th>6</th>
+                                    <th>7</th>
+                                    <th>8</th>
+                                    <th>9</th>
+                                    <th>10</th>
+                                    <th>Total</th>
+                                    <th>PS</th>
+                                    <th>WS</th>
+                                </tr>
+                                {% if grade_scores %}
+                                <tr>
+                                    <td></td>
+                                    <th>Highest possible scores</th>
+                                    {% for score in grade_scores.0.scores_hps_performance %}
+                                        <td class="highest-possible-scores" contenteditable="true">{{ score }}</td>
+                                    {% endfor %}
+                                    <td id="total_max_performance_task" name="total_max_performance_task">Total</td>
+                                    <td>100.00</td>
+                                    {% for record in grade_scores %}
+                                    {% if forloop.first %}
+                                    <td id="performance_task_weight" name="performance_task_weight">{{ record.weight_input_performance }}</td>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endif %}
+                            </thead>
+                            <tbody>
+                                {% for record in grade_scores %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ record.student_name }}</td>
+                                    {% for score in record.performance_task_scores %}
+                                    <td class="score-cell" contenteditable="true">{{ score }}</td>
+                                    {% endfor %}
+                                    <td id="totalScorePerformance" name="totalScorePerformance">{{ record.total_score_performance }}</td>
+                                    <input type="hidden" id="id_total_score_performance" value="{{ record.total_score_performance }}">
+                                    <td id="percentage_score_performance_task" name="percentage_score_performance_task">{{ record.percentage_score_performance }}</td>
+                                    <td id="weighted_score_performance_task" name="weighted_score_performance_task">{{ record.weighted_score_performance}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
 
         <!-- Quarterly Assessment -->
         <div class="tab-pane fade show" id="quarterly_assessment" role="tabpanel" aria-labelledby="contact-tab">
@@ -157,6 +198,22 @@
                                 <th>PS</th>
                                 <th>WS</th>
                             </tr>
+                            {% if grade_scores %}
+                            <tr>
+                                <td></td>
+                                <th>Highest possible scores</th>
+                                {% for score in grade_scores.0.scores_hps_quarterly %}
+                                    <td class="highest-possible-scores" contenteditable="true">{{ score }}</td>
+                                {% endfor %}
+                                <td id="total_max_quarterly" name="total_max_quarterly">Total</td>
+                                <td>100.00</td>
+                                {% for record in grade_scores %}
+                                {% if forloop.first %}
+                                <td id="quarterly_assessment_weight" name="quarterly_assessment_weight" value="{{ record.weight_input_quarterly }}">{{ record.weight_input_quarterly }}</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endif %}
                         </thead>
                         <tbody>
                             {% for record in grade_scores %}
@@ -164,11 +221,12 @@
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
                                 {% for score in record.quarterly_assessment_scores %}
-                                    <td>{{ score }}</td>
+                                <td class="score-cell" contenteditable="true">{{ score }}</td>
                                 {% endfor %}
-                                <td>{{ record.total_score_quarterly}}</td>
-                                <td>{{ record.percentage_score_quarterly }}</td>
-                                <td>{{ record.weighted_score_quarterly}}</td>
+                                <td id="totalScoreQuarterly" name="totalScoreQuarterly">{{ record.total_score_quarterly}}</td>
+                                <input type="hidden" id="id_total_score_quarterly" value="{{ record.total_score_quarterly }}">
+                                <td id="percentage_score_quarterly_assessment" name="percentage_score_quarterly_assessment">{{ record.percentage_score_quarterly }}</td>
+                                <td id="weighted_score_quarterly_assessment" name="weighted_score_quarterly_assessment">{{ record.weighted_score_quarterly }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -177,6 +235,7 @@
                 {% endif %}
             </div>
         </div>
+
 
         <!-- Initial Grades -->
         <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
@@ -198,7 +257,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ record.student_name }}</td>
-                                <td>{{ record.initial_grades }}</td>
+                                <td id="total_initial_grade" name="total_initial_grade">{{ record.initial_grades }}</td>
                                 <td>{{ record.transmuted_grades }}</td>
                             </tr>
                             {% endfor %}
@@ -210,4 +269,240 @@
         </div>
     </div>
 </section>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+
+
+    
+$(document).ready(function () {
+
+
+    function updateTotalMaxWrittenWorks() {
+            var totalMaxWrittenWorks = 0;
+            $('#written_works .highest-possible-scores[contenteditable="true"]').each(function () {
+                var score = parseFloat($(this).text()) || 0;
+                totalMaxWrittenWorks += score;
+            });
+    
+    
+            $('#total_max_written_works').text(totalMaxWrittenWorks.toFixed(2));
+        }
+    
+    
+        function updateTotalMaxPerformance() {
+            var totalMaxPerformance = 0;
+            $('#performance_task .highest-possible-scores[contenteditable="true"]').each(function () {
+                var score = parseFloat($(this).text()) || 0;
+                totalMaxPerformance += score;
+            });
+    
+    
+            $('#total_max_performance_task').text(totalMaxPerformance.toFixed(2));
+        }
+    
+    
+        function updateTotalQuarterly() {
+            var totalMaxQuarterly = 0;
+            $('#quarterly_assessment .highest-possible-scores[contenteditable="true"]').each(function () {
+                var score = parseFloat($(this).text()) || 0;
+                totalMaxQuarterly += score;
+            });
+    
+    
+            $('#total_max_quarterly').text(totalMaxQuarterly.toFixed(2));
+        }
+        updateTotalMaxWrittenWorks();
+        updateTotalMaxPerformance();
+        updateTotalQuarterly();
+
+    // Add an event listener for the contenteditable cells
+    $('.score-cell[contenteditable="true"]').blur(function () {
+        // Get the updated score, column index, and section identifier
+        var newScore = $(this).text();
+        var columnIndex = $(this).index() -2 ;  // Adjust to 0-based indexing
+        var sectionId = $(this).closest('.tab-pane').attr('id');
+
+        // Get the row, student name, and the corresponding cells
+        var row = $(this).closest('tr');
+        var studentName = row.find('td:eq(1)').text();
+        var totalScoreCell, percentageScoreCell, weightedScoreCell, total_initial_grade_cell;
+
+
+
+        // Determine the corresponding cells based on the section identifier
+        if (sectionId === 'written_works' || sectionId === 'performance_task') {
+            totalScoreCell = row.find('td:eq(12)'); // Use the class to select all total-score cells
+            percentageScoreCell = row.find('td:eq(13)');
+            weightedScoreCell = row.find('td:eq(14)');
+        } else if (sectionId === 'quarterly_assessment'){
+            totalScoreCell = row.find('td:eq(6)'); // Use the class to select all total-score cells
+            percentageScoreCell = row.find('td:eq(7)');
+            weightedScoreCell = row.find('td:eq(8)');
+        } else {
+            return;  // Invalid section identifier
+        }
+
+        var classRecordId = $('input[name="class_record_id"]').val();
+        var scoresHpsData = [];
+        var totalScoreValue = totalScoreCell.text();
+
+        var total_max_written_works =  parseFloat($('#total_max_written_works').text());
+        var written_works_weight = parseFloat($('#written_works_weight').text());
+
+        var total_max_performance_task = parseFloat($('#total_max_performance_task').text());
+        var performance_task_weight = parseFloat($('#performance_task_weight').text());
+
+        var total_max_quarterly = parseFloat($('#total_max_quarterly').text());
+        var quarterly_assessment_weight = parseFloat($('#quarterly_assessment_weight').text());
+
+
+        console.log(totalScoreValue);
+
+        // Get the Highest Possible Scores data from the table
+        row.find('td[contenteditable="true"]').each(function () {
+            scoresHpsData.push($(this).text());
+        });
+
+        // Send an AJAX request to update the score
+        $.ajax({
+            type: "POST",
+            url: "/update_score/",
+            data: {
+                'class_record_id': classRecordId,
+                'student_name': studentName,
+                'new_score': newScore,
+                'column_index': columnIndex,
+                'section_id': sectionId,
+                'scores_hps': scoresHpsData,
+                'total_score_value': totalScoreValue,
+                'total_max_written_works': total_max_written_works,
+                'written_works_weight': written_works_weight,
+                'total_max_performance_task': total_max_performance_task,
+                'performance_task_weight': performance_task_weight,
+                'total_max_quarterly': total_max_quarterly,
+                'quarterly_assessment_weight': quarterly_assessment_weight,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function (data) {
+                // Update the specific cells based on the column index and section identifier
+                if (columnIndex >= 0 && columnIndex <= 9) {
+                    totalScoreCell.text(data.total_score);
+                    totalScoreCell.text(data.total_score);
+                    percentageScoreCell.text(data.percentage_score);
+                    weightedScoreCell.text(data.weighted_score);
+
+                    // Calculate and update the total initial grade
+                    var updatedWeightedScoreWritten = parseFloat($('#weighted_score_max_written_works').text()) || 0;
+                    var updatedWeightedScorePerformance = parseFloat($('#weighted_score_performance_task').text()) || 0;
+                    var updatedWeightedScoreQuarterly = parseFloat($('#weighted_score_quarterly_assessment').text()) || 0;
+
+                    var totalWeightedScore = updatedWeightedScoreWritten + updatedWeightedScorePerformance + updatedWeightedScoreQuarterly;
+                    $('#total_initial_grade').text(totalWeightedScore.toFixed(2));
+
+                    if (sectionId === 'written_works') {
+                        // Calculate the percentage score for written works
+                        var totalMaxWrittenWorks = parseFloat($('#total_max_written_works').text());
+                        var percentageWrittenWorks = (data.total_score / totalMaxWrittenWorks) * 100;
+                        var writtenWorksWeight = parseFloat($('#written_works_weight').text());
+                        var updatedWeightedScoreWritten = (percentageWrittenWorks / 100) * writtenWorksWeight;
+                     
+                        // Update the percentage and weighted score cells for written works
+                        percentageScoreCell.text(percentageWrittenWorks.toFixed(2));
+                        weightedScoreCell.text(updatedWeightedScoreWritten.toFixed(2));
+                    } else if (sectionId === 'performance_task') {
+                        // Calculate the percentage score for performance task
+                        var totalMaxPerformanceTask = parseFloat($('#total_max_performance_task').text());
+                        var percentagePerformanceTask = (data.total_score / totalMaxPerformanceTask) * 100;
+                        var performanceTaskWeight = parseFloat($('#performance_task_weight').text());
+                        var updatedWeightedScorePerformance = (percentagePerformanceTask / 100) * performanceTaskWeight;
+
+                        // Update the percentage and weighted score cells for performance task
+                        percentageScoreCell.text(percentagePerformanceTask.toFixed(2));
+                        weightedScoreCell.text(updatedWeightedScorePerformance.toFixed(2));
+                    } else if (sectionId === 'quarterly_assessment') {
+                        
+                        var totalMaxQuarterly = parseFloat($('#total_max_quarterly').text());
+                        var percentageQuarterly = (data.total_score / totalMaxQuarterly) * 100;
+                        var quarterlyAssessmentWeight = parseFloat($('#quarterly_assessment_weight').text());
+                        var updatedWeightedScoreQuarterly = (percentageQuarterly / 100) * quarterlyAssessmentWeight;
+
+                        // Update the percentage and weighted score cells for quarterly assessment
+                        percentageScoreCell.text(percentageQuarterly.toFixed(2));
+                        weightedScoreCell.text(updatedWeightedScoreQuarterly.toFixed(2));
+                    }
+                    
+                console.log('Update Score Success:', data);
+                console.log('Initial Grade:', totalWeightedScore);  // Logging
+            }},
+            error: function (xhr, status, error) {
+                console.error('Error updating score:', error);  // Logging
+                alert("Error updating score. See console for details.");
+            }
+        });
+    });
+    
+    
+       
+    
+        // Add an event listener for the contenteditable cells in the highest possible scores row
+        $('.highest-possible-scores[contenteditable="true"]').blur(function () {
+            console.log('Blur event triggered for scores.');
+            console.log('Class Record ID:', $('input[name="class_record_id"]').val());
+            console.log('Section ID:', $(this).closest('.tab-pane').attr('id'));
+    
+    
+            updateTotalMaxWrittenWorks();
+            updateTotalMaxPerformance();
+            updateTotalQuarterly();
+            // Get the updated scores data
+            var newScoresData = [];
+            $(this).parent().find('.highest-possible-scores[contenteditable="true"]').each(function () {
+                newScoresData.push($(this).text());
+            });
+            var classRecordId = $('input[name="class_record_id"]').val();
+            var sectionId = $(this).closest('.tab-pane').attr('id');
+    
+    
+            console.log('New Scores Data:', newScoresData);
+            // Send an AJAX request to update the scores
+            $.ajax({
+                type: "POST",
+                url: "/update_highest_possible_scores/",
+                data: {
+                    'class_record_id': classRecordId,
+                    'section_id': sectionId,
+                    'new_hps_data': newScoresData,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function (data) {
+                    if (columnIndex >= 0 && columnIndex <= 9) {
+                        totalScoreCell.text(data.total_score);
+                        percentageScoreCell.text(data.percentage_score);
+                        weightedScoreCell.text(data.weighted_score);
+    
+    
+                        // Update the total max values on the client side
+                        $('#total_max_written_works').text(data.total_ww_hps.toFixed(2));
+                        $('#total_max_performance_task').text(data.total_pt_hps.toFixed(2));
+                        $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
+                    }
+    
+    
+                    console.log('Update Score Success:', data);  
+                },
+                error: function () {
+                    console.error("Error updating scores.");
+                    alert("Error updating score. See console for details.");
+                }
+            });
+        });
+    });
+    </script>
+    
+    
+    
+    
 {% endblock main_content %}

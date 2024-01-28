@@ -1,0 +1,62 @@
+<!-- final_grades.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Grades</title>
+</head>
+<body>
+<a href="{% url 'view_classrecord' %}">View Class Record</a>
+<h1>Final Grades</h1>
+
+{% if final_grades %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Grade</th>
+                <th>Section</th>
+                <th>Subject</th>
+                <th>Teacher</th>
+                <th colspan="4">Quarters</th>
+                <th>Subject - Final Grade</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th>1st Quarter</th>
+                <th>2nd Quarter</th>
+                <th>3rd Quarter</th>
+                <th>4th Quarter</th>
+                <th>Final Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student_data in final_grades %}
+                {% for subject_info in student_data.subjects %}
+                    <tr>
+                        <td>{{ forloop.parentloop.counter }}</td>
+                        <td>{{ student_data.name }}</td>
+                        <td>{{ student_data.grade }}</td>
+                        <td>{{ student_data.section }}</td>
+                        <td>{{ subject_info.name }}</td>
+                        <td>{{ subject_info.teacher_name }}</td>
+                        {% for quarter, grade in subject_info.quarter_grades.items %}
+                            <td>{{ grade|floatformat:2 }}</td>
+                        {% endfor %}
+                        <td>{{ subject_info.final_grade|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No final grades found.</p>
+{% endif %}
+
+</body>
+</html>
