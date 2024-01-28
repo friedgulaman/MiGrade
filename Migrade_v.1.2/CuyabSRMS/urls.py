@@ -2,7 +2,6 @@ from django import forms
 from django.contrib import admin
 from django.urls import URLPattern, path, include
 
-from CuyabSRMS import AdminViews, TeacherViews
 
 from CuyabSRMS import AdminViews, TeacherViews, GenerationViews
 
@@ -87,7 +86,8 @@ urlpatterns = [
     path('subject_list/', AdminViews.subject_list, name='subject_list'),
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', AdminViews.save_edited_data, name='save_edited_data'),
-
+    path('update_subject/<int:subject_id>/', AdminViews.update_subject, name='update_subject'),
+    path('delete_subject/<int:subject_id>/', AdminViews.delete_subject, name='delete_subject'),
 
 
 
@@ -105,7 +105,7 @@ urlpatterns = [
     path('class_record', teacher_required(TeacherViews.class_record), name='class_record'),
     path('get_grades_and_sections', teacher_required(TeacherViews.get_grades_and_sections), name='get_grades_and_sections'),
     path('calculate_grades', teacher_required(TeacherViews.calculate_grades), name='calculate_grades'),
-    path('get_grade_details/', teacher_required(TeacherViews.get_grade_details), name='get_grade_details'),
+    path('get_grade_details', teacher_required(TeacherViews.get_grade_details), name='get_grade_details'),
     path('students', teacher_required(TeacherViews.get_students_by_grade_and_section), name='students'),
     path('calculate_grades', teacher_required(TeacherViews.calculate_grades), name='calculate_grades'),
     path('display_classrecord', teacher_required(TeacherViews.display_classrecord), name='display_classrecord'),
@@ -124,15 +124,16 @@ urlpatterns = [
     path('class_record', TeacherViews.class_record, name='class_record'),
     path('get_grades_and_sections', TeacherViews.get_grades_and_sections, name='get_grades_and_sections'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
-    path('get_grade_details/', TeacherViews.get_grade_details, name='get_grade_details'),
+    path('get_grade_details', TeacherViews.get_grade_details, name='get_grade_details'),
     path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
     path('display_classrecord/<int:class_record_id>/', TeacherViews.display_classrecord, name='display_classrecord'),
     path('display_students', TeacherViews.display_students, name='display_students'),
-    path('view_classrecord', TeacherViews.view_classrecord, name="view_classrecord"),
+    path('delete_student/<str:grade>/<str:section>/',TeacherViews.delete_student, name='delete_student'),
+    path('view_classrecord', TeacherViews.view_classrecord, name='view_classrecord'),
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
-    path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
+    path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
     path('display_final_grades/<str:grade>/<str:section>/<str:subject>/', TeacherViews.display_final_grades, name='display_final_grades'),
     path('update_score/', TeacherViews.update_score, name='update_score'),
     path('update_highest_possible_scores/', TeacherViews.update_highest_possible_scores, name='update_highest_possible_scores'),
@@ -140,15 +141,22 @@ urlpatterns = [
     path('class_records/', TeacherViews.class_records_list, name='class_records_list'),
     path('grade_summary/<str:grade>/<str:section>/<str:quarter>/', TeacherViews.grade_summary, name='grade_summary'),
     path('all_final_grades/<str:grade>/<str:section>/', TeacherViews.display_all_final_grades, name='all_final_grades'),
-
+    path('update_total_max_quarterly/', TeacherViews.update_total_max_quarterly, name='update_total_max_quarterly'),
+    path('validate_score/', TeacherViews.validate_score, name='validate_score'),
+    # path('sf9/', TeacherViews.sf9, name='sf9'),
    # urls.py
 
     # Generation
 
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
+    path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9')
 
-    
+
+
+    # # Student
+    # path('student_list/', StudentViews.student_list, name='student_list'),
+
 ]
 
 

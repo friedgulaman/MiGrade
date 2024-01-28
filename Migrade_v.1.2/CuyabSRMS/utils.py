@@ -1,6 +1,17 @@
 from .models import ActivityLog
+from django.http import HttpResponse
+import openpyxl
+import pandas as pd
+import shutil
+from datetime import datetime
+from openpyxl.styles import Font
+from .models import GradeScores
+
 
 def transmuted_grade(initial_grade):
+                    if initial_grade is None:
+                        return None
+                    
                     if 98.40 <= initial_grade <= 99.99:
                         return 99
                     elif 96.80 <= initial_grade <= 98.39:
@@ -86,3 +97,776 @@ def transmuted_grade(initial_grade):
                     
 def log_activity(user, action, details=''):
     ActivityLog.objects.create(user=user, action=action, details=details)
+
+
+
+# STUDENT NAME
+def write_student_names(sheet, grade_scores_queryset):
+    column_coordinates_student_name = 2
+    row_coordinates_male = 12
+    row_coordinates_female = 64
+
+    while sheet.cell(row=row_coordinates_male, column=column_coordinates_student_name).value:
+        row_coordinates_male += 1
+
+    while sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name).value:
+        row_coordinates_female += 1
+
+    for score_student_name in grade_scores_queryset:
+        if score_student_name.student.sex == 'M':
+            value_to_write = score_student_name.student.name
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_student_name, value=value_to_write)
+            row_coordinates_male += 1
+        elif score_student_name.student.sex == 'F':
+            value_to_write = score_student_name.student.name
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name, value=value_to_write)
+            row_coordinates_female += 1
+
+# HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+def write_scores_hps_written(sheet, grade_scores_queryset):
+
+    # SCORES IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+    column_coordinates_score_hps_written = 6
+    row_coordinates_scores_hps_written = 10
+
+    while sheet.cell(row=row_coordinates_scores_hps_written, column=column_coordinates_score_hps_written).value:
+        column_coordinates_score_hps_written += 1
+
+    for score_hps_written in grade_scores_queryset:
+        values_to_write = score_hps_written.scores_hps_written
+        for value in values_to_write:
+            sheet.cell(row=row_coordinates_scores_hps_written, column=column_coordinates_score_hps_written, value=value)
+            column_coordinates_score_hps_written += 1
+
+        column_coordinates_score_hps_written = 6
+
+    # TOTAL HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+        
+    column_coordinates_total_scores_hps_written = 16
+    row_coordinate_total_scores_hps_written = 10
+
+    for scores_total_ww_hps in grade_scores_queryset:
+        values_to_write = scores_total_ww_hps.total_ww_hps
+
+
+        value_to_write = str(values_to_write) if values_to_write is not None and values_to_write !=0 else ""
+
+        sheet.cell(row=row_coordinate_total_scores_hps_written, column=column_coordinates_total_scores_hps_written, value=value_to_write)
+        column_coordinates_total_scores_hps_written += 1
+
+        column_coordinates_total_scores_hps_written = 16
+
+    # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+    column_coordinate_total_ww_ps = 17
+    row_coordinate_total_ww_ps = 10
+
+    for scores_total_ww_ps in grade_scores_queryset:
+        value_to_write = 100
+
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_total_ww_ps, column=column_coordinate_total_ww_ps, value=value_to_write)
+        column_coordinate_total_ww_ps += 1
+
+        column_coordinate_total_ww_ps = 17
+
+    # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+    column_coordinate_weight_input_written = 18
+    row_coordinate_weight_input_written = 10
+
+    for scores_weight_input_written in grade_scores_queryset:
+        value_to_write = scores_weight_input_written.weight_input_written
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_weight_input_written, column=column_coordinate_weight_input_written, value=value_to_write)
+        column_coordinate_weight_input_written += 1
+
+        column_coordinate_weight_input_written = 18
+
+def write_scores_hps_performance(sheet, grade_scores_queryset):
+    column_coordinate = 19
+    row_coordinate = 10
+
+    while sheet.cell(row=row_coordinate, column=column_coordinate). value:
+        column_coordinate += 1
+
+    for score in grade_scores_queryset:
+        values_to_write = score.scores_hps_performance
+        for value in values_to_write:
+            sheet.cell(row=row_coordinate, column=column_coordinate, value=value)
+            column_coordinate += 1
+
+        column_coordinate = 19
+
+    # TOTAL HIGHEST POSSIBLE SCORE IN PERFORMANCE TASKS
+        
+    column_coordinates_total_scores_hps_performance = 29
+    row_coordinate_total_scores_hps_performance = 10
+
+    for scores_total_pt_hps in grade_scores_queryset:
+        values_to_write = scores_total_pt_hps.total_pt_hps
+
+
+        value_to_write = str(values_to_write) if values_to_write is not None and values_to_write !=0 else ""
+
+        sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
+        column_coordinates_total_scores_hps_performance += 1
+
+        column_coordinates_total_scores_hps_performance = 29
+
+    # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+    column_coordinate_total_pt_ps = 30
+    row_coordinate_total_pt_ps = 10
+
+    for scores_total_pt_ps in grade_scores_queryset:
+        value_to_write = 100
+
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_total_pt_ps, column=column_coordinate_total_pt_ps, value=value_to_write)
+        column_coordinate_total_pt_ps += 1
+
+        column_coordinate_total_pt_ps = 30
+
+    # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE
+    column_coordinate_weight_input_performance = 31
+    row_coordinate_weight_input_performance = 10
+
+    for scores_weight_input_performance in grade_scores_queryset:
+        value_to_write = scores_weight_input_performance.weight_input_performance
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_weight_input_performance, column=column_coordinate_weight_input_performance, value=value_to_write)
+        column_coordinate_weight_input_performance += 1
+
+        column_coordinate_weight_input_performance = 31
+
+def write_scores_hps_quarterly(sheet, grade_scores_queryset):
+
+    # TOTAL HIGHEST POSSIBLE SCORE IN QUARTERLY ASSESSMENT
+        
+    column_coordinates_total_scores_hps_performance = 32
+    row_coordinate_total_scores_hps_performance = 10
+
+    for scores_total_pt_hps in grade_scores_queryset:
+        values_to_write = scores_total_pt_hps.total_qa_hps
+
+
+        value_to_write = str(values_to_write) if values_to_write is not None and values_to_write !=0 else ""
+
+        sheet.cell(row=row_coordinate_total_scores_hps_performance, column=column_coordinates_total_scores_hps_performance, value=value_to_write)
+        column_coordinates_total_scores_hps_performance += 1
+
+        column_coordinates_total_scores_hps_performance = 32
+
+    # PERCENTAGE SCORE IN HIGHEST POSSIBLE SCORE IN QUARTERLY ASSESSMENT
+    column_coordinate_total_pt_ps = 33
+    row_coordinate_total_pt_ps = 10
+
+    for scores_total_pt_ps in grade_scores_queryset:
+        value_to_write = 100
+
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_total_pt_ps, column=column_coordinate_total_pt_ps, value=value_to_write)
+        column_coordinate_total_pt_ps += 1
+
+        column_coordinate_total_pt_ps = 33
+
+    # WEIGHT INPUT IN HIGHEST POSSIBLE SCORE QUARTERLY ASSESSMENT
+    column_coordinate_weight_input_performance = 34
+    row_coordinate_weight_input_performance = 10
+
+    for scores_weight_input_performance in grade_scores_queryset:
+        value_to_write = scores_weight_input_performance.weight_input_quarterly
+        value_to_write = str(value_to_write)
+        sheet.cell(row=row_coordinate_weight_input_performance, column=column_coordinate_weight_input_performance, value=value_to_write)
+        column_coordinate_weight_input_performance += 1
+
+        column_coordinate_weight_input_performance = 34
+
+# def write_quarterly_assessment_score(sheet, grade_scores_queryset):
+#     column_coordinates = 32
+#     row_coordinates = 10
+        
+def write_written_works_scores(sheet, grade_scores_queryset):
+    column_coordinates = 6
+    max_column_index = 15
+    row_coordinates_male = 12
+    row_coordinates_female = 64
+
+    for score in grade_scores_queryset:
+     
+
+        # Get the written_works_scores_list directly from the score object
+        written_works_scores_list = score.written_works_scores
+
+        # Set the row coordinates based on the sex of the student
+        if score.student.sex == 'M':
+
+            for value in written_works_scores_list:
+                value_to_write = str(value)
+
+                sheet.cell(row=row_coordinates_male, column=column_coordinates, value=value_to_write)
+                column_coordinates += 1
+
+                # If we reach the last column, move to the next row
+                if column_coordinates > max_column_index:
+                    column_coordinates = 6  # Reset column index to the starting column
+                    row_coordinates_male += 1  # Move to the next row
+
+        elif score.student.sex == 'F':
+
+            for value in written_works_scores_list:
+                value_to_write = str(value)
+                sheet.cell(row=row_coordinates_female, column=column_coordinates, value=value_to_write)
+                column_coordinates += 1
+
+            # If we reach the last column, move to the next row
+            if column_coordinates > max_column_index:
+                column_coordinates = 6  # Reset column index to the starting column
+                row_coordinates_female += 1  # Move to the next row
+
+        else:
+            print(f"Unknown sex for student: {score.student.name}")
+            continue
+
+
+
+
+    # TOTAL WRITTEN WORKS SCORE
+        column_coordinates_total_written_works_score = 16
+        row_coordinates_total_written_works_score_male = 12
+        row_coordinates_total_written_works_score_female = 64
+
+        for score in grade_scores_queryset:
+            total_written_works_score = score.total_score_written
+
+            # Convert the float value to a string or use an empty string if it's None
+            value_to_write = str(total_written_works_score) if total_written_works_score is not None and total_written_works_score != 0 else ""
+
+            if score.student.sex == 'M':
+                sheet.cell(row=row_coordinates_total_written_works_score_male, column=column_coordinates_total_written_works_score, value=value_to_write)
+
+                column_coordinates_total_written_works_score += 1
+
+                if column_coordinates_total_written_works_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                    column_coordinates_total_written_works_score = 16  # Reset column index to the starting column
+                    row_coordinates_total_written_works_score_male += 1
+
+            elif score.student.sex == 'F':
+                sheet.cell(row=row_coordinates_total_written_works_score_female, column=column_coordinates_total_written_works_score, value=value_to_write)
+
+                column_coordinates_total_written_works_score += 1
+
+                if column_coordinates_total_written_works_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                    column_coordinates_total_written_works_score = 16  # Reset column index to the starting column
+                    row_coordinates_total_written_works_score_female += 1
+            else:
+                print(f"Unknown sex for student: {score.student.name}")
+                continue
+
+        # TOTAL PERCENTAGE SCORE WRITTEN WORKS
+        column_coordinates_percentage_score_written = 17
+        row_coordinates_percentage_score_written_male = 12
+        row_coordinates_percentage_score_written_female = 64
+
+
+        for scores in grade_scores_queryset:
+            percentage_score_written = scores.percentage_score_written
+
+            if percentage_score_written is not None:
+                rounded_percentage_score = round(percentage_score_written, 2)
+                value_to_write = str(rounded_percentage_score)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            if scores.student.sex == 'M':
+
+                sheet.cell(row=row_coordinates_percentage_score_written_male, column=column_coordinates_percentage_score_written, value=value_to_write)
+                column_coordinates_percentage_score_written += 1
+
+                if column_coordinates_percentage_score_written > max_column_index:
+                    column_coordinates_percentage_score_written = 17
+                    row_coordinates_percentage_score_written_male += 1
+
+
+            elif scores.student.sex == 'F':
+                sheet.cell(row= row_coordinates_percentage_score_written_female, column=column_coordinates_percentage_score_written, value=value_to_write)
+                column_coordinates_percentage_score_written += 1
+
+                if column_coordinates_percentage_score_written > max_column_index:
+                    column_coordinates_percentage_score_written = 17
+                    row_coordinates_percentage_score_written_female += 1
+
+            else:
+                print(f"Unknown sex for student: {scores.student.name}")
+                continue
+
+        # TOTAL WEIGHTED SCORE WRITTEN WORKS
+        column_coordinates_weighted_score_written = 18
+        row_coordinates_weighted_score_written_male = 12
+        row_coordinates_weighted_score_written_female = 64
+
+        for scores in grade_scores_queryset:
+            weighted_score_written = scores.weighted_score_written
+
+            if weighted_score_written is not None:
+                rounded_weighted_score_written = round(weighted_score_written, 2)
+                value_to_write = str(rounded_weighted_score_written)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            if scores.student.sex == 'M':  
+                sheet.cell(row=row_coordinates_weighted_score_written_male, column=column_coordinates_weighted_score_written, value=value_to_write)
+                column_coordinates_weighted_score_written += 1
+
+                if column_coordinates_weighted_score_written > max_column_index:
+                    column_coordinates_weighted_score_written = 18
+                    row_coordinates_weighted_score_written_male += 1
+
+
+            elif scores.student.sex == 'F':
+             
+                sheet.cell(row=row_coordinates_weighted_score_written_female, column=column_coordinates_weighted_score_written, value=value_to_write)
+                column_coordinates_weighted_score_written += 1
+
+                if column_coordinates_weighted_score_written > max_column_index:
+                    column_coordinates_weighted_score_written = 18
+                    row_coordinates_weighted_score_written_female += 1
+                
+            else:
+                print(f"Unknown sex for student: {scores.student.name}")
+                continue
+
+def write_performance_tasks_scores(sheet, grade_scores_queryset):
+
+    # PERFORMANCE TASKS SCORES
+    column_coordinates = 19
+    row_coordinates_male = 12
+    row_coordinates_female = 64
+    max_column_index = 28
+
+    for score in grade_scores_queryset:
+        performance_tasks_scores_list = score.performance_task_scores
+
+        for value in performance_tasks_scores_list:
+            value_to_write = str(value)
+
+            if score.student.sex == 'M':  
+                sheet.cell(row=row_coordinates_male, column=column_coordinates, value=value_to_write)
+                column_coordinates += 1
+
+                # If we reach the last column, move to the next row
+                if column_coordinates > max_column_index:  # Update max_column_index with the actual maximum column index
+                    column_coordinates = 19  # Reset column index to the starting column
+                    row_coordinates_male += 1  # Move to the next row
+
+            elif score.student.sex == 'F':
+                sheet.cell(row=row_coordinates_female, column=column_coordinates, value=value_to_write)
+                column_coordinates += 1
+
+                # If we reach the last column, move to the next row
+                if column_coordinates > max_column_index:  # Update max_column_index with the actual maximum column index
+                    column_coordinates = 19  # Reset column index to the starting column
+                    row_coordinates_female += 1  # Move to the next row
+                
+            else:
+                print(f"Unknown sex for student: {score.student.name}")
+                continue
+
+
+        # TOTAL PERFORMANCE TASKS SCORE
+        column_coordinates_total_performance_tasks_score = 29
+        row_coordinates_total_performance_tasks_score_male = 12
+        row_coordinates_total_performance_tasks_score_female = 64
+
+        for scores in grade_scores_queryset:
+            total_performance_tasks_score = scores.total_score_performance
+
+            # Convert the float value to a string or set to empty string if None
+            value_to_write = str(total_performance_tasks_score) if total_performance_tasks_score is not None and total_performance_tasks_score != 0 else ""
+
+            if scores.student.sex == 'M':    
+                sheet.cell(row=row_coordinates_total_performance_tasks_score_male, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+                column_coordinates_total_performance_tasks_score += 1
+
+                if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                    column_coordinates_total_performance_tasks_score = 29  # Reset column index to the starting column
+                    row_coordinates_total_performance_tasks_score_male += 1  
+
+            elif scores.student.sex == 'F':
+                
+                sheet.cell(row=row_coordinates_total_performance_tasks_score_female, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+                column_coordinates_total_performance_tasks_score += 1
+
+                if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                    column_coordinates_total_performance_tasks_score = 29  # Reset column index to the starting column
+                    row_coordinates_total_performance_tasks_score_female += 1  
+
+            else:
+                print(f"Unknown sex for student: {scores.student.name}")
+                continue
+
+
+            # TOTAL PERCENTAGE SCORE WRITTEN WORKS
+            column_coordinates_percentage_score_performance = 30
+            row_coordinates_percentage_score_performance_male = 12
+            row_coordinates_percentage_score_performance_female = 64
+
+
+            for scores in grade_scores_queryset:
+                percentage_score_performance = scores.percentage_score_performance
+
+                # Check if the value is not None before rounding
+                if percentage_score_performance is not None:
+                    rounded_percentage_score = round(percentage_score_performance, 2)
+                    value_to_write = str(rounded_percentage_score)
+                else:
+                    value_to_write = ""  # or any other placeholder for None
+
+                if scores.student.sex == 'M':    
+                    sheet.cell(row=row_coordinates_percentage_score_performance_male, column=column_coordinates_percentage_score_performance, value=value_to_write)
+                    column_coordinates_percentage_score_performance += 1
+
+                    if column_coordinates_percentage_score_performance > max_column_index:
+                        column_coordinates_percentage_score_performance = 30
+                        row_coordinates_percentage_score_performance_male += 1
+
+                elif scores.student.sex == 'F':
+                    sheet.cell(row=row_coordinates_percentage_score_performance_female, column=column_coordinates_percentage_score_performance, value=value_to_write)
+                    column_coordinates_percentage_score_performance += 1
+
+                    if column_coordinates_percentage_score_performance > max_column_index:
+                        column_coordinates_percentage_score_performance = 30
+                        row_coordinates_percentage_score_performance_female += 1
+                
+                else:
+                    print(f"Unknown sex for student: {scores.student.name}")
+                    continue
+
+
+        # TOTAL WEIGHTED SCORE WRITTEN WORKS
+        column_coordinates_weighted_score_performance = 31
+        row_coordinates_weighted_score_performance_male = 12
+        row_coordinates_weighted_score_performance_female = 64
+        
+
+        for scores in grade_scores_queryset:
+            weighted_score_performance = scores.weighted_score_performance
+
+            # Check if the value is not None before rounding
+            if weighted_score_performance is not None:
+                rounded_weighted_score_performance = round(weighted_score_performance, 2)
+                value_to_write = str(rounded_weighted_score_performance)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            if scores.student.sex == 'M':    
+
+                sheet.cell(row=row_coordinates_weighted_score_performance_male, column=column_coordinates_weighted_score_performance, value=value_to_write)
+                column_coordinates_weighted_score_performance += 1
+
+                if column_coordinates_weighted_score_performance > max_column_index:
+                    column_coordinates_weighted_score_performance = 31
+                    row_coordinates_weighted_score_performance_male += 1
+
+            elif scores.student.sex == 'F':
+
+                sheet.cell(row=row_coordinates_weighted_score_performance_female, column=column_coordinates_weighted_score_performance, value=value_to_write)
+                column_coordinates_weighted_score_performance += 1
+
+                if column_coordinates_weighted_score_performance > max_column_index:
+                    column_coordinates_weighted_score_performance = 31
+                    row_coordinates_weighted_score_performance_female += 1
+
+            else:
+                print(f"Unknown sex for student: {scores.student.name}")
+                continue
+
+
+def write_quarterly_assessment_scores(sheet, grade_scores_queryset):
+    #    # PERFORMANCE TASKS SCORES
+    # column_coordinates = 19
+    # row_coordinates = 12
+    max_column_index = 31
+
+    # for score in grade_scores_queryset:
+    #     performance_tasks_scores_list = score.performance_task_scores
+
+    #     for value in performance_tasks_scores_list:
+    #         value_to_write = str(value)
+    #         sheet.cell(row=row_coordinates, column=column_coordinates, value=value_to_write)
+    #         column_coordinates += 1
+
+    #         # If we reach the last column, move to the next row
+    #         if column_coordinates > max_column_index:  # Update max_column_index with the actual maximum column index
+    #             column_coordinates = 19  # Reset column index to the starting column
+    #             row_coordinates += 1  # Move to the next row
+
+    # TOTAL QUARTERLY ASSESSMENT SCORE
+    column_coordinates_total_performance_tasks_score = 32
+    row_coordinates_total_performance_tasks_score_male = 12
+    row_coordinates_total_performance_tasks_score_female = 64
+
+    for scores in grade_scores_queryset:
+        total_performance_tasks_score = scores.total_score_quarterly
+
+        # Convert the float value to a string or set to empty string if None
+        value_to_write = str(total_performance_tasks_score) if total_performance_tasks_score is not None and total_performance_tasks_score != 0 else ""
+
+        
+        if scores.student.sex == 'M':    
+            sheet.cell(row=row_coordinates_total_performance_tasks_score_male, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
+
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 32  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score_male += 1 
+
+        elif scores.student.sex == 'F':
+            sheet.cell(row=row_coordinates_total_performance_tasks_score_female, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
+
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 32  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score_female += 1 
+            
+        else:
+            print(f"Unknown sex for student: {scores.student.name}")
+            continue
+        
+
+        # TOTAL PERCENTAGE SCORE WRITTEN WORKS
+        column_coordinates_percentage_score_performance = 33
+        row_coordinates_percentage_score_performance_male = 12
+        row_coordinates_percentage_score_performance_female = 64
+
+
+        for scores in grade_scores_queryset:
+            percentage_score_quarterly = scores.percentage_score_quarterly
+
+            # Check if the value is not None before rounding
+            if percentage_score_quarterly is not None:
+                rounded_percentage_score = round(percentage_score_quarterly, 2)
+                value_to_write = str(rounded_percentage_score)
+            else:
+                value_to_write = ""  # or any other placeholder for None
+
+            if scores.student.sex == 'M':    
+
+                sheet.cell(row=row_coordinates_percentage_score_performance_male, column=column_coordinates_percentage_score_performance, value=value_to_write)
+                column_coordinates_percentage_score_performance += 1
+
+                if column_coordinates_percentage_score_performance > max_column_index:
+                    column_coordinates_percentage_score_performance = 33
+                    row_coordinates_percentage_score_performance_male += 1
+
+            elif scores.student.sex == 'F':
+
+                sheet.cell(row=row_coordinates_percentage_score_performance_female, column=column_coordinates_percentage_score_performance, value=value_to_write)
+                column_coordinates_percentage_score_performance += 1
+
+                if column_coordinates_percentage_score_performance > max_column_index:
+                    column_coordinates_percentage_score_performance = 33
+                    row_coordinates_percentage_score_performance_female += 1
+            
+            else:
+                print(f"Unknown sex for student: {scores.student.name}")
+                continue
+
+
+    # TOTAL WEIGHTED SCORE WRITTEN WORKS
+    column_coordinates_weighted_score_performance = 34
+    row_coordinates_weighted_score_performance_male = 12
+    row_coordinates_weighted_score_performance_female = 64
+
+    for scores in grade_scores_queryset:
+        weighted_score_performance = scores.weighted_score_quarterly
+
+        # Check if the value is not None before rounding
+        if weighted_score_performance is not None:
+            rounded_weighted_score_performance = round(weighted_score_performance, 2)
+            value_to_write = str(rounded_weighted_score_performance)
+        else:
+            value_to_write = ""  # or any other placeholder for None
+
+        if scores.student.sex == 'M':    
+            sheet.cell(row=row_coordinates_weighted_score_performance_male, column=column_coordinates_weighted_score_performance, value=value_to_write)
+            column_coordinates_weighted_score_performance += 1
+
+            if column_coordinates_weighted_score_performance > max_column_index:
+                column_coordinates_weighted_score_performance = 34
+                row_coordinates_weighted_score_performance_male += 1
+
+        elif scores.student.sex == 'F':
+            sheet.cell(row=row_coordinates_weighted_score_performance_female, column=column_coordinates_weighted_score_performance, value=value_to_write)
+            column_coordinates_weighted_score_performance += 1
+
+            if column_coordinates_weighted_score_performance > max_column_index:
+                column_coordinates_weighted_score_performance = 34
+                row_coordinates_weighted_score_performance_female += 1
+                
+
+        else:
+            print(f"Unknown sex for student: {scores.student.name}")
+            continue
+
+    
+
+def write_initial_grade(sheet, grade_scores_queryset):
+    max_column_index = 35
+    column_coordinates_total_performance_tasks_score = 35
+    row_coordinates_total_performance_tasks_score_male = 12
+    row_coordinates_total_performance_tasks_score_female = 64
+
+    for scores in grade_scores_queryset:
+        total_performance_tasks_score = scores.initial_grades
+
+        if total_performance_tasks_score is not None:
+            rounded_performance_tasks_score = round(total_performance_tasks_score, 2)
+            value_to_write = str(rounded_performance_tasks_score)
+        else:
+            value_to_write = ""
+
+        if scores.student.sex == 'M':  
+            sheet.cell(row=row_coordinates_total_performance_tasks_score_male, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
+
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 35  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score_male += 1    
+
+        elif scores.student.sex == 'F':
+
+            sheet.cell(row=row_coordinates_total_performance_tasks_score_female, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
+
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 35  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score_female += 1  
+            
+        else:
+            print(f"Unknown sex for student: {scores.student.name}")
+            continue
+
+
+
+def write_transmuted_grade(sheet, grade_scores_queryset):
+    max_column_index = 36
+    column_coordinates_total_performance_tasks_score = 36 
+    row_coordinates_total_performance_tasks_score_male = 12
+    row_coordinates_total_performance_tasks_score_female = 64
+
+    for scores in grade_scores_queryset:
+        total_performance_tasks_score = scores.transmuted_grades
+
+                # Convert the float value to a string
+        if total_performance_tasks_score is not None:
+            rounded_performance_tasks_score = round(total_performance_tasks_score, 2)
+            value_to_write = str(rounded_performance_tasks_score)
+        else:
+            value_to_write = ""
+
+        if scores.student.sex == 'M':    
+            
+            sheet.cell(row=row_coordinates_total_performance_tasks_score_male, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
+
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 36  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score_male += 1  
+
+        elif scores.student.sex == 'F':
+
+            sheet.cell(row=row_coordinates_total_performance_tasks_score_female, column=column_coordinates_total_performance_tasks_score, value=value_to_write)
+            column_coordinates_total_performance_tasks_score += 1
+
+            if column_coordinates_total_performance_tasks_score > max_column_index:  # Update max_column_index with the actual maximum column index
+                column_coordinates_total_performance_tasks_score = 36  # Reset column index to the starting column
+                row_coordinates_total_performance_tasks_score_female += 1  
+            
+        else:
+            print(f"Unknown sex for student: {scores.student.name}")
+            continue
+
+def write_sf9_data(front_sheet, student):
+    # Assuming Y16 is the cell where you want to write the student's name
+    column_coordinates_student_name = 17  # Column Y
+    row_coordinates_student_name = 22
+    column_coordinates_lrn = 19
+    row_coordinates_lrn = 24
+    row_coordinates_sex = 26
+    column_coordinates_sex = 20
+    row_coordinates_grade = 28
+    column_coordinates_grade = 17
+    row_coordinates_section = 28
+    column_coordinates_section = 20
+    row_coordinates_age = 26
+    column_coordinates_age = 17
+    # birthdate = student.birthday
+
+    # Get the current date
+    current_date = datetime.now()
+
+    bold_font = Font(bold=True, name='Aparajita')
+
+    # Calculate the age
+    # age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
+
+    # Write the student's name to the specified cell
+    front_sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
+    front_sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
+    front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
+    # sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
+    print(student.name)
+
+
+
+
+
+
+
+def write_sf9_grades(back_sheet, final_grade):
+    # Assuming the subject you want is "Filipino"
+    subject_name = "AP"
+
+    # Construct attribute names for each quarter and final grade based on the subject name
+    attribute_names = {
+        '1st Quarter': f'{subject_name.lower().replace(" ", "_")}_1st_quarter',
+        '2nd Quarter': f'{subject_name.lower().replace(" ", "_")}_2nd_quarter',
+        '3rd Quarter': f'{subject_name.lower().replace(" ", "_")}_3rd_quarter',
+        '4th Quarter': f'{subject_name.lower().replace(" ", "_")}_4th_quarter',
+        'Final Grade': f'{subject_name.lower().replace(" ", "_")}_final_grade',
+    }
+
+    # Get the scores for the specified subject
+    filipino_1st_quarter_score = getattr(final_grade, attribute_names['1st Quarter'], None)
+    filipino_2nd_quarter_score = getattr(final_grade, attribute_names['2nd Quarter'], None)
+    filipino_3rd_quarter_score = getattr(final_grade, attribute_names['3rd Quarter'], None)
+    filipino_4th_quarter_score = getattr(final_grade, attribute_names['4th Quarter'], None)
+    filipino_final_grade_score = getattr(final_grade, attribute_names['Final Grade'], None)
+
+
+    print(filipino_1st_quarter_score)
+    print(filipino_2nd_quarter_score)
+    print(filipino_final_grade_score)
+
+    # Specify the coordinates for writing the score
+    
+    row_coordinates_filipino= 7
+    column_coordinates_filipino_1st_quarter = 14
+    column_coordinates_filipino_2nd_quarter = 15
+    column_coordinates_filipino_3rd_quarter = 16
+    column_coordinates_filipino_4th_quarter = 17
+    column_coordinates_filipino_final_grade = 18
+
+    # Write the score to the specified cell
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_1st_quarter, value=filipino_1st_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_2nd_quarter, value=filipino_2nd_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_3rd_quarter, value=filipino_3rd_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_4th_quarter, value=filipino_4th_quarter_score)
+    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_final_grade, value=filipino_final_grade_score)
+
+
+
+
+
+
