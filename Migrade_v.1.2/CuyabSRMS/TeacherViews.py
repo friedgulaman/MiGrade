@@ -737,6 +737,11 @@ def display_classrecord(request, class_record_id=None):
     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
 
+
+def display_classrecord(request):
+    grade_scores = GradeScores.objects.all()
+    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'grade_scores': grade_scores})
+
     # If class_record_id is not provided, you may want to handle this case differently
     # For example, you can provide a list of available ClassRecord objects for the user to choose from
 
@@ -749,7 +754,7 @@ def display_classrecord(request, class_record_id=None):
     }
 
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
-    
+
 def view_classrecord(request):
     
     # Assuming the user is logged in
@@ -762,7 +767,6 @@ def view_classrecord(request):
 
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher)
-
 
         context = {
             'class_records': class_records,
@@ -837,6 +841,21 @@ def student_list_for_class(request):
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
 
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        grade = request.GET.get('grade')
+        section = request.GET.get('section')
+        
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
+
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section)
+
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
@@ -845,6 +864,7 @@ def student_list_for_class(request):
             .order_by('-general_average')[:10]
             
         )
+
     context = {
         'grade': grade,
         'section': section,
