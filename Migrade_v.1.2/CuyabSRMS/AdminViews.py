@@ -68,6 +68,19 @@ def home_admin(request):
 def add_teacher(request):
     return render(request, 'admin_template/add_teacher.html')
 
+def grade_and_section(request):
+    grades = Grade.objects.all()
+    sections = Section.objects.all()
+    total_student = Section.objects.aggregate(total_students=models.Sum('total_students'))
+
+    context = {
+        'grades': grades,
+        'sections': sections,
+        'total_student': total_student['total_students'] if total_student else 0,
+    }
+
+    return render(request, 'admin_template/manage_grade_and_section.html', context)
+
 def teachers(request):
     grades = Grade.objects.all()
     teachers = Teacher.objects.all()
@@ -164,48 +177,6 @@ def add_teacher_save(request):
 
 
 
-
-def submit_grade_section(request):
-    if request.method == 'POST':
-        # Lists to store created grades and sections
-        created_grades = []
-        created_sections = []
-
-        # Iterate over the form data
-        for key, value in request.POST.items():
-            if key.startswith('grade_'):
-                grade_name = value
-                section_key = f'section_{key.split("_")[1]}[]'
-                sections = request.POST.getlist(section_key)
-
-                # Check if the grade already exists in the database
-                grade, grade_created = Grade.objects.get_or_create(name=grade_name)
-
-                # Create or update sections associated with the grade
-                for section_name in sections:
-                    section, section_created = Section.objects.get_or_create(name=section_name, grade=grade)
-                    created_sections.append(section.name)
-
-                # Append the created or retrieved grade name to the list
-                if grade_created:
-                    created_grades.append(grade.name)
-
-        # Add a success message
-        messages.success(request, 'Form data submitted successfully.')
-
-    # Retrieve the grades queryset
-    grades = Grade.objects.all()
-
-    # Retrieve all sections for each grade
-    sections = Section.objects.all()
-
-    # Include the grades and sections in the context
-    context = {
-        'grades': grades,
-        'sections': sections,
-    }
-    
-    return render(request, 'admin_template/add_grade_section.html', context)
 
 @require_GET
 def get_sections(request):

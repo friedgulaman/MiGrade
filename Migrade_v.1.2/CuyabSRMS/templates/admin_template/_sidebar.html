@@ -18,17 +18,11 @@
           </li>
           <!-- Grade Levels & Sections -->
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-gradesection" aria-expanded="false" aria-controls="ui-teacher">
+            <a class="nav-link" href="{% url 'grade_and_section' %}">
               <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">Grade Levels & Sections </span>
+              <span class="menu-title">Grades & Sections </span>
               <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-gradesection">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'add_grade_section' %}">Add Grade and Section</a></li>
-                
-              </ul>
-            </div>
           </li>
           <!-- Students -->
           <li class="nav-item">

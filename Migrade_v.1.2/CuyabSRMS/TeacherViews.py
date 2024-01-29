@@ -396,6 +396,9 @@ def save_json_data(request):
                 # Create or update the Section object
                 section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
 
+                # Increment the total_students field for the respective section
+                section.total_students += 1
+                section.save()
                 # Initialize or get the existing grade_section dictionary
                 teacher.grade_section = teacher.grade_section or {}
 

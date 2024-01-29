@@ -70,7 +70,8 @@ class Section(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='sections')
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')
-
+    total_students = models.PositiveIntegerField(default=0)
+    
     def __str__(self):
         return self.name
 
