@@ -10,6 +10,7 @@ from django.conf import settings
 from datetime import datetime
 import re
 from django.utils import timezone
+from django.db import transaction
 
 
 class CustomUser(AbstractUser):
@@ -101,6 +102,161 @@ class ClassRecord(models.Model):
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+    def archive(self):
+        try:
+            with transaction.atomic():
+                # Archive related GradeScores
+                for gradescore in self.gradescores.all():
+                    ArchivedGradeScores.objects.create(
+                        archived_class_record=self,
+                        student=gradescore.student,
+                        scores_hps_written=gradescore.scores_hps_written,
+                        scores_hps_performance=gradescore.scores_hps_performance,
+                        total_ww_hps=gradescore.total_ww_hps,
+                        total_pt_hps=gradescore.total_pt_hps,
+                        total_qa_hps=gradescore.total_qa_hps,
+                        written_works_scores=gradescore.written_works_scores,
+                        performance_task_scores=gradescore.performance_task_scores,
+                        initial_grades=gradescore.initial_grades,
+                        transmuted_grades=gradescore.transmuted_grades,
+                        total_score_written=gradescore.total_score_written,
+                        total_max_score_written=gradescore.total_max_score_written,
+                        total_score_performance=gradescore.total_score_performance,
+                        total_max_score_performance=gradescore.total_max_score_performance,
+                        total_score_quarterly=gradescore.total_score_quarterly,
+                        total_max_score_quarterly=gradescore.total_max_score_quarterly,
+                        percentage_score_written=gradescore.percentage_score_written,
+                        percentage_score_performance=gradescore.percentage_score_performance,
+                        percentage_score_quarterly=gradescore.percentage_score_quarterly,
+                        weight_input_written=gradescore.weight_input_written,
+                        weight_input_performance=gradescore.weight_input_performance,
+                        weight_input_quarterly=gradescore.weight_input_quarterly,
+                        weighted_score_written=gradescore.weighted_score_written,
+                        weighted_score_performance=gradescore.weighted_score_performance,
+                        weighted_score_quarterly=gradescore.weighted_score_quarterly,
+                    )
+
+                # Archive ClassRecord
+                ArchivedClassRecord.objects.create(
+                    name=self.name,
+                    grade=self.grade,
+                    section=self.section,
+                    subject=self.subject,
+                    teacher=self.teacher,
+                    quarters=self.quarters,
+                    date_archived=self.date_modified,
+                )
+
+                # Delete the ClassRecord instance after archiving
+                self.delete()
+
+                return True  # Return True if archiving is successful
+        except Exception as e:
+            print(f"Error occurred during archiving: {str(e)}")
+            return False  # Return False if archiving fails
+
+
+
+class ArchivedClassRecord(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    grade = models.CharField(max_length=50, blank=True, null=True)
+    section = models.CharField(max_length=50, blank=True, null=True)
+    subject = models.CharField(max_length=50, blank=True, null=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    quarters = models.CharField(max_length=50, blank=True, null=True)
+    date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
+
+    def restore(self):
+        try:
+            with transaction.atomic():
+                # Create a new instance of the ClassRecord using archived data
+                class_record = ClassRecord.objects.create(
+                    name=self.name,
+                    grade=self.grade,
+                    section=self.section,
+                    subject=self.subject,
+                    teacher=self.teacher,
+                    quarters=self.quarters
+                )
+                
+                # Restore related objects (e.g., GradeScores)
+                self.restore_related_objects(class_record)
+
+                # Delete the archived record after restoration
+                self.delete()
+                
+                # Return the restored ClassRecord instance
+                return class_record
+        except Exception as e:
+            # Handle any exceptions that occur during restoration
+            # You can log the error or handle it based on your application's requirements
+            print(f"Error occurred during restoration: {str(e)}")
+            return None
+
+    def restore_related_objects(self, class_record):
+        # Restore related GradeScores
+        archived_grade_scores = self.archived_gradescores.all()
+        for archived_grade_score in archived_grade_scores:
+            GradeScores.objects.create(
+                student=archived_grade_score.student,
+                class_record=class_record,
+                scores_hps_written=archived_grade_score.scores_hps_written,
+                scores_hps_performance=archived_grade_score.scores_hps_performance,
+                total_ww_hps=archived_grade_score.total_ww_hps,
+                total_pt_hps=archived_grade_score.total_pt_hps,
+                total_qa_hps=archived_grade_score.total_qa_hps,
+                written_works_scores=archived_grade_score.written_works_scores,
+                performance_task_scores=archived_grade_score.performance_task_scores,
+                initial_grades=archived_grade_score.initial_grades,
+                transmuted_grades=archived_grade_score.transmuted_grades,
+                total_score_written=archived_grade_score.total_score_written,
+                total_max_score_written=archived_grade_score.total_max_score_written,
+                total_score_performance=archived_grade_score.total_score_performance,
+                total_max_score_performance=archived_grade_score.total_max_score_performance,
+                total_score_quarterly=archived_grade_score.total_score_quarterly,
+                total_max_score_quarterly=archived_grade_score.total_max_score_quarterly,
+                percentage_score_written=archived_grade_score.percentage_score_written,
+                percentage_score_performance=archived_grade_score.percentage_score_performance,
+                percentage_score_quarterly=archived_grade_score.percentage_score_quarterly,
+                weight_input_written=archived_grade_score.weight_input_written,
+                weight_input_performance=archived_grade_score.weight_input_performance,
+                weight_input_quarterly=archived_grade_score.weight_input_quarterly,
+                weighted_score_written=archived_grade_score.weighted_score_written,
+                weighted_score_performance=archived_grade_score.weighted_score_performance,
+                weighted_score_quarterly=archived_grade_score.weighted_score_quarterly,
+            )
+
+class ArchivedGradeScores(models.Model):
+    archived_class_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE, related_name='archived_gradescores')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    scores_hps_written = models.JSONField()
+    scores_hps_performance = models.JSONField()
+    total_ww_hps = models.FloatField(null=True, blank=True)
+    total_pt_hps = models.FloatField(null=True, blank=True)
+    total_qa_hps = models.FloatField(null=True, blank=True)
+    written_works_scores = models.JSONField()
+    performance_task_scores = models.JSONField()
+    initial_grades = models.FloatField(null=True, blank=True)
+    transmuted_grades = models.FloatField(null=True, blank=True)
+    total_score_written = models.FloatField(null=True, blank=True)
+    total_max_score_written = models.FloatField(null=True, blank=True)
+    total_score_performance = models.FloatField(null=True, blank=True)
+    total_max_score_performance = models.FloatField(null=True, blank=True)
+    total_score_quarterly = models.FloatField(null=True, blank=True) 
+    total_max_score_quarterly = models.FloatField(null=True, blank=True)
+    percentage_score_written = models.FloatField(null=True, blank=True)
+    percentage_score_performance = models.FloatField(null=True, blank=True)
+    percentage_score_quarterly = models.FloatField(null=True, blank=True)
+    weight_input_written = models.FloatField(null=True, blank=True)
+    weight_input_performance = models.FloatField(null=True, blank=True)
+    weight_input_quarterly = models.FloatField(null=True, blank=True)
+    weighted_score_written = models.FloatField(null=True, blank=True)
+    weighted_score_performance = models.FloatField(null=True, blank=True)
+    weighted_score_quarterly = models.FloatField(null=True, blank=True)
+
+
+
 class GradeScores(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
@@ -153,7 +309,6 @@ class GradeScores(models.Model):
     
     
 
-    
 class FinalGrade(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -282,28 +437,3 @@ class ActivityLog(models.Model):
         return f'{self.user.username} - {self.action}'
 
 
-class ArchivedClassRecord(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, unique=True)
-    grade = models.CharField(max_length=50, blank=True, null=True)
-    section = models.CharField(max_length=50, blank=True, null=True)
-    subject = models.CharField(max_length=50, blank=True, null=True)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    quarters = models.CharField(max_length=50, blank=True, null=True)
-    date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
-
-    def restore(self):
-        """
-        Method to restore the archived class record.
-        """
-        # Create a new instance of the ClassRecord using archived data
-        class_record = ClassRecord.objects.create(
-            name=self.name,
-            grade=self.grade,
-            section=self.section,
-            subject=self.subject,
-            teacher=self.teacher,
-            quarters=self.quarters
-        )
-        # Delete the archived record after restoration
-        self.delete()

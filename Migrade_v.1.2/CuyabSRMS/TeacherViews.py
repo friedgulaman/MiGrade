@@ -1,7 +1,6 @@
 
 import json
 import os
-
 import io
 import re
 
@@ -9,13 +8,11 @@ from CuyabSRMS.utils import transmuted_grade
 from django import forms
 import openpyxl
 from django.contrib import messages
-from django.shortcuts import render
 from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from django.contrib.auth import get_user_model  # Add this import statement
-from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.http import HttpResponse
-from django.http import JsonResponse
+
 from django.shortcuts import render, redirect
 import pandas as pd
 from googleapiclient.discovery import build
@@ -1005,9 +1002,7 @@ def get_subjects(student):
     return [subject for subject in subjects if subject]
 
 
-from django.http import HttpResponse
-from django.shortcuts import render
-import json
+
 
 def calculate_save_final_grades(grade, section, subject, students, subjects):
     quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
