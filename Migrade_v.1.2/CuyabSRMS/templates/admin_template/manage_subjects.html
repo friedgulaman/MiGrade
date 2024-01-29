@@ -1,0 +1,385 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Add Teacher
+{% endblock page_title %}
+{% block main_content %}
+<style>
+    .subject-list th {
+        max-width: 130px;
+        text-wrap: wrap;
+    }
+
+    .delete-btn {
+        text-decoration: none;
+        cursor: pointer;
+        color: red;
+        border: none;
+        background: none;
+        transition: color 0.3s;
+        /* Smooth color transition */
+
+        /* Shake animation on hover */
+        position: relative;
+    }
+
+    .delete-btn:hover {
+        color: darkred;
+        /* Change color on hover */
+        animation: shake 0.5s;
+    }
+
+    /* Define the shake animation */
+    @keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        50% {
+            transform: translateX(5px);
+        }
+
+        75% {
+            transform: translateX(-5px);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+</style>
+<section class=" container p-4">
+    <h3 class="mb-4 ">Manage Subjects</h3>
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs text" role="tablist">
+            <li class="nav-ite m">
+                <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
+                    aria-controls="create" aria-selected="true">Create</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+                    aria-selected="false">Display</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#update" role="tab"
+                    aria-selected="false">Update</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#delete" role="tab"
+                    aria-selected="false">Delete</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content tab-content-basic">
+        <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+            <div class="container p-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">ADD SUBJECT</h4>
+                        <form method="post" id="addSubjectForm">
+
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label for="name">Subject Name:</label>
+                                <input type="text" name="name" class="form-control" id="name" placeholder="Subject Name"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="written_works_percentage">Written Works Percentage:</label>
+                                <input type="number" name="written_works_percentage" class="form-control"
+                                    id="written_works_percentage" min="0" max="100"
+                                    placeholder="Written Works Percentage" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="performance_task_percentage">Performance Task Percentage:</label>
+                                <input type="number" name="performance_task_percentage" class="form-control"
+                                    id="performance_task_percentage" min="0" max="100"
+                                    placeholder="Performance Task Percentage" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="quarterly_assessment_percentage">Quarterly Assessment Percentage:</label>
+                                <input type="number" name="quarterly_assessment_percentage" class="form-control"
+                                    id="quarterly_assessment_percentage" min="0" max="100"
+                                    placeholder="Quarterly Assessment Percentage" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary me-2">Add Subject</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+
+
+        <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+            <div class="container-fluid table-responsive subject-list">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">List of Subjects</h4>
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Subject Name</th>
+                                    <th>Written Works Percentage</th>
+                                    <th>Performance Task Percentage</th>
+                                    <th>Quarterly Assessment Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subjects %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ subject.name }}</td>
+                                    <td>{{ subject.written_works_percentage }}%</td>
+                                    <td>{{ subject.performance_task_percentage }}%</td>
+                                    <td>{{ subject.quarterly_assessment_percentage }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade show" id="update" role="tabpanel" aria-labelledby="update">
+            <div class="container-fluid">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Update Subjects</h4>
+                  <table class="table table-hover text-center">
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Subject Name</th>
+                        <th>Written Works Percentage</th>
+                        <th>Performance Task Percentage</th>
+                        <th>Quarterly Assessment Percentage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for subject in subjects %}
+                        <tr>
+                          <td>{{ forloop.counter }}</td>
+                          <td>
+                            <a href="#" class="subject-link" data-toggle="modal" data-target="#updateModal" data-subject-id="{{ subject.id }}">
+                              {{ subject.name }}
+                            </a>
+                          </td>
+                          <td>{{ subject.written_works_percentage }}%</td>
+                          <td>{{ subject.performance_task_percentage }}%</td>
+                          <td>{{ subject.quarterly_assessment_percentage }}%</td>
+
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Update Subject Modal -->
+          <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="updateModalLabel">Update Subject Information</h5>
+                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form id="updateForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="subjectId" name="subjectId">
+                    <div class="form-group">
+                      <label for="subjectName">Subject Name:</label>
+                      <input type="text" class="form-control" id="subjectName" name="subjectName" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="writtenWorksPercentage">Written Works Percentage:</label>
+                      <input type="number" class="form-control" id="writtenWorksPercentage" name="writtenWorksPercentage" min="0" max="100" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="performanceTaskPercentage">Performance Task Percentage:</label>
+                      <input type="number" class="form-control" id="performanceTaskPercentage" name="performanceTaskPercentage" min="0" max="100" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="quarterlyAssessmentPercentage">Quarterly Assessment Percentage:</label>
+                      <input type="number" class="form-control" id="quarterlyAssessmentPercentage" name="quarterlyAssessmentPercentage" min="0" max="100" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+
+
+        <div class="tab-pane fade show" id="delete" role="tabpanel" aria-labelledby="delete">
+            <div class="container-fluid table-responsive subject-list">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Delete Subjects</h4>
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Subject Name</th>
+                                    <th>Written Works Percentage</th>
+                                    <th>Performance Task Percentage</th>
+                                    <th>Quarterly Assessment Percentage</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subjects %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ subject.name }}</td>
+                                    <td>{{ subject.written_works_percentage }}%</td>
+                                    <td>{{ subject.performance_task_percentage }}%</td>
+                                    <td>{{ subject.quarterly_assessment_percentage }}%</td>
+                                    <td>
+
+                                        <button type="button" class="delete-btn" data-subject-id="{{ subject.id }}" data-subject-name="{{ subject.name }}">
+                                            <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+</section>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#addSubjectForm').submit(function (event) {
+            event.preventDefault();
+
+            $.ajax({
+                type: 'POST',
+                url: '{% url "add_subject" %}',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        alert('Subject added successfully with ID: ' + response.subject_id);
+                        window.location.href = '{% url "subjects" %}';
+                    } else {
+                        alert('Failed to add subject. Error: ' + response.error_message);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while processing the request.');
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+      // Handle click on subject link
+      $('.subject-link').click(function () {
+        var subjectId = $(this).data('subject-id');
+        $('#updateModal').modal('show');
+        $.ajax({
+          url: '/get-subject-data/',  // Replace with the actual URL for getting subject data
+          type: 'GET',
+          data: { 'subjectId': subjectId },
+          success: function (data) {
+            // Populate the modal with existing data
+            $('#subjectId').val(data.id);
+            $('#subjectName').val(data.name);
+            $('#writtenWorksPercentage').val(data.written_works_percentage);
+            $('#performanceTaskPercentage').val(data.performance_task_percentage);
+            $('#quarterlyAssessmentPercentage').val(data.quarterly_assessment_percentage);
+          },
+          error: function (error) {
+            console.error('Error fetching subject data:', error);
+          }
+        });
+      });
+  
+      // Handle form submission for updating subject
+      $('#updateForm').submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+          url: '/update_subject',  // Replace with the actual URL for updating subject
+          type: 'POST',
+          data: $(this).serialize(),
+          success: function (data) {
+            // Update the subject information in the table
+            var subjectId = $('#subjectId').val();
+            var newName = $('#subjectName').val();
+            $(`.subject-link[data-subject-id="${subjectId}"]`).text(newName);
+            alert('Updated successfully to ' + newName);
+            window.location.href = '{% url "subjects" %}';
+  
+            // Close the modal
+            $('#updateModal').modal('hide');
+          },
+          error: function (error) {
+            console.error('Error updating subject data:', error);
+          }
+        });
+      });
+    });
+  </script>  
+  <script>
+    $(document).ready(function () {
+    // Handle click on delete button
+    $('.delete-btn').click(function () {
+        // Extract subject information from the button data attributes
+        var subjectId = $(this).data('subject-id');
+        var subjectName = $(this).data('subject-name');
+
+        // Ask for confirmation before deleting
+        var confirmDelete = confirm('Are you sure you want to delete the subject "' + subjectName + '"?');
+
+        if (confirmDelete) {
+            // Send AJAX request to delete the subject
+            $.ajax({
+                url: "{% url 'delete_subject' %}",
+                type: 'POST',
+                data: {
+                    'subjectId': subjectId
+                },
+                success: function (data) {
+                    // Remove the deleted subject row from the table
+                    $(`.subject-row[data-subject-id="${subjectId}"]`).remove();
+                    alert('Subject deleted successfully');
+                    window.location.href = '{% url "subjects" %}';
+                },
+                error: function (error) {
+                    console.error('Error deleting subject:', error);
+                }
+            });
+        }
+    });
+});
+
+  </script>
+{% endblock main_content %}

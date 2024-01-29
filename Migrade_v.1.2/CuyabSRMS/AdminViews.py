@@ -96,6 +96,86 @@ def teachers(request):
     }
     return render(request, 'admin_template/manage_teacher.html', context)
 
+def subjects(request):
+    subjects = Subject.objects.all()
+
+    context = {
+        'subjects': subjects,
+    }
+    return render(request, 'admin_template/manage_subjects.html', context)
+
+def get_subject_data(request):
+    subject_id = request.GET.get('subjectId')
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    # Return subject data as JSON
+    data = {
+        'id': subject.id,
+        'name': subject.name,
+        'written_works_percentage': subject.written_works_percentage,
+        'performance_task_percentage': subject.performance_task_percentage,
+        'quarterly_assessment_percentage': subject.quarterly_assessment_percentage,
+    }
+
+    return JsonResponse(data)
+def add_subject(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        written_works_percentage = request.POST.get('written_works_percentage')
+        performance_task_percentage = request.POST.get('performance_task_percentage')
+        quarterly_assessment_percentage = request.POST.get('quarterly_assessment_percentage')
+
+        if name and written_works_percentage is not None and performance_task_percentage is not None and quarterly_assessment_percentage is not None:
+            subject = Subject.objects.create(
+                name=name,
+                written_works_percentage=written_works_percentage,
+                performance_task_percentage=performance_task_percentage,
+                quarterly_assessment_percentage=quarterly_assessment_percentage
+            )
+            return JsonResponse({'success': True, 'subject_id': subject.id})
+
+    return JsonResponse({'success': False, 'error_message': 'Invalid form data'})
+
+
+def subject_list(request):
+    subjects = Subject.objects.all()
+    return render(request, 'admin_template/subject_list.html', {'subjects': subjects})
+
+def update_subject(request):
+    if request.method == 'POST':
+        subject_id = request.POST.get('subjectId')
+        subject_name = request.POST.get('subjectName')
+        written_works_percentage = request.POST.get('writtenWorksPercentage')
+        performance_task_percentage = request.POST.get('performanceTaskPercentage')
+        quarterly_assessment_percentage = request.POST.get('quarterlyAssessmentPercentage')
+
+        subject = get_object_or_404(Subject, id=subject_id)
+        subject.name = subject_name
+        subject.written_works_percentage = written_works_percentage
+        subject.performance_task_percentage = performance_task_percentage
+        subject.quarterly_assessment_percentage = quarterly_assessment_percentage
+        subject.save()
+
+        # Return a success response
+        return JsonResponse({'success': True, 'message': 'Subject updated successfully'})
+
+    # Return a failure response if not a POST request
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+@csrf_exempt
+@login_required
+def delete_subject(request):
+    if request.method == 'POST':
+        subject_id = request.POST.get('subjectId')
+
+        subject = get_object_or_404(Subject, id=subject_id)
+        subject.delete()
+
+        # Return a success response
+        return JsonResponse({'success': True, 'message': 'Subject deleted successfully'})
+
+    # Return a failure response if not a POST request
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
 @require_GET
 def get_teacher_data(request):
     teacher_id = request.GET.get('teacherId')
@@ -544,37 +624,5 @@ def sf10_views(request):
     return render(request, 'admin_template/sf10.html', context)
 
 
-def add_subject(request):
-    if request.method == 'POST':
-        form = SubjectForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('subject_list')  # Redirect to a page showing the list of subjects
 
-    else:
-        form = SubjectForm()
-
-    return render(request, 'admin_template/add_subject.html', {'form': form})
-
-def subject_list(request):
-    subjects = Subject.objects.all()
-    return render(request, 'admin_template/subject_list.html', {'subjects': subjects})
-
-def update_subject(request, subject_id):
-    subject = get_object_or_404(Subject, id=subject_id)
-    if request.method == 'POST':
-        form = SubjectForm(request.POST, instance=subject)
-        if form.is_valid():
-            form.save()
-            return redirect('subject_list')
-    else:
-        form = SubjectForm(instance=subject)
-    return render(request, 'admin_template/update_subject.html', {'form': form})
-
-def delete_subject(request, subject_id):
-    subject = get_object_or_404(Subject, id=subject_id)
-    if request.method == 'POST':
-        subject.delete()
-        return redirect('subject_list')
-    return render(request, 'admin_template/delete_subject_confirm.html', {'subject': subject})
 

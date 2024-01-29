@@ -54,6 +54,10 @@ urlpatterns = [
     path('home_admin', admin_required(AdminViews.home_admin), name="home_admin"),
     path('teachers', admin_required(AdminViews.teachers), name="teachers"),
     path('grade_and_section', admin_required(AdminViews.grade_and_section), name="grade_and_section"),
+    path('subjects', admin_required(AdminViews.subjects), name="subjects"),
+    path('get-subject-data/', admin_required(AdminViews.get_subject_data), name='get_subject_data'),
+    path('update_subject', admin_required(AdminViews.update_subject), name='update_subject'),
+    path('delete_subject/', admin_required(AdminViews.delete_subject), name='delete_subject'),
     path('get-teacher-data/', admin_required(AdminViews.get_teacher_data), name='get_teacher_data'),
     path('update-teacher/', admin_required(AdminViews.update_teacher), name='update_teacher'),
     path('delete-teacher/', admin_required(AdminViews.delete_teacher), name='delete_teacher'),
@@ -83,8 +87,7 @@ urlpatterns = [
     path('subject_list/', AdminViews.subject_list, name='subject_list'),
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', AdminViews.save_edited_data, name='save_edited_data'),
-    path('update_subject/<int:subject_id>/', AdminViews.update_subject, name='update_subject'),
-    path('delete_subject/<int:subject_id>/', AdminViews.delete_subject, name='delete_subject'),
+
 
 
 
