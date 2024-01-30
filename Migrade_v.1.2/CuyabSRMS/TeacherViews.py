@@ -927,10 +927,10 @@ def grade_summary(request, grade, section, quarter):
     # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
-        '1st Quarter': 'quarter1',
-        '2nd Quarter': 'quarter2',
-        '3rd Quarter': 'quarter3',
-        '4th Quarter': 'quarter4',
+        '1st Quarter': '1st Quarter',
+        '2nd Quarter': '2nd Quarter',
+        '3rd Quarter': '3rd Quarter',
+        '4th Quarter': '4th Quarter',
     }
 
     # Fetch subject-wise grades for each student
@@ -941,6 +941,7 @@ def grade_summary(request, grade, section, quarter):
         for subject in subjects:
             db_quarter = quarter_mapping.get(quarter, quarter)
             subject_grade = get_subject_score(student.student, subject, db_quarter)
+            print(subject_grade)
             subject_grades[student.student.name][subject] = subject_grade
             if subject_grade is not None:
                 grades.append(subject_grade)
@@ -979,18 +980,39 @@ def grade_summary(request, grade, section, quarter):
 
 def get_subject_score(student, subject, quarter):
     try:
+        # Fetch the FinalGrade instance for the given student, subject, and quarter
         grade_instance = FinalGrade.objects.get(
-            student_id=student,  # Update this line
+            student=student,
             grade=student.grade,
             section=student.section,
-            subject=subject,
         )
-        return getattr(grade_instance, quarter, None)
-    except FinalGrade.DoesNotExist:
+        
+        # Access the final_grade JSONField and retrieve the score for the given subject and quarter
+        final_grade_data = json.loads(grade_instance.final_grade)  # Assuming final_grade is a JSON string
+        
+        # Loop through each entry in final_grade_data
+        for entry in final_grade_data:
+            if entry.get('subject') == subject:
+                # Check if the quarter grades exist for the subject
+                quarter_grades = entry.get('quarter_grades', {})
+                subject_score = quarter_grades.get(quarter)
+                return subject_score  # Return the score if found
+        
+        # If subject or quarter not found, return None
         return None
+
+    except FinalGrade.DoesNotExist:
+        # Handle the case where the FinalGrade record does not exist
+        return None
+
     except MultipleObjectsReturned:
-        # Handle the case where multiple objects are returned
+        # Handle the case where multiple FinalGrade records are returned
         # For example, you can log a warning or return a default value
+        return None
+
+    except json.JSONDecodeError:
+        # Handle JSON decoding error
+        # Log the error or return None
         return None
     
 def get_subjects(student):

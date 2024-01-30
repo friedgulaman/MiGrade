@@ -291,7 +291,7 @@ class ArchivedClassRecord(models.Model):
 
 class ArchivedGradeScores(models.Model):
     archived_class_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE, related_name='archived_gradescores')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
     scores_hps_written = models.JSONField()
     scores_hps_performance = models.JSONField()
     total_ww_hps = models.FloatField(null=True, blank=True)
@@ -405,9 +405,8 @@ class FinalGrade(models.Model):
             return None
     
 class ArchivedFinalGrade(models.Model):
-    original_final_grade = models.OneToOneField('FinalGrade', on_delete=models.CASCADE, related_name='archived_final_grade')
     archived_teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
-    archived_student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    archived_student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
     archived_grade = models.CharField(max_length=50)
     archived_section = models.CharField(max_length=50)
     archived_final_grade = models.JSONField()
@@ -454,7 +453,25 @@ class QuarterlyGrades(models.Model):
     def __str__(self):
         return f"{self.student.name}'s grades for {self.quarter}"
 
-    
+class ArchivedGeneralAverage(models.Model):
+    archived_student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
+    archived_grade = models.CharField(max_length=50)
+    archived_section = models.CharField(max_length=50)
+    archived_general_average = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Archived General Average: {self.archived_student.name} - {self.archived_grade} - {self.archived_section} - General Average: {self.archived_general_average}"
+
+
+class ArchivedQuarterlyGrades(models.Model):
+    archived_student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
+    archived_quarter = models.CharField(max_length=100)
+    archived_grades = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"Archived {self.archived_student.name}'s grades for {self.archived_quarter}"
+
+
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.user_type == 2:  # Check if the user is a teacher
