@@ -156,6 +156,11 @@ urlpatterns = [
     path('archived-records/', ArchivedViews.archived_records, name='archived_records'),
     path('restore-archived-record/<int:archived_record_id>/', ArchivedViews.restore_archived_record, name='restore_archived_record'),
     path('archive-class-record/<int:class_record_id>/', ArchivedViews.archive_class_record, name='archive_class_record'),
+    path('archive_students/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
+    path('restore_archived_students/<str:grade>/<str:section>/', ArchivedViews.restore_archived_students, name='restore_archived_students'),
+
+
+
    
 
     # # Student

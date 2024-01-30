@@ -60,6 +60,68 @@ class Student(models.Model):
     def __str__(self):
         return self.name
     
+    def archive(self):
+        # Create an instance of ArchivedStudent before deleting the student
+        archived_student = ArchivedStudent.objects.create(
+            original_student=self,
+            archived_name=self.name,
+            archived_lrn=self.lrn,
+            archived_sex=self.sex,
+            archived_birthday=self.birthday,
+            archived_teacher=self.teacher,
+            archived_school_id=self.school_id,
+            archived_division=self.division,
+            archived_district=self.district,
+            archived_school_name=self.school_name,
+            archived_school_year=self.school_year,
+            archived_grade=self.grade,
+            archived_section=self.section
+        )
+
+        # Delete the student after archiving
+        self.delete()
+
+        # Return the archived student instance
+        return archived_student
+
+class ArchivedStudent(models.Model):
+    archived_name = models.CharField(max_length=255)
+    archived_lrn = models.CharField(max_length=12)
+    archived_sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
+    archived_birthday = models.CharField(max_length=10, default='N/A')
+    archived_teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
+    archived_school_id = models.CharField(max_length=50, null=True, blank=True)
+    archived_division = models.CharField(max_length=255, null=True, blank=True)
+    archived_district = models.CharField(max_length=255, null=True, blank=True)
+    archived_school_name = models.CharField(max_length=255, null=True, blank=True)
+    archived_school_year = models.CharField(max_length=50, null=True, blank=True)
+    archived_grade = models.CharField(max_length=50, null=True, blank=True) 
+    archived_section = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return f"Archived Student: {self.archived_name}"
+    
+    def restore(self):
+        # Create a new Student instance based on archived data
+        restored_student = Student.objects.create(
+            name=self.archived_name,
+            lrn=self.archived_lrn,
+            sex=self.archived_sex,
+            birthday=self.archived_birthday,
+            teacher=self.archived_teacher,
+            school_id=self.archived_school_id,
+            division=self.archived_division,
+            district=self.archived_district,
+            school_name=self.archived_school_name,
+            school_year=self.archived_school_year,
+            grade=self.archived_grade,
+            section=self.archived_section
+            # Populate other fields as needed
+        )
+        # Delete the ArchivedStudent instance after restoration
+        self.delete()
+        return restored_student
+    
 class Grade(models.Model):
     name = models.CharField(max_length=50)
 
@@ -318,6 +380,62 @@ class FinalGrade(models.Model):
 
     def __str__(self):
         return f"FinalGrade: {self.student.name} - {self.subject}, Teacher: {self.teacher}"
+
+    def archive(self):
+        try:
+            with transaction.atomic():
+                # Create an instance of ArchivedFinalGrade before deleting the original final grade
+                archived_final_grade = ArchivedFinalGrade.objects.create(
+                    original_final_grade=self,
+                    archived_teacher=self.teacher,
+                    archived_student=self.student,
+                    archived_grade=self.grade,
+                    archived_section=self.section,
+                    archived_final_grade=self.final_grade
+                )
+
+                # Delete the original final grade instance after archiving
+                self.delete()
+
+                # Return the archived final grade instance
+                return archived_final_grade
+        except Exception as e:
+            # Handle exceptions if necessary
+            print(f"Error occurred during archiving FinalGrade: {str(e)}")
+            return None
+    
+class ArchivedFinalGrade(models.Model):
+    original_final_grade = models.OneToOneField('FinalGrade', on_delete=models.CASCADE, related_name='archived_final_grade')
+    archived_teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
+    archived_student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    archived_grade = models.CharField(max_length=50)
+    archived_section = models.CharField(max_length=50)
+    archived_final_grade = models.JSONField()
+
+    def __str__(self):
+        return f"Archived FinalGrade: {self.archived_student.name} - {self.archived_section}, Teacher: {self.archived_teacher}"
+    
+    def restore(self):
+        try:
+            with transaction.atomic():
+                # Create a new instance of FinalGrade using archived data
+                final_grade = FinalGrade.objects.create(
+                    teacher=self.archived_teacher,
+                    student=self.archived_student,
+                    grade=self.archived_grade,
+                    section=self.archived_section,
+                    final_grade=self.archived_final_grade
+                )
+
+                # Delete the archived final grade instance after restoration
+                self.delete()
+
+                # Return the restored FinalGrade instance
+                return final_grade
+        except Exception as e:
+            # Handle exceptions if necessary
+            print(f"Error occurred during restoration of ArchivedFinalGrade: {str(e)}")
+            return None
 
 class GeneralAverage(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)

@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.db import transaction
-from .models import ClassRecord, ArchivedClassRecord, GradeScores, ArchivedGradeScores
-
+from .models import ClassRecord, ArchivedClassRecord, GradeScores, ArchivedGradeScores, Student, ArchivedStudent, FinalGrade, ArchivedFinalGrade
+import logging
 
 def archive_class_record(request, class_record_id):
     
@@ -122,8 +122,103 @@ def restore_archived_record(request, archived_record_id):
     except Exception as e:
         print(f"Error occurred during restoration: {str(e)}")
         return redirect('error_page')  # Redirect to an error page or handle as needed
-    
 
 def archived_records(request):
     archived_records = ArchivedClassRecord.objects.all()
-    return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records})
+    archived_students =  ArchivedStudent.objects.values('archived_grade', 'archived_section').distinct()
+    return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records, 'archived_students': archived_students})
+
+# def archived_records(request):
+#     archived_records = ArchivedClassRecord.objects.all()
+#     return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records})
+
+
+def archive_students_with_grade_and_section(request, grade, section):
+    try:
+        with transaction.atomic():
+            # Get the students with the specified grade and section
+            students_to_archive = Student.objects.filter(grade=grade, section=section, teacher=request.user.teacher)
+
+            # Iterate over each student and archive them
+            for student in students_to_archive:
+                # Archive the student
+                archived_student = ArchivedStudent.objects.create(
+                    archived_name=student.name,
+                    archived_lrn=student.lrn,
+                    archived_sex=student.sex,
+                    archived_birthday=student.birthday,
+                    archived_teacher=student.teacher,
+                    archived_school_id=student.school_id,
+                    archived_division=student.division,
+                    archived_district=student.district,
+                    archived_school_name=student.school_name,
+                    archived_school_year=student.school_year,
+                    archived_grade=student.grade,
+                    archived_section=student.section
+                )
+
+                # Log the archived student
+                print(f"Archived student: {archived_student.archived_name}")
+
+                # Archive associated FinalGrade records
+                final_grades_to_archive = FinalGrade.objects.filter(student=student)
+                for final_grade in final_grades_to_archive:
+                    archived_final_grade = ArchivedFinalGrade.objects.create(
+                        original_final_grade=final_grade,
+                        archived_teacher=final_grade.teacher,
+                        archived_student=final_grade.student,
+                        archived_grade=final_grade.grade,
+                        archived_section=final_grade.section,
+                        archived_final_grade=final_grade.final_grade
+                    )
+                    # Log the archived final grade
+                    print(f"Archived final grade for {archived_final_grade.archived_student.name}")
+
+
+            # Now delete the original students after archiving
+            students_to_archive.delete()
+
+            referer_url = request.META.get('HTTP_REFERER')
+            if referer_url:
+                # Redirect to the referer URL
+                return redirect(referer_url)
+            else:
+                # If referer URL is not available, redirect to a default URL
+                return redirect('archived_records')  # Redirect to the archived records page
+
+    except Exception as e:
+        # Handle exceptions gracefully
+        print(f"Error occurred during archiving: {str(e)}")
+        return redirect('error_page')  # Redirect to an error page or handle as needed
+    
+
+def restore_archived_students(request, grade, section):
+    try:
+        # Get the archived students based on grade and section
+        archived_students = ArchivedStudent.objects.filter(archived_grade=grade, archived_section=section)
+
+        # Restore each archived student
+        for archived_student in archived_students:
+            # Create a new student instance using the archived student's data
+            restored_student = Student.objects.create(
+                name=archived_student.archived_name,
+                lrn=archived_student.archived_lrn,
+                sex=archived_student.archived_sex,
+                birthday=archived_student.archived_birthday,
+                teacher=archived_student.archived_teacher,
+                school_id=archived_student.archived_school_id,
+                division=archived_student.archived_division,
+                district=archived_student.archived_district,
+                school_name=archived_student.archived_school_name,
+                school_year=archived_student.archived_school_year,
+                grade=archived_student.archived_grade,
+                section=archived_student.archived_section
+            )
+
+            # Delete the archived student instance
+            archived_student.delete()
+
+        return redirect('archived_records')
+    except Exception as e:
+        print(f"Error occurred during restoration: {str(e)}")
+        return redirect('error_page')  # Redirect to an error page or handle as needed

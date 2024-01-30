@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>Archived Records</h1>
+    <h2>Archived Class Records</h2>
     <table>
         <thead>
             <tr>
@@ -35,6 +36,30 @@
                 </td>
             </tr>
             {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Archived Students</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Grade</th>
+                <th>Section</th>
+                <!-- Add more columns if needed -->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for student in archived_students %}
+                <td>{{ student.archived_grade }} </td>
+                <td>{{ student.archived_section }}</td>
+           
+                <td>
+                    <!-- Add a button/link to restore the archived students -->
+                    <a href="{% url 'restore_archived_students' student.archived_grade student.archived_section %}">Restore</a>
+                </td>
+                {% endfor %}
+            </tr>
         </tbody>
     </table>
 </body>
