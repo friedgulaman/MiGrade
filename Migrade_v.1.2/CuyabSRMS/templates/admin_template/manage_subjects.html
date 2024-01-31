@@ -1,6 +1,6 @@
 {% extends 'admin_template/admin_base.html' %}
 {% block page_title %}
-Add Teacher
+Manage Subjects
 {% endblock page_title %}
 {% block main_content %}
 <style>
@@ -27,7 +27,9 @@ Add Teacher
         /* Change color on hover */
         animation: shake 0.5s;
     }
-
+    .subject-link{
+      text-decoration: none;
+    }
     /* Define the shake animation */
     @keyframes shake {
         0% {
@@ -130,7 +132,7 @@ Add Teacher
                         <table class="table table-hover text-center">
                             <thead>
                                 <tr>
-                                    <th>No.</th>
+                                    <th>ID</th>
                                     <th>Subject Name</th>
                                     <th>Written Works Percentage</th>
                                     <th>Performance Task Percentage</th>
@@ -139,8 +141,8 @@ Add Teacher
                             </thead>
                             <tbody>
                                 {% for subject in subjects %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
+                                <tr class="text-muted">
+                                    <td>{{ subject.id }}</td>
                                     <td>{{ subject.name }}</td>
                                     <td>{{ subject.written_works_percentage }}%</td>
                                     <td>{{ subject.performance_task_percentage }}%</td>

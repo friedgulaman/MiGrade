@@ -96,6 +96,137 @@ def teachers(request):
     }
     return render(request, 'admin_template/manage_teacher.html', context)
 
+@require_GET
+def get_teacher_data(request):
+    teacher_id = request.GET.get('teacherId')
+    teacher = get_object_or_404(Teacher, id=teacher_id)
+    data = {
+        'id': teacher.id,
+        'first_name': teacher.user.first_name,
+        'last_name': teacher.user.last_name,
+    }
+    return JsonResponse(data)
+def students(request):
+    # Get all students from the database
+    students = Student.objects.all()
+    
+    # Get distinct combinations of grade and section
+    unique_combinations = students.values('grade', 'section').distinct()
+
+    # Prepare context to pass to the template
+    context = {
+        'unique_grades_sections': unique_combinations,
+    }
+
+    # Render the template with the context
+    return render(request, 'admin_template/students.html', context)
+def get_student_details(request):
+    student_id = request.GET.get('studentId')
+    student = get_object_or_404(Student, id=student_id)
+    data = {
+        'name': student.name,
+    }
+    return JsonResponse(data)
+
+@require_POST
+def update_student_details(request):
+    student_id = request.POST.get('student_id')
+    student_name = request.POST.get('student_name')
+    # Add other form fields here as needed
+
+    # Retrieve the student from the database
+    student = get_object_or_404(Student, id=student_id)
+
+    # Update the student details
+    student.name = student_name
+    # Update other fields as needed
+    student.save()
+
+    # Return a success response
+    return JsonResponse({'message': 'Student details updated successfully'})
+
+@require_POST
+def delete_student(request):
+    student_id = request.POST.get('student_id')
+    student = get_object_or_404(Student, id=student_id)
+    student.delete()
+
+    return JsonResponse({'message': 'Student deleted successfully'})
+
+def student_lists(request):
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
+
+    # Fetch students based on grade and section
+    students = Student.objects.filter(grade=grade, section=section)
+
+    context = {
+        'grade': grade,
+        'section': section,
+        'students': students,
+
+    }
+    return render(request, 'admin_template/manage_students.html', context)
+
+def student_lists_grade_section(request):
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
+
+    # Fetch students based on grade and section
+    students = Student.objects.filter(grade=grade, section=section)
+
+    context = {
+        'grade': grade,
+        'section': section,
+        'students': students,
+
+    }
+    return render(request, 'admin_template/manage_students.html', context)
+def add_student(request):
+    if request.method == 'POST':
+        # Retrieve form data
+        name = request.POST.get('name')
+        lrn = request.POST.get('lrn')
+        sex = request.POST.get('sex')
+        birthday = request.POST.get('birthday')
+
+
+        # Get default values based on grade and section
+        grade = request.POST.get('grade')
+        section = request.POST.get('section')
+        default_values = Student.objects.filter(grade=grade, section=section).first()
+
+        # Create a new student with default values
+        new_student = Student(
+            grade=grade,
+            section=section,
+            name=name,
+            lrn=lrn,
+            sex=sex,
+            birthday=birthday,
+            teacher_id=default_values.teacher_id if default_values else None,
+            school_id=default_values.school_id if default_values else None,
+            school_name=default_values.school_name if default_values else None,
+            school_year=default_values.school_year if default_values else None,
+            division=default_values.division if default_values else None,
+            district=default_values.district if default_values else None,
+            # Add other fields as needed
+        )
+        new_student.save()
+
+        redirect_url = reverse('student_lists', kwargs={'grade': grade, 'section': section})
+
+    # Fetch default values for the form
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
+    default_values = Student.objects.filter(grade=grade, section=section).first()
+
+    context = {
+        'default_values': default_values,
+    }
+    return render(request, 'admin_template/manage_students.html', context)
+
+
 def subjects(request):
     subjects = Subject.objects.all()
 
@@ -176,16 +307,9 @@ def delete_subject(request):
     # Return a failure response if not a POST request
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
-@require_GET
-def get_teacher_data(request):
-    teacher_id = request.GET.get('teacherId')
-    teacher = get_object_or_404(Teacher, id=teacher_id)
-    data = {
-        'id': teacher.id,
-        'first_name': teacher.user.first_name,
-        'last_name': teacher.user.last_name,
-    }
-    return JsonResponse(data)
+def quarters(request):
+    return render(request, 'admin_template/manage_quarters.html')
+
 
 @require_POST
 def update_teacher(request):
@@ -527,6 +651,7 @@ def upload_documents_ocr(request):
         form = DocumentUploadForm()
 
     return render(request, 'admin_template/upload_documents.html', {'form': form})
+
 
 
 

@@ -15,6 +15,13 @@
               <span class="menu-title">Teacher</span>
             </a>
           </li>
+          <!-- Students -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'students' %}" >
+              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <span class="menu-title">Students</span>
+            </a>
+          </li>
           <!-- Grade Levels & Sections -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'grade_and_section' %}">
@@ -22,24 +29,18 @@
               <span class="menu-title">Grades & Sections </span>
             </a>
           </li>
-          <!-- Students -->
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-students" aria-expanded="false" aria-controls="ui-students">
-              <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">Students</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-students">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="pages/ui-features/buttons.html">Add Students</a></li>
-              </ul>
-            </div>
-          </li>
           <!-- SUBJECT -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'subjects' %}" >
               <i class="menu-icon mdi mdi-floor-plan"></i>
               <span class="menu-title">Subjects</span>
+            </a>
+          </li>
+          <!-- QUARTERS -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'quarters' %}" >
+              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <span class="menu-title">Quarters</span>
             </a>
           </li>
           <!-- Uploading Docs -->

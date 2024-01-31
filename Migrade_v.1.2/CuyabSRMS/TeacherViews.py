@@ -857,23 +857,6 @@ def student_list_for_class(request):
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
-        
-        
-        # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section)
-
-
-    # Check if the user is a teacher
-    if user.is_authenticated and hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
-        teacher = user.teacher
-
-        grade = request.GET.get('grade')
-        section = request.GET.get('section')
-        
-        # Filter class records based on the teacher
-        class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
-
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
 

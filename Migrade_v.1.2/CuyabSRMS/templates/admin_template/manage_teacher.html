@@ -1,6 +1,6 @@
 {% extends 'admin_template/admin_base.html' %}
 {% block page_title %}
-Add Teacher
+Manage Teachers
 {% endblock page_title %}
 {% block main_content %}
 <style>
@@ -29,7 +29,9 @@ Add Teacher
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
-
+.teacher-link{
+  text-decoration: none;
+}
 </style>
 <section class=" container p-4">
     <h3 class="mb-4 ">Manage Teacher</h3>
@@ -108,7 +110,6 @@ Add Teacher
                 </div>
                 
                   <button type="submit" class="btn btn-primary me-2">Submit</button>
-                  <button class="btn btn-light">Cancel</button>
                 </form>
               </div>
             </div>
@@ -133,7 +134,7 @@ Add Teacher
                                 {% for teacher in teachers %}
                                 {% if teacher.sections.all %}
                                 {% for section in teacher.sections.all %}
-                                    <tr>
+                                    <tr class="text-muted">
                                         <td>{{ teacher.user.id }}</td>
                                         <td>
                                             {{ teacher.user.first_name }} {{ teacher.user.last_name }}
@@ -143,8 +144,8 @@ Add Teacher
                                                 <td class="text-muted">{{ section.name }}</td>
                                             {% endfor %}
                                         {% else %}
-                                        <td>{{ teacher.user.id }}</td>
-                                        <td>
+                                        <td class="text-muted">{{ teacher.user.id }}</td>
+                                        <td class="text-muted">
                                             {{ teacher.user.first_name }} {{ teacher.user.last_name }}
                                         </td>
                                             <td class="text-muted">Not assigned</td>
@@ -184,7 +185,7 @@ Add Teacher
                                             {{ teacher.user.first_name }} {{ teacher.user.last_name }}
                                         </a>
                                     </td>
-                                    <td>{{ teacher.user.email }}</td>
+                                    <td class="text-muted">{{ teacher.user.email }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

@@ -38,11 +38,6 @@ urlpatterns = [
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
     path('teachers_activity', views.teachers_activity, name='teachers_activity'),
     path('admin_activity', views.admin_activity, name='admin_activity'),
-    
-
-    
-
-
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
@@ -55,6 +50,14 @@ urlpatterns = [
     path('teachers', admin_required(AdminViews.teachers), name="teachers"),
     path('grade_and_section', admin_required(AdminViews.grade_and_section), name="grade_and_section"),
     path('subjects', admin_required(AdminViews.subjects), name="subjects"),
+    path('students', admin_required(AdminViews.students), name="students"),
+    path('add_student', admin_required(AdminViews.add_student), name="add_student"),
+    path('student_lists', admin_required(AdminViews.student_lists), name="student_lists"),
+    path('get_student_details', admin_required(AdminViews.get_student_details), name='get_student_details'),
+    path('update_student_details', admin_required(AdminViews.update_student_details), name='update_student_details'),
+    path('delete_student', admin_required(AdminViews.delete_student), name='delete_student'),
+    path('quarters', admin_required(AdminViews.quarters), name="quarters"),
+    path('student_lists/<str:grade>/<str:section>/', admin_required(AdminViews.student_lists_grade_section), name='student_lists'),
     path('get-subject-data/', admin_required(AdminViews.get_subject_data), name='get_subject_data'),
     path('update_subject', admin_required(AdminViews.update_subject), name='update_subject'),
     path('delete_subject/', admin_required(AdminViews.delete_subject), name='delete_subject'),
@@ -72,21 +75,8 @@ urlpatterns = [
     path('sf10/', admin_required(AdminViews.sf10_views), name='sf10_view'),
     path('add_subject/', admin_required(AdminViews.add_subject), name='add_subject'),
     path('subject_list/', admin_required(AdminViews.subject_list), name='subject_list'),
-
-    # Admin
-    path('home_admin', AdminViews.home_admin, name="home_admin"),
-    path('add_teacher', AdminViews.add_teacher, name="add_teacher"),
-    path('add_teacher_save', AdminViews.add_teacher_save, name="add_teacher_save"),
-    path('get_sections/', AdminViews.get_sections, name='get_sections'),
-    path('assign_teacher', AdminViews.assign_teacher, name="assign_teacher"),
-    path('save_assignment/', AdminViews.save_assignment, name='save_assignment'),
-    path('search/', AdminViews.search_students, name='search_students'),
-    path('upload_documents/', AdminViews.upload_documents_ocr, name='upload_documents'),
-    path('sf10/', AdminViews.sf10_views, name='sf10_view'),
-    path('add_subject/', AdminViews.add_subject, name='add_subject'),
-    path('subject_list/', AdminViews.subject_list, name='subject_list'),
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
-    path('save/', AdminViews.save_edited_data, name='save_edited_data'),
+    path('save/', admin_required( AdminViews.save_edited_data), name='save_edited_data'),
 
 
 
