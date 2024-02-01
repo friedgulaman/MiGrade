@@ -1,93 +1,108 @@
 {% extends 'admin_template/admin_base.html' %}
+
 {% block page_title %}
 upload
 {% endblock page_title %}
+
 {% block main_content %}
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    .table-container {
+        max-height: 500px;
+        /* Set your desired maximum height */
+        overflow-y: auto;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processed Document</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
 
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: center;
-        }
+    th,
+    td {
+        font-size: small;
+        padding: 10px;
+        text-align: center;
 
-        th {
-            background-color: #f2f2f2;
-        }
+    }
 
-        td {
-            background-color: #ffffff;
-        }
-        .search-form {
-            margin-bottom: 20px;
-        }
+    td {
+        color: #737F8B;
+    }
 
-        .search-input {
-            padding: 8px;
-        }
+    .search-icon {
+        border: none;
+        color: #1F3BB3;
+        background: transparent;
+    }
 
-        .search-button {
-            padding: 8px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-    <form class="search-form" method="GET" action="">
-        <input type="text" name="search" class="search-input" placeholder="Search..." value="{{ search_query }}">
-        <button type="submit" class="search-button">Search</button>
-    </form>
+    .search-icon:hover {
+        color: #000000;
+        border-radius: 0;
+    }
+</style>
+<div class="container-fluid p-3 ">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-between mb-4 p-1">
+                <div class="d-flex justify-content-start align-items">
+                    <h3>School Form 10</h3>
+                </div>
+
+                <form class="d-flex justify-content-between align-items-center">
+                    <input class="form-control" type="search" name="search" placeholder="Search..."
+                        value="{{ search_query }}">
+                    <button class="search-icon  fa fa-search" type="submit"></button>
+                </form>
+            </div>
+            <div class="table-container">
+                <div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Last Name</th>
+                                <th>First Name</th>
+                                <th>Middle Name</th>
+                                <th>Sex</th>
+                                <th>BirthDate</th>
+                                <th>LRN</th>
+                                <th>School Year</th>
+                                <th>Grade</th>
+                                <th>School</th>
+                                <th>General Average</th>
+                                <th>Document</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for extracted_data in all_extracted_data %}
+                            <tr>
+                                <td>{{ extracted_data.last_name }}</td>
+                                <td>{{ extracted_data.first_name }}</td>
+                                <td>{{ extracted_data.middle_name }}</td>
+                                <td>{{ extracted_data.sex }}</td>
+                                <td>{{ extracted_data.birthdate }}</td>
+                                <td>{{ extracted_data.lrn }}</td>
+                                <td>{{ extracted_data.school_year }}</td>
+                                <td>{{ extracted_data.classified_as_grade }}</td>
+                                <td>{{ extracted_data.name_of_school }}</td>
+                                <td>{{ extracted_data.general_average }}</td>
+                                <td>
+                                    <a href="{{ extracted_data.processed_document.document.url }}"
+                                        class="btn btn-sm btn-primary" download>Download</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td>No extracted data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="table">
-    <table>
-        <tr>
-            <th>Last Name</th>
-            <th>First Name</th>
-            <th>Middle Name</th>
-            <th>Sex</th>
-            <th>BirthDate</th>
-            <th>LRN</th>
-            <th>School Year</th>
-            <th>Grade</th>
-            <th>School</th>
-            <th>General Average</th>
-            <th>Document</th>
-        </tr>
-        {% for extracted_data in all_extracted_data %}
-        <tr>
-            <td>{{ extracted_data.last_name }}</td>
-            <td>{{ extracted_data.first_name }}</td>
-            <td>{{ extracted_data.middle_name }}</td>
-            <td>{{ extracted_data.sex }}</td>
-            <td>{{ extracted_data.birthdate }}</td>
-            <td>{{ extracted_data.lrn }}</td>
-            <td>{{ extracted_data.school_year }}</td>
-            <td>{{ extracted_data.classified_as_grade }}</td>
-            <td>{{ extracted_data.name_of_school }}</td>
-            <td>{{ extracted_data.general_average }}</td>
-
-
-            <td><a href="{{ extracted_data.processed_document.document.url }}" download>Download</a></td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="9">No extracted data available</td>
-        </tr>
-        {% endfor %}
-    </table>
-    </div>
-</body>
 {% endblock main_content %}
