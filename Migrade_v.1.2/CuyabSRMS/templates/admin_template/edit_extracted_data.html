@@ -1,124 +1,120 @@
-<!-- edit_extracted_data.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Verification</title>
-    <style>
-        .container
-        {
-            padding: 30px;
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+SF10 OCR
+{% endblock page_title %}
+{% block main_content %}
+<style>
+    .form-group{
+        margin: 10px;
+    }
+</style>
+<section class="container p-5">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title mt-3">School Form 10 Verification</h4>
+            <div class="row">
+                <div class="col-md-6">
+
+
+                    <form method="post" action="{% url 'save_edited_data' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="last_name">Last Name:</label>
+                            <input type="text" class="form-control" class="form-control" id="last_name" name="Last_Name"
+                                value="{{ extracted_data.last_name }}" required>
+                        </div>
+
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <label for="first_name">First Name:</label>
+                            <input type="text" class="form-control" id="first_name" name="First_Name"
+                                value="{{ extracted_data.first_name }}" required>
+                        </div>
+
+                        <!-- Middle Name -->
+                        <div class="form-group">
+                            <label for="middle_name">Middle Name:</label>
+                            <input type="text" class="form-control" id="middle_name" name="Middle_Name"
+                                value="{{ extracted_data.middle_name }}">
+                        </div>
+
+                        <!-- SEX -->
+                        <div class="form-group">
+                            <label for="sex">Sex:</label>
+                            <input type="text" class="form-control" id="sex" name="SEX"
+                                value="{{ extracted_data.sex }}">
+                        </div>
+
+                        <!-- Classified as Grade -->
+                        <div class="form-group">
+                            <label for="classified_as_grade">Classified as Grade:</label>
+                            <input type="text" class="form-control" id="classified_as_grade" name="Classified_as_Grade"
+                                value="{{ extracted_data.classified_as_grade }}">
+                        </div>
+
+                        <!-- LRN -->
+                        <div class="form-group">
+                            <label for="lrn">LRN:</label>
+                            <input type="text" class="form-control" id="lrn" name="LRN"
+                                value="{{ extracted_data.lrn }}">
+                        </div>
+
+                        <!-- Name of School -->
+                        <div class="form-group">
+                            <label for="name_of_school">Name of School:</label>
+                            <input type="text" class="form-control" id="name_of_school" name="Name_of_School"
+                                value="{{ extracted_data.name_of_school }}">
+                        </div>
+
+                        <!-- School Year -->
+                        <div class="form-group">
+                            <label for="school_year">School Year:</label>
+                            <input type="text" class="form-control" id="school_year" name="School_Year"
+                                value="{{ extracted_data.school_year }}">
+                        </div>
+
+                        <!-- General Average -->
+                        <div class="form-group">
+                            <label for="general_average">General Average:</label>
+                            <input type="text" class="form-control" id="general_average" name="General_Average"
+                                value="{{ extracted_data.general_average }}">
+                        </div>
+
+                        <!-- Birthdate -->
+                        <div class="form-group">
+                            <label for="birthdate">Birthdate:</label>
+                            <input type="text" class="form-control" id="birthdate" name="Birthdate"
+                                value="{{ extracted_data.birthdate }}">
+                        </div>
+                        <input type="hidden" id="processed_document_id" name="processed_document_id"
+                            value="{{ extracted_data.processed_document_id }}">
+                        <!-- Add similar input fields for other data points -->
+                        <div class="form-group">
+                            <button class="btn btn-primary mt-3" type="submit">Save Data</button>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="container w-100">
+                        <embed src="data:application/pdf;base64,{{ pdf_content_base64 }}" type="application/pdf"
+                            width="100%" height="600px">
+                    </div>
+                </div>
+            </div>
+        </div>
+</section>
+<script>
+    document.getElementById('toggle-btn').addEventListener('click', function () {
+        var pdfContainer = document.querySelector('.pdf-container');
+        if (pdfContainer.style.display === 'none') {
+            pdfContainer.style.display = 'block';
+            this.innerText = 'Hide PDF';
+        } else {
+            pdfContainer.style.display = 'none';
+            this.innerText = 'Show PDF';
         }
+    });
+</script>
 
-        .pdf-container {
-            width: 50%;
-            margin: auto;
-            display: none;  /* initially hide the PDF container */
-        }
-
-        #toggle-btn {
-            cursor: pointer;
-            color: blue;
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <h1>Data Verification</h1>
-
-    <form method="post" action="{% url 'save_edited_data' %}">
-        {% csrf_token %}
-        <div>
-            <label for="last_name">Last Name:</label>
-            <input type="text" id="last_name" name="Last_Name" value="{{ extracted_data.last_name }}" required>
-        </div>
-
-        <!-- First Name -->
-        <div>
-            <label for="first_name">First Name:</label>
-            <input type="text" id="first_name" name="First_Name" value="{{ extracted_data.first_name }}" required>
-        </div>
-
-        <!-- Middle Name -->
-        <div>
-            <label for="middle_name">Middle Name:</label>
-            <input type="text" id="middle_name" name="Middle_Name" value="{{ extracted_data.middle_name }}">
-        </div>
-
-        <!-- SEX -->
-        <div>
-            <label for="sex">Sex:</label>
-            <input type="text" id="sex" name="SEX" value="{{ extracted_data.sex }}">
-        </div>
-
-        <!-- Classified as Grade -->
-        <div>
-            <label for="classified_as_grade">Classified as Grade:</label>
-            <input type="text" id="classified_as_grade" name="Classified_as_Grade" value="{{ extracted_data.classified_as_grade }}">
-        </div>
-
-        <!-- LRN -->
-        <div>
-            <label for="lrn">LRN:</label>
-            <input type="text" id="lrn" name="LRN" value="{{ extracted_data.lrn }}">
-        </div>
-
-        <!-- Name of School -->
-        <div>
-            <label for="name_of_school">Name of School:</label>
-            <input type="text" id="name_of_school" name="Name_of_School" value="{{ extracted_data.name_of_school }}">
-        </div>
-
-        <!-- School Year -->
-        <div>
-            <label for="school_year">School Year:</label>
-            <input type="text" id="school_year" name="School_Year" value="{{ extracted_data.school_year }}">
-        </div>
-
-        <!-- General Average -->
-        <div>
-            <label for="general_average">General Average:</label>
-            <input type="text" id="general_average" name="General_Average" value="{{ extracted_data.general_average }}">
-        </div>
-
-        <!-- Birthdate -->
-        <div>
-            <label for="birthdate">Birthdate:</label>
-            <input type="text" id="birthdate" name="Birthdate" value="{{ extracted_data.birthdate }}">
-        </div>
-        <input type="hidden" id="processed_document_id" name="processed_document_id" value="{{ extracted_data.processed_document_id }}">
-        <!-- Add similar input fields for other data points -->
-        <div>
-            <button type="submit">Save Data</button>
-        </div>
-    </form>
-
-    <!-- Display the extracted data for verification -->
-    <h2>Extracted Data for Verification:</h2>
-    <p>Document Text: {{ extracted_data.document_text }}</p>
-    <p>Uploaded Document URL: {{ extracted_data.uploaded_document_url }}</p>
-    <!-- Display other extracted data points as needed -->
-    <h2>PDF Viewer:</h2>
-        <div class="container" style="width: 50%; margin: auto;">
-            <p>PDF URL: {{ extracted_data.processed_document.document.url }}</p>
-            <embed src="data:application/pdf;base64,{{ pdf_content_base64 }}" type="application/pdf" width="100%" height="600px">
-        </div>
-
-    <p id="toggle-btn">Show PDF</p>
-
-    <script>
-        document.getElementById('toggle-btn').addEventListener('click', function() {
-            var pdfContainer = document.querySelector('.pdf-container');
-            if (pdfContainer.style.display === 'none') {
-                pdfContainer.style.display = 'block';
-                this.innerText = 'Hide PDF';
-            } else {
-                pdfContainer.style.display = 'none';
-                this.innerText = 'Show PDF';
-            }
-        });
-    </script>
-
-</body>
-</html>
+{% endblock main_content %}

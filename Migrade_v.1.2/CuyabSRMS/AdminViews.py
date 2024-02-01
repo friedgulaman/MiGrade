@@ -827,6 +827,3 @@ def sf10_views(request):
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
 
-
-
-
