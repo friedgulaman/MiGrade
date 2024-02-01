@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import CustomUser, Student, Teacher, Grade, Section
+from .models import CustomUser, Quarters, Student, Teacher, Grade, Section
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -34,9 +34,11 @@ from datetime import datetime
 from dateutil import parser
 
 
+
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 import base64
+
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
@@ -107,15 +109,28 @@ def get_teacher_data(request):
     }
     return JsonResponse(data)
 def students(request):
-    # Get all students from the database
-    students = Student.objects.all()
-    
     # Get distinct combinations of grade and section
-    unique_combinations = students.values('grade', 'section').distinct()
+    unique_combinations = Student.objects.values('grade', 'section').distinct()
+
+    # Prepare a list to store dictionaries with grade, section, and total_students
+    data = []
+
+    # Calculate total_students for each grade and section combination
+    for combination in unique_combinations:
+        grade = combination['grade']
+        section = combination['section']
+        total_students = Student.objects.filter(grade=grade, section=section).count()
+
+        # Append data to the list
+        data.append({
+            'grade': grade,
+            'section': section,
+            'total_students': total_students,
+        })
 
     # Prepare context to pass to the template
     context = {
-        'unique_grades_sections': unique_combinations,
+        'unique_grades_sections': data,
     }
 
     # Render the template with the context
@@ -308,9 +323,73 @@ def delete_subject(request):
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 def quarters(request):
-    return render(request, 'admin_template/manage_quarters.html')
+    quarters = Quarters.objects.all()
+    return render(request, 'admin_template/manage_quarters.html', {'quarters': quarters})
 
+def add_quarter(request):
+    if request.method == 'POST':
+        quarters = request.POST.get('quarters')
 
+        if quarters:
+            quarter = Quarters.objects.create(
+                quarters=quarters
+            )
+            return JsonResponse({'success': True, 'quarter_id': quarter.id})
+
+    return JsonResponse({'success': False, 'error_message': 'Invalid form data'})
+def get_quarters_data(request):
+    quarter_id = request.GET.get('quarterId')
+    quarter = get_object_or_404(Quarters, id=quarter_id)
+
+    # Return quarter data as JSON
+    data = {
+        'id': quarter.id,
+        'quarters': quarter.quarters,
+    }
+
+    return JsonResponse(data)
+
+@csrf_exempt
+@login_required
+def add_quarter(request):
+    if request.method == 'POST':
+        quarters = request.POST.get('quarters')
+
+        if quarters:
+            quarter = Quarters.objects.create(quarters=quarters)
+            return JsonResponse({'success': True, 'quarter_id': quarter.id})
+
+    return JsonResponse({'success': False, 'error_message': 'Invalid form data'})
+
+def update_quarter(request):
+    if request.method == 'POST':
+        quarter_id = request.POST.get('quarterId')
+        quarters = request.POST.get('quarters')
+
+        quarter = get_object_or_404(Quarters, id=quarter_id)
+        quarter.quarters = quarters
+        quarter.save()
+
+        # Return a success response
+        return JsonResponse({'success': True, 'message': 'Quarter updated successfully'})
+
+    # Return a failure response if not a POST request
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+@csrf_exempt
+@login_required
+def delete_quarter(request):
+    if request.method == 'POST':
+        quarter_id = request.POST.get('quarterId')
+
+        quarter = get_object_or_404(Quarters, id=quarter_id)
+        quarter.delete()
+
+        # Return a success response
+        return JsonResponse({'success': True, 'message': 'Quarter deleted successfully'})
+
+    # Return a failure response if not a POST request
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
 @require_POST
 def update_teacher(request):
     teacher_id = request.POST.get('teacherId')
@@ -616,15 +695,15 @@ def upload_documents_ocr(request):
                     setattr(my_data, field_name, last_values[key]['value'])
 
             # Handle birthdate separately
-            if 'Birthdate' in key_mapping:
-                birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
-                if birthdate_index is not None:
-                    birthdate_str = data_by_type['Raw Value'][birthdate_index]
-                    try:
-                        # Provide a specific format string based on the expected format
-                        my_data.birthdate = parser.parse(birthdate_str, format="%b. %d, %Y").date()
-                    except ValueError as e:
-                        print(f"Error parsing birthdate: {e}")
+                if 'Birthdate' in key_mapping:
+                    birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                    if birthdate_index is not None:
+                        birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                        try:
+                            # Provide a specific format string based on the expected format
+                            my_data.birthdate = parser.parse(birthdate_str).date()
+                        except ValueError as e:
+                            print(f"Error parsing birthdate: {e}")
 
             my_data.save()
 

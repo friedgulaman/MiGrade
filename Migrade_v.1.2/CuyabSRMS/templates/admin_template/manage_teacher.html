@@ -32,10 +32,11 @@ Manage Teachers
 .teacher-link{
   text-decoration: none;
 }
+
 </style>
 <section class=" container p-4">
     <h3 class="mb-4 ">Manage Teacher</h3>
-    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom ">
       <ul class="nav nav-tabs text" role="tablist">
         <li class="nav-ite m">
           <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
@@ -61,7 +62,7 @@ Manage Teachers
         <div class="container-fluid p-3 ">
             <div class="card">
               <div class="card-body">
-                <h4 class="card-title">Add Teacher</h4>
+                <h4 class="card-title p-3">Add Teacher</h4>
                 <form method="post" action="{% url 'add_teacher_save' %}" class="forms-sample" id="addTeacherForm">
         
                   {% csrf_token %}
@@ -119,7 +120,7 @@ Manage Teachers
         <div class="container-fluid">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">List of Teachers</h4>
+                    <h4 class="card-title p-3">List of Teachers</h4>
                     <div class="table-responsive">
                         <table class="table table-hover text-center">
                             <thead>
@@ -167,7 +168,7 @@ Manage Teachers
         <div class="container-fluid">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Update Teachers</h4>
+                    <h4 class="card-title p-3">Update Teachers</h4>
                     <table class="table table-hover text-center">
                         <thead>
                             <tr>
@@ -229,7 +230,7 @@ Manage Teachers
         <div class="container-fluid">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Delete Teachers</h4>
+                    <h4 class="card-title p-3">Delete Teachers</h4>
                     <table class="table table-hover text-center">
                         <thead>
                             <tr>
