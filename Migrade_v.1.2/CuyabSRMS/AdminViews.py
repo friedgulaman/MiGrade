@@ -390,7 +390,7 @@ def upload_documents_ocr(request):
                     birthdate_str = data_by_type['Raw Value'][birthdate_index]
                     try:
                         # Provide a specific format string based on the expected format
-                        my_data.birthdate = parser.parse(birthdate_str, format="%b. %d, %Y").date()
+                        my_data.birthdate = parser.parse(birthdate_str).date()
                     except ValueError as e:
                         print(f"Error parsing birthdate: {e}")
 
