@@ -694,16 +694,25 @@ def upload_documents_ocr(request):
                 if key in last_values:
                     setattr(my_data, field_name, last_values[key]['value'])
 
-            # Handle birthdate separately
-                if 'Birthdate' in key_mapping:
-                    birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
-                    if birthdate_index is not None:
-                        birthdate_str = data_by_type['Raw Value'][birthdate_index]
-                        try:
-                            # Provide a specific format string based on the expected format
-                            my_data.birthdate = parser.parse(birthdate_str).date()
-                        except ValueError as e:
-                            print(f"Error parsing birthdate: {e}")
+            # # Handle birthdate separately
+            #     if 'Birthdate' in key_mapping:
+            #         birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+            #         if birthdate_index is not None:
+            #             birthdate_str = data_by_type['Raw Value'][birthdate_index]
+            #             try:
+            #                 # Provide a specific format string based on the expected format
+            #                 my_data.birthdate = parser.parse(birthdate_str).date()
+            #             except ValueError as e:
+            #                 print(f"Error parsing birthdate: {e}")
+            if 'Birthdate' in key_mapping:
+                birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                if birthdate_index is not None:
+                    birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                    try:
+                        # Provide a specific format string based on the expected format
+                        my_data.birthdate = parser.parse(birthdate_str).date()
+                    except ValueError as e:
+                        print(f"Error parsing birthdate: {e}")
 
             my_data.save()
 

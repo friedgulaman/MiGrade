@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from .models import Student, FinalGrade
+from .models import Student, FinalGrade, GeneralAverage
 import os
 import openpyxl
 import pandas as pd
@@ -107,6 +107,8 @@ def generate_excel_for_sf9(request, student_id):
 
     final_grade = FinalGrade.objects.filter(student=student).first()
 
+    general_average = GeneralAverage.objects.filter(student=student).first()
+
     # Original file path for SF9 template
         # Original file path
     excel_file_name = "ELEM SF9 (Learner's Progress Report Card).xlsx"
@@ -126,38 +128,38 @@ def generate_excel_for_sf9(request, student_id):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
+    # try:
         # Open the copied SF9 Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    workbook = openpyxl.load_workbook(copied_file_path)
 
         # Select the desired sheet (use the correct sheet name from the output)
-        front_sheet_name = 'FRONT'
-        front_sheet = workbook[front_sheet_name]
+    front_sheet_name = 'FRONT'
+    front_sheet = workbook[front_sheet_name]
 
-        back_sheet_name = 'BACK'
-        back_sheet = workbook[back_sheet_name]
+    back_sheet_name = 'BACK'
+    back_sheet = workbook[back_sheet_name]
 
 
 
 
 
         # Write SF9-specific data using a utility function (update this function based on your needs)
-        write_sf9_data(front_sheet, student)
+    write_sf9_data(front_sheet, student)
 
-        write_sf9_grades(back_sheet, final_grade)
+    write_sf9_grades(back_sheet, final_grade, general_average)
 
         # Save the changes to the SF9 workbook
-        workbook.save(copied_file_path)
+    workbook.save(copied_file_path)
 
         # Create an HTTP response with the updated SF9 Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=sf9_export_{timestamp}.xlsx'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=sf9_export_{timestamp}.xlsx'
 
-        with open(copied_file_path, 'rb') as excel_file:
+    with open(copied_file_path, 'rb') as excel_file:
             response.write(excel_file.read())
 
-        return response
+    return response
 
-    except Exception as e:
-        # Handle exceptions, such as a corrupted file
-        return HttpResponse(f"An error occurred: {e}")
+    # except Exception as e:
+    #     # Handle exceptions, such as a corrupted file
+    #     return HttpResponse(f"An error occurred: {e}")

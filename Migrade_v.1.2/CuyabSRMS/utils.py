@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime
 from openpyxl.styles import Font
 from .models import GradeScores
+import json
 
 
 def transmuted_grade(initial_grade):
@@ -821,52 +822,46 @@ def write_sf9_data(front_sheet, student):
 
 
 
+def write_sf9_grades(back_sheet, final_grade, general_average):
+    # Parse the JSON data stored in the final_grade field
+    grades_data = json.loads(final_grade.final_grade)
 
-
-
-def write_sf9_grades(back_sheet, final_grade):
-    # Assuming the subject you want is "Filipino"
-    subject_name = "AP"
-
-    # Construct attribute names for each quarter and final grade based on the subject name
-    attribute_names = {
-        '1st Quarter': f'{subject_name.lower().replace(" ", "_")}_1st_quarter',
-        '2nd Quarter': f'{subject_name.lower().replace(" ", "_")}_2nd_quarter',
-        '3rd Quarter': f'{subject_name.lower().replace(" ", "_")}_3rd_quarter',
-        '4th Quarter': f'{subject_name.lower().replace(" ", "_")}_4th_quarter',
-        'Final Grade': f'{subject_name.lower().replace(" ", "_")}_final_grade',
+    # Define the row coordinates for subjects
+    row_coordinates = {
+        "Filipino": 7,
+        "English": 8,
+        "Mathematics": 9,
+        "Science": 11,
+        "AP": 12, 
+        "EsP": 13,
+        "TLE": 15,
+        "MAPEH": 17,
+        "Music": 18,
+        "Arts": 19,
+        "PE": 20,
+        "Health": 21,
+ # Update with other subjects as needed
+        # Add more subjects as needed
     }
 
-    # Get the scores for the specified subject
-    filipino_1st_quarter_score = getattr(final_grade, attribute_names['1st Quarter'], None)
-    filipino_2nd_quarter_score = getattr(final_grade, attribute_names['2nd Quarter'], None)
-    filipino_3rd_quarter_score = getattr(final_grade, attribute_names['3rd Quarter'], None)
-    filipino_4th_quarter_score = getattr(final_grade, attribute_names['4th Quarter'], None)
-    filipino_final_grade_score = getattr(final_grade, attribute_names['Final Grade'], None)
+    # Write the grades for each subject
+    for grade_data in grades_data:
+        subject = grade_data["subject"]
+        quarter_grades = grade_data["quarter_grades"]
+        final_grade_score = grade_data["final_grade"]
 
+        # Get the row coordinate for the subject
+        row = row_coordinates.get(subject)
+        if row is None:
+            continue  # Skip if subject not found in the coordinates
 
-    print(filipino_1st_quarter_score)
-    print(filipino_2nd_quarter_score)
-    print(filipino_final_grade_score)
+        # Write quarter grades and final grade to the back sheet
+        back_sheet.cell(row=row, column=14, value=quarter_grades.get("1st Quarter", ""))
+        back_sheet.cell(row=row, column=15, value=quarter_grades.get("2nd Quarter", ""))
+        back_sheet.cell(row=row, column=16, value=quarter_grades.get("3rd Quarter", ""))
+        back_sheet.cell(row=row, column=17, value=quarter_grades.get("4th Quarter", ""))
+        back_sheet.cell(row=row, column=18, value=final_grade_score)
 
-    # Specify the coordinates for writing the score
-    
-    row_coordinates_filipino= 7
-    column_coordinates_filipino_1st_quarter = 14
-    column_coordinates_filipino_2nd_quarter = 15
-    column_coordinates_filipino_3rd_quarter = 16
-    column_coordinates_filipino_4th_quarter = 17
-    column_coordinates_filipino_final_grade = 18
-
-    # Write the score to the specified cell
-    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_1st_quarter, value=filipino_1st_quarter_score)
-    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_2nd_quarter, value=filipino_2nd_quarter_score)
-    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_3rd_quarter, value=filipino_3rd_quarter_score)
-    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_4th_quarter, value=filipino_4th_quarter_score)
-    back_sheet.cell(row=row_coordinates_filipino, column=column_coordinates_filipino_final_grade, value=filipino_final_grade_score)
-
-
-
-
+        back_sheet.cell(row=22, column=18, value=general_average.general_average)
 
 

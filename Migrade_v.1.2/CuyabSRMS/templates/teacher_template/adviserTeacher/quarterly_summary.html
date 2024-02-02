@@ -38,7 +38,7 @@
                 <td>{{ forloop.counter }}</td> 
                 <td>{{ student }}</td>
                 {% for grade in grades.values %}
-                    <td>{{ grade|default_if_none:"N/A" }}</td>
+                    <td>{{ grade|default_if_none:"" }}</td>
                 {% endfor %} 
             </tr>
         {% endfor %}

@@ -3,7 +3,8 @@ from django.contrib import admin
 from django.urls import URLPattern, path, include
 
 
-from CuyabSRMS import AdminViews, TeacherViews, GenerationViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews
+
 from .DashboardViews import StudentChartDataView
 from django.contrib import admin
 from . import views
@@ -137,7 +138,7 @@ urlpatterns = [
     path('all_final_grades/<str:grade>/<str:section>/', TeacherViews.display_all_final_grades, name='all_final_grades'),
     path('update_total_max_quarterly/', TeacherViews.update_total_max_quarterly, name='update_total_max_quarterly'),
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
-    # path('sf9/', TeacherViews.sf9, name='sf9'),
+    path('sf9/', TeacherViews.sf9, name='sf9'),
    # urls.py
 
     # Generation
@@ -146,7 +147,16 @@ urlpatterns = [
          name='generate_excel_for_grades'),
     path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9'),
 
+    #Archived
+    path('archived-records/', ArchivedViews.archived_records, name='archived_records'),
+    path('restore-archived-record/<int:archived_record_id>/', ArchivedViews.restore_archived_record, name='restore_archived_record'),
+    path('archive-class-record/<int:class_record_id>/', ArchivedViews.archive_class_record, name='archive_class_record'),
+    path('archive_students/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
+    path('restore_archived_students/<str:grade>/<str:section>/', ArchivedViews.restore_archived_students, name='restore_archived_students'),
 
+
+
+   
 
     # # Student
     # path('student_list/', StudentViews.student_list, name='student_list'),
