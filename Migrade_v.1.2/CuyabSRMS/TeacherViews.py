@@ -378,16 +378,31 @@ def save_json_data(request):
             division = received_data.get('division', '')
             school_name = received_data.get('school_name', '')
             school_year = received_data.get('school_year', '')
-            grade = received_data.get('grade', '')
-            section = received_data.get('section', '')
-            
-
+            grade_name = received_data.get('grade', '')
+            section_name = received_data.get('section', '')
 
             for item in received_data['rows']:
                 lrn = item.get('LRN')
                 name = item.get('Name')
                 sex = item.get('Sex')
                 birthday = item.get('Birthday')
+
+                # Create or update the Grade object
+                grade, _ = Grade.objects.get_or_create(name=grade_name)
+
+                # Create or update the Section object
+                section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
+
+                # Increment the total_students field for the respective section
+                section.total_students += 1
+                section.save()
+                # Initialize or get the existing grade_section dictionary
+                teacher.grade_section = teacher.grade_section or {}
+
+                # Save the grade_section in the Teacher model
+                teacher.grade_section[grade.name] = section.name
+
+                teacher.save()
 
                 # Create or update the Student object based on LRN
                 student, created = Student.objects.get_or_create(
@@ -401,7 +416,9 @@ def save_json_data(request):
                         'district': district,
                         'division': division,
                         'school_name': school_name,
-                        'school_year': school_year
+                        'school_year': school_year,
+                        'grade': grade.name,
+                        'section': section.name
                     }
                 )
 
@@ -414,13 +431,15 @@ def save_json_data(request):
                 student.district = district
                 student.school_name = school_name
                 student.school_year = school_year
-                student.grade = grade
-                student.section = section
+                student.grade = grade.name
+                student.section = section.name
 
                 # Update other fields as necessary
 
+                # Save the associated objects before saving the student
+                grade.save()
+                section.save()
                 student.save()
-
 
             response_data = {'message': 'JSON data saved successfully'}
             return JsonResponse(response_data)
@@ -831,21 +850,6 @@ def delete_student(request, grade, section):
 def student_list_for_class(request):
     # Assuming the user is logged in
     user = request.user
-
-    # Check if the user is a teacher
-    if user.is_authenticated and hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
-        teacher = user.teacher
-
-        # Filter class records based on the teacher
-        class_records = ClassRecord.objects.filter(teacher=teacher)
-
-        grade = request.GET.get('grade')
-        section = request.GET.get('section')
-        
-        # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section)
-
 
     # Check if the user is a teacher
     if user.is_authenticated and hasattr(user, 'teacher'):

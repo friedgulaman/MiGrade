@@ -10,65 +10,44 @@
           <li class="nav-item nav-category">Manage</li>
           <!-- Teacher -->
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-teacher" aria-expanded="false" aria-controls="ui-teacher">
+            <a class="nav-link" href="{% url 'teachers' %}">
               <i class="menu-icon mdi mdi-floor-plan"></i>
               <span class="menu-title">Teacher</span>
-              <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-teacher">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'add_teacher' %}">Add Teacher</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'assign_teacher' %}">Assign Teacher</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'list_of_teachers' %}">Teachers</a></li>
-              </ul>
-            </div>
-          </li>
-          <!-- Grade Levels & Sections -->
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-gradesection" aria-expanded="false" aria-controls="ui-teacher">
-              <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">Grade Levels & Sections </span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-gradesection">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'add_grade_section' %}">Add Grade and Section</a></li>
-                
-              </ul>
-            </div>
           </li>
           <!-- Students -->
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-students" aria-expanded="false" aria-controls="ui-students">
+            <a class="nav-link" href="{% url 'students' %}" >
               <i class="menu-icon mdi mdi-floor-plan"></i>
               <span class="menu-title">Students</span>
-              <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-students">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="pages/ui-features/buttons.html">Add Students</a></li>
-              </ul>
-            </div>
+          </li>
+          <!-- Grade Levels & Sections -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'grade_and_section' %}">
+              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <span class="menu-title">Grades & Sections </span>
+            </a>
           </li>
           <!-- SUBJECT -->
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-subject" aria-expanded="false" aria-controls="ui-teacher">
+            <a class="nav-link" href="{% url 'subjects' %}" >
               <i class="menu-icon mdi mdi-floor-plan"></i>
               <span class="menu-title">Subjects</span>
-              <i class="menu-arrow"></i>
             </a>
-            <div class="collapse" id="ui-subject">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'add_subject' %}">Add Subjects</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'subject_list' %}">View Subjects</a></li>
-              </ul>
-            </div>
+          </li>
+          <!-- QUARTERS -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'quarters' %}" >
+              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <span class="menu-title">Quarters</span>
+            </a>
           </li>
           <!-- Uploading Docs -->
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-documents" aria-expanded="false" aria-controls="ui-">
               <i class="menu-icon mdi mdi-floor-plan"></i>
-              <span class="menu-title">Upload Documents</span>
+              <span class="menu-title">School Form 10</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="ui-documents">
@@ -76,122 +55,13 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">Upload</a></li>
               </ul>
             </div>
-          </li>
-          <!-- Generate School Forms -->
-          <li class="nav-item nav-category">Generate School Forms</li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
-              <i class="menu-icon mdi mdi-card-text-outline"></i>
-              <span class="menu-title">School Forms</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="form-elements">
+            <div class="collapse" id="ui-documents">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">School Form 10</a></li>
-              </ul>
-            </div>  
-            <div class="collapse" id="form-elements">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="sf10.html">School Form 9</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">Files</a></li>
               </ul>
             </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-              <i class="menu-icon mdi mdi-chart-line"></i>
-              <span class="menu-title">Grade Levels</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 1</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 2</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 3</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 4</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 5</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 6</a></li>
-              </ul>
-            </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
-              <i class="menu-icon mdi mdi-table"></i>
-              <span class="menu-title">Subjects</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Filipino</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">English</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Mathematics</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Araling Panlipunan</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">MAPEH</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Music</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Arts</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">PE</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Health</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">ESP</a></li>
-              </ul>
-            </div>
-            
-          </li>
-         
+          
         </ul>
       </nav>
       

@@ -1,0 +1,38 @@
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+    Manage Grades and Sections
+{% endblock page_title %}
+
+{% block main_content %}
+    <section class="container">
+        <div class="container-fluid">
+            <h3 class="mb-4">List of Grades and Sections</h3>
+
+            <div class="card mt-4 text-center">
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>Section</th>
+                            <th>No. of Students</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for grade in grades %}
+                            {% for section in grade.sections.all %}
+                                <tr>
+                                    <td>{{ grade.name }}</td>
+                                    <td>{{ section.name }}</td>
+                                    <td>{{ section.total_students }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}

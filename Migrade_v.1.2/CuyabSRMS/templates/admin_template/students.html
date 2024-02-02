@@ -1,0 +1,48 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Manage Students
+{% endblock page_title %}
+{% block main_content %}
+<section class="container">
+    <div class="container-fluid">
+        <h3 class="mb-4">Manage Students</h3>
+        <div class="card mt-4 text-center">
+            <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Grade</th>
+                        <th>Section</th>
+                        <th>No. of Students</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if unique_grades_sections %}
+                        {% for combination in unique_grades_sections %}
+                            <tr onclick="showStudentList('{{ combination.grade }}', '{{ combination.section }}')">
+                                <td>{{ combination.grade }}</td>
+                                <td>{{ combination.section }}</td>
+                                <td>{{ combination.total_students }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No class records available.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    var showStudentList = function(grade, section) {
+        var url = "{% url 'student_lists' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        window.location.href = url;
+    };
+
+</script>
+{% endblock main_content %}

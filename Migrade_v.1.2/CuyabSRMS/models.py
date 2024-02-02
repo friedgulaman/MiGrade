@@ -39,10 +39,11 @@ class Teacher(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    grade_section = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
-    
+
 class Student(models.Model):
     name = models.CharField(max_length=255)
     lrn = models.CharField(max_length=12, unique=True)
@@ -123,16 +124,17 @@ class ArchivedStudent(models.Model):
         return restored_student
     
 class Grade(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 class Section(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, null=True, blank=True)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='sections')
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')
-
+    total_students = models.PositiveIntegerField(default=0)
+    
     def __str__(self):
         return self.name
 
