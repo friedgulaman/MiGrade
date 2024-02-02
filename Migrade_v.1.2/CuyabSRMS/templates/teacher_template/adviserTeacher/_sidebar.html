@@ -56,7 +56,7 @@
             </div>
             <div class="collapse" id="form-elements">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="#">School Form 9</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'sf9' %}">School Form 9</a></li>
               </ul>
             </div>
           </li>
@@ -155,7 +155,14 @@
             </div>
             
           </li>
-         
+          <li class="nav-item nav-category">Archive</li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'archived_records' %}">
+              <i class="menu-icon mdi mdi-archive"></i>
+              <span class="menu-title">Archived</span>
+            </a>
+          </li>
+                  
           <!-- <li class="nav-item nav-category">Settings</li>
           <li class="nav-item">
             <a class="nav-link" href="http://bootstrapdash.com/demo/star-admin2-free/docs/documentation.html">

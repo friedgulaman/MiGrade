@@ -199,13 +199,21 @@ Student List for {{ grade }} {{ section }}
                                                         <td>{{ record.quarters }}</td>
                                                         <td>{{ record.subject }}</td>
                                                         <td>
+                                                            <form id="archiveForm_{{ record.id }}" method="post" action="{% url 'archive_class_record' class_record_id=record.id %}"
+                                                            style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="archive-record" data-record-id="{{ record.id }}">
+                                                                Archive <!-- You can customize the button label as needed -->
+                                                            </button>
+                                                        </form>
+
                                                             <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}"
-                                                                style="display:inline;">
-                                                                {% csrf_token %}
-                                                                <button type="button" class="delete-record" data-record-id="{{ record.id }}">
-                                                                    <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
-                                                                </button>
-                                                            </form>
+                                                            style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <button type="button" class="delete-record" data-record-id="{{ record.id }}">
+                                                                <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
+                                                            </button>
+                                                        </form>
                                                         </td>
                                                         
                                                     </tr>

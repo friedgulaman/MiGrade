@@ -48,9 +48,9 @@
                     <td>{{ student_data.grade }}</td>
                     <td>{{ student_data.section }}</td>
                     {% for subject_info in student_data.subjects %}
-                        {% for quarter, grade in subject_info.quarter_grades.items %}
-                            <td>{{ grade|floatformat:2 }}</td>
-                        {% endfor %}
+                    {% for quarter, grade in subject_info.quarter_grades.items %}
+                        <td>{{ grade|floatformat:2 }}</td>
+                    {% endfor %}
                         <td>{{ subject_info.final_grade|floatformat:2 }}</td>
                     {% endfor %}
                     <td>{{ student_data.general_average|floatformat:2 }}</td>
