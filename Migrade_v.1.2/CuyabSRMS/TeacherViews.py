@@ -393,7 +393,7 @@ def save_json_data(request):
 
                 # Create or update the Section object
                 section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
-                
+
                 # Increment the total_students field for the respective section
                 section.total_students += 1
                 section.class_type = class_type  # Save the class type on Section
@@ -406,14 +406,14 @@ def save_json_data(request):
                 teacher.grade_section[grade.name] = section.name
                 teacher.save()
 
-                # Create or update the Student object based on LRN
+                # Create or update the Student object based on LRN and teacher
                 student, created = Student.objects.get_or_create(
                     lrn=lrn,
+                    teacher=teacher,
                     defaults={
                         'name': name,
                         'sex': sex,
                         'birthday': birthday,
-                        'teacher': teacher,
                         'school_id': school_id,
                         'district': district,
                         'division': division,
@@ -451,6 +451,8 @@ def save_json_data(request):
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
+
+
 
 
 
@@ -859,7 +861,7 @@ def toggle_class_type(request):
             return JsonResponse(response_data, status=400)
 
     response_data = {'message': 'Invalid request method'}
-    return JsonResponse(response_data, status=405)  
+    return JsonResponse(response_data, status=405)
 
 def sf9(request):
     # Query all students from the database
@@ -1323,25 +1325,24 @@ def update_score(request):
         section_id = request.POST.get('section_id')  # Added section_id for differentiation
         class_record_id = request.POST.get('class_record_id')
         scores_hps = request.POST.get('scores_hps')
-        # percentage_score_written_works = request.POST.get('percentage_score_written_works')
-        # percentage_score_performance_task = request.POST.get('percentage_score_performance_task')
-        # percentage_score_quarterly_assessment = request.POST.get('percentage_score_quarterly_assessment')
-        # weighted_score_written_works = request.POST.get('weighted_score_written_works')
-        # weighted_score_performance_task = request.POST.get('weighted_score_performance_task')
-        # weighted_score_quarterly_assessment = request.POST.get('weighted_score_quarterly_assessment')
 
 
-        # print("Request POST Data:", request.POST)
-        # print("Class Record ID:", class_record_id)
-        # print(column_index)
-        # print(section_id)  # Add this line for debugging
+         # Assuming you want to filter students by both name and teacher
+        students = Student.objects.filter(name=student_name, teacher=request.user.teacher)
 
-        student = Student.objects.get(name=student_name)
+        # Ensure there is exactly one matching student
+        if students.count() == 1:
+            student = students.first()
+        else:
+            # Handle the case where there are zero or multiple matching students
+            print(f"Error: Found {students.count()} students with the name '{student_name}' for the logged-in teacher.")
+            # Add your error handling logic here, e.g., returning an error response.
+            return JsonResponse({'success': False, 'error': 'Error in finding the student'})
 
         try:
             # Retrieve the GradeScores object based on student name and class record id
             grade_score = GradeScores.objects.get(
-                   student=student,
+                student=student,
                 class_record__id=class_record_id
             )
 
@@ -1350,20 +1351,6 @@ def update_score(request):
         except GradeScores.DoesNotExist:
             print(f"Not Found: /update_score/")
             return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
-
-        #     # Determine the field to update based on the section_id
-        # if section_id == 'written_works':
-        #     percentage_score = percentage_score_written_works
-        #     weighted_score = weighted_score_written_works
-        # elif section_id == 'performance_task':
-        #     percentage_score = percentage_score_performance_task
-        #     weighted_score = weighted_score_performance_task
-        # elif section_id == 'quarterly_assessment':
-        #     percentage_score = percentage_score_quarterly_assessment
-        #     weighted_score = percentage_score_quarterly_assessment
-        # else:
-        #     return JsonResponse({'error': 'Invalid section_id'})
-
 
 
         if section_id == 'written_works':
@@ -1393,9 +1380,6 @@ def update_score(request):
         else:
             return JsonResponse({'error': 'Invalid section_id'})
 
-        # Use a dynamic naming convention for total_field
-        #  # Ensure scores_list has enough elements, initialize with zeros if necessary
-        # scores_list = getattr(grade_score, scores_field, [0] * 10)
 
        # Ensure scores_list has enough elements, initialize with zeros if necessary
         scores_list = getattr(grade_score, scores_field, [0] * (column_index + 1))
@@ -1591,13 +1575,14 @@ def update_highest_possible_scores(request):
             total_hps_field = 'total_pt_hps'
         elif section_id == 'quarterly_assessment':
             hps_field = 'scores_hps_quarterly'
+            total_hps_field = 'total_qa_hps'
         else:
             return JsonResponse({'error': 'Invalid section_id'})
 
         # Update the highest possible scores data for each GradeScores object
         for grade_score in grade_scores:
             # Convert the new_hps_data to a list of integers, handling empty strings
-            new_hps_list = [int(float(value)) if value.strip() != '' else '' for value in new_hps_data]
+            new_hps_list = [int(value) if value.strip() != '' else '' for value in new_hps_data]
 
             # Update the scores_hps field with the new list
             setattr(grade_score, hps_field, new_hps_list)
@@ -1611,6 +1596,7 @@ def update_highest_possible_scores(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'error': 'Invalid request'})
+
 
 def update_total_max_quarterly(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1651,6 +1637,7 @@ def update_total_max_quarterly(request):
     return JsonResponse({'error': 'Invalid request'})
 
 
+
 def validate_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         student_name = request.POST.get('student_name')
@@ -1660,8 +1647,9 @@ def validate_score(request):
         class_record_id = request.POST.get('class_record_id')
 
         try:
+            # Assuming you want to filter GradeScores by student name and class record ID
             grade_score = GradeScores.objects.get(
-                student_name=student_name,
+                student__name=student_name,
                 class_record__id=class_record_id
             )
         except GradeScores.DoesNotExist:
@@ -1701,7 +1689,8 @@ def validate_score(request):
 
     return JsonResponse({'error': 'Invalid request'})
 
-display_students
+
+
 @require_POST
 def delete_classrecord(request, class_record_id):
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
