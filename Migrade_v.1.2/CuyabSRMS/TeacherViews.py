@@ -318,7 +318,7 @@ def upload(request):
                 result_data = process_google_sheet(spreadsheet_id, sheet_name)
 
                 if result_data is not None:
-                    return render(request, 'teacher_template/adviserTeacher/upload.html', result_data)
+                    return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html', result_data)
                 else:
                     messages.error(request, "Failed to process the Google Sheet")
             else:
@@ -350,14 +350,14 @@ def upload(request):
                 print(result_data['lrn_data'])
                 print("Key-Value Pairs:")
                 print(result_data['key_value_pairs'])
-                return render(request, 'teacher_template/adviserTeacher/upload.html', result_data)
+                return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html', result_data)
             else:
                 messages.error(request, "Failed to process the Excel File")
 
         else:
             messages.error(request, "Invalid file")
 
-    return render(request, 'teacher_template/adviserTeacher/upload.html')
+    return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html')
 
 
 @csrf_exempt
@@ -380,6 +380,7 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
+            class_type = received_data.get('classType', '')  # New field for class type
 
             for item in received_data['rows']:
                 lrn = item.get('LRN')
@@ -392,16 +393,17 @@ def save_json_data(request):
 
                 # Create or update the Section object
                 section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
-
+                
                 # Increment the total_students field for the respective section
                 section.total_students += 1
+                section.class_type = class_type  # Save the class type on Section
                 section.save()
+
                 # Initialize or get the existing grade_section dictionary
                 teacher.grade_section = teacher.grade_section or {}
 
                 # Save the grade_section in the Teacher model
                 teacher.grade_section[grade.name] = section.name
-
                 teacher.save()
 
                 # Create or update the Student object based on LRN
@@ -418,7 +420,8 @@ def save_json_data(request):
                         'school_name': school_name,
                         'school_year': school_year,
                         'grade': grade.name,
-                        'section': section.name
+                        'section': section.name,
+                        'class_type': class_type  # Save the class type on Student
                     }
                 )
 
@@ -433,8 +436,7 @@ def save_json_data(request):
                 student.school_year = school_year
                 student.grade = grade.name
                 student.section = section.name
-
-                # Update other fields as necessary
+                student.class_type = class_type  # Update the class type on Student
 
                 # Save the associated objects before saving the student
                 grade.save()
@@ -801,9 +803,7 @@ def display_students(request):
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
         students = Student.objects.filter(teacher=teacher)
-        
-
-        unique_combinations = students.values('grade', 'section').distinct()
+        unique_combinations = students.values('grade', 'section', 'class_type').distinct()
 
         context = {
             'teacher': teacher,
@@ -812,6 +812,54 @@ def display_students(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
+
+def toggle_class_type_function(student):
+    # Toggle the class type for the given student
+    if student.class_type == 'Advisory':
+        student.class_type = 'Subject'
+    else:
+        student.class_type = 'Advisory'
+    
+    # Save the changes
+    student.save()
+
+    # Return the updated class type
+    return student.class_type
+
+
+def toggle_class_type(request):
+    if request.method == 'POST':
+        try:
+            # Retrieve the POST data
+            data = json.loads(request.body)
+
+            # Extract the grade, section, and current_class_type from the data
+            grade = data.get('grade')
+            section = data.get('section')
+            current_class_type = data.get('current_class_type')
+
+            # Retrieve all students with the given grade and section
+            students = Student.objects.filter(grade=grade, section=section)
+
+            # Toggle the class type for each student
+            for student in students:
+                if current_class_type == 'Advisory':
+                    student.class_type = 'Subject'
+                else:
+                    student.class_type = 'Advisory'
+
+                # Save the changes
+                student.save()
+
+            response_data = {'message': 'Class type updated successfully'}
+            return JsonResponse(response_data)
+
+        except Exception as e:
+            response_data = {'message': f'Error: {str(e)}'}
+            return JsonResponse(response_data, status=400)
+
+    response_data = {'message': 'Invalid request method'}
+    return JsonResponse(response_data, status=405)  
 
 def sf9(request):
     # Query all students from the database
@@ -1668,5 +1716,6 @@ def class_records_list(request):
     class_records = ClassRecord.objects.all()
     return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_records': class_records})
 
-
+def tempo_newupload(request):
+    return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html')
 

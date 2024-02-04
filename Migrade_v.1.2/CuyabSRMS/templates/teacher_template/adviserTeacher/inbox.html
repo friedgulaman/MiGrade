@@ -1,0 +1,24 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% load static %}
+{% block title %}
+Student List for {{ grade }} {{ section }}
+{% endblock title %}
+
+{% block main_content %}
+<h1>Inbox Messages</h1>
+
+{% if inbox_messages %}
+  <ul>
+    {% for message in inbox_messages %}
+      <li>
+        <p><strong>Teacher:</strong> {{ message.teacher.username }}</p>
+        <p><strong>File Name:</strong> {{ message.file_name }}</p>
+        <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
+        <p><strong>JSON Data:</strong> {{ message.json_data }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No inbox messages found.</p>
+{% endif %}
+  {% endblock main_content %}

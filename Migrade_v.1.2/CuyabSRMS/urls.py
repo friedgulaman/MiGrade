@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import URLPattern, path, include
 
 
-from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews
 
 from .DashboardViews import StudentChartDataView
 from django.contrib import admin
@@ -101,12 +101,23 @@ urlpatterns = [
     path('get_grades_and_sections', teacher_required(TeacherViews.get_grades_and_sections), name='get_grades_and_sections'),
     path('calculate_grades', teacher_required(TeacherViews.calculate_grades), name='calculate_grades'),
     path('get_grade_details', teacher_required(TeacherViews.get_grade_details), name='get_grade_details'),
-    path('students', teacher_required(TeacherViews.get_students_by_grade_and_section), name='students'),
+    path('students_classrecord', teacher_required(TeacherViews.get_students_by_grade_and_section), name='students_classrecord'),
     path('calculate_grades', teacher_required(TeacherViews.calculate_grades), name='calculate_grades'),
     path('display_classrecord', teacher_required(TeacherViews.display_classrecord), name='display_classrecord'),
     path('get_sections/', teacher_required(TeacherViews.get_sections), name='get_sections'),
     path('display_students/', teacher_required(TeacherViews.display_students), name='display_students'),
     path('student_list_for_class', teacher_required(TeacherViews.student_list_for_class), name='student_list_for_class'),
+    path('toggle_class_type/', teacher_required(TeacherViews.toggle_class_type), name='toggle_class_type'),
+    
+    path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
+    path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
+    path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
+
+    path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
+    path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),
+    path('transfer_record', teacher_required(TransferRecordViews.transfer_record), name='transfer_record'),
+    # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
+    path('get_teacher_list/', teacher_required(TransferRecordViews.get_teacher_list), name='get_teacher_list'),
 
     path('home_teacher', TeacherViews.home_teacher, name="home_teacher"),
     path('home_adviser_teacher', TeacherViews.home_adviser_teacher, name="home_adviser_teacher"),

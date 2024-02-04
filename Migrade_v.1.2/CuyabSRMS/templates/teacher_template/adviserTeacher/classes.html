@@ -1,17 +1,20 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+
 {% block title %}
 New Class List
 {% endblock title %}
+
 {% block main_content %}
 <style>
     .folder {
         width: 240px;
     }
-    .delete-dropdown{
+
+    .delete-dropdown {
         font-size: 12px;
     }
-    
 </style>
+
 <section class="content container mt-2">
     <div class="card">
         <div class="card-body">
@@ -20,58 +23,178 @@ New Class List
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="card-title card-title-dash">My Classes</h4>
                         <div class="add-items d-flex mb-0">
-                            <button id="uploadButton" class="add btn btn-icons btn-rounded btn-secondary todo-list-add-btn text-white me-0 pl-12p">
+                            <button id="uploadButton"
+                                class="add btn btn-icons btn-rounded btn-secondary todo-list-add-btn text-white me-0 pl-12p">
                                 <i class="mdi mdi-plus text-black"></i>
                             </button>
                         </div>
                     </div>
-                    <form method="post" class="w-100">
-                        {% csrf_token %}
-                        <div class="mt-5">
-                            {% if unique_grades_sections %}
-                                <ul class="d-flex flex-wrap justify-content-start align-items-center">
-                                    {% for grade_section in unique_grades_sections %}
-                                    <li class="d-block p-2 ">
-                                        <div class="btn-group ">
-                                            <button type="button" class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary" onclick="showStudentList('{{ grade_section.grade }}', '{{ grade_section.section }}')">
-                                                <div class="btn-group ">
-                                                    <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
-                                                        <g>
-                                                            <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
-                                                            <path d="M0 0h24v24H0z" fill="none"></path>
-                                                        </g>
-                                                    </svg>
-                                                </div>
-                                                <div class="btn-group">
-                                                    {{ grade_section.grade }} ({{ grade_section.section }})
-                                                </div>
-                                            </button>
-                                    
-                                            <div class="btn-group">
-                                                <button type="button" class="btn btn-secondary btn-dropdown-toggle dropdown-toggle-split" 
-                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                    <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="currentColor">
-                                                        <path fill="none" d="M0 0h20v20H0V0z"></path>
-                                                        <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
-                                                    </svg>
-                                                </button>
-                                                <div class="dropdown-menu delete-dropdown p-2">
-                                                    <a class="dropdown-item text-danger" href="{% url 'delete_student' grade_section.grade grade_section.section %}" onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">Delete</a>
-                                                    <form id="archiveForm" method="post" action="{% url 'archive_students_with_grade_and_section' grade=grade_section.grade section=grade_section.section %}">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="dropdown-item text-warning" onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>No class records available.</p>
-                            {% endif %}
+                    <section class="content container mt-2 vh-100">
+                        <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+                            <ul class="nav nav-tabs text" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#overview"
+                                        role="tab" aria-controls="overview" aria-selected="true">Advisory Class</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences"
+                                        role="tab" aria-selected="false">Subject Class</a>
+                                </li>
+                            </ul>
                         </div>
-                    </form>
+
+                        <div class="tab-content tab-content-basic">
+                            <div class="tab-pane fade show active" id="overview" role="tabpanel"
+                                aria-labelledby="overview">
+                                <form method="post" class="w-100" id="advisoryForm">
+                                    {% csrf_token %}
+                                    <div class="mt-5">
+                                        {% if unique_grades_sections %}
+                                        <ul class="d-flex flex-wrap justify-content-start align-items-center">
+                                            {% for grade_section in unique_grades_sections %}
+                                            {% if grade_section.class_type == 'Advisory' %}
+                                            <li class="d-block p-2">
+                                                <div class="btn-group">
+                                                    <button type="button"
+                                                        class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
+                                                        onclick="showStudentList('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                                        <div class="btn-group">
+                                                            <svg height="24px" width="24px" focusable="false"
+                                                                viewBox="0 0 24 24" fill="#5f6368">
+                                                                <g>
+                                                                    <path
+                                                                        d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z">
+                                                                    </path>
+                                                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                                                </g>
+                                                            </svg>
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            {{ grade_section.grade }} ({{ grade_section.section }})
+                                                        </div>
+                                                    </button>
+
+                                                    <!-- Dropdown menu for actions -->
+                                                    <div class="btn-group">
+                                                        <!-- Dropdown toggle button -->
+                                                        <button type="button"
+                                                            class="btn btn-secondary btn-dropdown-toggle dropdown-toggle-split"
+                                                            data-toggle="dropdown" aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <svg class="c-qd" width="20px" height="20px"
+                                                                viewBox="0 0 20 20" focusable="false"
+                                                                fill="currentColor">
+                                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                                                <path
+                                                                    d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z">
+                                                                </path>
+                                                            </svg>
+                                                        </button>
+
+                                                        <!-- Dropdown menu content -->
+                                                        <div class="dropdown-menu delete-dropdown p-2">
+                                                            <!-- Dropdown items for actions -->
+                                                            <a class="dropdown-item text-danger"
+                                                                href="{% url 'delete_student' grade_section.grade grade_section.section %}"
+                                                                onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">Delete</a>
+                                                            <form id="archiveForm" method="post"
+                                                                action="{% url 'archive_students_with_grade_and_section' grade=grade_section.grade section=grade_section.section %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="dropdown-item text-warning"
+                                                                    onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</button>
+                                                            </form>
+                                                            <button class="dropdown-item toggle-class-type-btn"
+                                                                onclick="toggleClassTypeAdvisoryAjax('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                                                Move to Subject Class
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% endif %}
+                                        </ul>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade show" id="audiences" role="tabpanel" aria-labelledby="audiences">
+                                <form method="post" class="w-100" id="subjectForm">
+                                    {% csrf_token %}
+                                    <div class="mt-5">
+                                        {% if unique_grades_sections %}
+                                        <ul class="d-flex flex-wrap justify-content-start align-items-center">
+                                            {% for grade_section in unique_grades_sections %}
+                                            {% if grade_section.class_type == 'Subject' %}
+                                            <li class="d-block p-2">
+                                                <div class="btn-group">
+                                                    <button type="button"
+                                                        class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
+                                                        onclick="showStudentList('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                                        <div class="btn-group">
+                                                            <svg height="24px" width="24px" focusable="false"
+                                                                viewBox="0 0 24 24" fill="#5f6368">
+                                                                <g>
+                                                                    <path
+                                                                        d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z">
+                                                                    </path>
+                                                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                                                </g>
+                                                            </svg>
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            {{ grade_section.grade }} ({{ grade_section.section }})
+                                                        </div>
+                                                    </button>
+
+                                                    <!-- Dropdown menu for actions -->
+                                                    <div class="btn-group">
+                                                        <!-- Dropdown toggle button -->
+                                                        <button type="button"
+                                                            class="btn btn-secondary btn-dropdown-toggle dropdown-toggle-split"
+                                                            data-toggle="dropdown" aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <svg class="c-qd" width="20px" height="20px"
+                                                                viewBox="0 0 20 20" focusable="false"
+                                                                fill="currentColor">
+                                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                                                <path
+                                                                    d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z">
+                                                                </path>
+                                                            </svg>
+                                                        </button>
+
+                                                        <!-- Dropdown menu content -->
+                                                        <div class="dropdown-menu delete-dropdown p-2">
+                                                            <!-- Dropdown items for actions -->
+                                                            <a class="dropdown-item text-danger"
+                                                                href="{% url 'delete_student' grade_section.grade grade_section.section %}"
+                                                                onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">Delete</a>
+                                                            <form id="archiveForm" method="post"
+                                                                action="{% url 'archive_students_with_grade_and_section' grade=grade_section.grade section=grade_section.section %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="dropdown-item text-warning"
+                                                                    onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</button>
+                                                            </form>
+                                                            <button class="dropdown-item toggle-class-type-btn"
+                                                                onclick="toggleClassTypeSubjectAjax('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                                                Move to Advisory
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% endif %}
+                                        </ul>
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -81,7 +204,7 @@ New Class List
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-    var showStudentList = function(grade, section) {
+    var showStudentList = function (grade, section) {
         var url = "{% url 'student_list_for_class' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
         window.location.href = url;
     };
@@ -96,5 +219,66 @@ New Class List
     $(document).ready(function () {
         $('.btn-dropdown-toggle').dropdown();
     });
+
+    function toggleClassTypeAdvisoryAjax(grade, section) {
+        // Add the CSRF token to the headers
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Use Ajax to send a POST request to the toggle_class_type view
+        $.ajax({
+            url: "{% url 'toggle_class_type' %}",
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            data: JSON.stringify({
+                grade: grade,
+                section: section,
+                current_class_type: 'Advisory',
+            }),
+            success: function (data) {
+                // Show an alert with the message from the server
+                alert(data.message);
+
+                // Reload the page after a successful update
+                location.reload();
+            },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    function toggleClassTypeSubjectAjax(grade, section) {
+        // Add the CSRF token to the headers
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Use Ajax to send a POST request to the toggle_class_type view
+        $.ajax({
+            url: "{% url 'toggle_class_type' %}",
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            data: JSON.stringify({
+                grade: grade,
+                section: section,
+                current_class_type: 'Subject',
+            }),
+            success: function (data) {
+                // Show an alert with the message from the server
+                alert(data.message);
+
+                // Reload the page after a successful update
+                location.reload();
+            },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
 </script>
+
 {% endblock main_content %}
