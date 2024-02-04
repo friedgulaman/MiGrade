@@ -4,7 +4,8 @@ import os
 import io
 import re
 
-from CuyabSRMS.utils import transmuted_grade
+from CuyabSRMS.utils import transmuted_grade, log_activity
+from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
@@ -509,6 +510,8 @@ def get_students_by_grade_and_section(request):
             quarter_name = request.POST.get("quarter")
 
             user = request.user
+            
+
             teacher = get_object_or_404(Teacher, user=user)
 
             # Use a more unique identifier for the class record name
@@ -524,6 +527,7 @@ def get_students_by_grade_and_section(request):
             )
 
             classrecord.save()
+
 
             # Query the database to retrieve students based on the selected grade and section
             students = Student.objects.filter(grade=grade_name, section=section_name)
@@ -586,6 +590,7 @@ def calculate_grades(request):
         print(grade_name)
         print(section_name)
 
+
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
         scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
         total_ww_hps = request.POST.get("total_max_written_works")
@@ -600,6 +605,14 @@ def calculate_grades(request):
         print(total_ww_hps)
         print(total_pt_hps)
         print(total_qa_hps)
+
+        user = request.user
+        action = f'{user} create a Classrecord'
+        details = f'{user}  create a Classrecord to the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
 
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
@@ -734,6 +747,7 @@ def calculate_grades(request):
             # Save the GradeScores object to the database
             grade_scores.save()
 
+
             # grade_scores = GradeScores.objects.filter(grade=grade_name, section=section_name)
 
             # context = {
@@ -752,6 +766,7 @@ def calculate_grades(request):
 def display_classrecord(request, class_record_id=None):
     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
+
 
     # If class_record_id is not provided, you may want to handle this case differently
     # For example, you can provide a list of available ClassRecord objects for the user to choose from

@@ -16,7 +16,7 @@
     <h3>Create New Class Record</h3>
     <a class="back-button" >&larr;</a>
 </div>
-    <form method="post" action="{% url 'students' %}">
+    <form method="post" action="{% url 'get_students_by_grade_and_section' %}">
         {% csrf_token %}
         <div class="container">
             <label class="text-muted mb-4 fs-sm">Note: If there are no Grade & Section options, please create a class first.</label>

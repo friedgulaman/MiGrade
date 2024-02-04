@@ -108,6 +108,7 @@ def get_teacher_data(request):
         'last_name': teacher.user.last_name,
     }
     return JsonResponse(data)
+
 def students(request):
     # Get distinct combinations of grade and section
     unique_combinations = Student.objects.values('grade', 'section').distinct()
@@ -135,6 +136,7 @@ def students(request):
 
     # Render the template with the context
     return render(request, 'admin_template/students.html', context)
+
 def get_student_details(request):
     student_id = request.GET.get('studentId')
     student = get_object_or_404(Student, id=student_id)
