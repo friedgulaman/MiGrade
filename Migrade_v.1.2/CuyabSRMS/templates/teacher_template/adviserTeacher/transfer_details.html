@@ -16,7 +16,7 @@ tempo_newupload
             <p class="subject" id="subject">Subject: {{ class_record.subject }}</p>
             <p class="quarter" id="quarter">Quarter: {{ class_record.quarters }}</p>
             <p class="students-heading">Students:</p>
-            <ul class="students-list" style="display: none;">
+            <ul class="students-list" >
                 {% for grade_score in class_record.GradeScores.all %}
                 <li class="student">
                     {{ grade_score.student.name }} - {{ grade_score.student.lrn }} - {{ grade_score.student.class_type }}
