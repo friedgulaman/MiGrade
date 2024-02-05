@@ -139,6 +139,7 @@ urlpatterns = [
     path('update_total_max_quarterly/', TeacherViews.update_total_max_quarterly, name='update_total_max_quarterly'),
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
     path('sf9/', TeacherViews.sf9, name='sf9'),
+    path('get_sections_classrecord/', TeacherViews.get_sections_classrecord, name='get_sections_classrecord'),
    # urls.py
 
     # Generation

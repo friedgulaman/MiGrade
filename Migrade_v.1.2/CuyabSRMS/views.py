@@ -14,6 +14,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 def custom_404(request, exception=None):
     return render(request, 'custom_404.html', status=404) 
     
+  
 def teachers_activity(request):
     if request.user.is_authenticated:
         user = request.user

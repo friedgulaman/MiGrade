@@ -27,7 +27,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 #OCR
 from .forms import DocumentUploadForm
-from .models import ProcessedDocument, ExtractedData
+from .models import ProcessedDocument, ExtractedData, Section
 from google.cloud import documentai_v1beta3 as documentai
 from django.shortcuts import render
 from .views import *
@@ -365,6 +365,7 @@ def upload(request):
 @login_required
 def save_json_data(request):
     if request.method == 'POST':
+        
         if not hasattr(request.user, 'teacher'):
             response_data = {'message': 'User is not a teacher.'}
             return JsonResponse(response_data, status=403)
@@ -381,6 +382,14 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
+
+            user = request.user
+            action = f'{user} create a Class'
+            details = f'{user} created a Class named {grade_name} {section_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
 
             for item in received_data['rows']:
                 lrn = item.get('LRN')
@@ -444,9 +453,11 @@ def save_json_data(request):
 
             response_data = {'message': 'JSON data saved successfully'}
             return JsonResponse(response_data)
+        
         except json.JSONDecodeError:
             response_data = {'message': 'Invalid JSON data'}
             return JsonResponse(response_data, status=400)
+        
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
@@ -499,6 +510,15 @@ def get_grade_details(request):
 
     return render(request, 'teacher_template/adviserTeacher/new_classrecord.html', context)
    # Replace with the actual URL of your new_classrecord.html
+   
+def get_sections_classrecord(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        grade_id = request.GET.get('grade_id')
+        sections = Student.objects.filter(grade=grade_id).values_list('section', flat=True).distinct()
+        sections_list = list(sections)
+        return JsonResponse({'sections': sections_list})
+    else:
+        return JsonResponse({'error': 'Invalid request'})
 
 # views.py
 def get_students_by_grade_and_section(request):
@@ -515,7 +535,7 @@ def get_students_by_grade_and_section(request):
             teacher = get_object_or_404(Teacher, user=user)
 
             # Use a more unique identifier for the class record name
-            classrecord_name = f'{grade_name}{section_name}{subject_name}{quarter_name}{teacher.id}'
+            classrecord_name = f'{grade_name} {section_name} {subject_name} {quarter_name}'
 
             classrecord = ClassRecord(
                 name=classrecord_name,
@@ -606,18 +626,20 @@ def calculate_grades(request):
         print(total_pt_hps)
         print(total_qa_hps)
 
-        user = request.user
-        action = f'{user} create a Classrecord'
-        details = f'{user}  create a Classrecord to the system.'
-        log_activity(user, action, details)
-
-        logs = user, action, details    
-        print(logs)
+        
 
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
         # quarter_name = request.POST.get("quarter")
-        
+        class_record_name = class_record.name
+
+        user = request.user
+        action = f'{user} create a Classrecord'
+        details = f'{user} created a Classrecord named "{class_record_name}" in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
 
         students = Student.objects.filter(grade=grade_name, section=section_name)
         

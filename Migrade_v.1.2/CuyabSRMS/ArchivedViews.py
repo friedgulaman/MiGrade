@@ -5,6 +5,8 @@ from .models import ClassRecord, ArchivedClassRecord, GradeScores, ArchivedGrade
 import logging
 from django.utils import timezone
 from django.http import HttpResponseRedirect
+from .utils import log_activity
+from django.db import IntegrityError
 
 def archive_class_record(request, class_record_id):
     
@@ -20,12 +22,28 @@ def archive_class_record(request, class_record_id):
                 teacher=class_record.teacher,
                 quarters=class_record.quarters,
             )
+            class_record_teacher = class_record.teacher
+
+            
+            user = request.user
+            action = f'{user} archive a Class Record'
+            details = f'{user} archived the Class Record {class_record.name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
             # Retrieve the ClassRecord instance to be archived         
             # Archive related GradeScores
+            archived_students = []
+
             for grade_score in class_record.GradeScores.all():
+                archived_student, _ = ArchivedStudent.objects.get_or_create(
+                    archived_name=grade_score.student,
+                    archived_teacher=class_record_teacher
+                )
                 ArchivedGradeScores.objects.create(
                     archived_class_record=archived_class_record,
-                    student=grade_score.student,
+                    student=archived_student,
                     scores_hps_written=grade_score.scores_hps_written,
                     scores_hps_performance=grade_score.scores_hps_performance,
                     total_ww_hps=grade_score.total_ww_hps,
@@ -53,9 +71,9 @@ def archive_class_record(request, class_record_id):
                     # Copy other relevant fields
                 )
 
-
             # Delete the original ClassRecord instance
             class_record.delete()
+
 
             referer_url = request.META.get('HTTP_REFERER')
             
@@ -84,12 +102,22 @@ def restore_archived_record(request, archived_record_id):
                 teacher=archived_record.teacher,
                 quarters=archived_record.quarters,
             )
+
+            user = request.user
+            action = f'{user} restore a Class Record'
+            details = f'{user} restored the Class Record {archived_record.name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
             
             # Restore related GradeScores
             archived_grade_scores = archived_record.archived_gradescores.all()
             for archived_grade_score in archived_grade_scores:
+                student_name = archived_grade_score.student.archived_name  # Adjust based on your ArchivedStudent model
+                student = Student.objects.get(name=student_name) 
                 GradeScores.objects.create(
-                    student=archived_grade_score.student,
+                    student=student,
                     class_record=class_record,
                     scores_hps_written=archived_grade_score.scores_hps_written,
                     scores_hps_performance=archived_grade_score.scores_hps_performance,
@@ -117,8 +145,10 @@ def restore_archived_record(request, archived_record_id):
                     weighted_score_quarterly=archived_grade_score.weighted_score_quarterly,
                     # Copy other relevant fields
                 )
+                archived_grade_score.student.delete()
             # Delete the archived record after restoration
             archived_record.delete()
+
 
             return redirect('archived_records')
     except Exception as e:
@@ -143,7 +173,16 @@ def archive_students_with_grade_and_section(request, grade, section):
             students_to_archive = Student.objects.filter(grade=grade, section=section, teacher=request.user.teacher)
             class_records_to_archive = ClassRecord.objects.filter(grade=grade, section=section, teacher=request.user.teacher)
 
+            user = request.user
+            action = f'{user} archive a Class'
+            details = f'{user} archived the Class {grade} {section} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
+
             if class_records_to_archive.exists():
+
                  
                 for class_record in class_records_to_archive:
                             archived_class_record = ArchivedClassRecord.objects.create(
@@ -372,27 +411,21 @@ def archive_students_with_grade_and_section(request, grade, section):
 
 def restore_archived_students(request, grade, section):
     try:
+        user = request.user
+        action = f'{user} restore a Class'
+        details = f'{user} restored the Class {grade} {section} in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
         with transaction.atomic():
             # Get the archived students based on grade and section
             archived_students = ArchivedStudent.objects.filter(archived_grade=grade, archived_section=section)
             archived_class_records = ArchivedClassRecord.objects.filter(grade=grade, section=section)
             
             if archived_class_records.exists():
-                for archived_class_record in archived_class_records:
-                        class_record = ClassRecord.objects.create(
-                            name=archived_class_record.name,
-                            grade=archived_class_record.grade,
-                            section=archived_class_record.section,
-                            subject=archived_class_record.subject,
-                            teacher=archived_class_record.teacher,
-                            quarters=archived_class_record.quarters
-                        )
-                    # Delete the archived class record instance
-                
-            # Restore each archived student
                 for archived_student in archived_students:
-                    # Create a new student instance using the archived student's data
-                    restored_student = Student.objects.create(
+                    student, _ = Student.objects.get_or_create(
                         name=archived_student.archived_name,
                         lrn=archived_student.archived_lrn,
                         sex=archived_student.archived_sex,
@@ -406,13 +439,31 @@ def restore_archived_students(request, grade, section):
                         grade=archived_student.archived_grade,
                         section=archived_student.archived_section
                     )
+                    print(f"Restore student for {student.name}")
+                    
+                    for archived_class_record in archived_class_records:
+                        class_record, created = ClassRecord.objects.get_or_create(
+                            name=archived_class_record.name,
+                            grade=archived_class_record.grade,
+                            section=archived_class_record.section,
+                            subject=archived_class_record.subject,
+                            teacher=archived_class_record.teacher,
+                            quarters=archived_class_record.quarters
+                        )
+                        print(f"Restore classrecord for {class_record.name}")
+                        print(f"Archive Classrecord for {archived_class_records}")
+                        print(f"Archive Student for {archived_student}")
 
-                        # Restore associated grade scores
-                    archived_grade_scores = ArchivedGradeScores.objects.filter(student=archived_student)
-                    for archived_grade_score in archived_grade_scores:
+                        # archived_grade_scores = ArchivedGradeScores.objects.filter(student=archived_student)
+                        archived_grade_scores = ArchivedGradeScores.objects.filter(student=archived_student)
+
+                        for archived_grade_score in archived_grade_scores:
+                            print(f"Archived GradeScore details: {archived_grade_score}")
+
+                            print(f"Class Record for GradeScore: {class_record}")
                             GradeScores.objects.create(
                                 class_record=class_record,
-                                student=restored_student,
+                                student=student,
                                 scores_hps_written=archived_grade_score.scores_hps_written,
                                 scores_hps_performance=archived_grade_score.scores_hps_performance,
                                 total_ww_hps=archived_grade_score.total_ww_hps,
@@ -438,46 +489,47 @@ def restore_archived_students(request, grade, section):
                                 weighted_score_performance=archived_grade_score.weighted_score_performance,
                                 weighted_score_quarterly=archived_grade_score.weighted_score_quarterly
                             )
+                        print(f"Gradescores for {student.name}")
+                        print("GradeScore restored.")
+
                             # Delete the archived grade score instance
-                            print(f"Archived grade score for {archived_student.archived_name}")
-                            
                         
-                    archived_final_grades = ArchivedFinalGrade.objects.filter(archived_student=archived_student)
-                    for archived_final_grade in archived_final_grades:
-                        # Create a new FinalGrade instance with restored data
-                        FinalGrade.objects.create(
-                            teacher=archived_final_grade.archived_teacher,
-                            student=restored_student,
-                            grade=archived_final_grade.archived_grade,
-                            section=archived_final_grade.archived_section,
-                            final_grade=archived_final_grade.archived_final_grade
-                        )
+                        # archived_final_grades = ArchivedFinalGrade.objects.filter(archived_student=archived_student)
+                        # for archived_final_grade in archived_final_grades:
+                        # # Create a new FinalGrade instance with restored data
+                        #     FinalGrade.objects.create(
+                        #     teacher=archived_final_grade.archived_teacher,
+                        #     student=restored_student,
+                        #     grade=archived_final_grade.archived_grade,
+                        #     section=archived_final_grade.archived_section,
+                        #     final_grade=archived_final_grade.archived_final_grade
+                        # )
 
-                    # Restore associated general averages
-                    archived_general_averages = ArchivedGeneralAverage.objects.filter(archived_student=archived_student)
-                    for archived_general_average in archived_general_averages:
-                        # Create a new GeneralAverage instance with restored data
-                        GeneralAverage.objects.create(
-                            student=restored_student,
-                            grade=archived_general_average.archived_grade,
-                            section=archived_general_average.archived_section,
-                            general_average=archived_general_average.archived_general_average
-                        )
+                        # # Restore associated general averages
+                        # archived_general_averages = ArchivedGeneralAverage.objects.filter(archived_student=archived_student)
+                        # for archived_general_average in archived_general_averages:
+                        #     # Create a new GeneralAverage instance with restored data
+                        #     GeneralAverage.objects.create(
+                        #         student=restored_student,
+                        #         grade=archived_general_average.archived_grade,
+                        #         section=archived_general_average.archived_section,
+                        #         general_average=archived_general_average.archived_general_average
+                        #     )
 
-                    # Restore associated quarterly grades
-                    archived_quarterly_grades = ArchivedQuarterlyGrades.objects.filter(archived_student=archived_student)
-                    for archived_quarterly_grade in archived_quarterly_grades:
-                        # Create a new QuarterlyGrades instance with restored data
-                        QuarterlyGrades.objects.create(
-                            student=restored_student,
-                            quarter=archived_quarterly_grade.archived_quarter,
-                            grades=archived_quarterly_grade.archived_grades
-                        )
+                        # # Restore associated quarterly grades
+                        # archived_quarterly_grades = ArchivedQuarterlyGrades.objects.filter(archived_student=archived_student)
+                        # for archived_quarterly_grade in archived_quarterly_grades:
+                        #     # Create a new QuarterlyGrades instance with restored data
+                        #     QuarterlyGrades.objects.create(
+                        #         student=restored_student,
+                        #         quarter=archived_quarterly_grade.archived_quarter,
+                        #         grades=archived_quarterly_grade.archived_grades
+                        #     )
 
-                    # Delete the archived student instance
-                    archived_student.delete()
-                    # archived_grade_scores.delete()
-                archived_class_record.delete()
+                #     # Delete the archived student instance
+                #     archived_student.delete()
+                #     # archived_grade_scores.delete()
+                # archived_class_record.delete()
                 return HttpResponseRedirect(reverse('archived_records'))
             
             else:
@@ -529,9 +581,7 @@ def restore_archived_students(request, grade, section):
                                 weighted_score_performance=archived_grade_score.weighted_score_performance,
                                 weighted_score_quarterly=archived_grade_score.weighted_score_quarterly
                             )
-                            # Delete the archived grade score instance
-                            print(f"Archived grade score for {archived_student.archived_name}")
-                            
+
                         
                     archived_final_grades = ArchivedFinalGrade.objects.filter(archived_student=archived_student)
                     for archived_final_grade in archived_final_grades:
@@ -565,8 +615,8 @@ def restore_archived_students(request, grade, section):
                             grades=archived_quarterly_grade.archived_grades
                         )
 
-                    # Delete the archived student instance
-                    archived_student.delete()
+                    # # Delete the archived student instance
+                    # archived_student.delete()
 
                 return HttpResponseRedirect(reverse('archived_records'))
 
