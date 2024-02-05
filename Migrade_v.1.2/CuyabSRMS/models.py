@@ -46,7 +46,7 @@ class Teacher(models.Model):
 
 class Student(models.Model):
     name = models.CharField(max_length=255)
-    lrn = models.CharField(max_length=12, unique=True)
+    lrn = models.CharField(max_length=12)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
     birthday = models.CharField(max_length=10, default='N/A')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
@@ -61,6 +61,10 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ('lrn', 'teacher')
+
 
     
     def archive(self):
@@ -578,10 +582,11 @@ class ActivityLog(models.Model):
 
 
 class InboxMessage(models.Model):
-    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    to_teacher = models.CharField(max_length=50, null=True, blank=True)
+    from_teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     file_name = models.CharField(max_length=50, null=True, blank=True)
     json_data = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Inbox message for {self.teacher.username}"
+        return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"

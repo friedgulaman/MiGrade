@@ -1,24 +1,59 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
 {% load static %}
 {% block title %}
-Student List for {{ grade }} {{ section }}
+Inbox Messages
 {% endblock title %}
-
 {% block main_content %}
-<h1>Inbox Messages</h1>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<section>
+<div class="container">
+  <h1>Inbox Messages</h1>
+</div>
+<div>
+  {% if inbox_messages %}
+    <ul>
+      {% for message in inbox_messages %}
+        <li>
+          <button class="btn btn-primary accept-btn" data-message-id="{{ message.id }}">Accept</button>
+          <button class="btn btn-danger reject-btn" data-message-id="{{ message.id }}">Reject</button>
+          <p><strong>Sender:</strong> {{ message.from_teacher.user }}</p>
+          <p><strong>File Name:</strong> {{ message.file_name }}</p>
+          <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
+          
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No inbox messages found.</p>
+  {% endif %}
+</div>
+</section>
 
-{% if inbox_messages %}
-  <ul>
-    {% for message in inbox_messages %}
-      <li>
-        <p><strong>Teacher:</strong> {{ message.teacher.username }}</p>
-        <p><strong>File Name:</strong> {{ message.file_name }}</p>
-        <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
-        <p><strong>JSON Data:</strong> {{ message.json_data }}</p>
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p>No inbox messages found.</p>
-{% endif %}
-  {% endblock main_content %}
+<script>
+$(document).ready(function() {
+    $(".accept-btn, .reject-btn").click(function() {
+        var messageId = $(this).data('message-id');
+        var action = $(this).hasClass('accept-btn') ? 'accept' : 'reject';
+
+        $.ajax({
+            url: '{% url "process_message" %}',
+            type: 'POST',
+            data: {
+                'message_id': messageId,
+                'action': action,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log(response);
+                // Handle success response if needed
+            },
+            error: function(error) {
+                console.error(error);
+                // Handle error if needed
+            }
+        });
+    });
+});
+</script>
+
+{% endblock main_content %}

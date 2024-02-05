@@ -16,11 +16,21 @@ tempo_newupload
             <p class="subject" id="subject">Subject: {{ class_record.subject }}</p>
             <p class="quarter" id="quarter">Quarter: {{ class_record.quarters }}</p>
             <p class="students-heading">Students:</p>
-            <ul class="students-list" style="display: none;">
+            <ul class="students-list" >
                 {% for grade_score in class_record.GradeScores.all %}
                 <li class="student">
                     {{ grade_score.student.name }} - {{ grade_score.student.lrn }} - {{ grade_score.student.class_type }}
                     <ul class="scores-list">
+                        <li class="scores-item" id="scores_hps_written">Scores HPS Written: {{ grade_score.scores_hps_written }}</li>
+                        <li class="scores-item" id="scores_hps_performance">Scores HPS Performance: {{ grade_score.scores_hps_performance }}</li>
+                        <li class="scores-item" id="total_ww_hps">Total WW HPS: {{ grade_score.total_ww_hps }}</li>
+                        <li class="scores-item" id="total_pt_hps">Total PT HPS: {{ grade_score.total_pt_hps }}</li>
+                        <li class="scores-item" id="total_qa_hps">Total QA HPS: {{ grade_score.total_qa_hps }}</li>
+                        <li class="scores-item" id="written_works_scores">Written Works Scores: {{ grade_score.written_works_scores }}</li>
+                        <li class="scores-item" id="performance_task_scores">Performance Task Scores: {{ grade_score.performance_task_scores }}</li>
+                        <li class="scores-item" id="initial_grades">Initial Grades: {{ grade_score.initial_grades }}</li>
+                        <li class="scores-item" id="transmuted_grades">Transmuted Grades: {{ grade_score.transmuted_grades }}</li>
+                        <li class="scores-item" id="total_score_written">Total Score Written: {{ grade_score.total_score_written }}</li>
                         <li class="scores-item" id="total_max_score_written">Total Max Score Written: {{ grade_score.total_max_score_written }}</li>
                         <li class="scores-item" id="total_score_performance">Total Score Performance: {{ grade_score.total_score_performance }}</li>
                         <li class="scores-item" id="total_max_score_performance">Total Max Score Performance: {{ grade_score.total_max_score_performance }}</li>
@@ -35,6 +45,7 @@ tempo_newupload
                         <li class="scores-item" id="weighted_score_written">Weighted Score Written: {{ grade_score.weighted_score_written }}</li>
                         <li class="scores-item" id="weighted_score_performance">Weighted Score Performance: {{ grade_score.weighted_score_performance }}</li>
                         <li class="scores-item" id="weighted_score_quarterly">Weighted Score Quarterly: {{ grade_score.weighted_score_quarterly }}</li>
+                        
                     </ul>
                 </li>
                 {% endfor %}
@@ -180,21 +191,33 @@ tempo_newupload
                 "name": $(this).text().split(" - ")[0].trim(),
                 "lrn": $(this).text().split(" - ")[1].trim(),
                 "scores": {
-                    "totalMaxScoreWritten": parseScore($(this).find("#total_max_score_written").text().replace("Total Max Score Written: ", "").trim()),
-                    "totalScorePerformance": parseScore($(this).find("#total_score_performance").text().replace("Total Score Performance: ", "").trim()),
-                    "totalMaxScorePerformance": parseScore($(this).find("#total_max_score_performance").text().replace("Total Max Score Performance: ", "").trim()),
-                    "totalScoreQuarterly": parseScore($(this).find("#total_score_quarterly").text().replace("Total Score Quarterly: ", "").trim()),
-                    "totalMaxScoreQuarterly": parseScore($(this).find("#total_max_score_quarterly").text().replace("Total Max Score Quarterly: ", "").trim()),
-                    "percentageScoreWritten": parseScore($(this).find("#percentage_score_written").text().replace("Percentage Score Written: ", "").trim()),
-                    "percentageScorePerformance": parseScore($(this).find("#percentage_score_performance").text().replace("Percentage Score Performance: ", "").trim()),
-                    "percentageScoreQuarterly": parseScore($(this).find("#percentage_score_quarterly").text().replace("Percentage Score Quarterly: ", "").trim()),
-                    "weightInputWritten": parseScore($(this).find("#weight_input_written").text().replace("Weight Input Written: ", "").trim()),
-                    "weightInputPerformance": parseScore($(this).find("#weight_input_performance").text().replace("Weight Input Performance: ", "").trim()),
-                    "weightInputQuarterly": parseScore($(this).find("#weight_input_quarterly").text().replace("Weight Input Quarterly: ", "").trim()),
-                    "weightedScoreWritten": parseScore($(this).find("#weighted_score_written").text().replace("Weighted Score Written: ", "").trim()),
-                    "weightedScorePerformance": parseScore($(this).find("#weighted_score_performance").text().replace("Weighted Score Performance: ", "").trim()),
-                    "weightedScoreQuarterly": parseScore($(this).find("#weighted_score_quarterly").text().replace("Weighted Score Quarterly: ", "").trim())
-                }
+                    
+                    "scores_hps_written": parseScore($("#scores_hps_written").text().replace("Scores HPS Written: ", "").trim()),
+                    "scores_hps_performance": parseScore($("#scores_hps_performance").text().replace("Scores HPS Performance: ", "").trim()),
+                    "total_ww_hps": parseScore($("#total_ww_hps").text().replace("Total WW HPS: ", "").trim()),
+                    "total_pt_hps": parseScore($("#total_pt_hps").text().replace("Total PT HPS: ", "").trim()),
+                    "total_qa_hps": parseScore($("#total_qa_hps").text().replace("Total QA HPS: ", "").trim()),
+                    "written_works_scores": parseScore($("#written_works_scores").text().replace("Written Works Scores: ", "").trim()),
+                    "performance_task_scores": parseScore($("#performance_task_scores").text().replace("Performance Task Scores: ", "").trim()),
+                    "initial_grades": parseScore($("#initial_grades").text().replace("Initial Grades: ", "").trim()),
+                    "transmuted_grades": parseScore($("#transmuted_grades").text().replace("Transmuted Grades: ", "").trim()),
+                    "total_score_written": parseScore($("#total_score_written").text().replace("Total Score Written: ", "").trim()),
+                    "total_max_score_written": parseScore($("#total_max_score_written").text().replace("Total Max Score Written: ", "").trim()),
+                    "total_score_performance": parseScore($("#total_score_performance").text().replace("Total Score Performance: ", "").trim()),
+                    "total_max_score_performance": parseScore($("#total_max_score_performance").text().replace("Total Max Score Performance: ", "").trim()),
+                    "total_score_quarterly": parseScore($("#total_score_quarterly").text().replace("Total Score Quarterly: ", "").trim()),
+                    "total_max_score_quarterly": parseScore($("#total_max_score_quarterly").text().replace("Total Max Score Quarterly: ", "").trim()),
+                    "percentage_score_written": parseScore($("#percentage_score_written").text().replace("Percentage Score Written: ", "").trim()),
+                    "percentage_score_performance": parseScore($("#percentage_score_performance").text().replace("Percentage Score Performance: ", "").trim()),
+                    "percentage_score_quarterly": parseScore($("#percentage_score_quarterly").text().replace("Percentage Score Quarterly: ", "").trim()),
+                    "weight_input_written": parseScore($("#weight_input_written").text().replace("Weight Input Written: ", "").trim()),
+                    "weight_input_performance": parseScore($("#weight_input_performance").text().replace("Weight Input Performance: ", "").trim()),
+                    "weight_input_quarterly": parseScore($("#weight_input_quarterly").text().replace("Weight Input Quarterly: ", "").trim()),
+                    "weighted_score_written": parseScore($("#weighted_score_written").text().replace("Weighted Score Written: ", "").trim()),
+                    "weighted_score_performance": parseScore($("#weighted_score_performance").text().replace("Weighted Score Performance: ", "").trim()),
+                    "weighted_score_quarterly": parseScore($("#weighted_score_quarterly").text().replace("Weighted Score Quarterly: ", "").trim())
+
+              }
             };
 
             classRecord.students.push(student);

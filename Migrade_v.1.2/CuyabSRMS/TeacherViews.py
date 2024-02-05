@@ -393,7 +393,7 @@ def save_json_data(request):
 
                 # Create or update the Section object
                 section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
-                
+
                 # Increment the total_students field for the respective section
                 section.total_students += 1
                 section.class_type = class_type  # Save the class type on Section
@@ -406,14 +406,14 @@ def save_json_data(request):
                 teacher.grade_section[grade.name] = section.name
                 teacher.save()
 
-                # Create or update the Student object based on LRN
+                # Create or update the Student object based on LRN and teacher
                 student, created = Student.objects.get_or_create(
                     lrn=lrn,
+                    teacher=teacher,
                     defaults={
                         'name': name,
                         'sex': sex,
                         'birthday': birthday,
-                        'teacher': teacher,
                         'school_id': school_id,
                         'district': district,
                         'division': division,
