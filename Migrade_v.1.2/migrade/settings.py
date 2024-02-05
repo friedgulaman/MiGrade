@@ -197,3 +197,16 @@ RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # or any large number that suits your needs
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}

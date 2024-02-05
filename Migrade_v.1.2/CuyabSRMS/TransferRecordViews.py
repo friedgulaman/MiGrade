@@ -3,7 +3,7 @@ import queue
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .models import InboxMessage, Section, Teacher, ClassRecord, GradeScores, Student
+from .models import Grade, InboxMessage, Quarters, Section, Teacher, ClassRecord, GradeScores, Student
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
@@ -119,3 +119,116 @@ def inbox(request):
     messages = InboxMessage.objects.filter(teacher=teacher).order_by('-timestamp')
 
     return render(request, 'teacher_template/adviserTeacher/inbox.html', {'messages': messages})
+
+@require_POST
+@login_required
+def process_message(request):
+    if request.method == 'POST':
+        try:
+            teacher = request.user.teacher
+            message_id = request.POST.get('message_id')
+            action = request.POST.get('action')
+
+            # Retrieve the message from the database
+            message = InboxMessage.objects.get(id=message_id)
+
+            # Load JSON data from the message
+            data = json.loads(message.json_data)
+
+            # Create or retrieve the ClassRecord instance
+            class_record, created = ClassRecord.objects.get_or_create(
+                name=data["className"],
+                defaults={
+                    'grade': Grade.objects.get_or_create(name=data["transferRecords"][0]["grade"])[0],
+                    'section': Section.objects.filter(name=data["transferRecords"][0]["section"]).first(),
+                    'subject': data["transferRecords"][0]["subject"],
+                    'quarters': Quarters.objects.get_or_create(quarters=data["transferRecords"][0]["quarter"])[0],
+                    'teacher': Teacher.objects.get(id=teacher.id)
+                }
+            )
+
+# Iterate through students and update their scores
+            for student_data in data["transferRecords"][0]["students"]:
+                # Assuming that the students already exist, retrieve the student by name and lrn
+                students = Student.objects.filter(name=student_data["name"], lrn=student_data["lrn"])
+
+                if students.exists():
+                    # If there are multiple students with the same name and LRN, choose one (you may want to add more logic here)
+                    student = students.first()
+
+                    grade_scores, created = GradeScores.objects.get_or_create(
+                        student=student,
+                        class_record=class_record,
+                        defaults={
+                            'scores_hps_written': [],
+                            'scores_hps_performance': [],
+                            'total_ww_hps': None,
+                            'total_pt_hps': None,
+                            'total_qa_hps': None,
+                            'written_works_scores': [],
+                            'performance_task_scores': [],
+                            'initial_grades': None,
+                            'transmuted_grades': None,
+                            'total_score_written': None,
+                            'total_max_score_written': None,
+                            'total_score_performance': None,
+                            'total_max_score_performance': None,
+                            'total_score_quarterly': None,
+                            'total_max_score_quarterly': None,
+                            'percentage_score_written': None,
+                            'percentage_score_performance': None,
+                            'percentage_score_quarterly': None,
+                            'weight_input_written': None,
+                            'weight_input_performance': None,
+                            'weight_input_quarterly': None,
+                            'weighted_score_written': None,
+                            'weighted_score_performance': None,
+                            'weighted_score_quarterly': None,
+                            # Add other fields as needed
+                        }
+                    )
+
+                    if not created:
+                        # Update existing GradeScores instance
+                        grade_scores.scores_hps_written = student_data["scores"].append("scores_hps_written", [])
+                        grade_scores.scores_hps_performance = student_data["scores"].append("scores_hps_performance", [])
+                        grade_scores.total_ww_hps = student_data["scores"].get("total_ww_hps", None)
+                        grade_scores.total_pt_hps = student_data["scores"].get("total_pt_hps", None)
+                        grade_scores.total_qa_hps = student_data["scores"].get("total_qa_hps", None)
+                        grade_scores.written_works_scores = student_data["scores"].append("written_works_scores", [])
+                        grade_scores.performance_task_scores = student_data["scores"].append("performance_task_scores", [])
+                        grade_scores.initial_grades = student_data["scores"].get("initial_grades", None)
+                        grade_scores.transmuted_grades = student_data["scores"].get("transmuted_grades", None)
+                        grade_scores.total_score_written = student_data["scores"].get("total_score_written", None)
+                        grade_scores.total_max_score_written = student_data["scores"].get("total_max_score_written", None)
+                        grade_scores.total_score_performance = student_data["scores"].get("total_score_performance", None)
+                        grade_scores.total_max_score_performance = student_data["scores"].get("total_max_score_performance", None)
+                        grade_scores.total_score_quarterly = student_data["scores"].get("total_score_quarterly", None)
+                        grade_scores.total_max_score_quarterly = student_data["scores"].get("total_max_score_quarterly", None)
+                        grade_scores.percentage_score_written = student_data["scores"].get("percentage_score_written", None)
+                        grade_scores.percentage_score_performance = student_data["scores"].get("percentage_score_performance", None)
+                        grade_scores.percentage_score_quarterly = student_data["scores"].get("percentage_score_quarterly", None)
+                        grade_scores.weight_input_written = student_data["scores"].get("weight_input_written", None)
+                        grade_scores.weight_input_performance = student_data["scores"].get("weight_input_performance", None)
+                        grade_scores.weight_input_quarterly = student_data["scores"].get("weight_input_quarterly", None)
+                        grade_scores.weighted_score_written = student_data["scores"].get("weighted_score_written", None)
+                        grade_scores.weighted_score_performance = student_data["scores"].get("weighted_score_performance", None)
+                        grade_scores.weighted_score_quarterly = student_data["scores"].get("weighted_score_quarterly", None)
+                        # Update other fields as needed
+
+                        grade_scores.save()
+                else:
+                    # Handle the case where no student is found (print a message, log, or take appropriate action)
+                    print(f"No student found for Name: {student_data['name']} and LRN: {student_data['lrn']}")
+
+            # ...
+
+            # Delete the processed message from the InboxMessage model
+            message.delete()
+
+            return JsonResponse({'status': 'success'})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error'})
