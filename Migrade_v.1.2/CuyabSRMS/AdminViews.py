@@ -601,6 +601,17 @@ def upload_documents_ocr(request):
     if request.method == 'POST':
         form = DocumentUploadForm(request.POST, request.FILES)
         if form.is_valid():
+            uploaded_file = request.FILES['document']
+            name = uploaded_file.name
+        
+            # Sanitize the filename by replacing spaces and special characters with underscores
+            filename = 'processed_documents/' + name.replace(' ', '_').replace(',', '').replace('(', '').replace(')', '')
+            file_extension = os.path.splitext(filename)[-1].lower()
+            print(filename)
+
+            if ProcessedDocument.objects.filter(document=filename).exists():
+                messages.error(request, 'Document with the same name already exists.')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             # Replace 'YOUR_PROJECT_ID' with your Google Cloud project ID.
             project_id = '1083879771832'
 
@@ -612,7 +623,7 @@ def upload_documents_ocr(request):
             # Define the processor resource name.
             processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
 
-            uploaded_file = request.FILES['document']
+            
 
             # Read the document content from the uploaded file.
             content = uploaded_file.read()
@@ -662,6 +673,7 @@ def upload_documents_ocr(request):
                     data_by_type['Confidence'].append(f"{prop.confidence:.0%}")
 
             print(data_by_type)
+
             # Create a ProcessedDocument instance and save it
             processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
             processed_document.save()
@@ -838,3 +850,26 @@ def sf10_views(request):
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
 
+def sf10_edit(request, id):
+    extracted_data = get_object_or_404(ExtractedData, id=id)
+    
+    # Assuming you have 'processed_document' field in your ExtractedData model
+    processed_document = extracted_data.processed_document
+
+    # Access the PDF content from the 'document' field of the 'ProcessedDocument' object
+    pdf_content = processed_document.document.read()
+
+    # Convert the content to base64 encoding
+    pdf_content_base64 = base64.b64encode(pdf_content).decode('utf-8')
+
+    return render(request, 'admin_template/edit_sf10.html', {'extracted_data': extracted_data, 'pdf_content_base64': pdf_content_base64})
+
+def sf10_delete(request):
+    if request.method == 'POST':
+        delete_id = request.POST.get('delete_id')
+        extracted_data = get_object_or_404(ExtractedData, id=delete_id)
+        extracted_data.delete()
+        # Redirect to the same page after deletion or wherever needed
+        return redirect('sf10_view')
+    else:
+        return redirect('sf10_view')

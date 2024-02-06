@@ -82,6 +82,8 @@ urlpatterns = [
     path('subject_list/', admin_required(AdminViews.subject_list), name='subject_list'),
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', admin_required( AdminViews.save_edited_data), name='save_edited_data'),
+    path('sf10/edit/<int:id>/',AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
 
 
 

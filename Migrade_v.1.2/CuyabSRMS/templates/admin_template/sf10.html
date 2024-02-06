@@ -90,7 +90,16 @@ upload
                                 <td>
                                     <a href="{{ extracted_data.processed_document.document.url }}"
                                         class="btn btn-sm btn-primary" download>Download</a>
+                                        <a href="{% url 'sf10_edit' extracted_data.id %}" class="btn btn-sm btn-info">Edit</a>
+
+                                        <!-- Delete Button -->
+                                        <form method="post" action="{% url 'sf10_delete' %}"  onsubmit="return confirm('Are you sure you want to delete this record? This action cannot be undone.');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="delete_id" value="{{ extracted_data.id }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
                                 </td>
+                                
                             </tr>
                             {% empty %}
                             <tr>

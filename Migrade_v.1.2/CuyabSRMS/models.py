@@ -561,6 +561,11 @@ class ExtractedData(models.Model):
             "sex": self.sex,
             "name_of_school": self.name_of_school
         }
+    def delete(self, *args, **kwargs):
+        # Delete associated ProcessedDocument before deleting ExtractedData
+        if self.processed_document:
+            self.processed_document.delete()
+        super().delete(*args, **kwargs)
 
 
 
