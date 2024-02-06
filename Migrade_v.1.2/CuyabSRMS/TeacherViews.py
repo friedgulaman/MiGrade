@@ -1219,7 +1219,7 @@ def save_general_average(student_data, grade, section):
             general_average_record.save()
         else:
             # Create a new record if none exist
-            general_average_record = GeneralAverage.objects.create(
+            GeneralAverage.objects.create(
                 student=student,
                 grade=grade,
                 section=section,
