@@ -70,8 +70,8 @@ def doLogin(request):
                 
                 # Log the user login activity
                 user = request.user
-                action = 'User logged in'
-                details = 'User logged in to the system.'
+                action = f'{user} logged in'
+                details = f'{user} logged in to the system.'
                 log_activity(user, action, details)
                 
                 if user.user_type == 2:

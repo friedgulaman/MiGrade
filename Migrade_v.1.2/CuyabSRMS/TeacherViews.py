@@ -384,7 +384,7 @@ def save_json_data(request):
             section_name = received_data.get('section', '')
 
             user = request.user
-            action = f'{user} create a Class'
+            action = f'{user} create a Class {grade_name} {section_name}'
             details = f'{user} created a Class named {grade_name} {section_name} in the system.'
             log_activity(user, action, details)
 
@@ -634,7 +634,7 @@ def calculate_grades(request):
         class_record_name = class_record.name
 
         user = request.user
-        action = f'{user} create a Classrecord'
+        action = f'{user} create a Classrecord "{class_record_name}"'
         details = f'{user} created a Classrecord named "{class_record_name}" in the system.'
         log_activity(user, action, details)
 
@@ -863,6 +863,8 @@ def sf9(request):
 @login_required
 def delete_student(request, grade, section):
     user = request.user
+            
+
 
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
@@ -874,6 +876,10 @@ def delete_student(request, grade, section):
 
             # Delete associated ClassRecord records
             ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
+
+            action = f'{user} delete a Class name {grade} {section}'
+            details = f'{user} deleted a Class named {grade} {section} in the system.'
+            log_activity(user, action, details)
 
                 # Redirect to a different page after deletion
             return redirect('display_students')  # Replace with your actual view name
@@ -1694,9 +1700,16 @@ display_students
 @require_POST
 def delete_classrecord(request, class_record_id):
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
+    user = request.user
+    class_record_name = class_record.name  # Assuming grade is a field in your ClassRecord model
+  
 
     # Assuming you have some permission checks here before deleting
     class_record.delete()
+    action = f'{user} delete a Classrecord name "{class_record_name}"'
+    details = f'{user} deleted a Classrecord named "{class_record_name}" in the system.'
+    log_activity(user, action, details)
+
 
     return JsonResponse({'message': 'Record deleted successfully'})
 

@@ -8,7 +8,7 @@ Edit SF10 Data
 {% block main_content %}
 <div class="container">
     <h1>Edit SF10 Data</h1>
-    <form method="post">
+    <form id="sf10-edit-form" method="post" action="{% url 'sf10_edit' id=extracted_data.id %}">
         {% csrf_token %}
         <!-- Last Name -->
         <div class="form-group">
@@ -99,4 +99,15 @@ Edit SF10 Data
         });
     });
 </script>
+<script>
+    // Check if the URL contains a success parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const successParam = urlParams.get('success');
+
+    // If success parameter is present, show an alert
+    if (successParam === 'true') {
+        alert('SF10 information updated successfully.');
+    }
+</script>
+
 {% endblock main_content %}

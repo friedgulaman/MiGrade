@@ -13,7 +13,7 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 from .forms import SubjectForm
 from .models import Subject
-
+from .views import log_activity
 #OCR
 from .models import ExtractedData
 from .models import ProcessedDocument
@@ -153,12 +153,21 @@ def update_student_details(request):
 
     # Retrieve the student from the database
     student = get_object_or_404(Student, id=student_id)
-
+    grade = student.grade
+    section = student.section
+    before_student = student.name
     # Update the student details
     student.name = student_name
     # Update other fields as needed
     student.save()
 
+    user = request.user
+    action = f'{user} update student name "{before_student}" to "{student_name}"'
+    details = f'{user} update student name "{before_student}" to "{student_name}" in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
     # Return a success response
     return JsonResponse({'message': 'Student details updated successfully'})
 
@@ -166,7 +175,17 @@ def update_student_details(request):
 def delete_student(request):
     student_id = request.POST.get('student_id')
     student = get_object_or_404(Student, id=student_id)
+    student_name = student.name
+    user = request.user
+    action = f'{user} delete student name "{student_name}"'
+    details = f'{user} delete student name "{student_name}" in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
+
     student.delete()
+
 
     return JsonResponse({'message': 'Student deleted successfully'})
 
@@ -231,6 +250,14 @@ def add_student(request):
         )
         new_student.save()
 
+        user = request.user
+        action = f'{user} add student "{name}" to class "{grade} {section}"'
+        details = f'{user} added student "{name}" to class "{grade} {section} in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
         redirect_url = reverse('student_lists', kwargs={'grade': grade, 'section': section})
 
     # Fetch default values for the form
@@ -273,6 +300,14 @@ def add_subject(request):
         performance_task_percentage = request.POST.get('performance_task_percentage')
         quarterly_assessment_percentage = request.POST.get('quarterly_assessment_percentage')
 
+        user = request.user
+        action = f'{user} add "{name}" subject'
+        details = f'{user} added "{name}" subject in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
         if name and written_works_percentage is not None and performance_task_percentage is not None and quarterly_assessment_percentage is not None:
             subject = Subject.objects.create(
                 name=name,
@@ -304,6 +339,14 @@ def update_subject(request):
         subject.quarterly_assessment_percentage = quarterly_assessment_percentage
         subject.save()
 
+        user = request.user
+        action = f'{user} update "{subject_name}" subject information'
+        details = f'{user} update "{subject_name}" subject information in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
         # Return a success response
         return JsonResponse({'success': True, 'message': 'Subject updated successfully'})
 
@@ -316,6 +359,14 @@ def delete_subject(request):
         subject_id = request.POST.get('subjectId')
 
         subject = get_object_or_404(Subject, id=subject_id)
+        subject_name = subject.name
+        user = request.user
+        action = f'{user} delete "{subject_name}" subject'
+        details = f'{user} delete "{subject_name}" subject in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
         subject.delete()
 
         # Return a success response
@@ -399,9 +450,18 @@ def update_teacher(request):
     last_name = request.POST.get('lastName')
 
     teacher = get_object_or_404(Teacher, id=teacher_id)
+    before_teacher = f"{teacher.user.first_name} {teacher.user.last_name}"
     teacher.user.first_name = first_name
     teacher.user.last_name = last_name
     teacher.user.save()
+
+    user = request.user
+    action = f'{user} update teacher name "{before_teacher}" to {teacher.user.first_name} {teacher.user.last_name}"'
+    details = f'{user} updated teacher name "{before_teacher}" to {teacher.user.first_name} {teacher.user.last_name} in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
 
     return JsonResponse({'message': 'Teacher updated successfully'})
 @csrf_exempt
@@ -414,9 +474,17 @@ def delete_teacher(request):
         teacher = get_object_or_404(Teacher, id=teacher_id)
 
         try:
+            user = request.user
+            action = f'{user} delete teacher "{teacher.user.first_name} {teacher.user.last_name}"'
+            details = f'{user} delete teacher {teacher.user.first_name} {teacher.user.last_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
             # Perform the teacher deletion
             user_id = teacher.user.id  # Get the associated user ID
             teacher.delete()
+
 
             # Delete the associated CustomUser
             user = get_object_or_404(get_user_model(), id=user_id)
@@ -439,8 +507,16 @@ def add_teacher_save(request):
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password', 'default_pass')
+        user = request.user
 
         try:
+                    
+            action = f'{user} add teacher "{first_name} {last_name}"'
+            details = f'{user} added teacher {first_name} {last_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
             # Create a CustomUser
             user = CustomUser.objects.create_user(
                 username=username,
@@ -608,11 +684,21 @@ def upload_documents_ocr(request):
             filename = 'processed_documents/' + name.replace(' ', '_').replace(',', '').replace('(', '').replace(')', '')
             file_extension = os.path.splitext(filename)[-1].lower()
             print(filename)
-
+            
+            
             if ProcessedDocument.objects.filter(document=filename).exists():
                 messages.error(request, 'Document with the same name already exists.')
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             # Replace 'YOUR_PROJECT_ID' with your Google Cloud project ID.
+
+            user = request.user
+            action = f'{user} upload SF10 "{name}"'
+            details = f'{user} upload SF10 "{name}" in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
+
             project_id = '1083879771832'
 
 
@@ -850,7 +936,7 @@ def sf10_views(request):
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
 
-def sf10_edit(request, id):
+def sf10_edit_view(request, id):
     extracted_data = get_object_or_404(ExtractedData, id=id)
     
     # Assuming you have 'processed_document' field in your ExtractedData model
@@ -864,12 +950,96 @@ def sf10_edit(request, id):
 
     return render(request, 'admin_template/edit_sf10.html', {'extracted_data': extracted_data, 'pdf_content_base64': pdf_content_base64})
 
+def sf10_edit(request, id):
+
+    extracted_data = get_object_or_404(ExtractedData, id=id)
+
+    if request.method == 'POST':
+        # Assuming form data is sent via POST request
+        # Retrieve and process the form data for editing
+        extracted_data.last_name = request.POST.get('Last_Name', '')
+        extracted_data.first_name = request.POST.get('First_Name', '')
+        extracted_data.middle_name = request.POST.get('Middle_Name', '')
+        extracted_data.sex = request.POST.get('SEX', '')
+        extracted_data.classified_as_grade = request.POST.get('Classified_as_Grade', '')
+        extracted_data.lrn = request.POST.get('LRN', '')
+        extracted_data.name_of_school = request.POST.get('Name_of_School', '')
+        extracted_data.school_year = request.POST.get('School_Year', '')
+        extracted_data.general_average = request.POST.get('General_Average', '')
+
+        sf10_name = f"{extracted_data.first_name} {extracted_data.last_name}"
+        user = request.user
+        action = f'{user} updates information of the SF10 of "{sf10_name}"'
+        details = f'{user} updates information of the SF10 of "{sf10_name} in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+        
+        # Handle birthdate format conversion
+        birthdate_str = request.POST.get('Birthdate', '')
+        try:
+            birthdate_obj = datetime.strptime(birthdate_str, "%b. %d, %Y")
+            extracted_data.birthdate = birthdate_obj.strftime("%Y-%m-%d")
+        except ValueError:
+            # Handle invalid birthdate format
+            pass  # You may want to add proper error handling here
+
+        # Save the changes to the ExtractedData instance
+        extracted_data.save()
+        
+
+        # Redirect to a success page or any other appropriate URL
+        return HttpResponseRedirect(reverse('sf10_view') + '?success=true')
+
+    # Render the edit_sf10.html template with the ExtractedData instance
+    return render(request, 'admin_template/edit_sf10.html', {'extracted_data': extracted_data})
+
+
 def sf10_delete(request):
     if request.method == 'POST':
+
         delete_id = request.POST.get('delete_id')
         extracted_data = get_object_or_404(ExtractedData, id=delete_id)
+
+        sf10_name = f"{extracted_data.first_name} {extracted_data.last_name}"
+        user = request.user
+        action = f'{user} delete "{sf10_name}" SF10'
+        details = f'{user} delete "{sf10_name}" SF10 in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+        
         extracted_data.delete()
         # Redirect to the same page after deletion or wherever needed
         return redirect('sf10_view')
     else:
         return redirect('sf10_view')
+    
+def download_processed_document(request, id):
+    extracted_data = get_object_or_404(ExtractedData, id=id)        
+    processed_document = extracted_data.processed_document
+    file_path = processed_document.document.path
+    print(processed_document)
+    print(file_path)
+
+
+    sf10_name = f"{extracted_data.first_name} {extracted_data.last_name}"
+    user = request.user
+    action = f'{user} download "{sf10_name}" SF10'
+    details = f'{user} delete "{sf10_name}" SF10 in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
+
+    response = FileResponse(processed_document.document, as_attachment=True)
+    
+    # Get the filename without the "processed_documents/" part
+    filename_without_path = processed_document.document.name.split('/')[-1]
+    
+    response['Content-Disposition'] = f'attachment; filename="{filename_without_path}"'
+    return response
+
+    

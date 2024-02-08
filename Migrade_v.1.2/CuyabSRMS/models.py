@@ -11,7 +11,7 @@ from datetime import datetime
 import re
 from django.utils import timezone
 from django.db import transaction
-
+import os
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -564,6 +564,12 @@ class ExtractedData(models.Model):
     def delete(self, *args, **kwargs):
         # Delete associated ProcessedDocument before deleting ExtractedData
         if self.processed_document:
+            # Get the file path of the document
+            file_path = self.processed_document.document.path
+            # Delete the associated file if it exists
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            # Delete the ProcessedDocument instance
             self.processed_document.delete()
         super().delete(*args, **kwargs)
 

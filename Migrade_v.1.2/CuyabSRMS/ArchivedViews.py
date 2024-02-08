@@ -26,7 +26,7 @@ def archive_class_record(request, class_record_id):
 
             
             user = request.user
-            action = f'{user} archive a Class Record'
+            action = f'{user} archive a Class Record "{class_record.name}"'
             details = f'{user} archived the Class Record {class_record.name} in the system.'
             log_activity(user, action, details)
 
@@ -104,7 +104,7 @@ def restore_archived_record(request, archived_record_id):
             )
 
             user = request.user
-            action = f'{user} restore a Class Record'
+            action = f'{user} restore a Class Record "{archived_record.name}"'
             details = f'{user} restored the Class Record {archived_record.name} in the system.'
             log_activity(user, action, details)
 
@@ -174,7 +174,7 @@ def archive_students_with_grade_and_section(request, grade, section):
             class_records_to_archive = ClassRecord.objects.filter(grade=grade, section=section, teacher=request.user.teacher)
 
             user = request.user
-            action = f'{user} archive a Class'
+            action = f'{user} archive a Class "{grade} {section}"'
             details = f'{user} archived the Class {grade} {section} in the system.'
             log_activity(user, action, details)
 
@@ -217,6 +217,9 @@ def archive_students_with_grade_and_section(request, grade, section):
                             existing_archived_student.archived_section = student.section
                             existing_archived_student.save()
                             print(f"Updated archived student: {existing_archived_student.archived_name}")
+                            
+                            archived_student = existing_archived_student
+                            
                         else:
                             # Create archived student if it doesn't exist
                             archived_student = ArchivedStudent.objects.create(
@@ -511,7 +514,7 @@ def archive_students_with_grade_and_section(request, grade, section):
 def restore_archived_students(request, grade, section):
     try:
         user = request.user
-        action = f'{user} restore a Class'
+        action = f'{user} restore a Class "{grade} {section}"'
         details = f'{user} restored the Class {grade} {section} in the system.'
         log_activity(user, action, details)
 

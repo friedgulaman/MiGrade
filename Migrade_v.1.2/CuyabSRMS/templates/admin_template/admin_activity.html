@@ -35,7 +35,7 @@
                 <li{% if forloop.counter > 10 %} style="display: none;"{% endif %}>
                     <div class="d-flex justify-content-between">
                         <div>
-                            <span>{{ log.user.username }}</span> {{ log.action }}
+                            <span>{{ log.username }}</span> {{ log.action }}
                         </div>
                         <p>{{ log.timestamp }}</p>
                     </div>
