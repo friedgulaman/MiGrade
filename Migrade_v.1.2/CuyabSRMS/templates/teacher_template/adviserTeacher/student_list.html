@@ -175,9 +175,20 @@ Student List for {{ grade }} {{ section }}
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
                                 <div>
-                                    <div class="card-body">
-                                        <a href="{% url 'get_grade_details' %}">Class Record + </a><br><br><br> 
-                                        
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="left-side-design">
+                                                <a href="{% url 'get_grade_details' %}" class="btn btn-primary">Class Record +</a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 text-md-right mt-2 mt-md-0">
+                                            <div class="right-side-design">
+                                                <a href="{% url 'get_grade_details' %}" class="btn btn-primary">Generate Class Record</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                        <div class="mt-4"></div>
                                         <h4 class="card-title">Class Records</h4>
                                         <div class="table-responsive">
                                             <table class="table table-hover">

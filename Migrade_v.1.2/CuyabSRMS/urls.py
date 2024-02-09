@@ -148,7 +148,7 @@ urlpatterns = [
 
     # Generation
 
-    path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
+    path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
     path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9'),
 
