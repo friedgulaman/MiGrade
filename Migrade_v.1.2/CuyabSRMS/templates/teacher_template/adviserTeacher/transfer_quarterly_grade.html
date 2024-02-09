@@ -1,0 +1,195 @@
+{% extends 'teacher_template/teacher_base.html' %}
+
+{% block title %}
+View Class Record
+{% endblock title %}
+
+{% block main_content %}
+<style>
+  .back-button {
+    color: #1027ac;
+    font-size: 30px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+</style>
+<section class="content container mt-2">
+  <div class="d-flex justify-content-between align-items-center m-0 p-4">
+    <h2>Transfer Quarterly Grades Summary</h2>
+    <a class="back-button">&larr;</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h3 class="card-title">Class Record Information</h3>
+      <div class="row text-primary text-center">
+        <div class="col-md-3">
+          <p class="card-text "><strong class="text-muted">Grade:</strong> <span id="grade">{{ class_record.grade }}</span></p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Section:</strong> <span id="section">{{ class_record.section }}</span></p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Subject:</strong> <span id="subject">{{ class_record.subject }}</span></p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Quarters:</strong> <span id="quarters">{{ class_record.quarters }}</span></p>
+        </div>
+        <div class="col-md-3" style="display: none;">
+            <p class="card-text"><strong class="text-muted">Teacher ID:</strong> <span id="teacher">{{ class_record.teacher_id }}</span></p>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <h3 class="card-title">Student Grades Summary</h3>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Initial Grades</th>
+              <th>Transmuted Grades</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grade_score in grade_scores %}
+            <tr>
+              <td>{{ grade_score.student.name }}</td>
+              <td>{{ grade_score.initial_grades }}</td>
+              <td>{{ grade_score.transmuted_grades }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Select dropdown for selecting teacher -->
+  <label for="teacherSelect">Select Teacher:</label>
+  <select id="teacherSelect" class="form-select mt-2">
+    <!-- Options will be dynamically added here using AJAX -->
+  </select>
+  
+  <!-- Submit button to send JSON data to the selected teacher -->
+  <button id="submitJsonBtn" class="btn btn-success mt-2">Submit JSON to Teacher</button>
+
+</section>
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  // JavaScript to handle the back button click event
+  document.querySelector(".back-button").addEventListener("click", function () {
+    window.history.back();
+  });
+
+  // JavaScript to extract values and create JSON
+  $(document).ready(function() {
+    function getCookie(name) {
+            if (typeof name !== 'string' || name.trim() === '') {
+                return null;  // Invalid cookie name
+            }
+
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === name + '=') {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    // Function to convert HTML data to JSON
+    function htmlToJson() {
+      var jsonData = {
+        "grade": $("#grade").text(),
+        "section": $("#section").text(),
+        "subject": $("#subject").text(),
+        "quarters": $("#quarters").text(),
+        "teacher": $("#teacher").text(),
+        "student_grades": []
+      };
+
+      $("table tbody tr").each(function() {
+        var studentName = $(this).find("td:eq(0)").text();
+        var initialGrades = $(this).find("td:eq(1)").text();
+        var transmutedGrades = $(this).find("td:eq(2)").text();
+
+        var studentData = {
+          "student_name": studentName,
+          "initial_grades": initialGrades,
+          "transmuted_grades": transmutedGrades
+        };
+
+        jsonData.student_grades.push(studentData);
+      });
+
+      return jsonData;
+    }
+
+    // Fetch list of teachers and populate the select dropdown
+    $.ajax({
+      type: "GET",
+      url: "{% url 'get_teacher_list' %}",
+      dataType: "json",
+      success: function(response) {
+        var teacherSelect = $("#teacherSelect");
+        $.each(response.teachers, function(index, teacher) {
+          teacherSelect.append($('<option>', {
+            value: teacher.id,
+            text: `${teacher.name} (ID: ${teacher.id})`
+          }));
+        });
+      },
+      error: function(xhr, status, error) {
+        console.error("Error fetching teacher list:", error);
+      }
+    });
+
+    // Click event handler for submitting JSON data to the selected teacher
+$("#submitJsonBtn").click(function() {
+  var selectedTeacherId = $("#teacherSelect").val();
+  var jsonData = htmlToJson();
+  console.log("Sending JSON data to teacher with ID:", selectedTeacherId);
+  console.log("JSON data:", jsonData);
+
+  // Add the selectedTeacherId to the JSON data
+  jsonData.target_teacher = selectedTeacherId;
+  
+  // Convert the JSON object keys to string
+  var jsonString = JSON.stringify(jsonData);
+
+  // AJAX request to send JSON data to the server
+  $.ajax({
+    url: "/transfer-json",
+    method: "POST",
+    headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+    data: JSON.stringify(jsonData),// Send the stringified JSON data
+    success: function(response) {
+      // Handle success response
+      console.log("Transfer successful:", response);
+      alert("Transfer successful");
+    },
+    error: function(xhr, status, error) {
+      // Handle error response
+      console.error("Error transferring data:", error);
+      alert("Error transferring data");
+    }
+  });
+});
+
+  });
+</script>
+{% endblock main_content %}

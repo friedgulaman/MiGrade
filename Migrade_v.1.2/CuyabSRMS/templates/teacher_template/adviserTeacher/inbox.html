@@ -29,31 +29,5 @@ Inbox Messages
 </div>
 </section>
 
-<script>
-$(document).ready(function() {
-    $(".accept-btn, .reject-btn").click(function() {
-        var messageId = $(this).data('message-id');
-        var action = $(this).hasClass('accept-btn') ? 'accept' : 'reject';
-
-        $.ajax({
-            url: '{% url "process_message" %}',
-            type: 'POST',
-            data: {
-                'message_id': messageId,
-                'action': action,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function(response) {
-                console.log(response);
-                // Handle success response if needed
-            },
-            error: function(error) {
-                console.error(error);
-                // Handle error if needed
-            }
-        });
-    });
-});
-</script>
 
 {% endblock main_content %}

@@ -112,6 +112,9 @@ urlpatterns = [
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
     path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
+    path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
+    path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
+    path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
 
     path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
     path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),

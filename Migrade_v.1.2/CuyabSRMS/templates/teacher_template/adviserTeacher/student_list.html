@@ -244,6 +244,7 @@ Student List for {{ grade }} {{ section }}
                                                     <tr>
                                                         <th>Quarter</th>
                                                         <th>Subject</th>
+                                                        <th></th>
                                                         
                                                     </tr>
                                                 </thead>
@@ -255,6 +256,9 @@ Student List for {{ grade }} {{ section }}
                                                             <a class="record_id" href="{% url 'display_quarterly_summary' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">{{record.quarters}}</a>
                                                         </td>
                                                         <td>{{ record.subject }}</td>
+                                                        <td>
+                                                            <a class="quarterly_id" href="{% url 'transfer_quarterly_grade' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">send</a>
+                                                        </td>
                                                     </tr>
                                                     {% endfor %}
                                                     {% else %}

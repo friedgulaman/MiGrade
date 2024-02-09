@@ -385,6 +385,7 @@ class FinalGrade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50, null=True, blank=True)
     final_grade = models.JSONField()
 
     def __str__(self):
@@ -590,3 +591,4 @@ class InboxMessage(models.Model):
 
     def __str__(self):
         return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"
+    
