@@ -1,7 +1,7 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
 {% load static %}
 {% block title %}
-Student List for {{ grade }} {{ section }}
+Student List for {{ grade }} {{ section }} {{ class_type}}
 {% endblock title %}
 
 {% block main_content %}
@@ -93,7 +93,7 @@ Student List for {{ grade }} {{ section }}
                     <i class="fas fa-folder fa-4x me-3 folder-icon"></i>
                 </a>
                     <div class="ms-2">
-                        <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }})</h4>
+                        <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }}) <code class="text-muted">{{ class_type }}</code></h4>
                         <p class="d-flex align-content-center text-muted"><i
                                 class="mdi mdi-account me-1 student-icon "></i>{{ students|length }} students</p>
                     </div>
@@ -178,110 +178,55 @@ Student List for {{ grade }} {{ section }}
                                     <div class="card-body">
                                         <h4 class="card-title">Class Records</h4>
                                         <div class="table-responsive">
+                                            {% if advisory_classes %}
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>File</th>
-                                                        <th>Date Modified</th>
-                                                        <th>Quarter</th>
                                                         <th>Subject</th>
-                                                        <th></th>
+                                                        <th>Subject Teacher</th>
+                                                        <th>Distinct Quarters</th>
+                                                        
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {% if class_records %}
-                                                    {% for record in class_records %}
+                                                    {% for advisory_class in advisory_classes %}
                                                     <tr>
+                                                        <td>{{ advisory_class.subject }}</td>
+                                                        <td>{{ advisory_class.from_teacher_id }}</td>
                                                         <td>
-                                                            <a class="record_id" href="{% url 'display_classrecord' class_record_id=record.id %}">{{record.name}}</a>
-                                                        </td>
-                                                        <td>{{ record.date_modified }}</td>
-                                                        <td>{{ record.quarters }}</td>
-                                                        <td>{{ record.subject }}</td>
-                                                        <td>
-                                                            <form id="archiveForm_{{ record.id }}" method="post" action="{% url 'archive_class_record' class_record_id=record.id %}"
-                                                            style="display:inline;">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="archive-record" data-record-id="{{ record.id }}">
-                                                                Archive <!-- You can customize the button label as needed -->
-                                                            </button>
-                                                        </form>
-
-                                                            <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}"
-                                                            style="display:inline;">
-                                                            {% csrf_token %}
-                                                            <button type="button" class="delete-record" data-record-id="{{ record.id }}">
-                                                                <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
-                                                            </button>
-                                                        </form>
+                                                            {% if quarters %}
+                                                                {% for quarter in quarters %}
+                                                                    {{ quarter }}<br>
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                No quarters found.
+                                                            {% endif %}
                                                         </td>
                                                         
                                                     </tr>
-                                                    {% endfor %}
-                                                    {% else %}
+                                                    {% empty %}
                                                     <tr>
-                                                        <td colspan="4">No class records found.</td>
+                                                        <td colspan="2">No class records found.</td>
                                                     </tr>
-                                                    {% endif %}
+                                                    {% endfor %}
                                                 </tbody>
                                             </table>
+                                            {% else %}
+                                            <p>No class records found.</p>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
 
                     </div>
                     <div class="tab-pane fade show " id="quarterly" role="tabpanel" aria-labelledby="subjects">
-                        <div class="container mt-4">
-                            <div class="grid-margin stretch-card">
-                                <div>
-                                    <div class="card-body">
-                                        <h4 class="card-title">Quarterly Grades</h4>
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Quarter</th>
-                                                        <th>Subject</th>
-                                                        <th></th>
-                                                        
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% if class_records %}
-                                                    {% for record in class_records %}
-                                                    <tr>
-                                                        <td>
-                                                            <a class="record_id" href="{% url 'display_quarterly_summary' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">{{record.quarters}}</a>
-                                                        </td>
-                                                        <td>{{ record.subject }}</td>
-                                                        <td>
-                                                            <a class="quarterly_id" href="{% url 'transfer_quarterly_grade' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">send</a>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                    {% else %}
-                                                    <tr>
-                                                        <td colspan="4">No class records found.</td>
-                                                    </tr>
-                                                    {% endif %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                     3
                     </div>
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
-                        <h2>Top 10 Students by General Average:</h2>
-                        <ol>
-                            {% for student in top_students %}
-                                <li>{{ student.student.name }} - General Average: {{ student.general_average }}</li>
-                            {% endfor %}
-                        </ol>
-                    </div>
+                        4
                 </div>
 
 

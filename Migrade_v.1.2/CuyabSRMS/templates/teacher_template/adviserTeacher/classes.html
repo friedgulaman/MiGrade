@@ -57,7 +57,7 @@ New Class List
                                                 <div class="btn-group">
                                                     <button type="button"
                                                         class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
-                                                        onclick="showStudentList('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                                        onclick="showStudentListAdvisory('{{ grade_section.grade }}', '{{ grade_section.section }}', '{{ grade_section.class_type }}')">
                                                         <div class="btn-group">
                                                             <svg height="24px" width="24px" focusable="false"
                                                                 viewBox="0 0 24 24" fill="#5f6368">
@@ -131,7 +131,7 @@ New Class List
                                                 <div class="btn-group">
                                                     <button type="button"
                                                         class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
-                                                        onclick="showStudentList('{{ grade_section.grade }}', '{{ grade_section.section }}')">
+                                                        onclick="showStudentListSubject('{{ grade_section.grade }}', '{{ grade_section.section }}', '{{ grade_section.class_type }}')">
                                                         <div class="btn-group">
                                                             <svg height="24px" width="24px" focusable="false"
                                                                 viewBox="0 0 24 24" fill="#5f6368">
@@ -204,8 +204,12 @@ New Class List
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-    var showStudentList = function (grade, section) {
-        var url = "{% url 'student_list_for_class' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+   var showStudentListSubject = function (grade, section, class_type) {
+        var url = "{% url 'student_list_for_subject' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&class_type=" + encodeURIComponent(class_type);
+        window.location.href = url;
+    };
+    var showStudentListAdvisory = function (grade, section, class_type) {
+        var url = "{% url 'student_list_for_advisory' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&class_type=" + encodeURIComponent(class_type);
         window.location.href = url;
     };
 

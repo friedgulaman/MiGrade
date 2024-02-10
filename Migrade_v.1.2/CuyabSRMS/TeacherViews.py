@@ -8,7 +8,7 @@ from CuyabSRMS.utils import transmuted_grade
 from django import forms
 import openpyxl
 from django.contrib import messages
-from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
+from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse
@@ -897,7 +897,7 @@ def delete_student(request, grade, section):
     # If the user is not a teacher or if the permissions check fails
     return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
 
-def student_list_for_class(request):
+def student_list_for_subject(request):
     # Assuming the user is logged in
     user = request.user
 
@@ -908,12 +908,13 @@ def student_list_for_class(request):
 
         grade = request.GET.get('grade')
         section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
         
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
         # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section)
+        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
 
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
@@ -927,6 +928,7 @@ def student_list_for_class(request):
     context = {
         'grade': grade,
         'section': section,
+        'class_type': class_type,
         'students': students,
         'class_records': class_records,
         'subjects': subjects,
@@ -934,7 +936,38 @@ def student_list_for_class(request):
         
     }
 
-    return render(request, 'teacher_template/adviserTeacher/student_list.html', context)
+    return render(request, 'teacher_template/adviserTeacher/student_list_for_subject.html', context)
+
+def student_list_for_advisory(request):
+    # Assuming the user is logged in
+    user = request.user
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        grade = request.GET.get('grade')    
+        section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
+        
+        
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        # Fetch advisory classes based on teacher, grade, and section
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section).values('subject', 'from_teacher_id').distinct()
+        quarters = advisory_classes.values_list('quarters', flat=True).distinct()
+
+        context = {
+            'grade': grade,
+            'section': section,
+            'advisory_classes': advisory_classes,
+            'students': students,
+            'quarters': quarters,
+        }
+
+    return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
 
 
 def edit_record(request, record_id):
@@ -1712,4 +1745,3 @@ def class_records_list(request):
 def tempo_newupload(request):
     return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html')
 
-display_quarterly_summary

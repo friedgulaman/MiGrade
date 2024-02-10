@@ -1,33 +1,68 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
 {% load static %}
+
 {% block title %}
 Inbox Messages
 {% endblock title %}
+
 {% block main_content %}
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <section>
-<div class="container">
-  <h1>Inbox Messages</h1>
-</div>
-<div>
-  {% if inbox_messages %}
-    <ul>
-      {% for message in inbox_messages %}
-        <li>
-          <button class="btn btn-primary accept-btn" data-message-id="{{ message.id }}">Accept</button>
-          <button class="btn btn-danger reject-btn" data-message-id="{{ message.id }}">Reject</button>
-          <p><strong>Sender:</strong> {{ message.from_teacher.user }}</p>
-          <p><strong>File Name:</strong> {{ message.file_name }}</p>
-          <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
-          
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No inbox messages found.</p>
-  {% endif %}
-</div>
+  <div class="container">
+    <h1>Inbox Messages</h1>
+  </div>
+  <div>
+    {% if inbox_messages %}
+      <ul>
+        {% for message in inbox_messages %}
+          <li>
+            <button class="btn btn-primary accept-btn" data-message-id="{{ message.id }}">Accept</button>
+            <button class="btn btn-danger reject-btn" data-message-id="{{ message.id }}">Reject</button>
+            <p><strong>Sender:</strong> {{ message.from_teacher }}</p>
+            <p><strong>File Name:</strong> {{ message.file_name }}</p>
+            <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
+            <!-- Add a data attribute for json_data -->
+            <p class="json-data" style="display: none;">{{ message.json_data }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No inbox messages found.</p>
+    {% endif %}
+  </div>
 </section>
 
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  $(document).ready(function(){
+    
+      $(".accept-btn").click(function(){
+          var message_id = $(this).data("message-id");
+          // Retrieve json_data from hidden element
+          var json_data = $(this).closest('li').find('.json-data').text();
+          $.ajax({
+              url: "/accept_message",
+              type: "POST",
+              data: {
+                  'message_id': message_id,
+                  'json_data': json_data,
+                  'csrfmiddlewaretoken': '{{ csrf_token }}'
+              },
+              dataType: 'json',
+              success: function(response){
+                  if(response.success){
+                      alert(response.message); // Modified alert message
+                     location.reload()
+                  } else {
+                      alert("Error: " + response.error);
+                  }
+              },
+              error: function(xhr, status, error){
+                  alert("Error occurred while processing the request.");
+                  console.error(xhr.responseText);
+              }
+          });
+      });
+  });
+</script>
 
 {% endblock main_content %}

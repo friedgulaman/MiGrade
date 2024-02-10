@@ -3,7 +3,7 @@ import queue
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
-from .models import FinalGrade, Grade, InboxMessage, Quarters, Section, Teacher, ClassRecord, GradeScores, Student
+from .models import FinalGrade, Grade, InboxMessage, Quarters, Section, Teacher, ClassRecord, GradeScores, Student, AdvisoryClass
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
@@ -130,17 +130,17 @@ def transfer_json_to_teacher(request):
             json_data = json.loads(request.body.decode('utf-8'))
             target_teacher_id = json_data.get('target_teacher')
             from_teacher_id = json_data.get('teacher')
-            from_teacher = Teacher.objects.get(id=from_teacher_id)  # Assuming from_teacher_id is the ID of the teacher
+        
             file_name = json_data.get('quarters')
             section = json_data.get('section')
             print(json_data)
-            print(from_teacher)
+            print(from_teacher_id)
             # Check if the section with the specified name, class_type, and teacher_id exists
             existing_section = Section.objects.filter(name=section, class_type="Advisory", teacher_id=target_teacher_id).exists()
             print(existing_section)
             if existing_section:
                 # Save the data to the InboxMessage model
-                InboxMessage.objects.create(to_teacher=target_teacher_id, from_teacher=from_teacher, json_data=json.dumps(json_data), file_name=file_name)
+                InboxMessage.objects.create(to_teacher=target_teacher_id, from_teacher=from_teacher_id, json_data=json.dumps(json_data), file_name=file_name)
                 return JsonResponse({'success': True, 'message': 'Data submitted successfully.'})
             else:
                 return JsonResponse({'success': False, 'message': 'Invalid section or teacher.'})
@@ -200,3 +200,46 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     }
 
     return render(request, "teacher_template/adviserTeacher/transfer_quarterly_grade.html", context)
+
+@require_POST
+def accept_message(request):
+    message_id = request.POST.get('message_id')
+    try:
+        message = InboxMessage.objects.get(pk=message_id)
+        json_data = json.loads(message.json_data)
+        
+        if check_existing_data(message, json_data):
+            message.delete()
+            return JsonResponse({'success': True, 'message': 'Data already exists in AdvisoryClass'})
+        
+        save_data(message, json_data)
+        message.delete()
+        return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
+    except InboxMessage.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Message not found'})
+
+def check_existing_data(message, json_data):
+    existing_advisory_classes = AdvisoryClass.objects.filter(
+        name=message.file_name,
+        grade=json_data.get('grade'),
+        section=json_data.get('section'),
+        subject=json_data.get('subject'),
+        quarters=json_data.get('quarters'),
+        from_teacher_id=message.from_teacher,
+    )
+    return existing_advisory_classes.exists()
+
+def save_data(message, json_data):
+    for student_grade in json_data.get('student_grades', []):
+        AdvisoryClass.objects.create(
+            name=message.file_name,
+            grade=json_data.get('grade'),
+            section=json_data.get('section'),
+            subject=json_data.get('subject'),
+            quarters=json_data.get('quarters'),
+            from_teacher_id=message.from_teacher,
+            student=student_grade.get('student_name', None),
+            initial_grades=student_grade.get('initial_grades', None),
+            transmuted_grades=student_grade.get('transmuted_grades', None),
+        )
+        
