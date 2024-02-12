@@ -57,43 +57,60 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         cursor: pointer;
         color: #1027ac;
     }
+
     .delete-record {
-    text-decoration: none;
-    cursor: pointer;
-    color: red;
-    border: none;
-    background: none;
-    transition: color 0.3s; /* Smooth color transition */
+        text-decoration: none;
+        cursor: pointer;
+        color: red;
+        border: none;
+        background: none;
+        transition: color 0.3s;
+        /* Smooth color transition */
 
-    /* Shake animation on hover */
-    position: relative;
-}
+        /* Shake animation on hover */
+        position: relative;
+    }
 
-.delete-record:hover {
-    color: darkred; /* Change color on hover */
-    animation: shake 0.5s;
-}
+    .delete-record:hover {
+        color: darkred;
+        /* Change color on hover */
+        animation: shake 0.5s;
+    }
 
-/* Define the shake animation */
-@keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
-}
+    /* Define the shake animation */
+    @keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
 
+        25% {
+            transform: translateX(-5px);
+        }
+
+        50% {
+            transform: translateX(5px);
+        }
+
+        75% {
+            transform: translateX(-5px);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
 </style>
 <section class="content container mt-2">
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center p-4">
-                    <a  href="{% url 'display_students' %}">
-                    <i class="fas fa-folder fa-4x me-3 folder-icon"></i>
-                </a>
+                    <a href="{% url 'display_students' %}">
+                        <i class="fas fa-folder fa-4x me-3 folder-icon"></i>
+                    </a>
                     <div class="ms-2">
-                        <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }}) <code class="text-muted">{{ class_type }}</code></h4>
+                        <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }}) <code
+                                class="text-muted">{{ class_type }}</code></h4>
                         <p class="d-flex align-content-center text-muted"><i
                                 class="mdi mdi-account me-1 student-icon "></i>{{ students|length }} students</p>
                     </div>
@@ -170,13 +187,15 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade show " id="classrecord" role="tabpanel" aria-labelledby="classrecord">
+                    <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
 
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
                                 <div>
                                     <div class="card-body">
                                         <h4 class="card-title">Class Records</h4>
+                                        <p id="grade" style="display: none;">{{ grade }}</p>
+                                        <p id="section" style="display: none;">{{ section }}</p>
                                         <div class="table-responsive">
                                             {% if advisory_classes %}
                                             <table class="table table-hover">
@@ -185,31 +204,33 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                         <th>Subject</th>
                                                         <th>Subject Teacher</th>
                                                         <th>Distinct Quarters</th>
-                                                        
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for advisory_class in advisory_classes %}
-                                                    <tr>
-                                                        <td>{{ advisory_class.subject }}</td>
-                                                        <td>{{ advisory_class.from_teacher_id }}</td>
-                                                        <td>
-                                                            {% if quarters %}
-                                                                {% for quarter in quarters %}
-                                                                    {{ quarter }}<br>
-                                                                {% endfor %}
-                                                            {% else %}
-                                                                No quarters found.
-                                                            {% endif %}
-                                                        </td>
-                                                        
-                                                    </tr>
-                                                    {% empty %}
-                                                    <tr>
-                                                        <td colspan="2">No class records found.</td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
+                                                    <tbody>
+                                                        {% if advisory_classes %}
+                                                            {% for advisory_class in advisory_classes %}
+                                                                <tr>
+                                                                    <td id="subject">{{ advisory_class.subject }}</td>
+                                                                    <td>{{ advisory_class.from_teacher_id }}</td>
+                                                                    <td>
+                                                                        {% if quarters %}
+                                                                            {% for quarter in quarters %}
+                                                                                <!-- Link to filter by quarter -->
+                                                                                <button onclick="showQuarterData('{{ quarter }}')">{{ quarter }}</button>
+                                                                            {% endfor %}
+                                                                        {% else %}
+                                                                            No quarters found.
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td><button onclick="finalGradeSubject('{{ grade }}', '{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">Final Grade</button></td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <tr>
+                                                                <td colspan="4">No class records found.</td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    </tbody>
+                                                    
                                             </table>
                                             {% else %}
                                             <p>No class records found.</p>
@@ -219,15 +240,16 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 </div>
                             </div>
                         </div>
-                        
 
                     </div>
+
+
                     <div class="tab-pane fade show " id="quarterly" role="tabpanel" aria-labelledby="subjects">
-                     3
+                        3
                     </div>
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
                         4
-                </div>
+                    </div>
 
 
 
@@ -239,15 +261,35 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
+     var showQuarterData = function (quarter) {
+        var grade = $('#grade').text();
+        var section = $('#section').text();
+        var subject = $('#subject').text();
+        console.log(grade);
+        console.log(section);
+        var url = "{% url 'display_advisory_data' %}?quarter=" + encodeURIComponent(quarter) + "&grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject);
+        window.location.href = url;
+    };
+
+
+    var finalGradeSubject = function (grade, section, subject, from_teacher_id) {
+        var url = "{% url 'display_student_transmuted_grades' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject) + "&teacher_id=" + encodeURIComponent(from_teacher_id);
+        window.location.href = url;
+    };
+
+
+
     // JavaScript to handle the back button click event
     document.querySelector(".back-button").addEventListener("click", function () {
         window.history.back();
     });
 
     $(document).ready(function () {
+
+
         $('.delete-record').click(function () {
             var recordId = $(this).data('record-id');
-            
+
             // Confirm deletion (you may customize this part)
             if (confirm('Are you sure you want to delete this record?')) {
                 $.ajax({
@@ -266,4 +308,5 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         });
     });
 </script>
+
 {% endblock main_content %}

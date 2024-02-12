@@ -591,7 +591,7 @@ class InboxMessage(models.Model):
 
     def __str__(self):
         return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"
-    
+
 class AdvisoryClass(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     grade = models.CharField(max_length=50, null=True, blank=True)

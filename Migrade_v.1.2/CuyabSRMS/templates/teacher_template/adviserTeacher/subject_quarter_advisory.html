@@ -1,0 +1,50 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% load static %}
+{% block title %}
+
+{% endblock title %}
+
+{% block main_content %}
+<style>
+    /* Your CSS styles */
+</style>
+<section class="content container mt-2">
+    <div class="card">
+        <div class="card-body">
+            <!-- Content for class records -->
+            <h4 class="card-title"></h4>
+            <div class="table-responsive">
+                {% if advisory_classes %}
+                    <table class="table table-hover">
+                        <h4>{{ grade }} {{ section }} {{ quarter }} {{ subject }}</h4>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Student</th>
+                                <th>Initial Grade</th>
+                                <th>Transmuted Grades</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for advisory_class in advisory_classes %}
+                                <tr>
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{ advisory_class.student }}</td>
+                                    <td>{{ advisory_class.initial_grades }}</td>
+                                    <td>{{ advisory_class.transmuted_grades }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3">No class records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No class records found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}

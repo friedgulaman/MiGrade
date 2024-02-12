@@ -182,6 +182,7 @@ $("#submitJsonBtn").click(function() {
       // Handle success response
       console.log("Transfer successful:", response);
       alert("Transfer successful");
+      history.back();
     },
     error: function(xhr, status, error) {
       // Handle error response

@@ -109,6 +109,8 @@ urlpatterns = [
     path('student_list_for_subject', teacher_required(TeacherViews.student_list_for_subject), name='student_list_for_subject'),
     path('student_list_for_advisory', teacher_required(TeacherViews.student_list_for_advisory), name='student_list_for_advisory'),
     path('toggle_class_type/', teacher_required(TeacherViews.toggle_class_type), name='toggle_class_type'),
+    path('display_advisory_data', teacher_required(TeacherViews.display_advisory_data), name='display_advisory_data'),
+    path('display_student_transmuted_grades/', teacher_required(TeacherViews.display_student_transmuted_grades), name='display_student_transmuted_grades'),
     
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
@@ -117,6 +119,7 @@ urlpatterns = [
     path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
     path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
     path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
+    
 
     path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
     path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),

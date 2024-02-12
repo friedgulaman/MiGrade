@@ -3,7 +3,7 @@ import queue
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
-from .models import FinalGrade, Grade, InboxMessage, Quarters, Section, Teacher, ClassRecord, GradeScores, Student, AdvisoryClass
+from .models import AdvisoryClass, FinalGrade, Grade, InboxMessage,  Quarters, Section, Teacher, ClassRecord, GradeScores, Student
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
@@ -231,15 +231,17 @@ def check_existing_data(message, json_data):
 
 def save_data(message, json_data):
     for student_grade in json_data.get('student_grades', []):
-        AdvisoryClass.objects.create(
-            name=message.file_name,
-            grade=json_data.get('grade'),
-            section=json_data.get('section'),
-            subject=json_data.get('subject'),
-            quarters=json_data.get('quarters'),
-            from_teacher_id=message.from_teacher,
-            student=student_grade.get('student_name', None),
-            initial_grades=student_grade.get('initial_grades', None),
-            transmuted_grades=student_grade.get('transmuted_grades', None),
-        )
-        
+        student_name = student_grade.get('student_name', None)
+        student = Student.objects.filter(name=student_name, class_type='advisory').first()  # Assuming you have a field class_type in Student model
+        if student:
+            AdvisoryClass.objects.create(
+                name=message.file_name,
+                grade=json_data.get('grade'),
+                section=json_data.get('section'),
+                subject=json_data.get('subject'),
+                quarters=json_data.get('quarters'),
+                from_teacher_id=message.from_teacher,
+                student=student,
+                initial_grades=student_grade.get('initial_grades', None),
+                transmuted_grades=student_grade.get('transmuted_grades', None),
+            )

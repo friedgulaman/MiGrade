@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Transmuted Grades</title>
+</head>
+<body>
+    <h1>Student Transmuted Grades</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>1st Quarter Transmuted Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student_data in student_grades %}
+                <tr>
+                    <td>{{ student_data.student.name }}</td>
+                    <td>{{ student_data.grades_per_quarter.1 }}</td> <!-- Assuming '1' is the key for the first quarter -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
