@@ -27,7 +27,7 @@ def calculate_and_save_final_grades(sender, instance, created, **kwargs):
         # calculate_save_final_grades(grade, section, subject, students, subjects)
 
         display_final_grades(None, grade, section, subject)
-        display_all_final_grades(None, grade, section)
+        # display_all_final_grades(None, grade, section)
     else:
         # Updated instance
         # You can add logic specific to updates here, if needed
@@ -50,4 +50,4 @@ def calculate_and_save_final_grades(sender, instance, created, **kwargs):
         # calculate_save_final_grades(grade, section, subject, students, subjects)
 
         display_final_grades(None, grade, section, subject)
-        display_all_final_grades(None, grade, section)
+        # display_all_final_grades(None, grade, section)

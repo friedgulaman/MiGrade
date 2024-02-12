@@ -1,0 +1,71 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+New Class List
+{% endblock title %}
+{% block main_content %}
+<style>
+    .folder {
+        width: 240px;
+    }
+    .delete-dropdown{
+        font-size: 12px;
+    }
+    
+</style>
+<section class="content container mt-2">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title card-title-dash">Generate Class Records per</h4>
+                    </div>
+                    <form method="post" class="w-100">
+                        {% csrf_token %}
+                        <div class="mt-5">
+                            <ul class="d-flex flex-wrap justify-content-start align-items-center">
+                                {% for record in class_records %}
+                                    <li class="d-block p-2 ">
+                                        <div class="btn-group ">
+                                            <button type="button" class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary" onclick="showStudentList('{{ record.grade }}', '{{ record.section }}')">
+                                                <div class="btn-group ">
+                                                    <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                                        <g>
+                                                            <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                                            <path d="M0 0h24v24H0z" fill="none"></path>
+                                                        </g>
+                                                    </svg>
+                                                </div>
+                                                <div class="btn-group">
+                                                    {{ record.grade }} {{ record.section }}
+                                                    <a href="{% url 'generate_summary_of_quarterly_grades' grade=record.grade section=record.section quarter=record.quarters %}">Generate Summary of Quarterly Grades</a>
+                                                    <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}">Generate Final Grade and General Average</a>
+                                                </div>
+
+                                            </button>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    var showStudentList = function(grade, section) {
+        var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        window.location.href = url;
+    };
+
+    var uploadPageURL = "{% url 'generate_grade_section_list' %}";
+
+    document.getElementById("uploadButton").addEventListener("click", function () {
+        // Redirect to the upload page
+        window.location.href = uploadPageURL;
+    });
+</script>
+{% endblock main_content %}

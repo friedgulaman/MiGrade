@@ -487,6 +487,10 @@ def class_record(request):
 def get_grade_details(request):
 
     user = request.user
+    selected_grade = request.GET.get('grade')
+    selected_section = request.GET.get('section')
+    print(selected_grade)
+    print(selected_section)
 
     teacher = Teacher.objects.get(user=user)
     grades = Student.objects.values_list('grade', flat=True).distinct()
@@ -502,7 +506,9 @@ def get_grade_details(request):
         'grades': grades,
         'sections': sections,
         'subjects': subjects,
-        'quarters': quarters
+        'quarters': quarters,
+        'selected_grade': selected_grade, 
+        'selected_section': selected_section,
     }
     # print("Distinct grades:", grades)
     # print("Distinct sections:", sections)
@@ -959,7 +965,13 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
     # Retrieve grade scores related to the class record
     grade_scores = GradeScores.objects.filter(class_record=class_record)
 
-    
+    # Handle None values for initial_grades and transmuted_grades
+    for grade_score in grade_scores:
+        if grade_score.initial_grades is None:
+            grade_score.initial_grades = ""
+        if grade_score.transmuted_grades is None:
+            grade_score.transmuted_grades = ""
+
     context = {
         'class_record': class_record,
         'grade_scores': grade_scores,
@@ -1106,7 +1118,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                     student=student
                 ).first()
 
-                subject_info['quarter_grades'][quarter] = grade_score.initial_grades if grade_score else 0
+                subject_info['quarter_grades'][quarter] = grade_score.transmuted_grades if grade_score else 0
 
             # Get the teacher's name from the ClassRecord
             class_record = ClassRecord.objects.filter(

@@ -75,35 +75,53 @@
 </section>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-$(document).ready(function () {
-    $('#grade').change(function () {
-        var grade_id = $(this).val();  // Get the selected grade ID
-        if (grade_id) {
-            $.ajax({
-                type: 'GET',
-                url: '/get_sections_classrecord/',
-                data: {'grade_id': grade_id},
-                success: function (data) {
-                    $('#section').empty();
-                    if (data.sections.length > 0) {
-                        $.each(data.sections, function (index, section) {
-                            $('#section').append('<option value="' + section + '">' + section + '</option>');
-                        });
-                    } else {
-                        $('#section').append('<option value="">No sections available</option>');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
-        } else {
-            $('#section').empty();
-            $('#section').append('<option value="">Select Grade First</option>');
+    document.addEventListener("DOMContentLoaded", function() {
+        var selected_grade = "{{ selected_grade }}";
+        var selected_section = "{{ selected_section }}";
+
+        // Check if selected_grade and selected_section are not empty or None before setting the values
+        if (selected_grade !== "None" && selected_section !== "None")  {
+            // Set the selected grade value in the dropdown
+            document.getElementById('grade').value = selected_grade;
+
+            // Get the section dropdown element
+            var sectionDropdown = document.getElementById('section');
+
+            // Set the selected section as the innerHTML of the dropdown
+            sectionDropdown.innerHTML = `<option value="${selected_section}">${selected_section}</option>`;
         }
     });
-});
 </script>
+<script>
+    $(document).ready(function () {
+        $('#grade').change(function () {
+            var grade_id = $(this).val();  // Get the selected grade ID
+            if (grade_id) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/get_sections_classrecord/',
+                    data: {'grade_id': grade_id},
+                    success: function (data) {
+                        $('#section').empty();
+                        if (data.sections.length > 0) {
+                            $.each(data.sections, function (index, section) {
+                                $('#section').append('<option value="' + section + '">' + section + '</option>');
+                            });
+                        } else {
+                            $('#section').append('<option value="">No sections available</option>');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#section').empty();
+                $('#section').append('<option value="">Select Grade First</option>');
+            }
+        });
+    });
+    </script>
 <script>
     // JavaScript to handle the back button click event
     document.querySelector(".back-button").addEventListener("click", function () {

@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import CustomUser, Quarters, Student, Teacher, Grade, Section
+from .models import CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -25,7 +25,7 @@ from .forms import DocumentUploadForm
 from django.conf import settings
 from django.shortcuts import HttpResponse
 from django.utils.text import get_valid_filename
-from .forms import ExtractedDataForm
+from .forms import ExtractedDataForm, SchoolInformationForm
 
 import openpyxl
 from django.utils import timezone
@@ -97,6 +97,82 @@ def teachers(request):
         'students': students,
     }
     return render(request, 'admin_template/manage_teacher.html', context)
+
+@login_required
+def school_information_view(request):
+    # Assuming SchoolInformation is your model with fields like region, division, etc.
+    school_info = SchoolInformation.objects.all()  # Retrieve all objects from the SchoolInformation model
+    context = {
+        'school_info': school_info  # Pass the queryset to the template
+    }
+    return render(request, 'admin_template/school_information_view.html', context)
+
+@login_required
+def add_school_view(request):
+    if request.method == 'POST':
+        # Handle form submission and save to database
+        form = SchoolInformationForm(request.POST)
+        user = request.user
+        action = f'{user} added new School Information'
+        details = f'{user} added new School Information to the system.'
+        log_activity(user, action, details)
+        if form.is_valid():
+            form.save()
+        return redirect('school_information')
+    else:
+        # Render the form
+        return render(request, 'admin_template/add_school.html')
+    
+@login_required
+def edit_school_view(request, school_id):
+    # Retrieve the school object based on the school_id
+    school = get_object_or_404(SchoolInformation, id=school_id)
+
+    if request.method == 'POST':
+        # Log activity for the edit
+        user = request.user
+
+        # Get the form data before submission
+        old_school_info = {
+            'school_name': school.school_name,
+            'region': school.region,
+            'division': school.division,
+            'school_id': school.school_id,
+            'district': school.district,
+            'school_year': school.school_year
+        }
+
+        # Handle form submission and update the database with the edited information
+        form = SchoolInformationForm(request.POST, instance=school)
+        if form.is_valid():
+            new_school_info = form.save()
+            action = f'{user} changed the following fields in the School Information:\n' 
+            details = f'{user} changed the following fields in the School Information:\n'
+            # Compare the old and new form data to find the changes
+            for field, value in old_school_info.items():
+                if getattr(new_school_info, field) != value:
+                    action += f'{field}: {value} to {getattr(new_school_info, field)}\n'
+                    details += f'{field}: {value} to {getattr(new_school_info, field)}\n'
+            log_activity(user, action, details)
+            return redirect('school_information')
+    else:
+        # Render the form with pre-filled data
+        form = SchoolInformationForm(instance=school)
+
+    return render(request, 'admin_template/edit_school.html', {'form': form, 'school': school})
+    
+@login_required
+def delete_school_view(request, school_id):
+    school = SchoolInformation.objects.get(id=school_id)
+    user = request.user
+    action = f'{user} deleted School Information'
+    details = f'{user} deleted the School Information in the system.'
+    log_activity(user, action, details)
+
+    school.delete()
+    return redirect('school_information')
+
+
 
 @require_GET
 def get_teacher_data(request):

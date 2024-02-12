@@ -1,7 +1,7 @@
 from django import forms
 from .models import ProcessedDocument
 from .models import Subject
-from .models import GradeScores
+from .models import GradeScores, SchoolInformation
 
 class DocumentUploadForm(forms.ModelForm):
     class Meta:
@@ -25,3 +25,9 @@ class GradeScoresForm(forms.ModelForm):
     class Meta:
         model = GradeScores
         fields = ['written_works_scores', 'performance_task_scores', 'initial_grades', 'transmuted_grades']
+
+
+class SchoolInformationForm(forms.ModelForm):
+    class Meta:
+        model = SchoolInformation
+        fields = '__all__'
