@@ -18,7 +18,7 @@ Inbox Messages
             <button class="btn btn-primary accept-btn" data-message-id="{{ message.id }}">Accept</button>
             <button class="btn btn-danger reject-btn" data-message-id="{{ message.id }}">Reject</button>
             <p><strong>Sender:</strong> {{ message.from_teacher }}</p>
-            <p><strong>File Name:</strong> {{ message.file_name }}</p>
+            <p><strong>File Name:</strong> {{ message.json_data}}</p>
             <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
             <!-- Add a data attribute for json_data -->
             <p class="json-data" style="display: none;">{{ message.json_data }}</p>

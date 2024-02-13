@@ -3,7 +3,7 @@ import queue
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
-from .models import AdvisoryClass, FinalGrade, Grade, InboxMessage,  Quarters, Section, Teacher, ClassRecord, GradeScores, Student
+from .models import AcceptedMessage, AdvisoryClass, FinalGrade, Grade, InboxMessage,  Quarters, Section, Teacher, ClassRecord, GradeScores, Student
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
@@ -201,6 +201,7 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
 
     return render(request, "teacher_template/adviserTeacher/transfer_quarterly_grade.html", context)
 
+
 @require_POST
 def accept_message(request):
     message_id = request.POST.get('message_id')
@@ -219,29 +220,93 @@ def accept_message(request):
         return JsonResponse({'success': False, 'error': 'Message not found'})
 
 def check_existing_data(message, json_data):
-    existing_advisory_classes = AdvisoryClass.objects.filter(
-        name=message.file_name,
-        grade=json_data.get('grade'),
-        section=json_data.get('section'),
-        subject=json_data.get('subject'),
-        quarters=json_data.get('quarters'),
-        from_teacher_id=message.from_teacher,
-    )
-    return existing_advisory_classes.exists()
-
-def save_data(message, json_data):
-    for student_grade in json_data.get('student_grades', []):
-        student_name = student_grade.get('student_name', None)
-        student = Student.objects.filter(name=student_name, class_type='advisory').first()  # Assuming you have a field class_type in Student model
-        if student:
-            AdvisoryClass.objects.create(
-                name=message.file_name,
+    quarter_field_mapping = {
+        "1st Quarter": "first_quarter",
+        "2nd Quarter": "second_quarter",
+        "3rd Quarter": "third_quarter",
+        "4th Quarter": "fourth_quarter"
+    }
+    
+    
+    excluded_quarters = ["first_quarter", "second_quarter", "third_quarter", "fourth_quarter"]
+    
+    for student in json_data.get('students', []):
+        student_name = student.get('name')
+        for quarter in student.get('quarter', {}):
+            field_name = quarter_field_mapping.get(quarter)
+            if not field_name:
+                # Handle invalid quarter names
+                continue
+            
+            # Exclude first_quarter and second_quarter from the filter
+            if field_name in excluded_quarters:
+                continue
+            
+            existing_advisory_classes = AdvisoryClass.objects.filter(
                 grade=json_data.get('grade'),
                 section=json_data.get('section'),
                 subject=json_data.get('subject'),
-                quarters=json_data.get('quarters'),
                 from_teacher_id=message.from_teacher,
-                student=student,
-                initial_grades=student_grade.get('initial_grades', None),
-                transmuted_grades=student_grade.get('transmuted_grades', None),
+                student__name=student_name,
+            ).exclude(**{f"{field_name}__in": [None, ""]})
+            
+            if existing_advisory_classes.exists():
+                return True
+    return False
+def save_data(message, json_data):
+    quarter_field_mapping = {
+        "1st Quarter": "first_quarter",
+        "2nd Quarter": "second_quarter",
+        "3rd Quarter": "third_quarter",
+        "4th Quarter": "fourth_quarter"
+    }
+
+    for student in json_data.get('students', []):
+        student_name = student.get('name', None)
+        student_instance, created = Student.objects.get_or_create(name=student_name, class_type='advisory')
+
+        for quarter, transmuted_grade in student.get('quarter', {}).items():
+            if transmuted_grade == '':
+                transmuted_grade = None  # Convert empty string to None
+            
+            # Check if there's an existing AdvisoryClass for the given student, grade, section, subject
+            existing_advisory_classes = AdvisoryClass.objects.filter(
+                grade=json_data.get('grade'),
+                section=json_data.get('section'),
+                subject=json_data.get('subject'),
+                from_teacher_id=json_data.get('teacher'),
+                student=student_instance,
             )
+            
+            if existing_advisory_classes.exists():
+                # If there's an existing AdvisoryClass, update the corresponding quarter field if it's not already set
+                parent_advisory_class = existing_advisory_classes.first()
+                field_to_update = quarter_field_mapping.get(quarter)
+                if getattr(parent_advisory_class, field_to_update) is None:
+                    setattr(parent_advisory_class, field_to_update, transmuted_grade)
+                    parent_advisory_class.save()
+                    print(f"Appended {quarter} to parent AdvisoryClass.")
+                else:
+                    print(f"{quarter} already exists in parent AdvisoryClass.")
+            else:
+                # Create a new AdvisoryClass instance if it doesn't exist
+                new_advisory_class = AdvisoryClass(
+                    grade=json_data.get('grade'),
+                    section=json_data.get('section'),
+                    subject=json_data.get('subject'),
+                    from_teacher_id=json_data.get('teacher'),
+                    student=student_instance,
+                )
+                setattr(new_advisory_class, quarter_field_mapping.get(quarter), transmuted_grade)
+                new_advisory_class.save()
+                print(f"Saved new AdvisoryClass with {quarter}.")
+
+
+
+def save_accepted_message(message):
+    # Save the accepted message information
+    AcceptedMessage.objects.create(
+        message_id=message.id,
+        file_name=message.file_name,
+        json_data=message.json_data
+    )

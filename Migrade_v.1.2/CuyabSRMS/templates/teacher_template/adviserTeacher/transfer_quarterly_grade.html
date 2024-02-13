@@ -37,8 +37,7 @@ View Class Record
         </div>
         <div class="col-md-3" style="display: none;">
           <p class="card-text"><strong class="text-muted">Teacher Username:</strong> <span id="teacher">{{ class_record.teacher.user.username }}</span></p>
-
-          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -60,7 +59,7 @@ View Class Record
             <tr>
               <td>{{ grade_score.student.name }}</td>
               <td>{{ grade_score.initial_grades }}</td>
-              <td>{{ grade_score.transmuted_grades }}</td>
+              <td>{{ grade_score.transmuted_grades|default:"" }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -83,60 +82,43 @@ View Class Record
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-  // JavaScript to handle the back button click event
+  // Function to handle the back button click event
   document.querySelector(".back-button").addEventListener("click", function () {
     window.history.back();
   });
 
-  // JavaScript to extract values and create JSON
-  $(document).ready(function() {
-    function getCookie(name) {
-            if (typeof name !== 'string' || name.trim() === '') {
-                return null;  // Invalid cookie name
-            }
+  // Function to convert HTML data to JSON
+  function htmlToJson() {
+    var jsonData = {
+      "grade": $("#grade").text(),
+      "section": $("#section").text(),
+      "subject": $("#subject").text(),
+      "teacher": $("#teacher").text(),
+      "students": [] // Array to hold student data
+    };
 
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === name + '=') {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    // Function to convert HTML data to JSON
-    function htmlToJson() {
-      var jsonData = {
-        "grade": $("#grade").text(),
-        "section": $("#section").text(),
-        "subject": $("#subject").text(),
-        "quarters": $("#quarters").text(),
-        "teacher": $("#teacher").text(),
-        "student_grades": []
-      };
+    // Get the quarter value
+    var quarter = $("#quarters").text();
 
-      $("table tbody tr").each(function() {
-        var studentName = $(this).find("td:eq(0)").text();
-        var initialGrades = $(this).find("td:eq(1)").text();
-        var transmutedGrades = $(this).find("td:eq(2)").text();
+    $("table tbody tr").each(function() {
+      var studentName = $(this).find("td:eq(0)").text();
+      // Directly use transmuted grades
+      var transmutedGrades = $(this).find("td:eq(2)").text();
 
-        var studentData = {
-          "student_name": studentName,
-          "initial_grades": initialGrades,
-          "transmuted_grades": transmutedGrades
-        };
+      // Construct studentData object with "quarter": "transmuted_grades" format
+      var studentData = {};
+      studentData[quarter] = transmutedGrades;
 
-        jsonData.student_grades.push(studentData);
+      jsonData.students.push({
+        "name": studentName,
+        "quarter": studentData
       });
+    });
 
-      return jsonData;
-    }
+    return jsonData;
+  }
 
+  $(document).ready(function() {
     // Fetch list of teachers and populate the select dropdown
     $.ajax({
       type: "GET",
@@ -157,41 +139,62 @@ View Class Record
     });
 
     // Click event handler for submitting JSON data to the selected teacher
-$("#submitJsonBtn").click(function() {
-  var selectedTeacherId = $("#teacherSelect").val();
-  var jsonData = htmlToJson();
-  console.log("Sending JSON data to teacher with ID:", selectedTeacherId);
-  console.log("JSON data:", jsonData);
+    $("#submitJsonBtn").click(function() {
+      var selectedTeacherId = $("#teacherSelect").val();
+      var jsonData = htmlToJson();
+      console.log("Sending JSON data to teacher with ID:", selectedTeacherId);
+      console.log("JSON data:", jsonData);
 
-  // Add the selectedTeacherId to the JSON data
-  jsonData.target_teacher = selectedTeacherId;
-  
-  // Convert the JSON object keys to string
-  var jsonString = JSON.stringify(jsonData);
+      // Add the selectedTeacherId to the JSON data
+      jsonData.target_teacher = selectedTeacherId;
 
-  // AJAX request to send JSON data to the server
-  $.ajax({
-    url: "/transfer-json",
-    method: "POST",
-    headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-    data: JSON.stringify(jsonData),// Send the stringified JSON data
-    success: function(response) {
-      // Handle success response
-      console.log("Transfer successful:", response);
-      alert("Transfer successful");
-      history.back();
-    },
-    error: function(xhr, status, error) {
-      // Handle error response
-      console.error("Error transferring data:", error);
-      alert("Error transferring data");
+      // Convert the JSON object keys to string
+      var jsonString = JSON.stringify(jsonData);
+
+      // AJAX request to send JSON data to the server
+      $.ajax({
+        url: "/transfer-json",
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        data: JSON.stringify(jsonData), // Send the stringified JSON data
+        success: function(response) {
+          // Handle success response
+          console.log("Transfer successful:", response);
+          alert("Transfer successful");
+          history.back();
+        },
+        error: function(xhr, status, error) {
+          // Handle error response
+          console.error("Error transferring data:", error);
+          alert("Error transferring data");
+        }
+      });
+    });
+
+    // Function to retrieve CSRF token
+    function getCookie(name) {
+      if (typeof name !== 'string' || name.trim() === '') {
+        return null; // Invalid cookie name
+      }
+
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === name + '=') {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
     }
   });
-});
-
-  });
 </script>
+
 {% endblock main_content %}

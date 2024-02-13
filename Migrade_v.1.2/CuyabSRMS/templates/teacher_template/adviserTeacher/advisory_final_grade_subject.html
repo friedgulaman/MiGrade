@@ -7,19 +7,26 @@
 </head>
 <body>
     <h1>Student Transmuted Grades</h1>
-    <table border="1">
+
+    <table>
         <thead>
             <tr>
-                <th>Student Name</th>
-                <th>1st Quarter Transmuted Grade</th>
+                <th>Student</th>
+                <th>1st Quarter</th>
+                <th>2nd Quarter</th>
+                <th>3rd Quarter</th>
+                <th>4th Quarter</th>
             </tr>
         </thead>
         <tbody>
-            {% for student_data in student_grades %}
-                <tr>
-                    <td>{{ student_data.student.name }}</td>
-                    <td>{{ student_data.grades_per_quarter.1 }}</td> <!-- Assuming '1' is the key for the first quarter -->
-                </tr>
+            {% for advisory_class in advisory_classes %}
+            <tr>
+                <td>{{ advisory_class.student }}</td>
+                <td>{{ advisory_class.transmuted_grades }}</td>
+                <td>{{ advisory_class.transmuted_grade }}</td>
+                <td>{{ advisory_class.transmuted_grades }}</td>
+                <td>{{ advisory_class.transmuted_grades }}</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>

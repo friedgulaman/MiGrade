@@ -1001,49 +1001,18 @@ def display_advisory_data(request):
         # Redirect the user to the login page or display an error message
         pass
 def display_student_transmuted_grades(request):
-    # Assuming the user is logged in
-    user = request.user
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
+    subject = request.GET.get('subject')
+    teacher_id = request.GET.get('teacher_id')
 
-    # Check if the user is a teacher
-    if user.is_authenticated and hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
-        teacher = user.teacher
-        grade = request.GET.get('grade')
-        section = request.GET.get('section')
-        subject = request.GET.get('subject')
-        teacher_id = request.GET.get('teacher_id')
-        
-        # Fetch students based on grade, section, subject, and teacher
-        students = Student.objects.filter(grade=grade, section=section, class_type="Advisory", teacher_id=teacher)
-        
-        # Fetch transmuted grades for each student, quarter, and subject
-        student_grades = []
-        for student in students:
-            student_data = {
-                'student': student,
-                'grades_per_quarter': {}
-            }
-            # Fetch advisory classes for the student, grade, section, subject, and teacher
-            advisory_classes = AdvisoryClass.objects.filter(student=student, grade=grade, section=section, subject=subject, from_teacher_id=teacher_id)
-            # Fetch transmuted grades for the first quarter for each advisory class
-            for advisory_class in advisory_classes:
-                if advisory_class.quarters == '1':  # Assuming '1' represents the first quarter
-                    student_data['grades_per_quarter']['1'] = advisory_class.transmuted_grades
-            student_grades.append(student_data)
-        
-        context = {
-            'student_grades': student_grades,
-            'grade': grade,
-            'section': section,
-            'subject': subject,
-            'teacher_id': teacher_id,
-        }
+    advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, subject=subject, from_teacher_id=teacher_id)
 
-        return render(request, 'teacher_template/adviserTeacher/advisory_final_grade_subject.html', context)
-    else:
-        # Handle the case when the user is not a teacher or is not logged in
-        # Redirect the user to the login page or display an error message
-        pass
+    context = {
+        'advisory_classes': advisory_classes,
+    }
+
+    return render(request, 'teacher_template/adviserTeacher/advisory_final_grade_subject.html', context)
 def edit_record(request, record_id):
     # Retrieve the specific record based on the record_id
     record = GradeScores.objects.get(pk=record_id)

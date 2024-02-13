@@ -592,16 +592,25 @@ class InboxMessage(models.Model):
     def __str__(self):
         return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"
 
+class AcceptedMessage(models.Model):
+    message_id = models.IntegerField(primary_key=True)
+    file_name = models.CharField(max_length=255)
+    json_data = models.JSONField()
+    accepted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"AcceptedMessage {self.message_id}"
+    
 class AdvisoryClass(models.Model):
-    name = models.CharField(max_length=50, null=True, blank=True)
+    
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
     subject = models.CharField(max_length=50, null=True, blank=True)
-    quarters = models.CharField(max_length=50, null=True, blank=True)
+    first_quarter = models.CharField(max_length=50, null=True, blank=True)
+    second_quarter = models.CharField(max_length=50, null=True, blank=True)
+    third_quarter = models.CharField(max_length=50, null=True, blank=True)
+    fourth_quarter = models.CharField(max_length=50, null=True, blank=True)
     from_teacher_id = models.CharField(max_length=50, null=True, blank=True)
-    student = models.CharField(max_length=50, null=True, blank=True)
-    initial_grades = models.CharField(max_length=50, null=True, blank=True)
-    transmuted_grades= models.CharField(max_length=50, null=True, blank=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True,  limit_choices_to={'class_type': 'advisory'})
 
-    def __str__(self):
-        return self.name
+   
