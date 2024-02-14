@@ -1016,6 +1016,9 @@ def display_student_transmuted_grades(request):
     }
 
     return render(request, 'teacher_template/adviserTeacher/advisory_final_grade_subject.html', context)
+
+
+    
 def edit_record(request, record_id):
     # Retrieve the specific record based on the record_id
     record = GradeScores.objects.get(pk=record_id)

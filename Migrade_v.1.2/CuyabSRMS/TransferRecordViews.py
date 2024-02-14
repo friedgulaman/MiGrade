@@ -186,6 +186,7 @@ def inbox(request):
     return render(request, 'teacher_template/adviserTeacher/inbox.html', {'messages': messages})
 
 
+
 def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     teacher = request.user.teacher
     # Filter Section objects based on provided parameters

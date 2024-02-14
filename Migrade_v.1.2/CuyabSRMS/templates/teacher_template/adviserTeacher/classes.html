@@ -13,6 +13,7 @@ New Class List
     .delete-dropdown {
         font-size: 12px;
     }
+
 </style>
 
 <section class="content container mt-2">
@@ -33,7 +34,7 @@ New Class List
                         <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                             <ul class="nav nav-tabs text" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#overview"
+                                    <a class="nav-link active text-primary " id="home-tab" data-bs-toggle="tab" href="#overview"
                                         role="tab" aria-controls="overview" aria-selected="true">Advisory Class</a>
                                 </li>
                                 <li class="nav-item">
@@ -43,8 +44,8 @@ New Class List
                             </ul>
                         </div>
 
-                        <div class="tab-content tab-content-basic">
-                            <div class="tab-pane fade show active" id="overview" role="tabpanel"
+                        <div class="tab-content tab-content-basic ">
+                            <div class="tab-pane fade show active " id="overview" role="tabpanel"
                                 aria-labelledby="overview">
                                 <form method="post" class="w-100" id="advisoryForm">
                                     {% csrf_token %}
@@ -56,11 +57,11 @@ New Class List
                                             <li class="d-block p-2">
                                                 <div class="btn-group">
                                                     <button type="button"
-                                                        class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
+                                                        class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-primary"
                                                         onclick="showStudentListAdvisory('{{ grade_section.grade }}', '{{ grade_section.section }}', '{{ grade_section.class_type }}')">
                                                         <div class="btn-group">
                                                             <svg height="24px" width="24px" focusable="false"
-                                                                viewBox="0 0 24 24" fill="#5f6368">
+                                                                viewBox="0 0 24 24" fill="white">
                                                                 <g>
                                                                     <path
                                                                         d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z">
@@ -78,12 +79,12 @@ New Class List
                                                     <div class="btn-group">
                                                         <!-- Dropdown toggle button -->
                                                         <button type="button"
-                                                            class="btn btn-secondary btn-dropdown-toggle dropdown-toggle-split"
+                                                            class="btn btn-primary btn-dropdown-toggle dropdown-toggle-split"
                                                             data-toggle="dropdown" aria-haspopup="true"
                                                             aria-expanded="false">
                                                             <svg class="c-qd" width="20px" height="20px"
                                                                 viewBox="0 0 20 20" focusable="false"
-                                                                fill="currentColor">
+                                                                fill="white">
                                                                 <path fill="none" d="M0 0h20v20H0V0z"></path>
                                                                 <path
                                                                     d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z">

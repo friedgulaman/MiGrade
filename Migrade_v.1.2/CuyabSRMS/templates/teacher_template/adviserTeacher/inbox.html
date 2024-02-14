@@ -10,25 +10,25 @@ Inbox Messages
   <div class="container">
     <h1>Inbox Messages</h1>
   </div>
-  <div>
-    {% if inbox_messages %}
-      <ul>
-        {% for message in inbox_messages %}
-          <li>
-            <button class="btn btn-primary accept-btn" data-message-id="{{ message.id }}">Accept</button>
-            <button class="btn btn-danger reject-btn" data-message-id="{{ message.id }}">Reject</button>
-            <p><strong>Sender:</strong> {{ message.from_teacher }}</p>
-            <p><strong>File Name:</strong> {{ message.json_data}}</p>
-            <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
-            <!-- Add a data attribute for json_data -->
-            <p class="json-data" style="display: none;">{{ message.json_data }}</p>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No inbox messages found.</p>
-    {% endif %}
-  </div>
+    <div>
+      {% if inbox_messages %}
+        <ul>
+          {% for message in inbox_messages %}
+            <li>
+              <button class="btn btn-primary accept-btn" data-message-id="{{ message.id }}">Accept</button>
+              <button class="btn btn-danger reject-btn" data-message-id="{{ message.id }}">Reject</button>
+              <p><strong>Sender:</strong> {{ message.from_teacher }}</p>
+              <p><strong>File Name:</strong> {{ message.json_data}}</p>
+              <p><strong>Timestamp:</strong> {{ message.timestamp }}</p>
+              <!-- Add a data attribute for json_data -->
+              <p class="json-data" style="display: none;">{{ message.json_data }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No inbox messages found.</p>
+      {% endif %}
+    </div>
 </section>
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>

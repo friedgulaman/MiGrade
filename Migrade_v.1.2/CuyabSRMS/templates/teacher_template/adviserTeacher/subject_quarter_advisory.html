@@ -6,18 +6,18 @@ Inbox Messages
 {% endblock title %}
 
 {% block main_content %}
-<section class="container">
+<section class="container-fluid">
     <h1>{{ subject }} Quarter Details</h1>
     <div class="table-responsive">
-    <table class="table">
+    <table class="table table-hover">
         <thead>
             <tr>
                 <th>No.</th>
                 <th>Student</th>
-                <th>First Quarter</th>
-                <th>Second Quarter</th>
-                <th>Third Quarter</th>
-                <th>Fourth Quarter</th>
+                <th>First Quarter   </th>
+                <th>Second Quarter  </th>
+                <th>Third Quarter   </th>
+                <th>Fourth Quarter  </th>
                 <th>Final Grade</th>
             </tr>
         </thead>
@@ -26,10 +26,10 @@ Inbox Messages
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ advisory_class.student.name }}</td>
-                <td class="first_quarter">{{ advisory_class.first_quarter|default_if_none:"0" }}</td>
-                <td class="second_quarter">{{ advisory_class.second_quarter|default_if_none:"0" }}</td>
-                <td class="third_quarter">{{ advisory_class.third_quarter|default_if_none:"0" }}</td>
-                <td class="fourth_quarter">{{ advisory_class.fourth_quarter|default_if_none:"0" }}</td>
+                <td class="first_quarter text-muted">{{ advisory_class.first_quarter|default_if_none:"0" }}</td>
+                <td class="second_quarter text-muted">{{ advisory_class.second_quarter|default_if_none:"0" }}</td>
+                <td class="third_quarter text-muted">{{ advisory_class.third_quarter|default_if_none:"0" }}</td>
+                <td class="fourth_quarter text-muted">{{ advisory_class.fourth_quarter|default_if_none:"0" }}</td>
                 
                 <td class="finalGrade text-danger"></td>
             </tr>

@@ -111,7 +111,8 @@ urlpatterns = [
     path('toggle_class_type/', teacher_required(TeacherViews.toggle_class_type), name='toggle_class_type'),
     path('display_advisory_data', teacher_required(TeacherViews.display_advisory_data), name='display_advisory_data'),
     path('display_student_transmuted_grades/', teacher_required(TeacherViews.display_student_transmuted_grades), name='display_student_transmuted_grades'),
-    
+
+
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
     path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
