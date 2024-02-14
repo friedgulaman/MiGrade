@@ -1,6 +1,6 @@
 import json
 import queue
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 from .models import AcceptedMessage, AdvisoryClass, FinalGrade, Grade, InboxMessage,  Quarters, Section, Teacher, ClassRecord, GradeScores, Student
@@ -187,13 +187,20 @@ def inbox(request):
 
 
 def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
+    teacher = request.user.teacher
+    # Filter Section objects based on provided parameters
+    sections = Section.objects.filter(name=section, teacher_id=teacher, class_type='Subject')
+
+    # Check if there is more than one Section returned
+    if sections.count() != 1:
+        raise Http404("Section not found or multiple sections found for the provided parameters.")
+
     # Retrieve the specific class record based on the provided class_record_id
-    class_record = get_object_or_404(ClassRecord, id=class_record_id, grade=grade, section=section, subject=subject)
+    class_record = get_object_or_404(ClassRecord, id=class_record_id, grade=grade, section=sections.first(), subject=subject, teacher_id=teacher)
 
     # Retrieve grade scores related to the class record
     grade_scores = GradeScores.objects.filter(class_record=class_record)
 
-    
     context = {
         'class_record': class_record,
         'grade_scores': grade_scores,

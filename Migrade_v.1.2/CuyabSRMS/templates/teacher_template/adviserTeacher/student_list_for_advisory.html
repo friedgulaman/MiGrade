@@ -192,6 +192,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
                                 <div>
+                                   
                                     <div class="card-body">
                                         <h4 class="card-title">Class Records</h4>
                                         <p id="grade" style="display: none;">{{ grade }}</p>
@@ -203,25 +204,13 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                     <tr>
                                                         <th>Subject</th>
                                                         <th>Subject Teacher</th>
-                                                        <th>Distinct Quarters</th>
                                                     </tr>
                                                     <tbody>
                                                         {% if advisory_classes %}
                                                             {% for advisory_class in advisory_classes %}
-                                                                <tr>
-                                                                    <td id="subject">{{ advisory_class.subject }}</td>
+                                                                <tr onclick="showQuarters('{{ grade }}','{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">
+                                                                    <td id="subject"><button >{{ advisory_class.subject }}</button></td>
                                                                     <td>{{ advisory_class.from_teacher_id }}</td>
-                                                                    <td>
-                                                                        {% if quarters %}
-                                                                            {% for quarter in quarters %}
-                                                                                <!-- Link to filter by quarter -->
-                                                                                <button onclick="showQuarterData('{{ quarter }}')">{{ quarter }}</button>
-                                                                            {% endfor %}
-                                                                        {% else %}
-                                                                            No quarters found.
-                                                                        {% endif %}
-                                                                    </td>
-                                                                    <td><button onclick="finalGradeSubject('{{ grade }}', '{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">Final Grade</button></td>
                                                                 </tr>
                                                             {% endfor %}
                                                         {% else %}
@@ -240,7 +229,9 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 </div>
                             </div>
                         </div>
+                        <!-- Add this modal markup at the end of your template -->
 
+  
                     </div>
 
 
@@ -261,24 +252,12 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-     var showQuarterData = function (quarter) {
-        var grade = $('#grade').text();
-        var section = $('#section').text();
-        var subject = $('#subject').text();
-        console.log(grade);
-        console.log(section);
-        var url = "{% url 'display_advisory_data' %}?quarter=" + encodeURIComponent(quarter) + "&grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject);
-        window.location.href = url;
+    var showQuarters = function(grade, section, subject, teacher_id){
+        var url = "{% url 'display_advisory_data' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject) + "&teacher_id=" + encodeURIComponent(teacher_id);
+            window.location.href = url;
     };
-
-
-    var finalGradeSubject = function (grade, section, subject, from_teacher_id) {
-        var url = "{% url 'display_student_transmuted_grades' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject) + "&teacher_id=" + encodeURIComponent(from_teacher_id);
-        window.location.href = url;
-    };
-
-
-
+    
+ 
     // JavaScript to handle the back button click event
     document.querySelector(".back-button").addEventListener("click", function () {
         window.history.back();

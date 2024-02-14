@@ -530,7 +530,7 @@ def get_students_by_grade_and_section(request):
             classrecord.save()
 
             # Query the database to retrieve students based on the selected grade and section
-            students = Student.objects.filter(grade=grade_name, section=section_name)
+            students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
 
             subject = Subject.objects.get(name=subject_name)
 
@@ -610,7 +610,7 @@ def calculate_grades(request):
         # quarter_name = request.POST.get("quarter")
         
 
-        students = Student.objects.filter(grade=grade_name, section=section_name)
+        students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
         
         for student in students:
             scores_written_works = []
@@ -956,8 +956,8 @@ def student_list_for_advisory(request):
         students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
         # Fetch advisory classes based on teacher, grade, and section
         advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section).values('subject', 'from_teacher_id').distinct()
-        quarters = advisory_classes.values_list('quarters', flat=True).distinct()
-
+        quarters = advisory_classes.values_list('first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter').distinct()
+       
         context = {
             'grade': grade,
             'section': section,
@@ -965,41 +965,44 @@ def student_list_for_advisory(request):
             'students': students,
             'quarters': quarters,
             'class_type': class_type,
+           
         }
-
     return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
 def display_advisory_data(request):
-    # Assuming the user is logged in
+        # Assuming the user is logged in
     user = request.user
 
     # Check if the user is a teacher
     if user.is_authenticated and hasattr(user, 'teacher'):
         # Retrieve the teacher associated with the user
         teacher = user.teacher
-        grade = request.GET.get('grade')
+
+        grade = request.GET.get('grade')    
         section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
         subject = request.GET.get('subject')
-        quarter = request.GET.get('quarter')
         
-        # Fetch advisory classes based on quarter
+        
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        # Fetch advisory classes based on teacher, grade, and section
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, subject=subject)
 
-        advisory_classes = AdvisoryClass.objects.filter(quarters=quarter)
-
+       
         context = {
-            'advisory_classes': advisory_classes,
             'grade': grade,
-            'section': section,
             'subject': subject,
-            'quarter': quarter,
-            
-
+            'section': section,
+            'advisory_classes': advisory_classes,
+            'students': students,
+            'class_type': class_type,
+           
         }
+            
+    return render(request, 'teacher_template/adviserTeacher/subject_quarter_advisory.html', context)
 
-        return render(request, 'teacher_template/adviserTeacher/subject_quarter_advisory.html', context)
-    else:
-        # Handle the case when the user is not a teacher or is not logged in
-        # Redirect the user to the login page or display an error message
-        pass
+
 def display_student_transmuted_grades(request):
     grade = request.GET.get('grade')
     section = request.GET.get('section')

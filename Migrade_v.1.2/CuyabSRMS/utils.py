@@ -863,5 +863,3 @@ def write_sf9_grades(back_sheet, final_grade, general_average):
         back_sheet.cell(row=row, column=18, value=final_grade_score)
 
         back_sheet.cell(row=22, column=18, value=general_average.general_average)
-
-
