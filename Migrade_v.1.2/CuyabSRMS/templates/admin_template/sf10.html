@@ -61,6 +61,7 @@ upload
                     <table>
                         <thead>
                             <tr>
+                                <th>No.</th>
                                 <th>Last Name</th>
                                 <th>First Name</th>
                                 <th>Middle Name</th>
@@ -77,6 +78,7 @@ upload
                         <tbody>
                             {% for extracted_data in all_extracted_data %}
                             <tr>
+                                <td>{{ forloop.counter }}</td>
                                 <td>{{ extracted_data.last_name }}</td>
                                 <td>{{ extracted_data.first_name }}</td>
                                 <td>{{ extracted_data.middle_name }}</td>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Data</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <!-- Assuming you know the number of columns -->
+                <th>Column 1</th>
+                <th>Column 2</th>
+                <!-- Add more headers if needed -->
+            </tr>
+        </thead>
+        <tbody>
+            <h1>Form Fields Data</h1>
+            <ul>
+                {% for field in form_fields_data %}
+                    <li>{{ field.name }}: {{ field.value }}</li>
+                {% endfor %}
+            </ul>
+            {% for row in table_data %}
+                <tr>
+                    {% for cell in row %}
+                        <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

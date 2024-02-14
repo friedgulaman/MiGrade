@@ -90,6 +90,8 @@ urlpatterns = [
     path('add/', AdminViews.add_school_view, name='add_school'),
     path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
     path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
+     path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
 
 
 

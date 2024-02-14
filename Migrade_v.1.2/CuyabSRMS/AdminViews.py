@@ -18,6 +18,7 @@ from .views import log_activity
 from .models import ExtractedData
 from .models import ProcessedDocument
 from google.cloud import documentai_v1beta3 as documentai
+from google.cloud.documentai_toolbox import document as documentai_toolbox
 import re
 import os
 import json
@@ -25,13 +26,15 @@ from .forms import DocumentUploadForm
 from django.conf import settings
 from django.shortcuts import HttpResponse
 from django.utils.text import get_valid_filename
-from .forms import ExtractedDataForm, SchoolInformationForm
+from .forms import ExtractedDataForm, SchoolInformationForm, DocumentBatchUploadForm
 
 import openpyxl
 from django.utils import timezone
 import datetime
 from datetime import datetime
 from dateutil import parser
+import pandas as pd
+from google.api_core.client_options import ClientOptions
 
 
 
@@ -898,19 +901,19 @@ def upload_documents_ocr(request):
 
             pdf_content_base64 = base64.b64encode(content).decode('utf-8')
 
-        
-        return render(request, 'admin_template/edit_extracted_data.html', {
-                # 'extracted_data': extracted_data_for_review,
-                'document_text': text,
-                'uploaded_document_url': processed_document.document.url,
-                # 'all_extracted_data': all_extracted_data,
-                'processed_document': processed_document,
-                'download_link': processed_document.document.url,
-                'data_by_type': data_by_type,
-                # 'extracted_text': extracted_text 
-                'extracted_data': my_data,
-                'pdf_content_base64': pdf_content_base64, 
-            })
+        return redirect('sf10_view')
+        # return render(request, 'admin_template/edit_extracted_data.html', {
+        #         # 'extracted_data': extracted_data_for_review,
+        #         'document_text': text,
+        #         'uploaded_document_url': processed_document.document.url,
+        #         # 'all_extracted_data': all_extracted_data,
+        #         'processed_document': processed_document,
+        #         'download_link': processed_document.document.url,
+        #         'data_by_type': data_by_type,
+        #         # 'extracted_text': extracted_text 
+        #         'extracted_data': my_data,
+        #         'pdf_content_base64': pdf_content_base64, 
+        #     })
     else: 
         form = DocumentUploadForm()
 
@@ -1118,4 +1121,243 @@ def download_processed_document(request, id):
     response['Content-Disposition'] = f'attachment; filename="{filename_without_path}"'
     return response
 
-    
+
+def batch_process_documents(request):
+
+
+
+    if request.method == 'POST':
+        form = DocumentBatchUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_files = request.FILES.getlist('documents')
+            for uploaded_file in uploaded_files:
+                name = uploaded_file.name
+                filename = 'processed_documents/' + name.replace(' ', '_').replace(',', '').replace('(', '').replace(')', '')
+
+                if ProcessedDocument.objects.filter(document=filename).exists():
+                    messages.error(request, f'Document "{name}" already exists.')
+                    continue
+
+                user = request.user
+                action = f'{user} upload SF10 "{name}"'
+                details = f'{user} upload SF10 "{name}" in the system.'
+                log_activity(user, action, details)
+
+                logs = user, action, details    
+                print(logs)
+
+                project_id = '1083879771832'
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+                client = documentai.DocumentProcessorServiceClient()
+                processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
+
+                content = uploaded_file.read()
+                file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
+                if file_extension in ['.pdf']:
+                    mime_type = "application/pdf"
+                elif file_extension in ['.jpg', '.jpeg']:
+                    mime_type = "image/jpeg"
+                else:
+                    messages.error(request, f'Unsupported file type for document "{name}".')
+                    continue
+
+                processing_request = {
+                    "name": processor_name,
+                    "document": {"content": content, "mime_type": mime_type},
+                }
+
+                try:
+                    response = client.process_document(request=processing_request)
+                    document = response.document
+                    text = document.text
+                    data_by_type = {
+                        'Type': [],
+                        'Raw Value': [],
+                        'Normalized Value': [],
+                        'Confidence': [],
+                    }
+
+                    # Iterate through your data extraction process and populate the dictionary
+                    for entity in document.entities:
+                        data_by_type['Type'].append(entity.type_)
+                        data_by_type['Raw Value'].append(entity.mention_text)
+                        data_by_type['Normalized Value'].append(entity.normalized_value.text)
+                        data_by_type['Confidence'].append(f"{entity.confidence:.0%}")
+
+                        # Get Properties (Sub-Entities) with confidence scores
+                        for prop in entity.properties:
+                            data_by_type['Type'].append(prop.type_)
+                            data_by_type['Raw Value'].append(prop.mention_text)
+                            data_by_type['Normalized Value'].append(prop.normalized_value.text)
+                            data_by_type['Confidence'].append(f"{prop.confidence:.0%}")
+
+                    print(data_by_type)
+
+                    # Create a ProcessedDocument instance and save it
+                    processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
+                    processed_document.save()
+
+                    my_data = ExtractedData(processed_document=processed_document)
+
+                    # Define a mapping of keys from data_by_type to ExtractedData fields
+                    key_mapping = {
+                        'Last_Name': 'last_name',
+                        'First_Name': 'first_name',
+                        'Middle_Name': 'middle_name',
+                        'SEX': 'sex',
+                        'Classified_as_Grade': 'classified_as_grade',
+                        'LRN': 'lrn',
+                        'Name_of_School': 'name_of_school',
+                        'School_Year': 'school_year',
+                        'General_Average': 'general_average',
+                        'Birthdate': 'birthdate',
+                    }
+
+                    last_values = {}
+
+                    for i in range(len(data_by_type['Type'])):
+                        data_type = data_by_type['Type'][i]
+                        raw_value = data_by_type['Raw Value'][i]
+
+                        # Update the last value for the type
+                        last_values[data_type] = {'value': raw_value}
+
+                    # Set the last values to the corresponding fields in my_data
+                    for key, field_name in key_mapping.items():
+                        if key in last_values:
+                            setattr(my_data, field_name, last_values[key]['value'])
+
+                    # # Handle birthdate separately
+                    #     if 'Birthdate' in key_mapping:
+                    #         birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                    #         if birthdate_index is not None:
+                    #             birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                    #             try:
+                    #                 # Provide a specific format string based on the expected format
+                    #                 my_data.birthdate = parser.parse(birthdate_str).date()
+                    #             except ValueError as e:
+                    #                 print(f"Error parsing birthdate: {e}")
+                    if 'Birthdate' in key_mapping:
+                        birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                        if birthdate_index is not None:
+                            birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                            try:
+                                # Provide a specific format string based on the expected format
+                                my_data.birthdate = parser.parse(birthdate_str).date()
+                            except ValueError as e:
+                                print(f"Error parsing birthdate: {e}")
+
+                    my_data.save()
+
+                
+                except Exception as e:
+                    messages.error(request, f'Error processing document "{name}": {str(e)}')
+
+            messages.success(request, 'Documents processed successfully.')
+            return redirect('sf10_view')
+            # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    else:
+        form = DocumentBatchUploadForm()
+
+    return render(request, 'admin_template/batch_process_documents.html', {'form': form})
+
+def process_document_form_sample(
+    project_id: str,
+    location: str,
+    processor_id: str,
+    processor_version: str,
+    content: bytes,
+    mime_type: str,
+) -> documentai.Document:
+    # Set up Google Cloud Document AI client
+    client_options = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    client = documentai.DocumentProcessorServiceClient(client_options=client_options)
+
+    # The full resource name of the processor version
+    name = client.processor_version_path(project_id, location, processor_id, processor_version)
+
+    # Configure the process request
+    request = documentai.ProcessRequest(
+        name=name,
+        raw_document=documentai.RawDocument(content=content, mime_type=mime_type),
+    )
+
+    # Process the document and extract tables using Document AI
+    result = client.process_document(request=request)
+
+    # Return the processed document
+    return result.document
+
+def detect_and_convert_tables(request):
+    if request.method == 'POST' and 'pdf_file' in request.FILES:
+        pdf_file = request.FILES['pdf_file']
+        content = pdf_file.read()
+
+        # Set up Google Cloud Document AI client
+        project_id = "1083879771832"
+        location = "us"  # Format is "us" or "eu"
+        processor_id = "827ebb48ef18ecd"  # Create processor before running sample
+        processor_version = "pretrained-form-parser-v2.0-2022-11-10"  # Refer to https://cloud.google.com/document-ai/docs/manage-processor-versions for more information
+
+        try:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+            # Process the document and extract tables using Document AI
+            document = process_document_form_sample(project_id, location, processor_id, processor_version, content, "application/pdf")
+
+            # Extract table data
+            table_data = []
+
+            for page in document.pages:
+                for table in page.tables:
+                    # Extract text content of header and body rows
+                    for header_row in table.header_rows:
+                        row_content = []
+                        for cell in header_row.cells:
+                            cell_text = layout_to_text(cell.layout, document.text)
+                            row_content.append(cell_text)
+                        table_data.append(row_content)
+
+                    for body_row in table.body_rows:
+                        row_content = []
+                        for cell in body_row.cells:
+                            cell_text = layout_to_text(cell.layout, document.text)
+                            row_content.append(cell_text)
+                        table_data.append(row_content)
+
+            form_fields_data = []
+            for page in document.pages:
+                for field in page.form_fields:
+                    name = layout_to_text(field.field_name, document.text)
+                    value = layout_to_text(field.field_value, document.text)
+                    form_fields_data.append({'name': name.strip(), 'value': value.strip()})
+
+      
+
+            # print(table_data)
+
+            json_data = {'table_data': table_data, 'form_fields_data': form_fields_data}
+            json_file_path = 'document_data.json'
+            with open(json_file_path, 'w') as json_file:
+                json.dump(json_data, json_file)
+
+            print(f'Table data saved to {json_file_path}')
+
+            return render(request, 'admin_template/table_data.html', {'table_data': table_data})
+
+
+        except Exception as e:
+            return HttpResponse(f'Error processing PDF: {str(e)}')
+
+    return render(request, 'admin_template/detect_and_convert_tables.html')
+
+def layout_to_text(layout, document_text):
+    """
+    Extracts text content from the layout of a Document AI element.
+    """
+    text_content = ""
+    for text_segment in layout.text_anchor.text_segments:
+        start_index = text_segment.start_index
+        end_index = text_segment.end_index
+        text_content += document_text[start_index:end_index]
+    return text_content

@@ -63,7 +63,17 @@
             </div>
             <div class="collapse" id="ui-documents">
               <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{% url 'batch_process_documents' %}">Batch Upload</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="ui-documents">
+              <ul class="nav flex-column sub-menu">
                 <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">Files</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="ui-documents">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li>
               </ul>
             </div>
           </li>
