@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.db import transaction
 
 def transfer_record(request):
     teacher = request.user.teacher
@@ -217,15 +218,16 @@ def accept_message(request):
         message = InboxMessage.objects.get(pk=message_id)
         json_data = json.loads(message.json_data)
         
-        if check_existing_data(message, json_data):
+        if check_existing_data(message, json_data): 
             message.delete()
             return JsonResponse({'success': True, 'message': 'Data already exists in AdvisoryClass'})
-        
-        save_data(message, json_data)
-        message.delete()
-        return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
+        else:
+            save_data(message, json_data)  # Call save_data only once
+            message.delete()
+            return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
     except InboxMessage.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Message not found'})
+
 
 def check_existing_data(message, json_data):
     quarter_field_mapping = {
@@ -235,7 +237,6 @@ def check_existing_data(message, json_data):
         "4th Quarter": "fourth_quarter"
     }
     
-    
     excluded_quarters = ["first_quarter", "second_quarter", "third_quarter", "fourth_quarter"]
     
     for student in json_data.get('students', []):
@@ -243,10 +244,8 @@ def check_existing_data(message, json_data):
         for quarter in student.get('quarter', {}):
             field_name = quarter_field_mapping.get(quarter)
             if not field_name:
-                # Handle invalid quarter names
                 continue
             
-            # Exclude first_quarter and second_quarter from the filter
             if field_name in excluded_quarters:
                 continue
             
@@ -256,11 +255,21 @@ def check_existing_data(message, json_data):
                 subject=json_data.get('subject'),
                 from_teacher_id=message.from_teacher,
                 student__name=student_name,
-            ).exclude(**{f"{field_name}__in": [None, ""]})
+            )
             
-            if existing_advisory_classes.exists():
-                return True
-    return False
+            for existing_advisory_class in existing_advisory_classes:
+                existing_grade = getattr(existing_advisory_class, field_name)
+                if existing_grade is None:
+                    return False  # No existing value found, so we can save the data
+                
+                # If the existing grade is not the same as the transmuted grade, continue searching
+                if existing_grade != student['quarter'][quarter]:
+                    continue
+                else:
+                    return True  # Found existing value matching the transmuted grade
+            
+    return False  # No existing value found, so we can save the data
+
 def save_data(message, json_data):
     quarter_field_mapping = {
         "1st Quarter": "first_quarter",
@@ -269,15 +278,21 @@ def save_data(message, json_data):
         "4th Quarter": "fourth_quarter"
     }
 
+    replacements_made = set()  # Keep track of replacements made
+
     for student in json_data.get('students', []):
         student_name = student.get('name', None)
         student_instance, created = Student.objects.get_or_create(name=student_name, class_type='advisory')
 
         for quarter, transmuted_grade in student.get('quarter', {}).items():
             if transmuted_grade == '':
-                transmuted_grade = None  # Convert empty string to None
-            
-            # Check if there's an existing AdvisoryClass for the given student, grade, section, subject
+                transmuted_grade = None
+
+            key = (student_name, quarter)  # Create a unique key for each student-quarter combination
+
+            if key in replacements_made:
+                continue  # Skip if a replacement has already been made for this combination
+
             existing_advisory_classes = AdvisoryClass.objects.filter(
                 grade=json_data.get('grade'),
                 section=json_data.get('section'),
@@ -285,19 +300,19 @@ def save_data(message, json_data):
                 from_teacher_id=json_data.get('teacher'),
                 student=student_instance,
             )
-            
+
             if existing_advisory_classes.exists():
-                # If there's an existing AdvisoryClass, update the corresponding quarter field if it's not already set
                 parent_advisory_class = existing_advisory_classes.first()
                 field_to_update = quarter_field_mapping.get(quarter)
-                if getattr(parent_advisory_class, field_to_update) is None:
+                existing_grade = getattr(parent_advisory_class, field_to_update)
+                if existing_grade != transmuted_grade:
+                    print(f"Replacing {quarter} value for {student_name}. Existing value: {existing_grade}. New value: {transmuted_grade}.")
                     setattr(parent_advisory_class, field_to_update, transmuted_grade)
                     parent_advisory_class.save()
-                    print(f"Appended {quarter} to parent AdvisoryClass.")
+                    replacements_made.add(key)  # Add the combination to replacements_made
                 else:
-                    print(f"{quarter} already exists in parent AdvisoryClass.")
+                    print(f"{quarter} already has the same value for {student_name}.")
             else:
-                # Create a new AdvisoryClass instance if it doesn't exist
                 new_advisory_class = AdvisoryClass(
                     grade=json_data.get('grade'),
                     section=json_data.get('section'),
@@ -307,7 +322,7 @@ def save_data(message, json_data):
                 )
                 setattr(new_advisory_class, quarter_field_mapping.get(quarter), transmuted_grade)
                 new_advisory_class.save()
-                print(f"Saved new AdvisoryClass with {quarter}.")
+                print(f"Saved new AdvisoryClass with {quarter} for {student_name}.")
 
 
 

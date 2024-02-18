@@ -602,15 +602,14 @@ class AcceptedMessage(models.Model):
         return f"AcceptedMessage {self.message_id}"
     
 class AdvisoryClass(models.Model):
-    
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
     subject = models.CharField(max_length=50, null=True, blank=True)
-    first_quarter = models.CharField(max_length=50, null=True, blank=True)
-    second_quarter = models.CharField(max_length=50, null=True, blank=True)
-    third_quarter = models.CharField(max_length=50, null=True, blank=True)
-    fourth_quarter = models.CharField(max_length=50, null=True, blank=True)
+    first_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    second_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    third_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    fourth_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     from_teacher_id = models.CharField(max_length=50, null=True, blank=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True,  limit_choices_to={'class_type': 'advisory'})
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, limit_choices_to={'class_type': 'advisory'})
 
    
