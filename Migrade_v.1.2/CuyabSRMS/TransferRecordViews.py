@@ -131,10 +131,16 @@ def transfer_json_to_teacher(request):
             json_data = json.loads(request.body.decode('utf-8'))
             target_teacher_id = json_data.get('target_teacher')
             from_teacher_id = json_data.get('teacher')
-        
-            file_name = json_data.get('quarters')
+            subject = json_data.get('subject')
+            grade = json_data.get('grade')
+            section = json_data.get('section')
+            first_student = json_data['students'][0]  # Get the first student
+            quarter_info = first_student['quarter']  # Access the quarter information
+            quarter_name = next(iter(quarter_info.keys()))
+            file_name = (grade, section, quarter_name, subject)
             section = json_data.get('section')
             print(json_data)
+            print(file_name)
             print(from_teacher_id)
             # Check if the section with the specified name, class_type, and teacher_id exists
             existing_section = Section.objects.filter(name=section, class_type="Advisory", teacher_id=target_teacher_id).exists()
@@ -223,10 +229,12 @@ def accept_message(request):
             return JsonResponse({'success': True, 'message': 'Data already exists in AdvisoryClass'})
         else:
             save_data(message, json_data)  # Call save_data only once
+            save_accepted_message(message)  # Call save_accepted_message to save the accepted message
             message.delete()
             return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
     except InboxMessage.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Message not found'})
+
 
 
 def check_existing_data(message, json_data):

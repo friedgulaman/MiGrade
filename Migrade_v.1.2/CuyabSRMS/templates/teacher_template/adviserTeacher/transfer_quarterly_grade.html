@@ -19,7 +19,7 @@ View Class Record
     <a class="back-button">&larr;</a>
   </div>
 
-  <div class="card">
+  <div class="card p-5 m-3">
     <div class="card-body">
       <h3 class="card-title">Class Record Information</h3>
       <div class="row text-primary text-center">
@@ -40,9 +40,20 @@ View Class Record
         </div>
       </div>
     </div>
+    <div >
+    <div class="p-4">
+      <label for="teacherSelect" class="form-text">Select Teacher:</label>
+      <select id="teacherSelect" class="form-select mt-2">
+      </select>
+      <div class="d-flex justify-content-end align-items-center mt-4">
+        <button id="submitJsonBtn" class="btn btn-success mt-2">Send Files to Teacher</button>
+        <button id="viewDetails" class="btn  mt-2">View Details</button>
+      </div>
+     
+    </div>
   </div>
 
-  <div class="card mt-3">
+  <div class="card p-5 m-3" style="display: none;" id="details">
     <div class="card-body">
       <h3 class="card-title">Student Grades Summary</h3>
       <div class="table-responsive">
@@ -68,14 +79,8 @@ View Class Record
     </div>
   </div>
   
-  <!-- Select dropdown for selecting teacher -->
-  <label for="teacherSelect">Select Teacher:</label>
-  <select id="teacherSelect" class="form-select mt-2">
-    <!-- Options will be dynamically added here using AJAX -->
-  </select>
-  
-  <!-- Submit button to send JSON data to the selected teacher -->
-  <button id="submitJsonBtn" class="btn btn-success mt-2">Submit JSON to Teacher</button>
+
+
 
 </section>
 <!-- jQuery CDN -->
@@ -119,7 +124,7 @@ View Class Record
   }
 
   $(document).ready(function() {
-    // Fetch list of teachers and populate the select dropdown
+
     $.ajax({
       type: "GET",
       url: "{% url 'get_teacher_list' %}",
@@ -137,10 +142,11 @@ View Class Record
         console.error("Error fetching teacher list:", error);
       }
     });
-
+    
     // Click event handler for submitting JSON data to the selected teacher
     $("#submitJsonBtn").click(function() {
       var selectedTeacherId = $("#teacherSelect").val();
+      
       var jsonData = htmlToJson();
       console.log("Sending JSON data to teacher with ID:", selectedTeacherId);
       console.log("JSON data:", jsonData);
@@ -194,7 +200,13 @@ View Class Record
       }
       return cookieValue;
     }
-  });
+
+        // Add click event listener to the "View Details" button
+        $("#viewDetails").click(function() {
+            // Toggle the display style of the "details" div
+            $("#details").toggle();
+        });
+    });
 </script>
 
 {% endblock main_content %}

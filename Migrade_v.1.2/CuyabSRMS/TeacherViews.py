@@ -56,7 +56,8 @@ from django.core.exceptions import MultipleObjectsReturned
 
 @login_required
 def home_teacher(request):
-    return render(request, 'teacher_template/home_teacher.html')
+    announcements = Announcement.objects.all()
+    return render(request, 'teacher_template/home_teacher.html', {'announcements': announcements})
 @login_required
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')

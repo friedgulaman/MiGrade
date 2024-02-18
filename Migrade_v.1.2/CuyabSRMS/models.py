@@ -613,3 +613,11 @@ class AdvisoryClass(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, limit_choices_to={'class_type': 'advisory'})
 
    
+class Announcement(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.title

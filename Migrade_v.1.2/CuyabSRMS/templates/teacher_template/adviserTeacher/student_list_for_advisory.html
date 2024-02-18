@@ -44,7 +44,9 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         background-color: #f5f5f5;
         /* For Chrome, Safari, and Opera */
     }
-
+    .view{
+        cursor: pointer;
+    }
     .back-button {
         color: #1027ac;
         font-size: 30px;
@@ -128,7 +130,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
-                                aria-selected="false">Class records</a>
+                                aria-selected="false">Subjects</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly" role="tab"
@@ -194,23 +196,25 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 <div>
                                    
                                     <div class="card-body">
-                                        <h4 class="card-title">Class Records</h4>
+                                        <h4 class="card-title">Subject Grades</h4>
                                         <p id="grade" style="display: none;">{{ grade }}</p>
                                         <p id="section" style="display: none;">{{ section }}</p>
-                                        <div class="table-responsive">
+                                        <div class="table-responsive ">
                                             {% if advisory_classes %}
-                                            <table class="table table-hover">
-                                                <thead>
+                                            <table class="table table-hover text-center ">
+                                                <thead class="text-center">
                                                     <tr>
                                                         <th>Subject</th>
                                                         <th>Subject Teacher</th>
+                                                        <th></th>
                                                     </tr>
-                                                    <tbody>
+                                                    <tbody class="text-muted" >
                                                         {% if advisory_classes %}
                                                             {% for advisory_class in advisory_classes %}
-                                                                <tr onclick="showQuarters('{{ grade }}','{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">
-                                                                    <td id="subject"><button >{{ advisory_class.subject }}</button></td>
+                                                                <tr  onclick="showQuarters('{{ grade }}','{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">
+                                                                    <td id="subject">{{ advisory_class.subject }}</td>
                                                                     <td>{{ advisory_class.from_teacher_id }}</td>
+                                                                    <td class="text-muted view">View Details</td>
                                                                 </tr>
                                                             {% endfor %}
                                                         {% else %}

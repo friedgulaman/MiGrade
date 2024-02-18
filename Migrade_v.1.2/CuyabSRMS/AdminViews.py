@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import CustomUser, Quarters, Student, Teacher, Grade, Section
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -54,6 +54,8 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
+    announcements = Announcement.objects.all()
+    
    
     context = {
         'grades': grades,
@@ -64,6 +66,8 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
+        'announcements': announcements,
+
     }
     return render(request, 'admin_template/home_admin.html', context)
 
@@ -836,3 +840,34 @@ def sf10_views(request):
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
 
+def announcement(request):
+    return render(request, 'admin_template/announcement.html')
+
+def announcement_list(request):
+    announcements = Announcement.objects.all()
+    return render(request, 'admin_template/announcement.html', {'announcements': announcements})
+
+def create_announcement(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        
+        # Attempt to create the announcement
+        try:
+            Announcement.objects.create(title=title, content=content)
+            messages.success(request, 'Announcement created successfully')
+            return redirect('home_admin')
+        except Exception as e:
+            messages.error(request, f'Failed to create Announcement: {e}')
+
+    return render(request, 'admin_template/home_admin.html')
+
+def delete_announcement(request, announcement_id):
+    announcement = get_object_or_404(Announcement, pk=announcement_id)
+    try:
+        announcement.delete()
+        return JsonResponse({'success': True, 'message': 'Announcement deleted successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Failed to delete announcement: {e}'})
+
+   

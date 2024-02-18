@@ -3,6 +3,12 @@
 {% block main_content %}
 {% load static %}
 <style>
+  section{
+    background-image: url('static/star-admin/images/bg_home_teacher.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+  }
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -27,13 +33,16 @@
   }
 
   #ces_logo,
-  #migrade_logo {
+  #migrade_logo,
+  .features {
     transition: .7s;
     cursor: pointer;
     -webkit-mask:
       linear-gradient(135deg, #000c 40%, #000, #000c 60%) 100% 100%/250% 250%;
   }
-
+  .features:hover{
+    -webkit-mask-position: 0 0;
+  }
   #ces_logo:hover {
     -webkit-mask-position: 0 0;
   }
@@ -42,36 +51,53 @@
     -webkit-mask-position: 0 0;
   }
 
-  .parallax {
-    --f: .1;
-    /* the parallax factor (the smaller the better) */
-    --r: 10px;
-    /* radius */
-    --_f: calc(100%*var(--f)/(1 + var(--f)));
-    --_a: calc(90deg*var(--f));
-    max-width: 250px;
-    /* the image size */
-    aspect-ratio: calc(1 + var(--f));
-    object-fit: cover;
-    clip-path: inset(0 var(--_f) 0 0 round var(--r));
-    transform: perspective(400px) var(--_t, rotateY(var(--_a)));
-    transition: .5s;
-    cursor: pointer;
-    -webkit-box-shadow: -9px 3px 14px 7px #dddddd;
-    -moz-box-shadow: -9px 3px 14px 7px #dddddd;
-    box-shadow: -9px 3px 14px 7px #dddddd;
-  }
+ 
+  .custom-card-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover; /* Ensures the image covers the entire space while maintaining aspect ratio */
+    }
+    .arrow-icon {
+    display: inline-block;
+    width: 2em; /* Adjust width as needed */
+    height: 2em; /* Adjust height as needed */
+    line-height: 2em; /* Vertically center the icon */
+    text-align: center;
+    font-size: 1.5em; /* Adjust font size as needed */
+    border: 2px solid #000; /* Border properties */
+    border-radius: 50%; /* Border radius for circle shape */
+}
+.explore {
+    transition: color 0.3s; /* Smooth color transition */
+    animation: shake 1.9s infinite, fadeIn 4s;
 
-  .parallax:hover {
-    clip-path: inset(0 0 0 var(--_f) round var(--r));
-    --_t: translateX(calc(-1*var(--_f))) rotateY(calc(-1*var(--_a)))
-  }
+}
+
+.arrow-icon:hover {
+    color: darkred; /* Change color on hover */
+    
+}
+
+/* Define the shake animation */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+.announcemet{
+  background: transparent;
+}
 </style>
 
 
 <section class="content">
   <div class="container-scroller d-flex justify-content-between align-items-center   p-3  bg-white border-bottom">
-    <div class="text-muted ms-3"><code class="text-dark">School Year: 2023-2024</code></div>
+    <div class="text-muted ms-md-3 ms-lg-0 school_year text-center">
+      <code class="text-dark">School Year: 2023-2024</code>
+  </div>
+  
     <div class="d-flex  align-items-center">
       <a class="nav-link" href="#">Documentation</a>
       <a class="nav-link" href="#">FAQs</a>
@@ -91,32 +117,57 @@
       </div>
     </div>
   </div>
-  <div class="d-flex flex-column justify-content-center align-items-center" style="height: 100vh;">
+ 
+    {% for announcement in announcements %}
+    <div class="announcement mt-1">
+    <div class="alert  text-dark d-flex justify-content-between align-items-center">
+        <marquee class="text-muted"><strong>{{ announcement.title }}</strong> - {{ announcement.content }}</marquee>
+        <button class="hide-announcement btn fw-bold">X</button>
+    </div>
+    </div>
+    {% endfor %}
+
+  <div class="d-flex flex-column justify-content-center align-items-center bg" style="height: 70vh;">
     <div class="display-1 text-center">
       Welcome, <span class="user text-primary">{{user}}</span>
     </div>
-    <div class="display-1-desc text-center w-50 ">
-      <p class="form-text">
-        Lorem Ipsum is simply dummy text of the printing Lorem Ipsum has been the industry's standard dummy text ever
-        since the 1500s, when an unknown printer took a galley not only five centuries,
-      </p>
-      <a class="text-decoration-none text-white btn btn-primary container explore"
-        href="{% url 'home_adviser_teacher'%}">Explore</a>
-    </div>
+    <div class="display-1-desc text-center w-50">
+      <a class="text-decoration-none btn text-dark container explore" href="{% url 'home_adviser_teacher'%}">
+          <!-- Arrow icon -->
+          <span class="arrow-icon p-0">&rarr;</span> 
+      </a>
+  </div>
+  
   </div>
 
-  <div class="headline row col-12 flex-row d-flex justify-content-center align-content-center" style="height: 80vh;">
-    <div class="col-6 text-center">
-      <img class="parallax parallax-1" src="static/star-admin/images/15.png">
-      <img class="parallax parallax-2" src="static/star-admin/images/16.png" style="--f:.12;--r:5px">
-      <img class="parallax parallax-3" src="static/star-admin/images/17.png" style="--f:.08;--r:20px">
+  <div class="container mb-3 features">
+    <div class="d-flex justify-content-center align-center">
+        <div class="m-3">
+            <img src="static/star-admin/images/15.png" class="custom-card-img" alt="Hollywood Sign on The Hill">
+        </div>
+        <div class="m-3">
+            <img src="static/star-admin/images/16.png" class="custom-card-img" alt="Palm Springs Road">
+        </div>
+        <div class="m-3">
+            <img src="static/star-admin/images/17.png" class="custom-card-img" alt="Los Angeles Skyscrapers">
+        </div>
     </div>
-    <div class="col-6 d-flex flex-column align-items-center">
-      <div class="specialized display-4 text-muted">Specialized for Cuyab Elementary School</div>
-      <img class="m-5" id="ces_logo" src="static/star-admin/images/ces_logo.png">
-      <img id="migrade_logo" src="static/star-admin/images/logo_migrade.png">
+</div>
+
+
+
+</div>
+  <div class="headline  d-flex justify-content-center align-content-center" style="height: 80vh;">
+
+    <div class=" d-flex flex-column align-items-center"> <!-- Adjust column size for small screens -->
+        <div class="specialized display-4 text-muted text-center">Specialized for Cuyab Elementary School</div>
+        <img class="m-5" id="ces_logo" src="static/star-admin/images/ces_logo.png">
+        <img id="migrade_logo" src="static/star-admin/images/logo_migrade.png">
     </div>
-  </div>
+</div>
+
+
+
   <footer class="footer mt-5">
     <div class="d-sm-flex justify-content-center justify-content-sm-between">
       <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">MiGrade - Cuyab Elementary
@@ -130,44 +181,49 @@
 
 <!-- Initialize ScrollReveal with some basic options -->
 <script>
-  ScrollReveal().reveal('#ces_logo', {
+  // Initialize ScrollReveal with some basic options
+  const scrollReveal = ScrollReveal({
     delay: 200,
-    origin: 'right', // Set the origin to 'right' for right-to-left animation
-    distance: '50px' // Adjust the distance as needed
+    distance: '50px',
+    easing: 'ease-in-out'
   });
 
-  ScrollReveal().reveal('#migrade_logo', {
-    delay: 300,
-    origin: 'left', // Set the origin to 'right' for right-to-left animation
-    distance: '50px' // Adjust the distance as needed
-  });
-  ScrollReveal().reveal('.specialized', {
-    delay: 200,
-    duration: 2000, // Duration of the animation in milliseconds
-    easing: 'ease-in-out', // Easing function
-  });
-  ScrollReveal().reveal('.parallax-1', {
-    delay: 100,
-    duration: 2000, // Duration of the animation in milliseconds
-    easing: 'ease-in-out', // Easing function
+  function revealElements() {
+    // Reveal elements
+    scrollReveal.reveal('.features', { origin: 'right' });
+    scrollReveal.reveal('#ces_logo', { origin: 'right' });
+    scrollReveal.reveal('#migrade_logo', { origin: 'left' });
+    scrollReveal.reveal('.specialized');
+    scrollReveal.reveal('.parallax-1', { delay: 100 });
+    scrollReveal.reveal('.parallax-2', { delay: 200 });
+    scrollReveal.reveal('.parallax-3', { delay: 300 });
+  }
 
+  // Initial reveal on page load
+  revealElements();
+
+  // Reveal elements again on scroll up
+  window.addEventListener('scroll', function() {
+    if (window.scrollY === 0) {
+      revealElements();
+    }
   });
-  ScrollReveal().reveal('.parallax-2', {
-    delay: 200,
-    duration: 2000, // Duration of the animation in milliseconds
-    easing: 'ease-in-out', // Easing function
-  });
-
-  ScrollReveal().reveal('.parallax-3', {
-    delay: 300,
-    duration: 2000, // Duration of the animation in milliseconds
-    easing: 'ease-in-out', // Easing function
-  });
-
-
-
 </script>
-
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const hideButtons = document.querySelectorAll('.hide-announcement');
+  
+      hideButtons.forEach(function(button) {
+          button.addEventListener('click', function() {
+              // Find the parent announcement element
+              const announcementElement = button.closest('.announcement');
+              // Hide the announcement element
+              announcementElement.style.display = 'none';
+          });
+      });
+  });
+  </script>
+  
 
 
 

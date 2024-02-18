@@ -256,7 +256,10 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                         </td>
                                                         <td>{{ record.subject }}</td>
                                                         <td>
-                                                            <a class="quarterly_id" href="{% url 'transfer_quarterly_grade' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">send</a>
+                                                            <a class="quarterly_id" title="Send" href="{% url 'transfer_quarterly_grade' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">
+                                                                <i class="fas fa-share"></i> <!-- This assumes you're using Font Awesome -->
+                                                            </a>
+                                                            
                                                         </td>
                                                     </tr>
                                                     {% endfor %}

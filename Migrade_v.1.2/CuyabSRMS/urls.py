@@ -82,7 +82,10 @@ urlpatterns = [
     path('subject_list/', admin_required(AdminViews.subject_list), name='subject_list'),
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', admin_required( AdminViews.save_edited_data), name='save_edited_data'),
-
+    path('announcement', admin_required(AdminViews.announcement), name="announcement"),
+    path('announcement_list/', admin_required(AdminViews.announcement_list), name='announcement_list'),
+    path('create/', admin_required(AdminViews.create_announcement), name='create_announcement'),
+    path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
 
 
 
