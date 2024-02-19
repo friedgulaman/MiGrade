@@ -86,6 +86,26 @@ urlpatterns = [
     path('announcement_list/', admin_required(AdminViews.announcement_list), name='announcement_list'),
     path('create/', admin_required(AdminViews.create_announcement), name='create_announcement'),
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
+     path('school-information/', AdminViews.school_information_view, name='school_information'),
+     path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('add/', AdminViews.add_school_view, name='add_school'),
+    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
+    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+     path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('add/', AdminViews.add_school_view, name='add_school'),
+    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
+    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
+     path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
+
 
 
 
