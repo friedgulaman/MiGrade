@@ -1,0 +1,45 @@
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+Home
+{% endblock page_title %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <h3>School Information</h3>
+    <form method="post" action="{% url 'add_school' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="region">Region</label>
+            <input type="text" class="form-control" id="region" name="region">
+        </div>
+
+        <div class="form-group">
+            <label for="division">Division</label>
+            <input type="text" class="form-control" id="division" name="division">
+        </div>
+
+        <div class="form-group">
+            <label for="school_id">School ID</label>
+            <input type="text" class="form-control" id="school_id" name="school_id">
+        </div>
+
+        <div class="form-group">
+            <label for="school_name">School Name</label>
+            <input type="text" class="form-control" id="school_name" name="school_name">
+        </div>
+
+        <div class="form-group">
+            <label for="district">District</label>
+            <input type="text" class="form-control" id="district" name="district">
+        </div>
+
+        <div class="form-group">
+            <label for="school_year">School Year</label>
+            <input type="text" class="form-control" id="school_year" name="school_year">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock main_content %}

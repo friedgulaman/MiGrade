@@ -11,7 +11,7 @@ from datetime import datetime
 import re
 from django.utils import timezone
 from django.db import transaction
-
+import os
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -35,6 +35,14 @@ class Admin(models.Model):
     def __str__(self):
         return f"Admin: {self.username.username}, Email: {self.email}, Created: {self.created_at}"
 
+class SchoolInformation(models.Model):
+    region = models.CharField(max_length=100)
+    division = models.CharField(max_length=100)
+    school_id = models.CharField(max_length=100)
+    school_name = models.CharField(max_length=200)
+    district = models.CharField(max_length=100)
+    school_year = models.CharField(max_length=100)
+    
 class Teacher(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -561,6 +569,17 @@ class ExtractedData(models.Model):
             "sex": self.sex,
             "name_of_school": self.name_of_school
         }
+    def delete(self, *args, **kwargs):
+        # Delete associated ProcessedDocument before deleting ExtractedData
+        if self.processed_document:
+            # Get the file path of the document
+            file_path = self.processed_document.document.path
+            # Delete the associated file if it exists
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            # Delete the ProcessedDocument instance
+            self.processed_document.delete()
+        super().delete(*args, **kwargs)
 
 
 

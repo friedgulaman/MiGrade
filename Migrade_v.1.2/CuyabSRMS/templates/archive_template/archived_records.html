@@ -49,17 +49,18 @@
             </tr>
         </thead>
         <tbody>
+            {% for student in archived_students %}
+            {% if student.archived_grade and student.archived_section %}
             <tr>
-                {% for student in archived_students %}
-                <td>{{ student.archived_grade }} </td>
+                <td>{{ student.archived_grade }}</td>
                 <td>{{ student.archived_section }}</td>
-           
                 <td>
                     <!-- Add a button/link to restore the archived students -->
                     <a href="{% url 'restore_archived_students' student.archived_grade student.archived_section %}">Restore</a>
                 </td>
-                {% endfor %}
             </tr>
+            {% endif %}
+            {% endfor %}
         </tbody>
     </table>
 </body>
