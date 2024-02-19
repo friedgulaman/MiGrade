@@ -217,6 +217,8 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     quarter_name = quarter
     for grade_score in grade_scores_queryset:
         class_record_name = grade_score.class_record.name
+        teacher_name = f"{grade_score.class_record.teacher.user.first_name} {grade_score.class_record.teacher.user.last_name}".upper()
+        
 
     user = request.user
     action = f'{user} generate a Class Record name "{class_record_name}"'
@@ -225,7 +227,7 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
 
 
         # Original file path
-    excel_file_name = "TEMPLATE - SF1.xlsx"
+    excel_file_name = "TEMPLATE - CLASSRECORD (2).xlsx"
 
     # Get the current working directory
     # current_directory = os.getcwd()
@@ -280,7 +282,7 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
         write_transmuted_grade(sheet, grade_scores_queryset)
 
 
-        write_school_info(sheet, school_info)
+        write_school_info(sheet, school_info, grade, section, teacher_name)
 
 
         # Save the changes to the workbook

@@ -35,7 +35,7 @@ from datetime import datetime
 from dateutil import parser
 import pandas as pd
 from google.api_core.client_options import ClientOptions
-
+from pdfminer.high_level import extract_pages, extract_text
 
 
 from django.contrib.auth.decorators import login_required
@@ -1289,6 +1289,7 @@ def process_document_form_sample(
     # Return the processed document
     return result.document
 
+
 def detect_and_convert_tables(request):
     if request.method == 'POST' and 'pdf_file' in request.FILES:
         pdf_file = request.FILES['pdf_file']
@@ -1311,30 +1312,46 @@ def detect_and_convert_tables(request):
             for page in document.pages:
                 for table in page.tables:
                     # Extract text content of header and body rows
-                    for header_row in table.header_rows:
-                        row_content = []
-                        for cell in header_row.cells:
-                            cell_text = layout_to_text(cell.layout, document.text)
-                            row_content.append(cell_text)
+                    for row in table.header_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        table_data.append(row_content)
+                    
+                    for row in table.body_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
                         table_data.append(row_content)
 
-                    for body_row in table.body_rows:
-                        row_content = []
-                        for cell in body_row.cells:
-                            cell_text = layout_to_text(cell.layout, document.text)
-                            row_content.append(cell_text)
-                        table_data.append(row_content)
+            print(table_data)
 
             form_fields_data = []
+
+            grade_section = "GRADE & SECTION:"
+            teacher = "TEACHER:"
+
+            # Initialize flags to track presence of grade_section and teacher fields
+            grade_section_present = False
+            teacher_present = False
+
             for page in document.pages:
                 for field in page.form_fields:
-                    name = layout_to_text(field.field_name, document.text)
-                    value = layout_to_text(field.field_value, document.text)
-                    form_fields_data.append({'name': name.strip(), 'value': value.strip()})
+                    name = layout_to_text(field.field_name, document.text).strip()
+                    value = layout_to_text(field.field_value, document.text).strip()
 
-      
+                    form_field_data = {'name': name, 'value': value}
 
-            # print(table_data)
+                    form_fields_data.append(form_field_data)
+
+                    # Check if the name matches the grade_section
+                    if name == grade_section:
+                        grade_section_present = True
+                    elif name == teacher:
+                            teacher_present = True
+
+                # Check if both grade_section and teacher are present
+                if grade_section_present and teacher_present:
+                    print("Both GRADE & SECTION and TEACHER fields are present together")
+                else:
+                    print("Either GRADE & SECTION or TEACHER field is missing")
+
 
             json_data = {'table_data': table_data, 'form_fields_data': form_fields_data}
             json_file_path = 'document_data.json'
@@ -1343,7 +1360,7 @@ def detect_and_convert_tables(request):
 
             print(f'Table data saved to {json_file_path}')
 
-            return render(request, 'admin_template/table_data.html', {'table_data': table_data})
+            return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data })
 
 
         except Exception as e:

@@ -99,15 +99,18 @@ def transmuted_grade(initial_grade):
 def log_activity(user, action, details=''):
     ActivityLog.objects.create(user=user, action=action, details=details)
 
-def write_school_info(sheet, school_info):
+def write_school_info(sheet, school_info, grade, section, teacher_name):
     column_coordinates_region = 7
     column_coordinates_school_name = 7
     column_coordinates_district = 24
     column_coordinates_school_year = 33
     column_coordinates_schoolID = 24
     column_coordinates_division = 15
+    column_coordinates_grade_section = 11
+    column_coordinates_teacher = 19
     row_coordinates_4 = 4
     row_coordinates_5 = 5
+    row_coordinates_7 = 7
 
     for info in school_info:
         value_region = info.region
@@ -117,8 +120,9 @@ def write_school_info(sheet, school_info):
         value_district = info.district
 
         value_school_year = info.school_year
-     
-
+        value_grade_section =  f"{grade} - {section}"
+        value_teacher = teacher_name
+        
         # Write region
         sheet.cell(row=row_coordinates_4, column=column_coordinates_region, value=value_region)
 
@@ -128,6 +132,8 @@ def write_school_info(sheet, school_info):
         sheet.cell(row=row_coordinates_5, column=column_coordinates_schoolID, value=value_school_id)
         sheet.cell(row=row_coordinates_4, column=column_coordinates_district, value=value_district)
         sheet.cell(row=row_coordinates_5, column=column_coordinates_school_year, value=value_school_year)
+        sheet.cell(row=row_coordinates_7, column=column_coordinates_grade_section, value=value_grade_section)
+        sheet.cell(row=row_coordinates_7, column=column_coordinates_teacher, value=value_teacher)
 
 
     
