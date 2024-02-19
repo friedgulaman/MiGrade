@@ -896,3 +896,245 @@ def write_sf9_grades(back_sheet, final_grade, general_average):
         back_sheet.cell(row=row, column=18, value=final_grade_score)
 
         back_sheet.cell(row=22, column=18, value=general_average.general_average)
+
+
+
+
+#SUMMARRY OF QUARTERLY GRADES
+        
+def write_school_info_quarterly(input_sheet, school_info, quarterly_grades_query):
+    column_coordinates_region = 7
+    column_coordinates_school_name = 7
+    column_coordinates_district = 24
+    column_coordinates_school_year = 33
+    column_coordinates_schoolID = 24
+    column_coordinates_division = 15
+    row_coordinates_4 = 4
+    row_coordinates_5 = 5
+    column_coordinates_grade_section = 11
+    column_coordinates_teacher = 19
+    row_coordinates = 7
+
+    # Iterate over school information and quarterly grades
+    for info, grade_instance in zip(school_info, quarterly_grades_query):
+        # School Information
+        value_region = info.region
+        value_school_name = info.school_name
+        value_division = info.division
+        value_school_id = info.school_id
+        value_district = info.district
+        value_school_year = info.school_year
+
+        # Quarterly Grades Information
+        grade = grade_instance.student.grade
+        section = grade_instance.student.section
+        teacher_name = f"{grade_instance.student.teacher.user.first_name} {grade_instance.student.teacher.user.last_name}"
+
+
+        print(grade)
+        print(section)
+        print(teacher_name)
+
+        grade_section = f"{grade} - {section}"
+
+        # Write school information
+        input_sheet.cell(row=row_coordinates_4, column=column_coordinates_region, value=value_region)
+        input_sheet.cell(row=row_coordinates_5, column=column_coordinates_school_name, value=value_school_name)
+        input_sheet.cell(row=row_coordinates_4, column=column_coordinates_division, value=value_division)
+        input_sheet.cell(row=row_coordinates_5, column=column_coordinates_schoolID, value=value_school_id)
+        input_sheet.cell(row=row_coordinates_4, column=column_coordinates_district, value=value_district)
+        input_sheet.cell(row=row_coordinates_5, column=column_coordinates_school_year, value=value_school_year)
+
+        # Write grade, section, and teacher
+        input_sheet.cell(row=row_coordinates, column=column_coordinates_grade_section, value=grade_section)
+        input_sheet.cell(row=row_coordinates, column=column_coordinates_teacher, value=teacher_name)
+
+        
+def write_student_name_quarterly(input_sheet, quarterly_grades_query):
+
+    column_coordinates_student_name = 2
+    row_coordinates_male = 12
+    row_coordinates_female = 62
+
+    while input_sheet.cell(row=row_coordinates_male, column=column_coordinates_student_name).value:
+        row_coordinates_male += 1
+
+    while input_sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name).value:
+        row_coordinates_female += 1
+
+    for quarterly_grade in quarterly_grades_query:  # Retrieve the related student
+         # Check if the related student exists
+       
+        if quarterly_grade.student.sex == 'M':
+            value_to_write = quarterly_grade.student.name
+            input_sheet.cell(row=row_coordinates_male, column=column_coordinates_student_name, value=value_to_write)
+            row_coordinates_male += 1
+        elif quarterly_grade.student.sex == 'F':
+            value_to_write = quarterly_grade.student.name
+            input_sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name, value=value_to_write)
+            row_coordinates_female += 1
+
+
+def write_quarterly_grade_AP(sheet, quarterly_grades_query):
+    column_coordinates_AP = 8
+    row_coordinates_male = 11
+    row_coordinates_female = 62
+
+    for quarterly_grade in quarterly_grades_query:
+        # Parse the JSON field to extract the value of "AP"
+        grades_data = quarterly_grade.grades
+
+
+        if quarterly_grade.student.sex == 'M':
+                value_to_write = grades_data.get("AP")
+                sheet.cell(row=row_coordinates_male, column=column_coordinates_AP, value=value_to_write)
+                row_coordinates_male += 1
+        elif quarterly_grade.student.sex == 'F':
+                value_to_write = grades_data.get("AP")
+                sheet.cell(row=row_coordinates_female, column=column_coordinates_AP, value=value_to_write)
+                row_coordinates_female += 1
+
+   
+def write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query):
+    column_coordinates_ENGLISH = 6
+    row_coordinates_male = 11
+    row_coordinates_female = 62
+
+    for quarterly_grade in quarterly_grades_query:
+        # Parse the JSON field to extract the value of "AP"
+        grades_data = quarterly_grade.grades
+
+
+
+        if quarterly_grade.student.sex == 'M':
+                value_to_write = grades_data.get("English")
+                sheet.cell(row=row_coordinates_male, column=column_coordinates_ENGLISH, value=value_to_write)
+                row_coordinates_male += 1
+        elif quarterly_grade.student.sex == 'F':
+                value_to_write = grades_data.get("ENGLISH")
+                sheet.cell(row=row_coordinates_female, column=column_coordinates_ENGLISH, value=value_to_write)
+                row_coordinates_female += 1            
+
+
+
+
+#FINAL GRADE AND GENERAL AVERAGE
+
+def write_school_info_general_average(sheet, school_info, general_grades_query):
+    column_coordinates_region = 7
+    column_coordinates_school_name = 7
+    # column_coordinates_district = 24
+    column_coordinates_school_year = 32
+    column_coordinates_schoolID = 21
+    column_coordinates_division = 21
+    row_coordinates_3 = 3
+    # row_coordinates_4 = 4
+    row_coordinates_5 = 5
+    column_coordinates_grade_section = 32
+    # column_coordinates_teacher = 32
+    # row_coordinates = 7
+
+    # Iterate over school information and quarterly grades
+    for info, grade_instance in zip(school_info, general_grades_query):
+        # School Information
+        value_region = info.region
+        value_school_name = info.school_name
+        value_division = info.division
+        value_school_id = info.school_id
+        # value_district = info.district
+        value_school_year = info.school_year
+
+        # Quarterly Grades Information
+        grade = grade_instance.student.grade
+        section = grade_instance.student.section
+        # teacher_name = f"{grade_instance.student.teacher.user.first_name} {grade_instance.student.teacher.user.last_name}"
+
+
+        print(grade)
+        print(section)
+        # print(teacher_name)
+
+        grade_section = f"{grade} - {section}"
+
+        # Write school information
+        sheet.cell(row=row_coordinates_3, column=column_coordinates_region, value=value_region)
+        sheet.cell(row=row_coordinates_5, column=column_coordinates_school_name, value=value_school_name)
+        sheet.cell(row=row_coordinates_3, column=column_coordinates_division, value=value_division)
+        sheet.cell(row=row_coordinates_5, column=column_coordinates_schoolID, value=value_school_id)
+        # sheet.cell(row=row_coordinates_4, column=column_coordinates_district, value=value_district)
+        sheet.cell(row=row_coordinates_3, column=column_coordinates_school_year, value=value_school_year)
+
+        # Write grade, section, and teacher
+        sheet.cell(row=row_coordinates_5, column=column_coordinates_grade_section, value=grade_section)
+        # sheet.cell(row=row_coordinates, column=column_coordinates_teacher, value=teacher_name)
+
+
+def write_student_name_general_average(sheet, general_grades_query):
+    column_coordinates_student_name = 2
+    row_coordinates_male = 11
+    row_coordinates_female = 62
+
+    while sheet.cell(row=row_coordinates_male, column=column_coordinates_student_name).value:
+        row_coordinates_male += 1
+
+    while sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name).value:
+        row_coordinates_female += 1
+
+    for general_average_grade in general_grades_query:  # Retrieve the related student
+         # Check if the related student exists
+       
+        if general_average_grade.student.sex == 'M':
+            value_to_write = general_average_grade.student.name
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_student_name, value=value_to_write)
+            row_coordinates_male += 1
+            print(f'male {value_to_write}')
+        elif general_average_grade.student.sex == 'F':
+            value_to_write = general_average_grade.student.name
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name, value=value_to_write)
+            row_coordinates_female += 1
+            print(f'female {value_to_write}') 
+
+
+
+def write_final_grade_ENGLISH(sheet, final_grades_query, general_grades_query):
+    column_coordinates_ENGLISH_1ST = 16
+    column_coordinates_ENGLISH_2ND = 17
+    column_coordinates_ENGLISH_3RD = 18
+    column_coordinates_ENGLISH_4TH = 19
+    column_coordinates_ENGLISH_FINAL = 20
+    row_coordinates_male = 11
+    row_coordinates_female = 62
+
+    for final_grade_data in final_grades_query:
+        final_grades = json.loads(final_grade_data.final_grade)
+
+        english_data = [grade_data for grade_data in final_grades if grade_data['subject'] == 'English']
+
+        if not english_data:
+            # English data not found for this student
+            continue
+
+        english_data = english_data[0]
+
+        # Retrieve grades for English subject
+        first_quarter_grade = english_data['quarter_grades'].get('1st Quarter', '')
+        second_quarter_grade = english_data['quarter_grades'].get('2nd Quarter', '')
+        third_quarter_grade = english_data['quarter_grades'].get('3rd Quarter', '')
+        fourth_quarter_grade = english_data['quarter_grades'].get('4th Quarter', '')
+        final_grade = english_data.get('final_grade', '')
+
+        # Determine where to write based on student gender
+        if final_grade_data.student.sex == 'M':
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_ENGLISH_1ST, value=first_quarter_grade)
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_ENGLISH_2ND, value=second_quarter_grade)
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_ENGLISH_3RD, value=third_quarter_grade)
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_ENGLISH_4TH, value=fourth_quarter_grade)
+            sheet.cell(row=row_coordinates_male, column=column_coordinates_ENGLISH_FINAL, value=final_grade)
+            row_coordinates_male += 1
+        elif final_grade_data.student.sex == 'F':
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_ENGLISH_1ST, value=first_quarter_grade)
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_ENGLISH_2ND, value=second_quarter_grade)
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_ENGLISH_3RD, value=third_quarter_grade)
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_ENGLISH_4TH, value=fourth_quarter_grade)
+            sheet.cell(row=row_coordinates_female, column=column_coordinates_ENGLISH_FINAL, value=final_grade)
+            row_coordinates_female += 1

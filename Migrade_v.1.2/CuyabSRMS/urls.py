@@ -87,7 +87,9 @@ urlpatterns = [
     path('create/', admin_required(AdminViews.create_announcement), name='create_announcement'),
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
 
-
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
+    path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
 
 
     # Adviser Teacher
