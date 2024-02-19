@@ -1,0 +1,80 @@
+{% extends 'teacher_template/teacher_base.html' %}
+{% load static %}
+{% block title %}
+Subject Quarterly Grade
+{% endblock title %}
+{% block main_content %}
+<style>
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+<section class="container-fluid">
+    <div class="card p-5 m-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2 ">
+                <h3><strong class="text-danger">{{ subject }}</strong> <span class="text-muted">- {{ grade}}, {{ section}}</span></h3>
+                <a class="back-button">&larr;</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Student</th>
+                            <th>First Quarter </th>
+                            <th>Second Quarter </th>
+                            <th>Third Quarter </th>
+                            <th>Fourth Quarter </th>
+                            <th>Final Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for advisory_class in advisory_classes %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ advisory_class.student.name }}</td>
+                            <td class="first_quarter text-muted">{{ advisory_class.first_quarter|default_if_none:"0" }}
+                            </td>
+                            <td class="second_quarter text-muted">{{ advisory_class.second_quarter|default_if_none:"0"}}</td>
+                            <td class="third_quarter text-muted">{{ advisory_class.third_quarter|default_if_none:"0" }}
+                            </td>
+                            <td class="fourth_quarter text-muted">{{ advisory_class.fourth_quarter|default_if_none:"0"}}</td>
+
+                            <td class="finalGrade text-danger"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+</section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Function to handle the back button click event
+    document.querySelector(".back-button").addEventListener("click", function () {
+        window.history.back();
+    });
+    $(document).ready(function () {
+        $('tbody tr').each(function () {
+            var firstQuarter = parseFloat($(this).find('.first_quarter').text()) || 0;
+            var secondQuarter = parseFloat($(this).find('.second_quarter').text()) || 0;
+            var thirdQuarter = parseFloat($(this).find('.third_quarter').text()) || 0;
+            var fourthQuarter = parseFloat($(this).find('.fourth_quarter').text()) || 0;
+
+            var total = firstQuarter + secondQuarter + thirdQuarter + fourthQuarter;
+            var finalGrade = total / 4;
+
+            $(this).find('.finalGrade').text(finalGrade.toFixed(2)); // Round to 2 decimal places
+        });
+    });
+</script>
+
+{% endblock main_content %}

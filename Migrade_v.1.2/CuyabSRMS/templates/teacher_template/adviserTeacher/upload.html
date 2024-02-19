@@ -135,7 +135,7 @@ New Class List
         </div>
         <div class="modal-body">
           <!-- Your table content goes here -->
-          <div class="card">
+          <div class="card list_information">
             <div class="card-header">
               <h6 class="p-1">School Information</h6>
             </div>
@@ -180,7 +180,7 @@ New Class List
             </div>
           </div>
 
-          <div class="card mt-3">
+          <div class="card mt-3 list_students">
             <div class="card-header">
               <div class="d-flex justify-content-between align-items-center p-1">
                 <h6>Learners Information</h6>
@@ -255,91 +255,5 @@ New Class List
     gradeSectionModal.show();
   });
 </script>
-<script>
-  function tableToJson() {
-    const table = document.getElementById("data-table");
-    const data = { rows: [] };
 
-    const rows = table.querySelectorAll("tbody tr");
-
-    rows.forEach(row => {
-        const rowData = {};
-        const cells = row.querySelectorAll("td");
-
-        // Assuming the first cell is the key (LRN) and the rest are values
-        rowData.LRN = cells[0].textContent;  // Adjust the index based on your table structure
-        rowData.Name = cells[1].textContent;
-        rowData.Sex = cells[2].textContent;
-        rowData.Birthday = cells[3].textContent;  // Adjust the index based on your table structure
-
-        data.rows.push(rowData);
-    });
-
-    return data;
-}
-
-function getCookie(name) {
-    if (typeof name !== 'string' || name.trim() === '') {
-        return null;  // Invalid cookie name
-    }
-
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === name + '=') {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function sendJsonData(jsonData) {
-    fetch("{% url 'save_json_data' %}", {  // Replace with the actual URL
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(jsonData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("JSON data has been saved!");
-        window.location.href = "display_students";
-    })
-    .catch(error => {
-        alert("An error occurred while saving JSON data: " + error.message);
-    });
-}
-
-// Function to handle the form submission when the save button is clicked
-$(document).ready(function () {
-    $('#saveGradeSection').click(function () {
-        // Get the existing JSON data from the table
-        const lrnData = tableToJson();
-
-        // Add other data from hidden input fields to lrnData
-        lrnData.school_id = $('#hiddenSchoolID').val();
-        lrnData.division = $('#hiddenDivision').val();
-        lrnData.district = $('#hiddenDistrict').val();
-        lrnData.school_name = $('#hiddenSchoolName').val();
-        lrnData.school_year = $('#hiddenSchoolYear').val();
-        lrnData.grade = $('#hiddenGradeLevel').val();
-        lrnData.section = $('#hiddenSection').val();
-
-        // Now, lrnData contains all the necessary data including school_id, division, district, etc.
-        console.log(lrnData);
-
-        // Call the sendJsonData function to send data to Django views
-        sendJsonData(lrnData);
-    });
-});
-
-
-</script>
 {% endblock main_content %}

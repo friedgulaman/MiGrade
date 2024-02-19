@@ -1,0 +1,79 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+tempo_newupload
+{% endblock title %}
+{% block main_content %}
+
+<div>
+    {% if class_records %}
+        <h2>Class Records:</h2>
+        <ul>
+            {% for class_record in class_records %}
+                <li>
+                    <button type="button" class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
+                            onclick="showClassRecord('{{ class_record.id }}')">
+                        <div class="btn-group">
+                            <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                <g>
+                                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="btn-group">
+                            {{ class_record.name }}
+                        </div>
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-records-message">No transfer records found.</p>
+    {% endif %}
+</div>
+
+<div>
+    {% if unique_final_grades %}
+        <h2>Final Grades:</h2>
+        <ul>
+            {% for grade_data in unique_final_grades %}
+                <li>
+                    <button type="button" class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
+                    onclick="showFinalGrade('{{ grade_data.grade }}','{{ grade_data.section }}','{{ grade_data.subject }}')">                
+                        <div class="btn-group">
+                            <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                <g>
+                                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="btn-group">
+                            Grade: {{ grade_data.grade }}, Section: {{ grade_data.section }}, Subject: {{ grade_data.subject }}
+                        </div>
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-records-message">No final grades found.</p>
+    {% endif %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+<script>
+    var showClassRecord = function (class_record_id) {
+        var url = "{% url 'transfer_details' %}?id=" + encodeURIComponent(class_record_id);
+        window.location.href = url;
+    };
+
+    var showFinalGrade = function (grade, section, subject) {
+        var url = "{% url 'final_grade_details' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject);
+        window.location.href = url;
+    };
+</script>
+
+
+
+{% endblock main_content %}

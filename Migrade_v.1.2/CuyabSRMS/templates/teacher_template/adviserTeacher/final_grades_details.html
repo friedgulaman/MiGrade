@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Grade Details</title>
+</head>
+<body>
+    <h1>Final Grade Details</h1>
+    {% if final_grades %}
+    <div>
+        {% for final_grade in final_grades %}
+        <p>Student: {{ final_grade.student }}</p>
+        <p>Grade: {{ final_grade.grade }}</p>
+        <p>Section: {{ final_grade.section }}</p>
+        <p>Final Grade:</p>
+        <ul class="finalGradeList">
+            <!-- JSON data will be inserted here dynamically -->
+        </ul>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-records-message">No final grades found.</p>
+    {% endif %}
+
+    <script>
+        // Load and parse JSON data
+        var finalGradeData = JSON.parse('{{ final_grade_data|escapejs }}');
+
+        // Access the ul elements
+        var finalGradeLists = document.querySelectorAll('.finalGradeList');
+
+        // Iterate over the final grade data and populate the ul elements
+        finalGradeLists.forEach(function(finalGradeList) {
+            finalGradeData.forEach(function(finalGrade) {
+                var listItem = document.createElement('li');
+                Object.entries(finalGrade).forEach(function([key, value]) {
+                    if (key === 'quarter_grades') {
+                        var quarterGradesList = document.createElement('ul');
+                        quarterGradesList.innerHTML = '<strong>' + key + ':</strong>';
+
+                        Object.entries(value).forEach(function([quarter, grade]) {
+                            var quarterListItem = document.createElement('li');
+                            quarterListItem.textContent = quarter + ': ' + grade;
+                            quarterGradesList.appendChild(quarterListItem);
+                        });
+
+                        listItem.appendChild(quarterGradesList);
+                    } else {
+                        listItem.textContent += key + ': ' + value + ' ';
+                    }
+                });
+                finalGradeList.appendChild(listItem);
+            });
+        });
+    </script>
+</body>
+</html>

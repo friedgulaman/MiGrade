@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
-from .models import ActivityLog, Admin, Teacher  # Import the ActivityLog and Teacher models
+from .models import ActivityLog, Admin, Announcement, Teacher  # Import the ActivityLog and Teacher models
 from .utils import log_activity
 import requests
 from django.contrib.auth.decorators import login_required
@@ -288,5 +288,3 @@ def admin_change_password(request):
             messages.error(request, 'Invalid old password')
 
     return redirect('admin_profile_page')  # Replace 'profile' with the name of the view you want to redirect to
-
-

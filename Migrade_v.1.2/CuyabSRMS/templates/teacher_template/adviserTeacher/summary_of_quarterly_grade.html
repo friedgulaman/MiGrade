@@ -56,7 +56,7 @@ View Class Record
           <tbody>
             {% for grade_score in grade_scores %}
             <tr>
-              <td> {{ forloop.counter }}. {{ grade_score.student_name }}</td>
+
               <td>{{ grade_score.student.name }}</td>
               <td>{{ grade_score.initial_grades }}</td>
               <td>{{ grade_score.transmuted_grades }}</td>

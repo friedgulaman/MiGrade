@@ -1,0 +1,229 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+tempo_newupload
+{% endblock title %}
+{% block main_content %}
+<div>
+    <h1 id="transfer-records-heading">Transfer Records</h1>
+
+    {% if class_records %}
+    <ul id="class-records-list">
+        {% for class_record in class_records %}
+        <li class="class-record" id="class-record">
+            <h2 class="class-name">{{ class_record.name }}</h2>
+            <p class="grade" id="grade">Grade: {{ class_record.grade }}</p>
+            <p class="section" id="section">Section: {{ class_record.section }}</p>
+            <p class="subject" id="subject">Subject: {{ class_record.subject }}</p>
+            <p class="quarter" id="quarter">Quarter: {{ class_record.quarters }}</p>
+            <p class="students-heading">Students:</p>
+            <ul class="students-list" style="display: none;" >
+                {% for grade_score in class_record.GradeScores.all %}
+                <li class="student">
+                    {{ grade_score.student.name }} - {{ grade_score.student.lrn }} - {{ grade_score.student.class_type }}
+                    <ul class="scores-list">
+                        <li class="scores-item" id="scores_hps_written">Scores HPS Written: {{ grade_score.scores_hps_written }}</li>
+                        <li class="scores-item" id="scores_hps_performance">Scores HPS Performance: {{ grade_score.scores_hps_performance }}</li>
+                        <li class="scores-item" id="total_ww_hps">Total WW HPS: {{ grade_score.total_ww_hps }}</li>
+                        <li class="scores-item" id="total_pt_hps">Total PT HPS: {{ grade_score.total_pt_hps }}</li>
+                        <li class="scores-item" id="total_qa_hps">Total QA HPS: {{ grade_score.total_qa_hps }}</li>
+                        <li class="scores-item" id="written_works_scores">Written Works Scores: {{ grade_score.written_works_scores }}</li>
+                        <li class="scores-item" id="performance_task_scores">Performance Task Scores: {{ grade_score.performance_task_scores }}</li>
+                        <li class="scores-item" id="initial_grades">Initial Grades: {{ grade_score.initial_grades }}</li>
+                        <li class="scores-item" id="transmuted_grades">Transmuted Grades: {{ grade_score.transmuted_grades }}</li>
+                        <li class="scores-item" id="total_score_written">Total Score Written: {{ grade_score.total_score_written }}</li>
+                        <li class="scores-item" id="total_max_score_written">Total Max Score Written: {{ grade_score.total_max_score_written }}</li>
+                        <li class="scores-item" id="total_score_performance">Total Score Performance: {{ grade_score.total_score_performance }}</li>
+                        <li class="scores-item" id="total_max_score_performance">Total Max Score Performance: {{ grade_score.total_max_score_performance }}</li>
+                        <li class="scores-item" id="total_score_quarterly">Total Score Quarterly: {{ grade_score.total_score_quarterly }}</li>
+                        <li class="scores-item" id="total_max_score_quarterly">Total Max Score Quarterly: {{ grade_score.total_max_score_quarterly }}</li>
+                        <li class="scores-item" id="percentage_score_written">Percentage Score Written: {{ grade_score.percentage_score_written }}</li>
+                        <li class="scores-item" id="percentage_score_performance">Percentage Score Performance: {{ grade_score.percentage_score_performance }}</li>
+                        <li class="scores-item" id="percentage_score_quarterly">Percentage Score Quarterly: {{ grade_score.percentage_score_quarterly }}</li>
+                        <li class="scores-item" id="weight_input_written">Weight Input Written: {{ grade_score.weight_input_written }}</li>
+                        <li class="scores-item" id="weight_input_performance">Weight Input Performance: {{ grade_score.weight_input_performance }}</li>
+                        <li class="scores-item" id="weight_input_quarterly">Weight Input Quarterly: {{ grade_score.weight_input_quarterly }}</li>
+                        <li class="scores-item" id="weighted_score_written">Weighted Score Written: {{ grade_score.weighted_score_written }}</li>
+                        <li class="scores-item" id="weighted_score_performance">Weighted Score Performance: {{ grade_score.weighted_score_performance }}</li>
+                        <li class="scores-item" id="weighted_score_quarterly">Weighted Score Quarterly: {{ grade_score.weighted_score_quarterly }}</li>
+                        
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+            <div>
+                <form id="jsonDataForm">
+                    {% csrf_token %}
+                    <p id="currentClassRecord">Current Class Record: Select a class record above</p>
+                    <label for="target_teacher">Transfer to Teacher:</label>
+                    <select name="target_teacher" id="target_teacher_select">
+                        <!-- Options will be dynamically added here using AJAX -->
+                    </select>
+                
+                    <!-- Add the input text field with the default value -->
+                    <label for="class_name">Class Name:</label>
+<input type="text" name="class_name" id="class_name_holder" value="" placeholder="">
+
+<p id="for_class_name" style="display: none;">{{ class_record.name }}</p>
+                   
+                
+                    <input type="hidden" name="jsonData" id="jsonData" value="">
+                    <button type="button" onclick="submitJsonData()">Submit JSON Data</button>
+                </form>
+                
+                   
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p id="no-records-message">No transfer records found.</p>
+    {% endif %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Get the text content of the #for_class_name paragraph
+        var className = $("#for_class_name").text().trim();
+
+        // Set the value and placeholder of the input field
+        $("#class_name_holder").val(className).attr("placeholder", className);
+    });
+</script>
+<script>
+    function parseScore(score) {
+        var parsedScore = parseFloat(score);
+        return isNaN(parsedScore) || parsedScore === 0 ? null : parsedScore;
+    }
+    function getCookie(name) {
+            if (typeof name !== 'string' || name.trim() === '') {
+                return null;  // Invalid cookie name
+            }
+
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === name + '=') {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    function submitJsonData() {
+    var className = $("#class_name_holder").val();    
+    var teacherId = $("#target_teacher_select").val();  // Use the correct ID
+    if (!teacherId) {
+        alert("Please choose a teacher.");
+        return;
+    }
+
+    var jsonData = JSON.stringify({
+        className: className,
+        teacherId: teacherId,
+        transferRecords: transferRecords,
+        
+    }, null, 2);
+
+    $("#jsonData").val(jsonData);
+    
+    // Instead of triggering form submission, you can handle it as needed
+    // For example, you can use AJAX to send the data to the server
+    $.ajax({
+        url: "/submit-json",
+        method: "POST",
+        headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+        data: jsonData,
+        success: function (response) {
+            // Handle success response
+            console.log(response)
+            alert("Data submitted successfully:", response);
+        },
+        error: function (error) {
+            // Handle error response
+            console.error("Error submitting data:", error);
+        }
+    });
+}
+
+
+    // Fetch list of teachers
+    $.ajax({
+            type: "GET",
+            url: "{% url 'get_teacher_list' %}",
+            dataType: "json",
+            success: function (response) {
+                // Populate teacher dropdown options
+                var targetTeacherSelect = $("#target_teacher_select");
+                $.each(response.teachers, function (index, teacher) {
+                    targetTeacherSelect.append($('<option>', {
+                        value: teacher.id,
+                        text: `${teacher.name} (ID: ${teacher.id})`
+                    }));
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching teacher list:", error);
+            }
+        });
+
+    var transferRecords = [];
+    $(".class-record").each(function () {
+        var classRecord = {
+            "name": $(this).find(".class-name").text(),
+            "grade": $(this).find(".grade").text().replace("Grade: ", ""),
+            "section": $(this).find(".section").text().replace("Section: ", ""),
+            "subject": $(this).find(".subject").text().replace("Subject: ", ""),
+            "quarter": $(this).find(".quarter").text().replace("Quarter: ", ""),
+            "students": []
+        };
+
+        $(this).find(".student").each(function () {
+            var student = {
+                "name": $(this).text().split(" - ")[0].trim(),
+                "lrn": $(this).text().split(" - ")[1].trim(),
+                "scores": {
+                    
+                    "scores_hps_written": parseScore($("#scores_hps_written").text().replace("Scores HPS Written: ", "").trim()),
+                    "scores_hps_performance": parseScore($("#scores_hps_performance").text().replace("Scores HPS Performance: ", "").trim()),
+                    "total_ww_hps": parseScore($("#total_ww_hps").text().replace("Total WW HPS: ", "").trim()),
+                    "total_pt_hps": parseScore($("#total_pt_hps").text().replace("Total PT HPS: ", "").trim()),
+                    "total_qa_hps": parseScore($("#total_qa_hps").text().replace("Total QA HPS: ", "").trim()),
+                    "written_works_scores": parseScore($("#written_works_scores").text().replace("Written Works Scores: ", "").trim()),
+                    "performance_task_scores": parseScore($("#performance_task_scores").text().replace("Performance Task Scores: ", "").trim()),
+                    "initial_grades": parseScore($("#initial_grades").text().replace("Initial Grades: ", "").trim()),
+                    "transmuted_grades": parseScore($("#transmuted_grades").text().replace("Transmuted Grades: ", "").trim()),
+                    "total_score_written": parseScore($("#total_score_written").text().replace("Total Score Written: ", "").trim()),
+                    "total_max_score_written": parseScore($("#total_max_score_written").text().replace("Total Max Score Written: ", "").trim()),
+                    "total_score_performance": parseScore($("#total_score_performance").text().replace("Total Score Performance: ", "").trim()),
+                    "total_max_score_performance": parseScore($("#total_max_score_performance").text().replace("Total Max Score Performance: ", "").trim()),
+                    "total_score_quarterly": parseScore($("#total_score_quarterly").text().replace("Total Score Quarterly: ", "").trim()),
+                    "total_max_score_quarterly": parseScore($("#total_max_score_quarterly").text().replace("Total Max Score Quarterly: ", "").trim()),
+                    "percentage_score_written": parseScore($("#percentage_score_written").text().replace("Percentage Score Written: ", "").trim()),
+                    "percentage_score_performance": parseScore($("#percentage_score_performance").text().replace("Percentage Score Performance: ", "").trim()),
+                    "percentage_score_quarterly": parseScore($("#percentage_score_quarterly").text().replace("Percentage Score Quarterly: ", "").trim()),
+                    "weight_input_written": parseScore($("#weight_input_written").text().replace("Weight Input Written: ", "").trim()),
+                    "weight_input_performance": parseScore($("#weight_input_performance").text().replace("Weight Input Performance: ", "").trim()),
+                    "weight_input_quarterly": parseScore($("#weight_input_quarterly").text().replace("Weight Input Quarterly: ", "").trim()),
+                    "weighted_score_written": parseScore($("#weighted_score_written").text().replace("Weighted Score Written: ", "").trim()),
+                    "weighted_score_performance": parseScore($("#weighted_score_performance").text().replace("Weighted Score Performance: ", "").trim()),
+                    "weighted_score_quarterly": parseScore($("#weighted_score_quarterly").text().replace("Weighted Score Quarterly: ", "").trim())
+
+              }
+            };
+
+            classRecord.students.push(student);
+        });
+
+        transferRecords.push(classRecord);
+    });
+</script>
+{% endblock main_content %}

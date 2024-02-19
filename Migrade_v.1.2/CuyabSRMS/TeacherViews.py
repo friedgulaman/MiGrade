@@ -9,7 +9,7 @@ from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
-from .models import Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
+from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse
@@ -57,17 +57,8 @@ from django.core.exceptions import MultipleObjectsReturned
 
 @login_required
 def home_teacher(request):
-    # Fetch school year information from the SchoolInformation model
-    school_years = SchoolInformation.objects.values_list('school_year', flat=True).distinct()
-
-    # Pass school year data to the template context
-    context = {
-        'school_years': school_years
-    }
-
-    # Render the template with the context data
-    return render(request, 'teacher_template/home_teacher.html', context)
-
+    announcements = Announcement.objects.all()
+    return render(request, 'teacher_template/home_teacher.html', {'announcements': announcements})
 @login_required
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')
@@ -329,7 +320,7 @@ def upload(request):
                 result_data = process_google_sheet(spreadsheet_id, sheet_name)
 
                 if result_data is not None:
-                    return render(request, 'teacher_template/adviserTeacher/upload.html', result_data)
+                    return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html', result_data)
                 else:
                     messages.error(request, "Failed to process the Google Sheet")
             else:
@@ -361,14 +352,14 @@ def upload(request):
                 print(result_data['lrn_data'])
                 print("Key-Value Pairs:")
                 print(result_data['key_value_pairs'])
-                return render(request, 'teacher_template/adviserTeacher/upload.html', result_data)
+                return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html', result_data)
             else:
                 messages.error(request, "Failed to process the Excel File")
 
         else:
             messages.error(request, "Invalid file")
 
-    return render(request, 'teacher_template/adviserTeacher/upload.html')
+    return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html')
 
 
 @csrf_exempt
@@ -392,6 +383,7 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
+            class_type = received_data.get('classType', '')  # New field for class type
 
             user = request.user
             action = f'{user} create a Class {grade_name} {section_name}'
@@ -415,30 +407,32 @@ def save_json_data(request):
 
                 # Increment the total_students field for the respective section
                 section.total_students += 1
+                section.class_type = class_type  # Save the class type on Section
                 section.save()
+
                 # Initialize or get the existing grade_section dictionary
                 teacher.grade_section = teacher.grade_section or {}
 
                 # Save the grade_section in the Teacher model
                 teacher.grade_section[grade.name] = section.name
-
                 teacher.save()
 
-                # Create or update the Student object based on LRN
+                # Create or update the Student object based on LRN and teacher
                 student, created = Student.objects.get_or_create(
                     lrn=lrn,
+                    teacher=teacher,
                     defaults={
                         'name': name,
                         'sex': sex,
                         'birthday': birthday,
-                        'teacher': teacher,
                         'school_id': school_id,
                         'district': district,
                         'division': division,
                         'school_name': school_name,
                         'school_year': school_year,
                         'grade': grade.name,
-                        'section': section.name
+                        'section': section.name,
+                        'class_type': class_type  # Save the class type on Student
                     }
                 )
 
@@ -453,8 +447,7 @@ def save_json_data(request):
                 student.school_year = school_year
                 student.grade = grade.name
                 student.section = section.name
-
-                # Update other fields as necessary
+                student.class_type = class_type  # Update the class type on Student
 
                 # Save the associated objects before saving the student
                 grade.save()
@@ -471,6 +464,8 @@ def save_json_data(request):
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
+
+
 
 
 
@@ -566,7 +561,7 @@ def get_students_by_grade_and_section(request):
 
 
             # Query the database to retrieve students based on the selected grade and section
-            students = Student.objects.filter(grade=grade_name, section=section_name)
+            students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
 
             subject = Subject.objects.get(name=subject_name)
 
@@ -657,7 +652,7 @@ def calculate_grades(request):
         logs = user, action, details    
         print(logs)
 
-        students = Student.objects.filter(grade=grade_name, section=section_name)
+        students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
         
         for student in students:
             scores_written_works = []
@@ -854,9 +849,7 @@ def display_students(request):
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
         students = Student.objects.filter(teacher=teacher)
-        
-
-        unique_combinations = students.values('grade', 'section').distinct()
+        unique_combinations = students.values('grade', 'section', 'class_type').distinct()
 
         context = {
             'teacher': teacher,
@@ -865,6 +858,54 @@ def display_students(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
+
+def toggle_class_type_function(student):
+    # Toggle the class type for the given student
+    if student.class_type == 'Advisory':
+        student.class_type = 'Subject'
+    else:
+        student.class_type = 'Advisory'
+    
+    # Save the changes
+    student.save()
+
+    # Return the updated class type
+    return student.class_type
+
+
+def toggle_class_type(request):
+    if request.method == 'POST':
+        try:
+            # Retrieve the POST data
+            data = json.loads(request.body)
+
+            # Extract the grade, section, and current_class_type from the data
+            grade = data.get('grade')
+            section = data.get('section')
+            current_class_type = data.get('current_class_type')
+
+            # Retrieve all students with the given grade and section
+            students = Student.objects.filter(grade=grade, section=section)
+
+            # Toggle the class type for each student
+            for student in students:
+                if current_class_type == 'Advisory':
+                    student.class_type = 'Subject'
+                else:
+                    student.class_type = 'Advisory'
+
+                # Save the changes
+                student.save()
+
+            response_data = {'message': 'Class type updated successfully'}
+            return JsonResponse(response_data)
+
+        except Exception as e:
+            response_data = {'message': f'Error: {str(e)}'}
+            return JsonResponse(response_data, status=400)
+
+    response_data = {'message': 'Invalid request method'}
+    return JsonResponse(response_data, status=405)
 
 def sf9(request):
     # Query all students from the database
@@ -906,7 +947,7 @@ def delete_student(request, grade, section):
     # If the user is not a teacher or if the permissions check fails
     return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
 
-def student_list_for_class(request):
+def student_list_for_subject(request):
     # Assuming the user is logged in
     user = request.user
 
@@ -917,12 +958,13 @@ def student_list_for_class(request):
 
         grade = request.GET.get('grade')
         section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
         
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
         # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section)
+        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
 
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
@@ -936,6 +978,7 @@ def student_list_for_class(request):
     context = {
         'grade': grade,
         'section': section,
+        'class_type': class_type,
         'students': students,
         'class_records': class_records,
         'subjects': subjects,
@@ -943,9 +986,89 @@ def student_list_for_class(request):
         
     }
 
-    return render(request, 'teacher_template/adviserTeacher/student_list.html', context)
+    return render(request, 'teacher_template/adviserTeacher/student_list_for_subject.html', context)
+
+def student_list_for_advisory(request):
+    # Assuming the user is logged in
+    user = request.user
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        grade = request.GET.get('grade')    
+        section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
+        
+        
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        # Fetch advisory classes based on teacher, grade, and section
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section).values('subject', 'from_teacher_id').distinct()
+        quarters = advisory_classes.values_list('first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter').distinct()
+       
+        context = {
+            'grade': grade,
+            'section': section,
+            'advisory_classes': advisory_classes,
+            'students': students,
+            'quarters': quarters,
+            'class_type': class_type,
+           
+        }
+    return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
+def display_advisory_data(request):
+        # Assuming the user is logged in
+    user = request.user
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        grade = request.GET.get('grade')    
+        section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
+        subject = request.GET.get('subject')
+        
+        
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        # Fetch advisory classes based on teacher, grade, and section
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, subject=subject)
+
+       
+        context = {
+            'grade': grade,
+            'subject': subject,
+            'section': section,
+            'advisory_classes': advisory_classes,
+            'students': students,
+            'class_type': class_type,
+           
+        }
+            
+    return render(request, 'teacher_template/adviserTeacher/subject_quarter_advisory.html', context)
 
 
+def display_student_transmuted_grades(request):
+    grade = request.GET.get('grade')
+    section = request.GET.get('section')
+    subject = request.GET.get('subject')
+    teacher_id = request.GET.get('teacher_id')
+
+    advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, subject=subject, from_teacher_id=teacher_id)
+
+    context = {
+        'advisory_classes': advisory_classes,
+    }
+
+    return render(request, 'teacher_template/adviserTeacher/advisory_final_grade_subject.html', context)
+
+
+    
 def edit_record(request, record_id):
     # Retrieve the specific record based on the record_id
     record = GradeScores.objects.get(pk=record_id)
@@ -988,6 +1111,8 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
     }
 
     return render(request, "teacher_template/adviserTeacher/summary_of_quarterly_grade.html", context)
+
+
 
 
 def grade_summary(request, grade, section, quarter):
@@ -1159,6 +1284,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
             'teacher': class_record.teacher,
             'student': student,
             'grade': grade,
+            'subject': subject,
             'section': section,
             'final_grade': json.dumps(list(student_final_grades.values()))  # Convert dictionary values to list and then to JSON string
         }
@@ -1174,10 +1300,11 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
 
 def display_final_grades(request, grade, section, subject):
     try:
+        teacher = request.user.teacher
         students = Student.objects.filter(grade=grade, section=section)
         
         # Filter subjects to only include the specified subject
-        subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject)
+        subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject, teacher_id=teacher)
 
         calculate_save_final_grades(grade, section, subject, students, subjects)
 
@@ -1340,25 +1467,24 @@ def update_score(request):
         section_id = request.POST.get('section_id')  # Added section_id for differentiation
         class_record_id = request.POST.get('class_record_id')
         scores_hps = request.POST.get('scores_hps')
-        # percentage_score_written_works = request.POST.get('percentage_score_written_works')
-        # percentage_score_performance_task = request.POST.get('percentage_score_performance_task')
-        # percentage_score_quarterly_assessment = request.POST.get('percentage_score_quarterly_assessment')
-        # weighted_score_written_works = request.POST.get('weighted_score_written_works')
-        # weighted_score_performance_task = request.POST.get('weighted_score_performance_task')
-        # weighted_score_quarterly_assessment = request.POST.get('weighted_score_quarterly_assessment')
 
 
-        # print("Request POST Data:", request.POST)
-        # print("Class Record ID:", class_record_id)
-        # print(column_index)
-        # print(section_id)  # Add this line for debugging
+         # Assuming you want to filter students by both name and teacher
+        students = Student.objects.filter(name=student_name, teacher=request.user.teacher)
 
-        student = Student.objects.get(name=student_name)
+        # Ensure there is exactly one matching student
+        if students.count() == 1:
+            student = students.first()
+        else:
+            # Handle the case where there are zero or multiple matching students
+            print(f"Error: Found {students.count()} students with the name '{student_name}' for the logged-in teacher.")
+            # Add your error handling logic here, e.g., returning an error response.
+            return JsonResponse({'success': False, 'error': 'Error in finding the student'})
 
         try:
             # Retrieve the GradeScores object based on student name and class record id
             grade_score = GradeScores.objects.get(
-                   student=student,
+                student=student,
                 class_record__id=class_record_id
             )
 
@@ -1367,20 +1493,6 @@ def update_score(request):
         except GradeScores.DoesNotExist:
             print(f"Not Found: /update_score/")
             return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
-
-        #     # Determine the field to update based on the section_id
-        # if section_id == 'written_works':
-        #     percentage_score = percentage_score_written_works
-        #     weighted_score = weighted_score_written_works
-        # elif section_id == 'performance_task':
-        #     percentage_score = percentage_score_performance_task
-        #     weighted_score = weighted_score_performance_task
-        # elif section_id == 'quarterly_assessment':
-        #     percentage_score = percentage_score_quarterly_assessment
-        #     weighted_score = percentage_score_quarterly_assessment
-        # else:
-        #     return JsonResponse({'error': 'Invalid section_id'})
-
 
 
         if section_id == 'written_works':
@@ -1410,9 +1522,6 @@ def update_score(request):
         else:
             return JsonResponse({'error': 'Invalid section_id'})
 
-        # Use a dynamic naming convention for total_field
-        #  # Ensure scores_list has enough elements, initialize with zeros if necessary
-        # scores_list = getattr(grade_score, scores_field, [0] * 10)
 
        # Ensure scores_list has enough elements, initialize with zeros if necessary
         scores_list = getattr(grade_score, scores_field, [0] * (column_index + 1))
@@ -1608,13 +1717,14 @@ def update_highest_possible_scores(request):
             total_hps_field = 'total_pt_hps'
         elif section_id == 'quarterly_assessment':
             hps_field = 'scores_hps_quarterly'
+            total_hps_field = 'total_qa_hps'
         else:
             return JsonResponse({'error': 'Invalid section_id'})
 
         # Update the highest possible scores data for each GradeScores object
         for grade_score in grade_scores:
             # Convert the new_hps_data to a list of integers, handling empty strings
-            new_hps_list = [int(float(value)) if value.strip() != '' else '' for value in new_hps_data]
+            new_hps_list = [int(value) if value.strip() != '' else '' for value in new_hps_data]
 
             # Update the scores_hps field with the new list
             setattr(grade_score, hps_field, new_hps_list)
@@ -1628,6 +1738,7 @@ def update_highest_possible_scores(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'error': 'Invalid request'})
+
 
 def update_total_max_quarterly(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1668,6 +1779,7 @@ def update_total_max_quarterly(request):
     return JsonResponse({'error': 'Invalid request'})
 
 
+
 def validate_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         student_name = request.POST.get('student_name')
@@ -1677,8 +1789,9 @@ def validate_score(request):
         class_record_id = request.POST.get('class_record_id')
 
         try:
+            # Assuming you want to filter GradeScores by student name and class record ID
             grade_score = GradeScores.objects.get(
-                student_name=student_name,
+                student__name=student_name,
                 class_record__id=class_record_id
             )
         except GradeScores.DoesNotExist:
@@ -1718,7 +1831,8 @@ def validate_score(request):
 
     return JsonResponse({'error': 'Invalid request'})
 
-display_students
+
+
 @require_POST
 def delete_classrecord(request, class_record_id):
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
@@ -1740,5 +1854,6 @@ def class_records_list(request):
     class_records = ClassRecord.objects.all()
     return render(request, 'teacher_template/adviserTeacher/view_classrecord.html', {'class_records': class_records})
 
-
+def tempo_newupload(request):
+    return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html')
 

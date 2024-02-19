@@ -54,7 +54,7 @@ class Teacher(models.Model):
 
 class Student(models.Model):
     name = models.CharField(max_length=255)
-    lrn = models.CharField(max_length=12, unique=True)
+    lrn = models.CharField(max_length=12)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
     birthday = models.CharField(max_length=10, default='N/A')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
@@ -63,11 +63,17 @@ class Student(models.Model):
     district = models.CharField(max_length=255, null=True, blank=True)
     school_name = models.CharField(max_length=255, null=True, blank=True)
     school_year = models.CharField(max_length=50, null=True, blank=True)
-    grade = models.CharField(max_length=50, null=True, blank=True) 
+    grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
+    class_type = models.CharField(max_length=50, null=True, blank=True)  # New field for class type
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ('lrn', 'teacher')
+
+
     
     def archive(self):
         # Create an instance of ArchivedStudent before deleting the student
@@ -142,6 +148,7 @@ class Section(models.Model):
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='sections')
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')
     total_students = models.PositiveIntegerField(default=0)
+    class_type = models.CharField(max_length=50, null=True, blank=True)
     
     def __str__(self):
         return self.name
@@ -386,6 +393,7 @@ class FinalGrade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50, null=True, blank=True)
     final_grade = models.JSONField()
 
     def __str__(self):
@@ -593,3 +601,42 @@ class ActivityLog(models.Model):
         return f'{self.user.username} - {self.action}'
 
 
+class InboxMessage(models.Model):
+    to_teacher = models.CharField(max_length=50, null=True, blank=True)
+    from_teacher = models.CharField(max_length=50, null=True, blank=True)
+    file_name = models.CharField(max_length=50, null=True, blank=True)
+    json_data = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"
+
+class AcceptedMessage(models.Model):
+    message_id = models.IntegerField(primary_key=True)
+    file_name = models.CharField(max_length=255)
+    json_data = models.JSONField()
+    accepted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"AcceptedMessage {self.message_id}"
+    
+class AdvisoryClass(models.Model):
+    grade = models.CharField(max_length=50, null=True, blank=True)
+    section = models.CharField(max_length=50, null=True, blank=True)
+    subject = models.CharField(max_length=50, null=True, blank=True)
+    first_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    second_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    third_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    fourth_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    from_teacher_id = models.CharField(max_length=50, null=True, blank=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, limit_choices_to={'class_type': 'advisory'})
+
+   
+class Announcement(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.title
