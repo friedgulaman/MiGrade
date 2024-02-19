@@ -9,11 +9,13 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from .models import SchoolInformation
 
 
 def custom_404(request, exception=None):
     return render(request, 'custom_404.html', status=404) 
     
+  
 def teachers_activity(request):
     if request.user.is_authenticated:
         user = request.user
@@ -69,12 +71,12 @@ def doLogin(request):
                 
                 # Log the user login activity
                 user = request.user
-                action = 'User logged in'
-                details = 'User logged in to the system.'
+                action = f'{user} logged in'
+                details = f'{user} logged in to the system.'
                 log_activity(user, action, details)
                 
                 if user.user_type == 2:
-                    return redirect('home_teacher')
+                    return redirect('home_teacher') 
                 else:
                     return redirect('home_admin')
             else:

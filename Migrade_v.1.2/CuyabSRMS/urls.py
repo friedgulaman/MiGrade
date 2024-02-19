@@ -143,7 +143,7 @@ urlpatterns = [
     path('get_grades_and_sections', TeacherViews.get_grades_and_sections, name='get_grades_and_sections'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_grade_details', TeacherViews.get_grade_details, name='get_grade_details'),
-    path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
+    # path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
     path('display_classrecord/<int:class_record_id>/', TeacherViews.display_classrecord, name='display_classrecord'),
@@ -162,13 +162,21 @@ urlpatterns = [
     path('update_total_max_quarterly/', TeacherViews.update_total_max_quarterly, name='update_total_max_quarterly'),
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
     path('sf9/', TeacherViews.sf9, name='sf9'),
+    path('get_sections_classrecord/', TeacherViews.get_sections_classrecord, name='get_sections_classrecord'),
    # urls.py
 
     # Generation
 
-    path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/', GenerationViews.generate_excel_for_grades, 
+    path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', GenerationViews.generate_excel_for_grades, 
          name='generate_excel_for_grades'),
     path('generate-excel-sf9/<int:student_id>/', GenerationViews.generate_excel_for_sf9, name='generate_excel_for_sf9'),
+    path('generate-per-subject/', GenerationViews.generate_per_subject_view, name='generate_per_subject'),
+    path('generate_grade_section_list/', GenerationViews.generate_grade_section_list, name='generate_grade_section_list'),
+    path('generate-per-all-subject/', GenerationViews.generate_per_all_subject_view, name='generate_per_all_subject'),
+    path('generate-excel/<str:grade>/<str:section>/<str:quarter>/', GenerationViews.generate_excel_for_all_subjects, name='generate_excel_for_all_subjects'),
+    path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', GenerationViews.generate_summary_of_quarterly_grades, 
+         name='generate_summary_of_quarterly_grades'),
+    path('generate_final_and_general_grades/<str:grade>/<str:section>/', GenerationViews.generate_final_and_general_grades, name='generate_final_and_general_grades'),
 
     #Archived
     path('archived-records/', ArchivedViews.archived_records, name='archived_records'),

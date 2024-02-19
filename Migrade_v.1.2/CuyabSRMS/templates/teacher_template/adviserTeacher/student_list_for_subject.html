@@ -174,7 +174,20 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
                                 <div>
-                                    <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="left-side-design">
+                                                <a id="classRecordLink" class="btn btn-primary" href="#">Class Record +</a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 text-md-right mt-2 mt-md-0">
+                                            <div class="right-side-design">
+                                                <a id="generateRecordButton" class="btn btn-primary" href="#">Generate Class Record</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                        <div class="mt-4"></div>
                                         <h4 class="card-title">Class Records</h4>
                                         <div class="table-responsive">
                                             <table class="table table-hover">
@@ -198,7 +211,7 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                         <td>{{ record.quarters }}</td>
                                                         <td>{{ record.subject }}</td>
                                                         <td>
-                                                            <form id="archiveForm_{{ record.id }}" method="post" action="{% url 'archive_class_record' class_record_id=record.id %}"
+                                                            <form id="archiveForm_{{ record.id }}" method="post" action="{% url 'archive_class_record' class_record_id=record.id %}" onsubmit="return confirm('Are you sure you want to archive this class record?');"
                                                             style="display:inline;">
                                                             {% csrf_token %}
                                                             <button type="submit" class="archive-record" data-record-id="{{ record.id }}">
@@ -206,7 +219,7 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                             </button>
                                                         </form>
 
-                                                            <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}"
+                                                            <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}"  onsubmit="return confirm('Are you sure you want to delete this class record? This action cannot be undone.');"
                                                             style="display:inline;">
                                                             {% csrf_token %}
                                                             <button type="button" class="delete-record" data-record-id="{{ record.id }}">
@@ -226,7 +239,7 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                             </table>
                                         </div>
                                     </div>
-                                </div>
+                         
                             </div>
                         </div>
 
@@ -321,6 +334,56 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                 });
             }
         });
+    });
+</script>
+<script>
+    // Define the URL for generating the grade section list
+    var get_grade_details = "{% url 'get_grade_details' %}";
+
+    // Function to generate the grade section list URL and redirect to it
+    var get_grade_details_List = function(grade, section) {
+        // Construct the URL using Django template syntax
+        var url = get_grade_details  + "?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        
+        // Redirect to the constructed URL
+        window.location.href = url;
+    };
+
+    // Event listener for the button click
+    document.getElementById("classRecordLink").addEventListener("click", function(event) {
+        // Prevent the default behavior of the link
+        event.preventDefault();
+
+        // Retrieve the grade and section values from the Django context
+        var grade = "{{ grade }}";
+        var section = "{{ section }}";
+
+        // Call the function to generate the grade section list
+        get_grade_details_List(grade, section);
+    });
+</script>
+<script>
+    var generateGradeSectionListURL = "{% url 'generate_grade_section_list' %}";
+
+    var generateGradeSectionList = function(grade, section) {
+        // Construct the URL using Django template syntax
+        var url = generateGradeSectionListURL + "?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        
+        // Redirect to the constructed URL
+        window.location.href = url;
+    };
+
+    // Function to handle clicking on the "Generate Class Record" button
+    document.getElementById("generateRecordButton").addEventListener("click", function(event) {
+        // Prevent the default behavior of the link
+        event.preventDefault();
+
+        // Retrieve the grade and section values (you may adjust this based on your template)
+        var grade = "{{ grade }}";
+        var section = "{{ section }}";
+
+        // Call the function to generate the grade section list
+        generateGradeSectionList(grade, section);
     });
 </script>
 {% endblock main_content %}

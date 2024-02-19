@@ -4,7 +4,8 @@ import os
 import io
 import re
 
-from CuyabSRMS.utils import transmuted_grade
+from CuyabSRMS.utils import transmuted_grade, log_activity
+from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
@@ -26,7 +27,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 #OCR
 from .forms import DocumentUploadForm
-from .models import ProcessedDocument, ExtractedData
+from .models import ProcessedDocument, ExtractedData, Section
 from google.cloud import documentai_v1beta3 as documentai
 from django.shortcuts import render
 from .views import *
@@ -365,6 +366,7 @@ def upload(request):
 @login_required
 def save_json_data(request):
     if request.method == 'POST':
+        
         if not hasattr(request.user, 'teacher'):
             response_data = {'message': 'User is not a teacher.'}
             return JsonResponse(response_data, status=403)
@@ -382,6 +384,14 @@ def save_json_data(request):
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
             class_type = received_data.get('classType', '')  # New field for class type
+
+            user = request.user
+            action = f'{user} create a Class {grade_name} {section_name}'
+            details = f'{user} created a Class named {grade_name} {section_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
 
             for item in received_data['rows']:
                 lrn = item.get('LRN')
@@ -446,9 +456,11 @@ def save_json_data(request):
 
             response_data = {'message': 'JSON data saved successfully'}
             return JsonResponse(response_data)
+        
         except json.JSONDecodeError:
             response_data = {'message': 'Invalid JSON data'}
             return JsonResponse(response_data, status=400)
+        
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
@@ -480,6 +492,10 @@ def class_record(request):
 def get_grade_details(request):
 
     user = request.user
+    selected_grade = request.GET.get('grade')
+    selected_section = request.GET.get('section')
+    print(selected_grade)
+    print(selected_section)
 
     teacher = Teacher.objects.get(user=user)
     grades = Student.objects.values_list('grade', flat=True).distinct()
@@ -495,7 +511,9 @@ def get_grade_details(request):
         'grades': grades,
         'sections': sections,
         'subjects': subjects,
-        'quarters': quarters
+        'quarters': quarters,
+        'selected_grade': selected_grade, 
+        'selected_section': selected_section,
     }
     # print("Distinct grades:", grades)
     # print("Distinct sections:", sections)
@@ -503,6 +521,15 @@ def get_grade_details(request):
 
     return render(request, 'teacher_template/adviserTeacher/new_classrecord.html', context)
    # Replace with the actual URL of your new_classrecord.html
+   
+def get_sections_classrecord(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        grade_id = request.GET.get('grade_id')
+        sections = Student.objects.filter(grade=grade_id).values_list('section', flat=True).distinct()
+        sections_list = list(sections)
+        return JsonResponse({'sections': sections_list})
+    else:
+        return JsonResponse({'error': 'Invalid request'})
 
 # views.py
 def get_students_by_grade_and_section(request):
@@ -514,10 +541,12 @@ def get_students_by_grade_and_section(request):
             quarter_name = request.POST.get("quarter")
 
             user = request.user
+            
+
             teacher = get_object_or_404(Teacher, user=user)
 
             # Use a more unique identifier for the class record name
-            classrecord_name = f'{grade_name}{section_name}{subject_name}{quarter_name}{teacher.id}'
+            classrecord_name = f'{grade_name} {section_name} {subject_name} {quarter_name}'
 
             classrecord = ClassRecord(
                 name=classrecord_name,
@@ -529,6 +558,7 @@ def get_students_by_grade_and_section(request):
             )
 
             classrecord.save()
+
 
             # Query the database to retrieve students based on the selected grade and section
             students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
@@ -591,6 +621,7 @@ def calculate_grades(request):
         print(grade_name)
         print(section_name)
 
+
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
         scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
         total_ww_hps = request.POST.get("total_max_written_works")
@@ -606,10 +637,20 @@ def calculate_grades(request):
         print(total_pt_hps)
         print(total_qa_hps)
 
+        
+
         class_record = ClassRecord.objects.get(grade=grade_name, section=section_name, subject=subject_name, quarters=quarters_name)
         # subject_name = request.POST.get("subject")
         # quarter_name = request.POST.get("quarter")
-        
+        class_record_name = class_record.name
+
+        user = request.user
+        action = f'{user} create a Classrecord "{class_record_name}"'
+        details = f'{user} created a Classrecord named "{class_record_name}" in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
 
         students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
         
@@ -739,6 +780,7 @@ def calculate_grades(request):
             # Save the GradeScores object to the database
             grade_scores.save()
 
+
             # grade_scores = GradeScores.objects.filter(grade=grade_name, section=section_name)
 
             # context = {
@@ -757,6 +799,7 @@ def calculate_grades(request):
 def display_classrecord(request, class_record_id=None):
     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
+
 
     # If class_record_id is not provided, you may want to handle this case differently
     # For example, you can provide a list of available ClassRecord objects for the user to choose from
@@ -877,6 +920,8 @@ def sf9(request):
 @login_required
 def delete_student(request, grade, section):
     user = request.user
+            
+
 
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
@@ -888,6 +933,10 @@ def delete_student(request, grade, section):
 
             # Delete associated ClassRecord records
             ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
+
+            action = f'{user} delete a Class name {grade} {section}'
+            details = f'{user} deleted a Class named {grade} {section} in the system.'
+            log_activity(user, action, details)
 
                 # Redirect to a different page after deletion
             return redirect('display_students')  # Replace with your actual view name
@@ -1049,7 +1098,13 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
     # Retrieve grade scores related to the class record
     grade_scores = GradeScores.objects.filter(class_record=class_record)
 
-    
+    # Handle None values for initial_grades and transmuted_grades
+    for grade_score in grade_scores:
+        if grade_score.initial_grades is None:
+            grade_score.initial_grades = ""
+        if grade_score.transmuted_grades is None:
+            grade_score.transmuted_grades = ""
+
     context = {
         'class_record': class_record,
         'grade_scores': grade_scores,
@@ -1198,7 +1253,7 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
                     student=student
                 ).first()
 
-                subject_info['quarter_grades'][quarter] = grade_score.initial_grades if grade_score else 0
+                subject_info['quarter_grades'][quarter] = grade_score.transmuted_grades if grade_score else 0
 
             # Get the teacher's name from the ClassRecord
             class_record = ClassRecord.objects.filter(
@@ -1319,7 +1374,7 @@ def save_general_average(student_data, grade, section):
             general_average_record.save()
         else:
             # Create a new record if none exist
-            general_average_record = GeneralAverage.objects.create(
+            GeneralAverage.objects.create(
                 student=student,
                 grade=grade,
                 section=section,
@@ -1781,9 +1836,16 @@ def validate_score(request):
 @require_POST
 def delete_classrecord(request, class_record_id):
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
+    user = request.user
+    class_record_name = class_record.name  # Assuming grade is a field in your ClassRecord model
+  
 
     # Assuming you have some permission checks here before deleting
     class_record.delete()
+    action = f'{user} delete a Classrecord name "{class_record_name}"'
+    details = f'{user} deleted a Classrecord named "{class_record_name}" in the system.'
+    log_activity(user, action, details)
+
 
     return JsonResponse({'message': 'Record deleted successfully'})
 

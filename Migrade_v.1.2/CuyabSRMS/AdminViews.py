@@ -13,11 +13,12 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q
 from .forms import SubjectForm
 from .models import Subject
-
+from .views import log_activity
 #OCR
 from .models import ExtractedData
 from .models import ProcessedDocument
 from google.cloud import documentai_v1beta3 as documentai
+
 import re
 import os
 import json
@@ -25,13 +26,15 @@ from .forms import DocumentUploadForm
 from django.conf import settings
 from django.shortcuts import HttpResponse
 from django.utils.text import get_valid_filename
-from .forms import ExtractedDataForm
+from .forms import ExtractedDataForm, SchoolInformationForm, DocumentBatchUploadForm
 
 import openpyxl
 from django.utils import timezone
 import datetime
 from datetime import datetime
 from dateutil import parser
+import pandas as pd
+from google.api_core.client_options import ClientOptions
 
 
 
@@ -102,6 +105,82 @@ def teachers(request):
     }
     return render(request, 'admin_template/manage_teacher.html', context)
 
+@login_required
+def school_information_view(request):
+    # Assuming SchoolInformation is your model with fields like region, division, etc.
+    school_info = SchoolInformation.objects.all()  # Retrieve all objects from the SchoolInformation model
+    context = {
+        'school_info': school_info  # Pass the queryset to the template
+    }
+    return render(request, 'admin_template/school_information_view.html', context)
+
+@login_required
+def add_school_view(request):
+    if request.method == 'POST':
+        # Handle form submission and save to database
+        form = SchoolInformationForm(request.POST)
+        user = request.user
+        action = f'{user} added new School Information'
+        details = f'{user} added new School Information to the system.'
+        log_activity(user, action, details)
+        if form.is_valid():
+            form.save()
+        return redirect('school_information')
+    else:
+        # Render the form
+        return render(request, 'admin_template/add_school.html')
+    
+@login_required
+def edit_school_view(request, school_id):
+    # Retrieve the school object based on the school_id
+    school = get_object_or_404(SchoolInformation, id=school_id)
+
+    if request.method == 'POST':
+        # Log activity for the edit
+        user = request.user
+
+        # Get the form data before submission
+        old_school_info = {
+            'school_name': school.school_name,
+            'region': school.region,
+            'division': school.division,
+            'school_id': school.school_id,
+            'district': school.district,
+            'school_year': school.school_year
+        }
+
+        # Handle form submission and update the database with the edited information
+        form = SchoolInformationForm(request.POST, instance=school)
+        if form.is_valid():
+            new_school_info = form.save()
+            action = f'{user} changed the following fields in the School Information:\n' 
+            details = f'{user} changed the following fields in the School Information:\n'
+            # Compare the old and new form data to find the changes
+            for field, value in old_school_info.items():
+                if getattr(new_school_info, field) != value:
+                    action += f'{field}: {value} to {getattr(new_school_info, field)}\n'
+                    details += f'{field}: {value} to {getattr(new_school_info, field)}\n'
+            log_activity(user, action, details)
+            return redirect('school_information')
+    else:
+        # Render the form with pre-filled data
+        form = SchoolInformationForm(instance=school)
+
+    return render(request, 'admin_template/edit_school.html', {'form': form, 'school': school})
+    
+@login_required
+def delete_school_view(request, school_id):
+    school = SchoolInformation.objects.get(id=school_id)
+    user = request.user
+    action = f'{user} deleted School Information'
+    details = f'{user} deleted the School Information in the system.'
+    log_activity(user, action, details)
+
+    school.delete()
+    return redirect('school_information')
+
+
+
 @require_GET
 def get_teacher_data(request):
     teacher_id = request.GET.get('teacherId')
@@ -112,6 +191,7 @@ def get_teacher_data(request):
         'last_name': teacher.user.last_name,
     }
     return JsonResponse(data)
+
 def students(request):
     # Get distinct combinations of grade and section
     unique_combinations = Student.objects.values('grade', 'section').distinct()
@@ -139,6 +219,7 @@ def students(request):
 
     # Render the template with the context
     return render(request, 'admin_template/students.html', context)
+
 def get_student_details(request):
     student_id = request.GET.get('studentId')
     student = get_object_or_404(Student, id=student_id)
@@ -155,12 +236,21 @@ def update_student_details(request):
 
     # Retrieve the student from the database
     student = get_object_or_404(Student, id=student_id)
-
+    grade = student.grade
+    section = student.section
+    before_student = student.name
     # Update the student details
     student.name = student_name
     # Update other fields as needed
     student.save()
 
+    user = request.user
+    action = f'{user} update student name "{before_student}" to "{student_name}"'
+    details = f'{user} update student name "{before_student}" to "{student_name}" in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
     # Return a success response
     return JsonResponse({'message': 'Student details updated successfully'})
 
@@ -168,7 +258,17 @@ def update_student_details(request):
 def delete_student(request):
     student_id = request.POST.get('student_id')
     student = get_object_or_404(Student, id=student_id)
+    student_name = student.name
+    user = request.user
+    action = f'{user} delete student name "{student_name}"'
+    details = f'{user} delete student name "{student_name}" in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
+
     student.delete()
+
 
     return JsonResponse({'message': 'Student deleted successfully'})
 
@@ -233,6 +333,14 @@ def add_student(request):
         )
         new_student.save()
 
+        user = request.user
+        action = f'{user} add student "{name}" to class "{grade} {section}"'
+        details = f'{user} added student "{name}" to class "{grade} {section} in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
         redirect_url = reverse('student_lists', kwargs={'grade': grade, 'section': section})
 
     # Fetch default values for the form
@@ -275,6 +383,14 @@ def add_subject(request):
         performance_task_percentage = request.POST.get('performance_task_percentage')
         quarterly_assessment_percentage = request.POST.get('quarterly_assessment_percentage')
 
+        user = request.user
+        action = f'{user} add "{name}" subject'
+        details = f'{user} added "{name}" subject in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
         if name and written_works_percentage is not None and performance_task_percentage is not None and quarterly_assessment_percentage is not None:
             subject = Subject.objects.create(
                 name=name,
@@ -306,6 +422,14 @@ def update_subject(request):
         subject.quarterly_assessment_percentage = quarterly_assessment_percentage
         subject.save()
 
+        user = request.user
+        action = f'{user} update "{subject_name}" subject information'
+        details = f'{user} update "{subject_name}" subject information in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
         # Return a success response
         return JsonResponse({'success': True, 'message': 'Subject updated successfully'})
 
@@ -318,6 +442,14 @@ def delete_subject(request):
         subject_id = request.POST.get('subjectId')
 
         subject = get_object_or_404(Subject, id=subject_id)
+        subject_name = subject.name
+        user = request.user
+        action = f'{user} delete "{subject_name}" subject'
+        details = f'{user} delete "{subject_name}" subject in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
         subject.delete()
 
         # Return a success response
@@ -401,9 +533,18 @@ def update_teacher(request):
     last_name = request.POST.get('lastName')
 
     teacher = get_object_or_404(Teacher, id=teacher_id)
+    before_teacher = f"{teacher.user.first_name} {teacher.user.last_name}"
     teacher.user.first_name = first_name
     teacher.user.last_name = last_name
     teacher.user.save()
+
+    user = request.user
+    action = f'{user} update teacher name "{before_teacher}" to {teacher.user.first_name} {teacher.user.last_name}"'
+    details = f'{user} updated teacher name "{before_teacher}" to {teacher.user.first_name} {teacher.user.last_name} in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
 
     return JsonResponse({'message': 'Teacher updated successfully'})
 @csrf_exempt
@@ -416,9 +557,17 @@ def delete_teacher(request):
         teacher = get_object_or_404(Teacher, id=teacher_id)
 
         try:
+            user = request.user
+            action = f'{user} delete teacher "{teacher.user.first_name} {teacher.user.last_name}"'
+            details = f'{user} delete teacher {teacher.user.first_name} {teacher.user.last_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
             # Perform the teacher deletion
             user_id = teacher.user.id  # Get the associated user ID
             teacher.delete()
+
 
             # Delete the associated CustomUser
             user = get_object_or_404(get_user_model(), id=user_id)
@@ -441,8 +590,16 @@ def add_teacher_save(request):
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password', 'default_pass')
+        user = request.user
 
         try:
+                    
+            action = f'{user} add teacher "{first_name} {last_name}"'
+            details = f'{user} added teacher {first_name} {last_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
             # Create a CustomUser
             user = CustomUser.objects.create_user(
                 username=username,
@@ -603,7 +760,28 @@ def upload_documents_ocr(request):
     if request.method == 'POST':
         form = DocumentUploadForm(request.POST, request.FILES)
         if form.is_valid():
+            uploaded_file = request.FILES['document']
+            name = uploaded_file.name
+        
+            # Sanitize the filename by replacing spaces and special characters with underscores
+            filename = 'processed_documents/' + name.replace(' ', '_').replace(',', '').replace('(', '').replace(')', '')
+            file_extension = os.path.splitext(filename)[-1].lower()
+            print(filename)
+            
+            
+            if ProcessedDocument.objects.filter(document=filename).exists():
+                messages.error(request, 'Document with the same name already exists.')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             # Replace 'YOUR_PROJECT_ID' with your Google Cloud project ID.
+
+            user = request.user
+            action = f'{user} upload SF10 "{name}"'
+            details = f'{user} upload SF10 "{name}" in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
+
             project_id = '1083879771832'
 
 
@@ -614,7 +792,7 @@ def upload_documents_ocr(request):
             # Define the processor resource name.
             processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
 
-            uploaded_file = request.FILES['document']
+            
 
             # Read the document content from the uploaded file.
             content = uploaded_file.read()
@@ -664,6 +842,7 @@ def upload_documents_ocr(request):
                     data_by_type['Confidence'].append(f"{prop.confidence:.0%}")
 
             print(data_by_type)
+
             # Create a ProcessedDocument instance and save it
             processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now())
             processed_document.save()
@@ -726,19 +905,19 @@ def upload_documents_ocr(request):
 
             pdf_content_base64 = base64.b64encode(content).decode('utf-8')
 
-        
-        return render(request, 'admin_template/edit_extracted_data.html', {
-                # 'extracted_data': extracted_data_for_review,
-                'document_text': text,
-                'uploaded_document_url': processed_document.document.url,
-                # 'all_extracted_data': all_extracted_data,
-                'processed_document': processed_document,
-                'download_link': processed_document.document.url,
-                'data_by_type': data_by_type,
-                # 'extracted_text': extracted_text 
-                'extracted_data': my_data,
-                'pdf_content_base64': pdf_content_base64, 
-            })
+        return redirect('sf10_view')
+        # return render(request, 'admin_template/edit_extracted_data.html', {
+        #         # 'extracted_data': extracted_data_for_review,
+        #         'document_text': text,
+        #         'uploaded_document_url': processed_document.document.url,
+        #         # 'all_extracted_data': all_extracted_data,
+        #         'processed_document': processed_document,
+        #         'download_link': processed_document.document.url,
+        #         'data_by_type': data_by_type,
+        #         # 'extracted_text': extracted_text 
+        #         'extracted_data': my_data,
+        #         'pdf_content_base64': pdf_content_base64, 
+        #     })
     else: 
         form = DocumentUploadForm()
 

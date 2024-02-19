@@ -99,8 +99,44 @@ def transmuted_grade(initial_grade):
 def log_activity(user, action, details=''):
     ActivityLog.objects.create(user=user, action=action, details=details)
 
+def write_school_info(sheet, school_info, grade, section, teacher_name):
+    column_coordinates_region = 7
+    column_coordinates_school_name = 7
+    column_coordinates_district = 24
+    column_coordinates_school_year = 33
+    column_coordinates_schoolID = 24
+    column_coordinates_division = 15
+    column_coordinates_grade_section = 11
+    column_coordinates_teacher = 19
+    row_coordinates_4 = 4
+    row_coordinates_5 = 5
+    row_coordinates_7 = 7
+
+    for info in school_info:
+        value_region = info.region
+        value_school_name = info.school_name
+        value_division = info.division
+        value_school_id = info.school_id
+        value_district = info.district
+
+        value_school_year = info.school_year
+        value_grade_section =  f"{grade} - {section}"
+        value_teacher = teacher_name
+        
+        # Write region
+        sheet.cell(row=row_coordinates_4, column=column_coordinates_region, value=value_region)
+
+        # Write school name
+        sheet.cell(row=row_coordinates_5, column=column_coordinates_school_name, value=value_school_name)
+        sheet.cell(row=row_coordinates_4, column=column_coordinates_division, value=value_division)
+        sheet.cell(row=row_coordinates_5, column=column_coordinates_schoolID, value=value_school_id)
+        sheet.cell(row=row_coordinates_4, column=column_coordinates_district, value=value_district)
+        sheet.cell(row=row_coordinates_5, column=column_coordinates_school_year, value=value_school_year)
+        sheet.cell(row=row_coordinates_7, column=column_coordinates_grade_section, value=value_grade_section)
+        sheet.cell(row=row_coordinates_7, column=column_coordinates_teacher, value=value_teacher)
 
 
+    
 # STUDENT NAME
 def write_student_names(sheet, grade_scores_queryset):
     column_coordinates_student_name = 2
@@ -123,7 +159,7 @@ def write_student_names(sheet, grade_scores_queryset):
             sheet.cell(row=row_coordinates_female, column=column_coordinates_student_name, value=value_to_write)
             row_coordinates_female += 1
 
-# HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
+
 def write_scores_hps_written(sheet, grade_scores_queryset):
 
     # SCORES IN HIGHEST POSSIBLE SCORE IN WRITTEN WORKS
@@ -281,10 +317,7 @@ def write_scores_hps_quarterly(sheet, grade_scores_queryset):
 
         column_coordinate_weight_input_performance = 34
 
-# def write_quarterly_assessment_score(sheet, grade_scores_queryset):
-#     column_coordinates = 32
-#     row_coordinates = 10
-        
+
 def write_written_works_scores(sheet, grade_scores_queryset):
     column_coordinates = 6
     max_column_index = 15
