@@ -1,0 +1,61 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Confirm Subject Deletion
+{% endblock page_title %}
+{% block main_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Information</title>
+</head>
+<body>
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div>
+                        <h2 class="font-weight-bold">School Information</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Division</th>
+                                    <th>School ID</th>
+                                    <th>School Name</th>
+                                    <th>District</th>
+                                    <th>School Year</th>
+                                    <th></th> <!-- New column for actions -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school in school_info %}
+                                <tr>
+                                    <td>{{ school.region }}</td>
+                                    <td>{{ school.division }}</td>
+                                    <td>{{ school.school_id }}</td>
+                                    <td>{{ school.school_name }}</td>
+                                    <td>{{ school.district }}</td>
+                                    <td>{{ school.school_year }}</td>
+                                    <td>
+                                        <a class="btn btn-primary" href="{% url 'edit_school' school.id %}">Edit</a>
+                                        <a  class="btn btn-danger" href="{% url 'delete_school' school.id %}">Delete</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <a class="btn btn-success" href="{% url 'add_school' %}">Add New</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock main_content %}

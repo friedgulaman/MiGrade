@@ -1,0 +1,45 @@
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+Edit School Information
+{% endblock page_title %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <h3>Edit School Information</h3>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="region">Region:</label>
+            <input type="text" class="form-control" id="region" name="region" value="{{ school.region }}">
+        </div>
+
+        <div class="form-group">
+            <label for="division">Division:</label>
+            <input type="text" class="form-control" id="division" name="division" value="{{ school.division }}">
+        </div>
+
+        <div class="form-group">
+            <label for="school_id">School ID:</label>
+            <input type="text" class="form-control" id="school_id" name="school_id" value="{{ school.school_id }}">
+        </div>
+
+        <div class="form-group">
+            <label for="school_name">School Name:</label>
+            <input type="text" class="form-control" id="school_name" name="school_name" value="{{ school.school_name }}">
+        </div>
+
+        <div class="form-group">
+            <label for="district">District:</label>
+            <input type="text" class="form-control" id="district" name="district" value="{{ school.district }}">
+        </div>
+
+        <div class="form-group">
+            <label for="school_year">School Year:</label>
+            <input type="text" class="form-control" id="school_year" name="school_year" value="{{ school.school_year }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock main_content %}

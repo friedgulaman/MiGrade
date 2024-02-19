@@ -55,7 +55,7 @@ View Class Record
                                 <button type="submit">Delete Class Record</button>
                             </form>
                             <a class="dropdown-item"
-                                href="{% url 'generate_excel_for_grades' grade=record.grade section=record.section subject=record.subject %}">Generate
+                                href="{% url 'generate_excel_for_grades' grade=record.grade section=record.section subject=record.subject quarter=record.quarters %}">Generate
                                 Excel for Grades </a>
 
 

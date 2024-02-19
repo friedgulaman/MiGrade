@@ -6,6 +6,12 @@
               <span class="menu-title">Home</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'school_information' %}">
+              <i class="mdi mdi-grid-large menu-icon"></i>
+              <span class="menu-title">School Information</span>
+            </a>
+          </li>
           <!-- Manage Class -->
           <li class="nav-item nav-category">Manage</li>
           <!-- Teacher -->
@@ -57,7 +63,17 @@
             </div>
             <div class="collapse" id="ui-documents">
               <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{% url 'batch_process_documents' %}">Batch Upload</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="ui-documents">
+              <ul class="nav flex-column sub-menu">
                 <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">Files</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="ui-documents">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li>
               </ul>
             </div>
           </li>

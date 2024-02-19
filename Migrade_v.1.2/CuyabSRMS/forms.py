@@ -1,7 +1,9 @@
 from django import forms
 from .models import ProcessedDocument
 from .models import Subject
-from .models import GradeScores
+from .models import GradeScores, SchoolInformation
+from multiupload.fields import MultiFileField
+
 
 class DocumentUploadForm(forms.ModelForm):
     class Meta:
@@ -25,3 +27,12 @@ class GradeScoresForm(forms.ModelForm):
     class Meta:
         model = GradeScores
         fields = ['written_works_scores', 'performance_task_scores', 'initial_grades', 'transmuted_grades']
+
+
+class SchoolInformationForm(forms.ModelForm):
+    class Meta:
+        model = SchoolInformation
+        fields = '__all__'
+
+class DocumentBatchUploadForm(forms.Form):
+    documents = MultiFileField(min_num=1, max_num=None, max_file_size=1024*1024*5)
