@@ -9,6 +9,7 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from .models import SchoolInformation
 
 
 def custom_404(request, exception=None):
@@ -75,7 +76,7 @@ def doLogin(request):
                 log_activity(user, action, details)
                 
                 if user.user_type == 2:
-                    return redirect('home_teacher')
+                    return redirect('home_teacher') 
                 else:
                     return redirect('home_admin')
             else:

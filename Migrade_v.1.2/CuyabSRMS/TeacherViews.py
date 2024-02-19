@@ -57,7 +57,17 @@ from django.core.exceptions import MultipleObjectsReturned
 
 @login_required
 def home_teacher(request):
-    return render(request, 'teacher_template/home_teacher.html')
+    # Fetch school year information from the SchoolInformation model
+    school_years = SchoolInformation.objects.values_list('school_year', flat=True).distinct()
+
+    # Pass school year data to the template context
+    context = {
+        'school_years': school_years
+    }
+
+    # Render the template with the context data
+    return render(request, 'teacher_template/home_teacher.html', context)
+
 @login_required
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')
