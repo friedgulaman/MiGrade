@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Transmuted Grades</title>
+</head>
+<body>
+    <h1>Student Transmuted Grades</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>1st Quarter</th>
+                <th>2nd Quarter</th>
+                <th>3rd Quarter</th>
+                <th>4th Quarter</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for advisory_class in advisory_classes %}
+            <tr>
+                <td>{{ advisory_class.student }}</td>
+                <td>{{ advisory_class.transmuted_grades }}</td>
+                <td>{{ advisory_class.transmuted_grade }}</td>
+                <td>{{ advisory_class.transmuted_grades }}</td>
+                <td>{{ advisory_class.transmuted_grades }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

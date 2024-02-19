@@ -1,0 +1,112 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% load static %}
+
+{% block title %}
+Inbox Messages
+{% endblock title %}
+
+{% block main_content %}
+<style>
+  .message{
+    border-bottom: 1px solid #eaeaf1;
+  }
+  .message:hover{
+    background: #eaeaf1;
+  }
+  .accept-btn{
+    color: green;
+    opacity: 0.6;
+    transition: 0.3s;
+  }
+  .accept-btn:hover{
+    opacity: 1;
+    color: green;
+    scale: 1.3;
+  }
+  .reject-btn{
+    color: red;
+    opacity: 0.6;
+    transition: 0.3s;
+  }
+  .reject-btn:hover{
+    opacity: 1;
+    color: red;
+    scale: 1.3;
+  }
+</style>
+<section class="content container mt-2">
+
+    <div class="card">
+      <div class="card-body">
+    <h3 class="p-1">Inbox Messages</h3>
+  </div>
+    <div>
+      {% if inbox_messages %}
+        <ul>
+          {% for message in inbox_messages %}
+            <li class="d-flex justify-content-between align-items-center me-3 p-3  message ">
+              <div>
+                {% load custom_filters %}
+
+<p><strong>File Name:</strong> {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}</p>
+
+                <p class="form-text"><strong>Sender:</strong> {{ message.from_teacher }}</p>
+                <p class="form-text"><strong>Timestamp:</strong> {{ message.timestamp }}</p>
+              </div>
+              <div>
+                <button class="btn  accept-btn" data-message-id="{{ message.id }}">
+                  <i class="fas fa-check"></i> 
+              </button>
+              <button class="btn  reject-btn" data-message-id="{{ message.id }}">
+                  <i class="fas fa-times"></i> 
+              </button>
+              
+              </div>
+              
+              <!-- Add a data attribute for json_data -->
+              <p class="json-data" style="display: none;">{{ message.json_data }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No inbox messages found.</p>
+      {% endif %}
+    </div>
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  $(document).ready(function(){
+    
+      $(".accept-btn").click(function(){
+          var message_id = $(this).data("message-id");
+          // Retrieve json_data from hidden element
+          var json_data = $(this).closest('li').find('.json-data').text();
+          $.ajax({
+              url: "/accept_message",
+              type: "POST",
+              data: {
+                  'message_id': message_id,
+                  'json_data': json_data,
+                  'csrfmiddlewaretoken': '{{ csrf_token }}'
+              },
+              dataType: 'json',
+              success: function(response){
+                  if(response.success){
+                      alert(response.message); // Modified alert message
+                     location.reload()
+                  } else {
+                      alert("Error: " + response.error);
+                  }
+              },
+              error: function(xhr, status, error){
+                  alert("Error occurred while processing the request.");
+                  console.error(xhr.responseText);
+              }
+          });
+      });
+  });
+</script>
+
+{% endblock main_content %}

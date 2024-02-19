@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -57,6 +57,8 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
+    announcements = Announcement.objects.all()
+    
    
     context = {
         'grades': grades,
@@ -67,6 +69,8 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
+        'announcements': announcements,
+
     }
     return render(request, 'admin_template/home_admin.html', context)
 
@@ -1015,9 +1019,40 @@ def sf10_views(request):
     # Render the sf10.html template with the context data
     return render(request, 'admin_template/sf10.html', context)
 
+def announcement(request):
+    return render(request, 'admin_template/announcement.html')
+
+def announcement_list(request):
+    announcements = Announcement.objects.all()
+    return render(request, 'admin_template/announcement.html', {'announcements': announcements})
+
+def create_announcement(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        
+        # Attempt to create the announcement
+        try:
+            Announcement.objects.create(title=title, content=content)
+            messages.success(request, 'Announcement created successfully')
+            return redirect('home_admin')
+        except Exception as e:
+            messages.error(request, f'Failed to create Announcement: {e}')
+
+    return render(request, 'admin_template/home_admin.html')
+
+def delete_announcement(request, announcement_id):
+    announcement = get_object_or_404(Announcement, pk=announcement_id)
+    try:
+        announcement.delete()
+        return JsonResponse({'success': True, 'message': 'Announcement deleted successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Failed to delete announcement: {e}'})
+
+   
 def sf10_edit_view(request, id):
     extracted_data = get_object_or_404(ExtractedData, id=id)
-    
+
     # Assuming you have 'processed_document' field in your ExtractedData model
     processed_document = extracted_data.processed_document
 
@@ -1054,9 +1089,10 @@ def sf10_edit(request, id):
 
         logs = user, action, details    
         print(logs)
-        
+  
         # Handle birthdate format conversion
         birthdate_str = request.POST.get('Birthdate', '')
+        # Attempt to create the announcement
         try:
             birthdate_obj = datetime.strptime(birthdate_str, "%b. %d, %Y")
             extracted_data.birthdate = birthdate_obj.strftime("%Y-%m-%d")
@@ -1066,7 +1102,7 @@ def sf10_edit(request, id):
 
         # Save the changes to the ExtractedData instance
         extracted_data.save()
-        
+
 
         # Redirect to a success page or any other appropriate URL
         return HttpResponseRedirect(reverse('sf10_view') + '?success=true')
@@ -1089,13 +1125,13 @@ def sf10_delete(request):
 
         logs = user, action, details    
         print(logs)
-        
+
         extracted_data.delete()
         # Redirect to the same page after deletion or wherever needed
         return redirect('sf10_view')
     else:
         return redirect('sf10_view')
-    
+
 def download_processed_document(request, id):
     extracted_data = get_object_or_404(ExtractedData, id=id)        
     processed_document = extracted_data.processed_document
@@ -1114,17 +1150,15 @@ def download_processed_document(request, id):
     print(logs)
 
     response = FileResponse(processed_document.document, as_attachment=True)
-    
+
     # Get the filename without the "processed_documents/" part
     filename_without_path = processed_document.document.name.split('/')[-1]
-    
+
     response['Content-Disposition'] = f'attachment; filename="{filename_without_path}"'
     return response
 
 
 def batch_process_documents(request):
-
-
 
     if request.method == 'POST':
         form = DocumentBatchUploadForm(request.POST, request.FILES)
@@ -1249,7 +1283,7 @@ def batch_process_documents(request):
 
                     my_data.save()
 
-                
+
                 except Exception as e:
                     messages.error(request, f'Error processing document "{name}": {str(e)}')
 
@@ -1315,7 +1349,7 @@ def detect_and_convert_tables(request):
                     for row in table.header_rows:
                         row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
                         table_data.append(row_content)
-                    
+
                     for row in table.body_rows:
                         row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
                         table_data.append(row_content)
@@ -1359,9 +1393,8 @@ def detect_and_convert_tables(request):
                 json.dump(json_data, json_file)
 
             print(f'Table data saved to {json_file_path}')
-
+ 
             return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data })
-
 
         except Exception as e:
             return HttpResponse(f'Error processing PDF: {str(e)}')

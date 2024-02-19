@@ -1,0 +1,212 @@
+{% extends 'teacher_template/teacher_base.html' %}
+
+{% block title %}
+View Class Record
+{% endblock title %}
+
+{% block main_content %}
+<style>
+  .back-button {
+    color: #1027ac;
+    font-size: 30px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+</style>
+<section class="content container mt-2">
+  <div class="d-flex justify-content-between align-items-center m-0 p-4">
+    <h2>Transfer Quarterly Grades Summary</h2>
+    <a class="back-button">&larr;</a>
+  </div>
+
+  <div class="card p-5 m-3">
+    <div class="card-body">
+      <h3 class="card-title">Class Record Information</h3>
+      <div class="row text-primary text-center">
+        <div class="col-md-3">
+          <p class="card-text "><strong class="text-muted">Grade:</strong> <span id="grade">{{ class_record.grade }}</span></p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Section:</strong> <span id="section">{{ class_record.section }}</span></p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Subject:</strong> <span id="subject">{{ class_record.subject }}</span></p>
+        </div>
+        <div class="col-md-3">
+          <p class="card-text"><strong class="text-muted">Quarters:</strong> <span id="quarters">{{ class_record.quarters }}</span></p>
+        </div>
+        <div class="col-md-3" style="display: none;">
+          <p class="card-text"><strong class="text-muted">Teacher Username:</strong> <span id="teacher">{{ class_record.teacher.user.username }}</span></p>
+        </div>
+      </div>
+    </div>
+    <div >
+    <div class="p-4">
+      <label for="teacherSelect" class="form-text">Select Teacher:</label>
+      <select id="teacherSelect" class="form-select mt-2">
+      </select>
+      <div class="d-flex justify-content-end align-items-center mt-4">
+        <button id="submitJsonBtn" class="btn btn-success mt-2">Send Files to Teacher</button>
+        <button id="viewDetails" class="btn  mt-2">View Details</button>
+      </div>
+     
+    </div>
+  </div>
+
+  <div class="card p-5 m-3" style="display: none;" id="details">
+    <div class="card-body">
+      <h3 class="card-title">Student Grades Summary</h3>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Initial Grades</th>
+              <th>Transmuted Grades</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grade_score in grade_scores %}
+            <tr>
+              <td>{{ grade_score.student.name }}</td>
+              <td>{{ grade_score.initial_grades }}</td>
+              <td>{{ grade_score.transmuted_grades|default:"" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+
+
+
+</section>
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  // Function to handle the back button click event
+  document.querySelector(".back-button").addEventListener("click", function () {
+    window.history.back();
+  });
+
+  // Function to convert HTML data to JSON
+  function htmlToJson() {
+    var jsonData = {
+      "grade": $("#grade").text(),
+      "section": $("#section").text(),
+      "subject": $("#subject").text(),
+      "teacher": $("#teacher").text(),
+      "students": [] // Array to hold student data
+    };
+
+    // Get the quarter value
+    var quarter = $("#quarters").text();
+
+    $("table tbody tr").each(function() {
+      var studentName = $(this).find("td:eq(0)").text();
+      // Directly use transmuted grades
+      var transmutedGrades = $(this).find("td:eq(2)").text();
+
+      // Construct studentData object with "quarter": "transmuted_grades" format
+      var studentData = {};
+      studentData[quarter] = transmutedGrades;
+
+      jsonData.students.push({
+        "name": studentName,
+        "quarter": studentData
+      });
+    });
+
+    return jsonData;
+  }
+
+  $(document).ready(function() {
+
+    $.ajax({
+      type: "GET",
+      url: "{% url 'get_teacher_list' %}",
+      dataType: "json",
+      success: function(response) {
+        var teacherSelect = $("#teacherSelect");
+        $.each(response.teachers, function(index, teacher) {
+          teacherSelect.append($('<option>', {
+            value: teacher.id,
+            text: `${teacher.name} (ID: ${teacher.id})`
+          }));
+        });
+      },
+      error: function(xhr, status, error) {
+        console.error("Error fetching teacher list:", error);
+      }
+    });
+    
+    // Click event handler for submitting JSON data to the selected teacher
+    $("#submitJsonBtn").click(function() {
+      var selectedTeacherId = $("#teacherSelect").val();
+      
+      var jsonData = htmlToJson();
+      console.log("Sending JSON data to teacher with ID:", selectedTeacherId);
+      console.log("JSON data:", jsonData);
+
+      // Add the selectedTeacherId to the JSON data
+      jsonData.target_teacher = selectedTeacherId;
+
+      // Convert the JSON object keys to string
+      var jsonString = JSON.stringify(jsonData);
+
+      // AJAX request to send JSON data to the server
+      $.ajax({
+        url: "/transfer-json",
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        data: JSON.stringify(jsonData), // Send the stringified JSON data
+        success: function(response) {
+          // Handle success response
+          console.log("Transfer successful:", response);
+          alert("Transfer successful");
+          history.back();
+        },
+        error: function(xhr, status, error) {
+          // Handle error response
+          console.error("Error transferring data:", error);
+          alert("Error transferring data");
+        }
+      });
+    });
+
+    // Function to retrieve CSRF token
+    function getCookie(name) {
+      if (typeof name !== 'string' || name.trim() === '') {
+        return null; // Invalid cookie name
+      }
+
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === name + '=') {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+        // Add click event listener to the "View Details" button
+        $("#viewDetails").click(function() {
+            // Toggle the display style of the "details" div
+            $("#details").toggle();
+        });
+    });
+</script>
+
+{% endblock main_content %}

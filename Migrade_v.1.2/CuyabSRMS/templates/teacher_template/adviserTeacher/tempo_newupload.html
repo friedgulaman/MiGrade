@@ -1,0 +1,289 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+tempo_newupload
+{% endblock title %}
+{% block main_content %}
+<style>
+    .list_students{
+        height: 500px;
+        overflow: scroll;
+    }
+    </style>
+<section class="content container mt-2 vh-100">
+        <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+            <ul class="nav nav-tabs text" role="tablist" style="display: none;">
+                <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
+                        aria-controls="overview" aria-selected="true">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab"
+                        aria-selected="false">Audiences</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#demographics" role="tab"
+                        aria-selected="false">Demographics</a>
+                </li>
+            </ul>
+        </div>
+
+        {% csrf_token %}
+        {% if lrn_data %}
+        <div class="tab-content tab-content-basic">
+            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+                <div class="list_information">
+                    <div>
+                        <h3 class="p-1 text-center">1. Class Information</h3>
+                    </div>
+                    <div class=" m-4">
+                        <ul class="list-group list-group-flush m-2">
+                            <li class="list-group-item">School ID: <span id="schoolID">
+                                {{ key_value_pairs.School_ID }}</span>
+                                <input type="hidden" id="hiddenSchoolID" value="{{ key_value_pairs.School_ID }}">
+                            </li>
+                            <li class="list-group-item">Division: <span id="division">
+                                {{ key_value_pairs.Division }}</span>
+                                <input type="hidden" id="hiddenDivision" value="{{ key_value_pairs.Division }}">
+                            </li>
+                            <li class="list-group-item">District: <span id="district">
+                                {{ key_value_pairs.District }}</span>
+                                <input type="hidden" id="hiddenDistrict" value="{{ key_value_pairs.District }}">
+                            </li>
+                            <li class="list-group-item">School Name: <span id="schoolName">
+                                {{ key_value_pairs.School_Name }}</span>
+                                <input type="hidden" id="hiddenSchoolName" value="{{ key_value_pairs.School_Name }}">
+                            </li>
+                            <li class="list-group-item">School Year: <span id="schoolYear">
+                                {{ key_value_pairs.School_Year }}</span>
+                                <input type="hidden" id="hiddenSchoolYear" value="{{ key_value_pairs.School_Year }}">
+                            </li>
+                            <li class="list-group-item">Grade Level: <span id="gradeLevel">
+                                    {% if key_value_pairs.Grade_Level %}
+                                    {{ key_value_pairs.Grade_Level }}
+                                    {% elif key_value_pairs.Grade %}
+                                    {{ key_value_pairs.Grade }}
+                                    {% else %}
+                                    Grade
+                                    {% endif %}
+                                </span>
+                                <input type="hidden" id="hiddenGradeLevel"
+                                    value="{% if key_value_pairs.Grade_Level %}{{ key_value_pairs.Grade_Level }}{% elif key_value_pairs.Grade %}{{ key_value_pairs.Grade }}{% else %}Grade{% endif %}">
+                            </li>
+                            <li class="list-group-item">Section: <span id="section">{{ key_value_pairs.Section }}</span>
+                                <input type="hidden" id="hiddenSection" value="{{ key_value_pairs.Section }}">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center mt-5">
+                <button type="button" class="btn btn-primary next-tab">Next</button>
+            </div>
+            </div>
+            {% endif %}
+            {% if lrn_data %}
+            <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
+                <div class="mt-3 list_students">
+                    <div class="">
+                            <h3 class="p-1 text-center">2. Student Information</h3>
+                            <h6>Total Students: {{ lrn_data|length }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="data-table">
+                                <thead class="thead">
+                                    <tr>
+                                        <th>LRN</th>
+                                        <th>Name</th>
+                                        <th>Sex</th>
+                                        <th>Birthday</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key, values in lrn_data.items %}
+                                    <tr>
+                                        <td>{{ key }}</td>
+                                        <td>{{ values.0.1 }}</td>
+                                        <td>{{ values.0.2 }}</td>
+                                        <td>{{ values.0.3 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center">
+                <button type="button" class="btn btn-secondary prev-tab">Previous</button>
+                <button type="button" class="btn btn-primary next-tab ms-3">Next</button>
+            </div>
+            </div>
+            <div class="tab-pane fade show" id="demographics" role="tabpanel" aria-labelledby="demographics">
+                <div class="d-flex justify-content-center align-items-center">
+                <div class="card" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Class Type</h5>
+                            <div class="mb-3">
+                                <label class="form-label">What type of class is this? Advisory or Subject Class</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="classType" id="advisoryClass"
+                                        value="Advisory">
+                                    <label class="form-check-label" for="advisoryClass">
+                                        Advisory Class
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="classType" id="subjectClass"
+                                        value="Subject">
+                                    <label class="form-check-label" for="subjectClass">
+                                        Subject Class
+                                    </label>
+                                </div>
+                            </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center mt-5">
+                    <button type="button" class="btn btn-secondary prev-tab">Previous</button>
+                    <button id="saveGradeSection" class="btn btn-success ms-3">Save</button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // JavaScript to handle multi-step form navigation
+        const tabs = document.querySelectorAll('.nav-link');
+        const tabContents = document.querySelectorAll('.tab-pane');
+        const nextButtons = document.querySelectorAll('.next-tab');
+        const prevButtons = document.querySelectorAll('.prev-tab');
+
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', function (e) {
+                e.preventDefault();
+                showTab(index);
+            });
+        });
+
+        nextButtons.forEach((button, index) => {
+            button.addEventListener('click', function () {
+                showTab(index + 1);
+            });
+        });
+
+        prevButtons.forEach((button, index) => {
+            button.addEventListener('click', function () {
+                showTab(getActiveTabIndex() - 1);
+            });
+        });
+
+        function showTab(index) {
+            index = Math.max(0, Math.min(index, tabs.length - 1));
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabContents.forEach(tabContent => tabContent.classList.remove('show', 'active'));
+
+            tabs[index].classList.add('active');
+            tabContents[index].classList.add('show', 'active');
+        }
+
+        function getActiveTabIndex() {
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i].classList.contains('active')) {
+                    return i;
+                }
+            }
+            return 0; // Default to the first tab if none is marked as active
+        }
+
+        function tableToJson() {
+            const table = document.getElementById("data-table");
+            const data = { rows: [] };
+
+            const rows = table.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                const rowData = {};
+                const cells = row.querySelectorAll("td");
+
+                // Assuming the first cell is the key (LRN) and the rest are values
+                rowData.LRN = cells[0].textContent;  // Adjust the index based on your table structure
+                rowData.Name = cells[1].textContent;
+                rowData.Sex = cells[2].textContent;
+                rowData.Birthday = cells[3].textContent;  // Adjust the index based on your table structure
+
+                data.rows.push(rowData);
+            });
+
+            return data;
+        }
+
+        function getCookie(name) {
+            if (typeof name !== 'string' || name.trim() === '') {
+                return null;  // Invalid cookie name
+            }
+
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === name + '=') {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function sendJsonData(jsonData) {
+            fetch("{% url 'save_json_data' %}", {  // Replace with the actual URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("JSON data has been saved!");
+                window.location.href = "display_students";
+            })
+            .catch(error => {
+                alert("An error occurred while saving JSON data: " + error.message);
+            });
+        }
+
+        // Function to handle the form submission when the save button is clicked
+        $('#saveGradeSection').click(function () {
+            // Get the existing JSON data from the table
+            const lrnData = tableToJson();
+
+            // Add other data from hidden input fields to lrnData
+            lrnData.school_id = $('#hiddenSchoolID').val();
+            lrnData.division = $('#hiddenDivision').val();
+            lrnData.district = $('#hiddenDistrict').val();
+            lrnData.school_name = $('#hiddenSchoolName').val();
+            lrnData.school_year = $('#hiddenSchoolYear').val();
+            lrnData.grade = $('#hiddenGradeLevel').val();
+            lrnData.section = $('#hiddenSection').val();
+
+             // Include the selected class type in lrnData
+            lrnData.classType = $("input[name='classType']:checked").val();
+            // Now, lrnData contains all the necessary data including school_id, division, district, etc.
+            console.log(lrnData);
+
+            // Call the sendJsonData function to send data to Django views
+            sendJsonData(lrnData);
+        });
+    });
+</script>
+
+
+{% endblock main_content %}

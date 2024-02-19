@@ -19,3 +19,10 @@ def get_item(dictionary, key):
     if isinstance(dictionary, dict):
         return dictionary.get(key, None)
     return None
+
+@register.filter(name='replace')
+def replace(value, arg):
+    """
+    Replaces all occurrences of arg in the given string with an empty string.
+    """
+    return value.replace(arg, '')
