@@ -18,7 +18,7 @@ from .views import log_activity
 from .models import ExtractedData
 from .models import ProcessedDocument
 from google.cloud import documentai_v1beta3 as documentai
-from google.cloud.documentai_toolbox import document as documentai_toolbox
+
 import re
 import os
 import json
@@ -35,7 +35,7 @@ from datetime import datetime
 from dateutil import parser
 import pandas as pd
 from google.api_core.client_options import ClientOptions
-from pdfminer.high_level import extract_pages, extract_text
+
 
 
 from django.contrib.auth.decorators import login_required
