@@ -65,7 +65,7 @@ class Student(models.Model):
     school_year = models.CharField(max_length=50, null=True, blank=True)
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
-    class_type = models.CharField(max_length=50, null=True, blank=True)  # New field for class type
+    class_type = models.JSONField(null=True)  # New field for class type
 
     def __str__(self):
         return self.name
@@ -180,6 +180,7 @@ class ClassRecord(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_modified = models.DateTimeField(auto_now=True)
+    school_year = models.CharField(max_length=50, null=True)
 
     def archive(self):
         try:
@@ -211,7 +212,7 @@ class ClassRecord(models.Model):
                         weight_input_performance=gradescore.weight_input_performance,
                         weight_input_quarterly=gradescore.weight_input_quarterly,
                         weighted_score_written=gradescore.weighted_score_written,
-                        weighted_score_performance=gradescore.weighted_score_performance,
+                          weighted_score_performance=gradescore.weighted_score_performance,
                         weighted_score_quarterly=gradescore.weighted_score_quarterly,
                     )
 
@@ -633,10 +634,54 @@ class AdvisoryClass(models.Model):
 
    
 class Announcement(models.Model):
+
     title = models.CharField(max_length=100)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
+
         return self.title
+    
+class Students(models.Model):
+    name = models.CharField(max_length=255)
+    lrn = models.CharField(max_length=12)
+    sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
+    birthday = models.CharField(max_length=10, default='N/A')
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    school_id = models.CharField(max_length=50, null=True, blank=True)
+    division = models.CharField(max_length=255, null=True, blank=True)
+    district = models.CharField(max_length=255, null=True, blank=True)
+    school_name = models.CharField(max_length=255, null=True, blank=True)
+    school_year = models.CharField(max_length=50, null=True, blank=True)
+    grade = models.CharField(max_length=50, null=True, blank=True)
+    section = models.CharField(max_length=50, null=True, blank=True)
+    subject_teachers = models.JSONField(null=True)
+      # New field for class type
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('lrn', 'teacher')
+
+class Quarterly_Grade(models.Model):
+    quarter_grades = models.JSONField
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+
+class Subject_Teacher_Class(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    grade = models.CharField(max_length=50)
+    section = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50, null=True, blank=True)
+    quarter_grade = models.JSONField(null=True)
+
+class Adviser_Teacher_Class(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    grade = models.CharField(max_length=50)
+    section = models.CharField(max_length=50)
+    final_grade = models.JSONField
