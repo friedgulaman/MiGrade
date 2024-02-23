@@ -13,7 +13,7 @@ from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse
-
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 import pandas as pd
 from googleapiclient.discovery import build
@@ -41,7 +41,7 @@ from django.template import RequestContext
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.core.files.uploadedfile import TemporaryUploadedFile
-
+from django.http import HttpResponseForbidden
 
 #Grade
 from django.http import JsonResponse
@@ -383,7 +383,17 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
-            class_type = received_data.get('classType', '')  # New field for class type
+            class_type_data = received_data.get('classType', '')   # New field for class type
+
+            subject = ''
+            if class_type_data == 'Advisory':
+                subject = 'Advisory Class'
+            elif class_type_data == 'Subject':
+                subject = 'Subject Class'
+
+            teacher_id = teacher.id
+
+            class_type = {teacher_id: subject}
 
             user = request.user
             action = f'{user} create a Class {grade_name} {section_name}'
@@ -393,6 +403,29 @@ def save_json_data(request):
             logs = user, action, details    
             print(logs)
 
+            grade, _ = Grade.objects.get_or_create(name=grade_name)
+
+            section, _ = Section.objects.get_or_create(name=section_name, grade=grade)
+
+                            # Increment the total_students field for the respective section
+            section.total_students += 1
+            # Initialize or get the existing class_type dictionary for the section
+            existing_class_type = section.class_type or {}
+
+            # Check if the class_type already exists
+            if any(existing_teacher_id == teacher_id for existing_teacher_id in existing_class_type):
+                # Raise an error indicating that the class_type already exists
+                raise ValidationError("Class type already exists for this teacher.")
+
+            # Update the existing class_type with the new value
+            existing_class_type.update(class_type)
+
+            # Save the class_type on the Section object
+            section.class_type = existing_class_type
+
+            # Save the Section object
+            section.save()
+
             for item in received_data['rows']:
                 lrn = item.get('LRN')
                 name = item.get('Name')
@@ -400,15 +433,8 @@ def save_json_data(request):
                 birthday = item.get('Birthday')
 
                 # Create or update the Grade object
-                grade, _ = Grade.objects.get_or_create(name=grade_name)
 
                 # Create or update the Section object
-                section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
-
-                # Increment the total_students field for the respective section
-                section.total_students += 1
-                section.class_type = class_type  # Save the class type on Section
-                section.save()
 
                 # Initialize or get the existing grade_section dictionary
                 teacher.grade_section = teacher.grade_section or {}
@@ -417,10 +443,9 @@ def save_json_data(request):
                 teacher.grade_section[grade.name] = section.name
                 teacher.save()
 
-                # Create or update the Student object based on LRN and teacher
+                # Get or create the Student object based on LRN and teacher
                 student, created = Student.objects.get_or_create(
                     lrn=lrn,
-                    teacher=teacher,
                     defaults={
                         'name': name,
                         'sex': sex,
@@ -436,6 +461,17 @@ def save_json_data(request):
                     }
                 )
 
+                # Update class_type for existing student
+                existing_class_type = student.class_type or {}
+
+                # Update the existing class_type with the new value
+                existing_class_type.update(class_type)
+
+                # Update class_type for existing student
+                if not created:
+                    student.class_type = existing_class_type
+                    student.save()
+
                 # Update other fields if needed
                 student.name = name
                 student.sex = sex
@@ -447,11 +483,10 @@ def save_json_data(request):
                 student.school_year = school_year
                 student.grade = grade.name
                 student.section = section.name
-                student.class_type = class_type  # Update the class type on Student
+            
 
                 # Save the associated objects before saving the student
                 grade.save()
-                section.save()
                 student.save()
 
             response_data = {'message': 'JSON data saved successfully'}
@@ -561,7 +596,7 @@ def get_students_by_grade_and_section(request):
 
 
             # Query the database to retrieve students based on the selected grade and section
-            students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
+            students = Student.objects.filter(grade=grade_name, section=section_name)
 
             subject = Subject.objects.get(name=subject_name)
 
@@ -620,6 +655,8 @@ def calculate_grades(request):
         print(request.POST)
         print(grade_name)
         print(section_name)
+        print(subject_name)
+        print(quarters_name)
 
 
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
@@ -652,7 +689,7 @@ def calculate_grades(request):
         logs = user, action, details    
         print(logs)
 
-        students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
+        students = Student.objects.filter(grade=grade_name, section=section_name)
         
         for student in students:
             scores_written_works = []
@@ -800,7 +837,12 @@ def display_classrecord(request, class_record_id=None):
     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
 
+    teacher = request.user.teacher
+    # print(request.user)
+    teacher_id = teacher.id
 
+    if teacher_id != class_record.teacher_id:
+        return HttpResponseForbidden("You don't have permission to access this class record.")
     # If class_record_id is not provided, you may want to handle this case differently
     # For example, you can provide a list of available ClassRecord objects for the user to choose from
 
@@ -848,16 +890,32 @@ def display_students(request):
 
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
-        students = Student.objects.filter(teacher=teacher)
+        teacher_id = str(teacher.id)  # Convert teacher id to string for comparison
+
+        # Filter students based on the teacher_id in class_type
+        students = Student.objects.filter(class_type__has_key=teacher_id)
         unique_combinations = students.values('grade', 'section', 'class_type').distinct()
+        class_type_list = []
+
+        # Fetch the class type separately
+        for combination in unique_combinations:
+            class_type_dict = combination['class_type']
+            if class_type_dict:  # Ensure class_type is not None
+                if teacher_id in class_type_dict:  # Check if teacher_id exists in class_type_dict keys
+                    class_type_value = class_type_dict[teacher_id]  # Get the value using the teacher_id key
+                    combination['class_type'] = class_type_value
+                    class_type_list.append(combination)
+
+        print(f"{class_type_list}")
 
         context = {
             'teacher': teacher,
-            'unique_grades_sections': unique_combinations,
+            'unique_grades_sections': class_type_list,
         }
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
+
 
 def toggle_class_type_function(student):
     # Toggle the class type for the given student
@@ -955,20 +1013,29 @@ def student_list_for_subject(request):
     if user.is_authenticated and hasattr(user, 'teacher'):
         # Retrieve the teacher associated with the user
         teacher = user.teacher
+        teacher_id = teacher.id
 
         grade = request.GET.get('grade')
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
+        print(class_type)
         
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
         # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        students = Student.objects.filter(grade=grade, section=section)
 
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if teacher_id in class_type_json:
+                if class_type_json[teacher_id] == "Subject Class":
+                    students_filtered.append(student)
+                    
         top_students = (
             GeneralAverage.objects.filter(grade=grade, section=section)
             .order_by('-general_average')[:10]
@@ -996,6 +1063,8 @@ def student_list_for_advisory(request):
     if user.is_authenticated and hasattr(user, 'teacher'):
         # Retrieve the teacher associated with the user
         teacher = user.teacher
+        teacher_id = teacher.id
+
 
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
@@ -1003,11 +1072,19 @@ def student_list_for_advisory(request):
         
         
         # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        students = Student.objects.filter(grade=grade, section=section)
+
         # Fetch advisory classes based on teacher, grade, and section
         advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section).values('subject', 'from_teacher_id').distinct()
         quarters = advisory_classes.values_list('first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter').distinct()
        
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if teacher_id in class_type_json:
+                if class_type_json[teacher_id] == "Subject Class":
+                    students_filtered.append(student)
+
         context = {
             'grade': grade,
             'section': section,
@@ -1457,7 +1534,7 @@ def display_all_final_grades(request, grade, section):
 
 
     
-
+@login_required
 @transaction.atomic
 def update_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1470,7 +1547,7 @@ def update_score(request):
 
 
          # Assuming you want to filter students by both name and teacher
-        students = Student.objects.filter(name=student_name, teacher=request.user.teacher)
+        students = Student.objects.filter(name=student_name)
 
         # Ensure there is exactly one matching student
         if students.count() == 1:

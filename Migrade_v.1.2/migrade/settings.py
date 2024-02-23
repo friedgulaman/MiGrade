@@ -41,10 +41,10 @@ SECRET_KEY = 'django-insecure-wdke-rd%j16gdotni4rj$mgdqy__%d4#sin44zug-z67e!(xg0
 DEBUG = True
 
 
-# ALLOWED_HOSTS = ['192.168.1.13']
+ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1',]
 # http://127.0.0.1:8000/
 
-ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70']
+# ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1']
 
 
 
@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.1.5',
+        'NAME': 'migrade_v.1.6',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   

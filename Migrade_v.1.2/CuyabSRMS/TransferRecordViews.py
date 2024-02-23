@@ -9,6 +9,9 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.db import transaction
+from collections import defaultdict
+from django.db import IntegrityError
+
 
 def transfer_record(request):
     teacher = request.user.teacher
@@ -143,7 +146,7 @@ def transfer_json_to_teacher(request):
             print(file_name)
             print(from_teacher_id)
             # Check if the section with the specified name, class_type, and teacher_id exists
-            existing_section = Section.objects.filter(name=section, class_type="Advisory", teacher_id=target_teacher_id).exists()
+            existing_section = Section.objects.filter(name=section, class_type__contains={target_teacher_id: 'Advisory Class'}).exists()
             print(existing_section)
             if existing_section:
                 # Save the data to the InboxMessage model
@@ -196,8 +199,10 @@ def inbox(request):
 
 def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     teacher = request.user.teacher
+    teacher_id = teacher.id
     # Filter Section objects based on provided parameters
-    sections = Section.objects.filter(name=section, teacher_id=teacher, class_type='Subject')
+    sections = Section.objects.filter(name=section, class_type__contains={teacher_id: 'Subject Class'})
+
 
     # Check if there is more than one Section returned
     if sections.count() != 1:
@@ -245,8 +250,6 @@ def check_existing_data(message, json_data):
         "4th Quarter": "fourth_quarter"
     }
     
-    excluded_quarters = ["first_quarter", "second_quarter", "third_quarter", "fourth_quarter"]
-    
     for student in json_data.get('students', []):
         student_name = student.get('name')
         for quarter in student.get('quarter', {}):
@@ -254,19 +257,19 @@ def check_existing_data(message, json_data):
             if not field_name:
                 continue
             
-            if field_name in excluded_quarters:
-                continue
-            
             existing_advisory_classes = AdvisoryClass.objects.filter(
                 grade=json_data.get('grade'),
                 section=json_data.get('section'),
-                subject=json_data.get('subject'),
-                from_teacher_id=message.from_teacher,
                 student__name=student_name,
             )
             
             for existing_advisory_class in existing_advisory_classes:
-                existing_grade = getattr(existing_advisory_class, field_name)
+                grades_data = existing_advisory_class.get_grades_data()
+                if not grades_data:
+                    continue
+                
+                subject_teacher_data = grades_data.get(json_data.get('subject'), {})
+                existing_grade = subject_teacher_data.get(field_name)
                 if existing_grade is None:
                     return False  # No existing value found, so we can save the data
                 
@@ -278,6 +281,7 @@ def check_existing_data(message, json_data):
             
     return False  # No existing value found, so we can save the data
 
+
 def save_data(message, json_data):
     quarter_field_mapping = {
         "1st Quarter": "first_quarter",
@@ -286,58 +290,69 @@ def save_data(message, json_data):
         "4th Quarter": "fourth_quarter"
     }
 
-    replacements_made = set()  # Keep track of replacements made
+    # Fetch advisory classes once outside the loop
+    advisory_classes = AdvisoryClass.objects.filter(
+        grade=json_data.get('grade'),
+        section=json_data.get('section')
+    ).select_related('student')
+
+    # Organize existing advisory classes by student name for quick access
+    advisory_classes_by_student = defaultdict(list)
+    for advisory_class in advisory_classes:
+        advisory_classes_by_student[advisory_class.student.name].append(advisory_class)
 
     for student in json_data.get('students', []):
-        student_name = student.get('name', None)
-        student_instance, created = Student.objects.get_or_create(name=student_name, class_type='advisory')
+        student_name = student.get('name')
+        student_instance, created = Student.objects.get_or_create(name=student_name)
 
         for quarter, transmuted_grade in student.get('quarter', {}).items():
             if transmuted_grade == '':
                 transmuted_grade = None
 
-            key = (student_name, quarter)  # Create a unique key for each student-quarter combination
+            existing_advisory_classes = advisory_classes_by_student.get(student_name, [])
 
-            if key in replacements_made:
-                continue  # Skip if a replacement has already been made for this combination
+            for advisory_class in existing_advisory_classes:
+                grades_data = advisory_class.get_grades_data()
+                subject_teacher_data = grades_data.get(json_data.get('subject'), {})
+                existing_grade = subject_teacher_data.get(quarter_field_mapping[quarter])
 
-            existing_advisory_classes = AdvisoryClass.objects.filter(
-                grade=json_data.get('grade'),
-                section=json_data.get('section'),
-                subject=json_data.get('subject'),
-                from_teacher_id=json_data.get('teacher'),
-                student=student_instance,
-            )
-
-            if existing_advisory_classes.exists():
-                parent_advisory_class = existing_advisory_classes.first()
-                field_to_update = quarter_field_mapping.get(quarter)
-                existing_grade = getattr(parent_advisory_class, field_to_update)
                 if existing_grade != transmuted_grade:
-                    print(f"Replacing {quarter} value for {student_name}. Existing value: {existing_grade}. New value: {transmuted_grade}.")
-                    setattr(parent_advisory_class, field_to_update, transmuted_grade)
-                    parent_advisory_class.save()
-                    replacements_made.add(key)  # Add the combination to replacements_made
+                    subject_teacher_data[quarter_field_mapping[quarter]] = transmuted_grade
+                    # Add from_teacher_id to the subject_teacher_data dictionary
+                    subject_teacher_data['from_teacher_id'] = json_data.get('teacher')
+                    subject_teacher_data['subject'] = json_data.get('subject')
+                    advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
+                    advisory_class.save()
                 else:
                     print(f"{quarter} already has the same value for {student_name}.")
-            else:
+
+            # If no existing advisory classes, create a new one
+            if not existing_advisory_classes:
                 new_advisory_class = AdvisoryClass(
                     grade=json_data.get('grade'),
                     section=json_data.get('section'),
-                    subject=json_data.get('subject'),
-                    from_teacher_id=json_data.get('teacher'),
                     student=student_instance,
                 )
-                setattr(new_advisory_class, quarter_field_mapping.get(quarter), transmuted_grade)
+                # Add from_teacher_id to the subject_teacher_data dictionary
+                subject_teacher_data = {
+                    "subject": json_data.get('subject'),
+                    "from_teacher_id": json_data.get('teacher'),
+                    quarter: transmuted_grade,
+                }
+                new_advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
                 new_advisory_class.save()
                 print(f"Saved new AdvisoryClass with {quarter} for {student_name}.")
 
 
-
 def save_accepted_message(message):
-    # Save the accepted message information
-    AcceptedMessage.objects.create(
-        message_id=message.id,
-        file_name=message.file_name,
-        json_data=message.json_data
-    )
+    try:
+        # Attempt to create the AcceptedMessage instance
+        AcceptedMessage.objects.create(
+            message_id=message.id,
+            file_name=message.file_name,
+            json_data=message.json_data
+        )
+    except IntegrityError as e:
+        # Handle duplicate primary key error
+        print(f"Error: {e}")
+        # Add additional error handling or logging here as needed
