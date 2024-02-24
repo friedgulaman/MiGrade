@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
+from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -1020,12 +1020,11 @@ def sf10_views(request):
     return render(request, 'admin_template/sf10.html', context)
 
 def announcement(request):
-    return render(request, 'admin_template/announcement.html')
-
-def announcement_list(request):
     announcements = Announcement.objects.all()
     return render(request, 'admin_template/announcement.html', {'announcements': announcements})
 
+
+   
 def create_announcement(request):
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -1039,7 +1038,7 @@ def create_announcement(request):
         except Exception as e:
             messages.error(request, f'Failed to create Announcement: {e}')
 
-    return render(request, 'admin_template/home_admin.html')
+    return render(request, 'admin_template/announcement.html')
 
 def delete_announcement(request, announcement_id):
     announcement = get_object_or_404(Announcement, pk=announcement_id)
@@ -1049,7 +1048,110 @@ def delete_announcement(request, announcement_id):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Failed to delete announcement: {e}'})
 
+
+
+def user_list(request):
+    # Retrieve a list of teachers (users with user_type == 2)
+    teachers = CustomUser.objects.filter(user_type=2)
+    return render(request, 'admin_template/home_admin.html', {'teachers': teachers})
+
+def user_activity_log(request, user_id):
+    # Retrieve the teacher object or return a 404 error if not found
+    teacher = get_object_or_404(Teacher, id=user_id, user_type=2)
+    
+    # Retrieve the activity log for the specified teacher
+    activity_log = ActivityLog.objects.filter(user_id=teacher).order_by('-timestamp')
+    
+    return render(request, 'admin_template/user_activity_log.html', {'teacher': teacher, 'activity_log': activity_log})
+
+
+
+
+
+
    
+def sf10_edit_view(request, id):
+    extracted_data = get_object_or_404(ExtractedData, id=id)
+
+    # Assuming you have 'processed_document' field in your ExtractedData model
+    processed_document = extracted_data.processed_document
+
+    # Access the PDF content from the 'document' field of the 'ProcessedDocument' object
+    pdf_content = processed_document.document.read()
+
+    # Convert the content to base64 encoding
+    pdf_content_base64 = base64.b64encode(pdf_content).decode('utf-8')
+
+    return render(request, 'admin_template/edit_sf10.html', {'extracted_data': extracted_data, 'pdf_content_base64': pdf_content_base64})
+
+def sf10_edit(request, id):
+
+    extracted_data = get_object_or_404(ExtractedData, id=id)
+
+    if request.method == 'POST':
+        # Assuming form data is sent via POST request
+        # Retrieve and process the form data for editing
+        extracted_data.last_name = request.POST.get('Last_Name', '')
+        extracted_data.first_name = request.POST.get('First_Name', '')
+        extracted_data.middle_name = request.POST.get('Middle_Name', '')
+        extracted_data.sex = request.POST.get('SEX', '')
+        extracted_data.classified_as_grade = request.POST.get('Classified_as_Grade', '')
+        extracted_data.lrn = request.POST.get('LRN', '')
+        extracted_data.name_of_school = request.POST.get('Name_of_School', '')
+        extracted_data.school_year = request.POST.get('School_Year', '')
+        extracted_data.general_average = request.POST.get('General_Average', '')
+
+        sf10_name = f"{extracted_data.first_name} {extracted_data.last_name}"
+        user = request.user
+        action = f'{user} updates information of the SF10 of "{sf10_name}"'
+        details = f'{user} updates information of the SF10 of "{sf10_name} in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+  
+        # Handle birthdate format conversion
+        birthdate_str = request.POST.get('Birthdate', '')
+        # Attempt to create the announcement
+        try:
+            birthdate_obj = datetime.strptime(birthdate_str, "%b. %d, %Y")
+            extracted_data.birthdate = birthdate_obj.strftime("%Y-%m-%d")
+        except ValueError:
+            # Handle invalid birthdate format
+            pass  # You may want to add proper error handling here
+
+        # Save the changes to the ExtractedData instance
+        extracted_data.save()
+
+
+        # Redirect to a success page or any other appropriate URL
+        return HttpResponseRedirect(reverse('sf10_view') + '?success=true')
+
+    # Render the edit_sf10.html template with the ExtractedData instance
+    return render(request, 'admin_template/edit_sf10.html', {'extracted_data': extracted_data})
+
+
+def sf10_delete(request):
+    if request.method == 'POST':
+
+        delete_id = request.POST.get('delete_id')
+        extracted_data = get_object_or_404(ExtractedData, id=delete_id)
+
+        sf10_name = f"{extracted_data.first_name} {extracted_data.last_name}"
+        user = request.user
+        action = f'{user} delete "{sf10_name}" SF10'
+        details = f'{user} delete "{sf10_name}" SF10 in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+
+        extracted_data.delete()
+        # Redirect to the same page after deletion or wherever needed
+        return redirect('sf10_view')
+    else:
+        return redirect('sf10_view')
+
 def download_processed_document(request, id):
     extracted_data = get_object_or_404(ExtractedData, id=id)        
     processed_document = extracted_data.processed_document
@@ -1068,17 +1170,15 @@ def download_processed_document(request, id):
     print(logs)
 
     response = FileResponse(processed_document.document, as_attachment=True)
-    
+
     # Get the filename without the "processed_documents/" part
     filename_without_path = processed_document.document.name.split('/')[-1]
-    
+
     response['Content-Disposition'] = f'attachment; filename="{filename_without_path}"'
     return response
 
 
 def batch_process_documents(request):
-
-
 
     if request.method == 'POST':
         form = DocumentBatchUploadForm(request.POST, request.FILES)
@@ -1203,7 +1303,7 @@ def batch_process_documents(request):
 
                     my_data.save()
 
-                
+
                 except Exception as e:
                     messages.error(request, f'Error processing document "{name}": {str(e)}')
 
@@ -1268,8 +1368,9 @@ def detect_and_convert_tables(request):
                     # Extract text content of header and body rows
                     for row in table.header_rows:
                         row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        row_hps = "HIGHEST POSSIBLE SCORE"
                         table_data.append(row_content)
-                    
+
                     for row in table.body_rows:
                         row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
                         table_data.append(row_content)
@@ -1313,9 +1414,8 @@ def detect_and_convert_tables(request):
                 json.dump(json_data, json_file)
 
             print(f'Table data saved to {json_file_path}')
-
+ 
             return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data })
-
 
         except Exception as e:
             return HttpResponse(f'Error processing PDF: {str(e)}')
@@ -1332,3 +1432,4 @@ def layout_to_text(layout, document_text):
         end_index = text_segment.end_index
         text_content += document_text[start_index:end_index]
     return text_content
+    

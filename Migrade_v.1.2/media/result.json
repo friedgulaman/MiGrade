@@ -1,0 +1,1793 @@
+{
+    "details": {
+        "teacher_info": {
+            "quarters": "1st Quarter",
+            "grade": "Grade 6",
+            "section": "GALILEO",
+            "subject": "EDUKASYON SA PAGPAPAKATAO"
+        },
+        "school_info": {
+            "school_name": "ZAPOTE ELEMENTARY SCHOOL",
+            "school_id": 164512,
+            "school_year": "2022-2023"
+        },
+        "region_info": {
+            "region": "IV-A",
+            "division": "BI\u00d1AN CITY",
+            "district": "X"
+        }
+    },
+    "students_scores": {
+        "ANIBAN,LEO JELLY, TINAPAY": {
+            "student_name": "ANIBAN,LEO JELLY, TINAPAY",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    17,
+                    13,
+                    15,
+                    12,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 73,
+                "percentage_score_written": 83.91,
+                "weighted_score_written": 25.17
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 49,
+                "percentage_score_performance": 81.67,
+                "weighted_score_performance": 40.84
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 39,
+                "percentage_score_quarterly": 97.5,
+                "weighted_score_quarterly": 19.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 85.51
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 90
+            }
+        },
+        "ASILO,RAIN JUSTINE, MERCADO": {
+            "student_name": "ASILO,RAIN JUSTINE, MERCADO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    17,
+                    12,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 59,
+                "percentage_score_written": 67.82,
+                "weighted_score_written": 20.35
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 37,
+                "percentage_score_quarterly": 92.5,
+                "weighted_score_quarterly": 18.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 78.02
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 86
+            }
+        },
+        "CAMBE,SEAN DAVE, ARAGON": {
+            "student_name": "CAMBE,SEAN DAVE, ARAGON",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    15,
+                    14,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 61,
+                "percentage_score_written": 70.11,
+                "weighted_score_written": 21.03
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 37,
+                "percentage_score_quarterly": 92.5,
+                "weighted_score_quarterly": 18.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 78.7
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 86
+            }
+        },
+        "CARANAY,JHAYCEE CARL, CORDERO": {
+            "student_name": "CARANAY,JHAYCEE CARL, CORDERO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    16,
+                    14,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 61,
+                "percentage_score_written": 70.11,
+                "weighted_score_written": 21.03
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 35,
+                "percentage_score_quarterly": 87.5,
+                "weighted_score_quarterly": 17.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 77.7
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 86
+            }
+        },
+        "CASTRO,ICHIRO, MENDOZA": {
+            "student_name": "CASTRO,ICHIRO, MENDOZA",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    17,
+                    15,
+                    13,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 61,
+                "percentage_score_written": 70.11,
+                "weighted_score_written": 21.03
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 48,
+                "percentage_score_performance": 80,
+                "weighted_score_performance": 40
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 32,
+                "percentage_score_quarterly": 80,
+                "weighted_score_quarterly": 16
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 77.03
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 85
+            }
+        },
+        "CAYLAO,DAYNE, VI\u00d1A": {
+            "student_name": "CAYLAO,DAYNE, VI\u00d1A",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    15,
+                    12,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 55,
+                "percentage_score_written": 63.22,
+                "weighted_score_written": 18.97
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 28,
+                "percentage_score_quarterly": 70,
+                "weighted_score_quarterly": 14
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 70.47
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 81
+            }
+        },
+        "CHAN,JHON RHAYNE, REPELAR": {
+            "student_name": "CHAN,JHON RHAYNE, REPELAR",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    15,
+                    14,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 60,
+                "percentage_score_written": 68.97,
+                "weighted_score_written": 20.69
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 46,
+                "percentage_score_performance": 76.67,
+                "weighted_score_performance": 38.34
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 37,
+                "percentage_score_quarterly": 92.5,
+                "weighted_score_quarterly": 18.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 77.53
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 85
+            }
+        },
+        "GETALADO,EARL SAMUEL, CLAVE": {
+            "student_name": "GETALADO,EARL SAMUEL, CLAVE",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    14,
+                    14,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 59,
+                "percentage_score_written": 67.82,
+                "weighted_score_written": 20.35
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    7,
+                    8,
+                    7,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 46,
+                "percentage_score_performance": 76.67,
+                "weighted_score_performance": 38.34
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 35,
+                "percentage_score_quarterly": 87.5,
+                "weighted_score_quarterly": 17.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 76.19
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 85
+            }
+        },
+        "GLOBIO,MARCKY, GALVAN": {
+            "student_name": "GLOBIO,MARCKY, GALVAN",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    13,
+                    14,
+                    10,
+                    13,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 50,
+                "percentage_score_written": 57.47,
+                "weighted_score_written": 17.24
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 46,
+                "percentage_score_performance": 76.67,
+                "weighted_score_performance": 38.34
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 20,
+                "percentage_score_quarterly": 50,
+                "weighted_score_quarterly": 10
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 65.58
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 78
+            }
+        },
+        "MIRANDA,ANDREI, BIANES": {
+            "student_name": "MIRANDA,ANDREI, BIANES",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    16,
+                    12,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 57,
+                "percentage_score_written": 65.52,
+                "weighted_score_written": 19.66
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 48,
+                "percentage_score_performance": 80,
+                "weighted_score_performance": 40
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 31,
+                "percentage_score_quarterly": 77.5,
+                "weighted_score_quarterly": 15.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 75.16
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 84
+            }
+        },
+        "NAVAREZ,ANDREI, MONTA\u00d1EZ": {
+            "student_name": "NAVAREZ,ANDREI, MONTA\u00d1EZ",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    14,
+                    13,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 58,
+                "percentage_score_written": 66.67,
+                "weighted_score_written": 20
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 48,
+                "percentage_score_performance": 80,
+                "weighted_score_performance": 40
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 35,
+                "percentage_score_quarterly": 87.5,
+                "weighted_score_quarterly": 17.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 77.5
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 85
+            }
+        },
+        "SALAYSAY,JOHN LOUIE, FLORES": {
+            "student_name": "SALAYSAY,JOHN LOUIE, FLORES",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    14,
+                    12,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 56,
+                "percentage_score_written": 64.37,
+                "weighted_score_written": 19.31
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 35,
+                "percentage_score_quarterly": 87.5,
+                "weighted_score_quarterly": 17.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 74.31
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 83
+            }
+        },
+        "SAMANIEGO,MATTHEW ANDREI, ANGULO": {
+            "student_name": "SAMANIEGO,MATTHEW ANDREI, ANGULO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    14,
+                    12,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 56,
+                "percentage_score_written": 64.37,
+                "weighted_score_written": 19.31
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 36,
+                "percentage_score_quarterly": 90,
+                "weighted_score_quarterly": 18
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 74.81
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 84
+            }
+        },
+        "SAN JUAN JR.,ARLY, PLATINO": {
+            "student_name": "SAN JUAN JR.,ARLY, PLATINO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    14,
+                    11,
+                    13,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 52,
+                "percentage_score_written": 59.77,
+                "weighted_score_written": 17.93
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 23,
+                "percentage_score_quarterly": 57.5,
+                "weighted_score_quarterly": 11.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 66.93
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 79
+            }
+        },
+        "SANTOS,MARK, BELANO": {
+            "student_name": "SANTOS,MARK, BELANO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    15,
+                    11,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 57,
+                "percentage_score_written": 65.52,
+                "weighted_score_written": 19.66
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 49,
+                "percentage_score_performance": 81.67,
+                "weighted_score_performance": 40.84
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 31,
+                "percentage_score_quarterly": 77.5,
+                "weighted_score_quarterly": 15.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 76
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 85
+            }
+        },
+        "VILLANUEVA,JOSH CYREL, CLASA": {
+            "student_name": "VILLANUEVA,JOSH CYREL, CLASA",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    15,
+                    12,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 59,
+                "percentage_score_written": 67.82,
+                "weighted_score_written": 20.35
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 48,
+                "percentage_score_performance": 80,
+                "weighted_score_performance": 40
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 36,
+                "percentage_score_quarterly": 90,
+                "weighted_score_quarterly": 18
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 78.35
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 86
+            }
+        },
+        "ARRESGADO,LEANNE ROSE, CARLOS": {
+            "student_name": "ARRESGADO,LEANNE ROSE, CARLOS",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    15,
+                    14,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 60,
+                "percentage_score_written": 68.97,
+                "weighted_score_written": 20.69
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 35,
+                "percentage_score_quarterly": 87.5,
+                "weighted_score_quarterly": 17.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 77.36
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 85
+            }
+        },
+        "BORCELANGO,DONA LYNN, DAPRINAL": {
+            "student_name": "BORCELANGO,DONA LYNN, DAPRINAL",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    15,
+                    14,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 57,
+                "percentage_score_written": 65.52,
+                "weighted_score_written": 19.66
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    8,
+                    7,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 35,
+                "percentage_score_quarterly": 87.5,
+                "weighted_score_quarterly": 17.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 74.66
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 84
+            }
+        },
+        "CAONES,JUSEA MICAH, LACANIN": {
+            "student_name": "CAONES,JUSEA MICAH, LACANIN",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    16,
+                    15,
+                    17,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 64,
+                "percentage_score_written": 73.56,
+                "weighted_score_written": 22.07
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 48,
+                "percentage_score_performance": 80,
+                "weighted_score_performance": 40
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 38,
+                "percentage_score_quarterly": 95,
+                "weighted_score_quarterly": 19
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 81.07
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 88
+            }
+        },
+        "CLEMENTE,MARTHA ASHLEE, COLIS": {
+            "student_name": "CLEMENTE,MARTHA ASHLEE, COLIS",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    15,
+                    9,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 53,
+                "percentage_score_written": 60.92,
+                "weighted_score_written": 18.28
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    8,
+                    7,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 25,
+                "percentage_score_quarterly": 62.5,
+                "weighted_score_quarterly": 12.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 68.28
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 80
+            }
+        },
+        "DEL MUNDO,CATHLYN, SALDINO": {
+            "student_name": "DEL MUNDO,CATHLYN, SALDINO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    17,
+                    13,
+                    17,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 63,
+                "percentage_score_written": 72.41,
+                "weighted_score_written": 21.72
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    9,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 50,
+                "percentage_score_performance": 83.33,
+                "weighted_score_performance": 41.67
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 40,
+                "percentage_score_quarterly": 100,
+                "weighted_score_quarterly": 20
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 83.39
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 89
+            }
+        },
+        "DICDICAN,TRISHA ELLAINE, REALON": {
+            "student_name": "DICDICAN,TRISHA ELLAINE, REALON",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    14,
+                    11,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 54,
+                "percentage_score_written": 62.07,
+                "weighted_score_written": 18.62
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    8,
+                    7,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 31,
+                "percentage_score_quarterly": 77.5,
+                "weighted_score_quarterly": 15.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 71.62
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 82
+            }
+        },
+        "ESPINAR,ANGIELYN, MARCE": {
+            "student_name": "ESPINAR,ANGIELYN, MARCE",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    13,
+                    15,
+                    15,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 57,
+                "percentage_score_written": 65.52,
+                "weighted_score_written": 19.66
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    7,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 44,
+                "percentage_score_performance": 73.33,
+                "weighted_score_performance": 36.67
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 31,
+                "percentage_score_quarterly": 77.5,
+                "weighted_score_quarterly": 15.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 71.83
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 82
+            }
+        },
+        "GABATIN,LADY TRISHA, AMORTIZADO": {
+            "student_name": "GABATIN,LADY TRISHA, AMORTIZADO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    15,
+                    15,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 62,
+                "percentage_score_written": 71.26,
+                "weighted_score_written": 21.38
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 48,
+                "percentage_score_performance": 80,
+                "weighted_score_performance": 40
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 38,
+                "percentage_score_quarterly": 95,
+                "weighted_score_quarterly": 19
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 80.38
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 87
+            }
+        },
+        "JOVEN,JENALEN, MASIKAT": {
+            "student_name": "JOVEN,JENALEN, MASIKAT",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    14,
+                    12,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 55,
+                "percentage_score_written": 63.22,
+                "weighted_score_written": 18.97
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 28,
+                "percentage_score_quarterly": 70,
+                "weighted_score_quarterly": 14
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 72.14
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 82
+            }
+        },
+        "MALABAG,ANGELICA, MIRANDA": {
+            "student_name": "MALABAG,ANGELICA, MIRANDA",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    16,
+                    15,
+                    16,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 62,
+                "percentage_score_written": 71.26,
+                "weighted_score_written": 21.38
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 49,
+                "percentage_score_performance": 81.67,
+                "weighted_score_performance": 40.84
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 34,
+                "percentage_score_quarterly": 85,
+                "weighted_score_quarterly": 17
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 79.22
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 87
+            }
+        },
+        "MAMANSAG,JEIAH EUNICE, SERRANO": {
+            "student_name": "MAMANSAG,JEIAH EUNICE, SERRANO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    16,
+                    12,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 58,
+                "percentage_score_written": 66.67,
+                "weighted_score_written": 20
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 33,
+                "percentage_score_quarterly": 82.5,
+                "weighted_score_quarterly": 16.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 75.67
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 84
+            }
+        },
+        "MANALILI,JAMAICA AMOR, ROSALES": {
+            "student_name": "MANALILI,JAMAICA AMOR, ROSALES",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    13,
+                    14,
+                    15,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 56,
+                "percentage_score_written": 64.37,
+                "weighted_score_written": 19.31
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 20,
+                "percentage_score_quarterly": 50,
+                "weighted_score_quarterly": 10
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 66.81
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 79
+            }
+        },
+        "MARTINEZ,ASHLEE NICHOLE, SABANAL": {
+            "student_name": "MARTINEZ,ASHLEE NICHOLE, SABANAL",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    15,
+                    12,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 55,
+                "percentage_score_written": 63.22,
+                "weighted_score_written": 18.97
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    8,
+                    7,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 20,
+                "percentage_score_quarterly": 50,
+                "weighted_score_quarterly": 10
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 66.47
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 79
+            }
+        },
+        "NAVAL,GEARLY SHANE, OCAMPO": {
+            "student_name": "NAVAL,GEARLY SHANE, OCAMPO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    16,
+                    14,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 60,
+                "percentage_score_written": 68.97,
+                "weighted_score_written": 20.69
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 23,
+                "percentage_score_quarterly": 57.5,
+                "weighted_score_quarterly": 11.5
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 71.36
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 82
+            }
+        },
+        "OLAVARIO,ALLIYAH LORRAINE, GUILLERMO": {
+            "student_name": "OLAVARIO,ALLIYAH LORRAINE, GUILLERMO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    15,
+                    13,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 58,
+                "percentage_score_written": 66.67,
+                "weighted_score_written": 20
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    16,
+                    8,
+                    8,
+                    8,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 49,
+                "percentage_score_performance": 81.67,
+                "weighted_score_performance": 40.84
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 36,
+                "percentage_score_quarterly": 90,
+                "weighted_score_quarterly": 18
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 78.84
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 86
+            }
+        },
+        "PUNZALAN,CHANELLE, POSO": {
+            "student_name": "PUNZALAN,CHANELLE, POSO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    16,
+                    14,
+                    14,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 59,
+                "percentage_score_written": 67.82,
+                "weighted_score_written": 20.35
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 30,
+                "percentage_score_quarterly": 75,
+                "weighted_score_quarterly": 15
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 74.52
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 84
+            }
+        },
+        "ROTUBIO,ALLIANA JALYN, BERONDO": {
+            "student_name": "ROTUBIO,ALLIANA JALYN, BERONDO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    14,
+                    15,
+                    13,
+                    15,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 57,
+                "percentage_score_written": 65.52,
+                "weighted_score_written": 19.66
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    8,
+                    8,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 47,
+                "percentage_score_performance": 78.33,
+                "weighted_score_performance": 39.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 30,
+                "percentage_score_quarterly": 75,
+                "weighted_score_quarterly": 15
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 73.83
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 83
+            }
+        },
+        "SUZON,RYGIN LOVE, GIMENTIZA": {
+            "student_name": "SUZON,RYGIN LOVE, GIMENTIZA",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    15,
+                    13,
+                    13,
+                    12,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 53,
+                "percentage_score_written": 60.92,
+                "weighted_score_written": 18.28
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    7,
+                    7,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 45,
+                "percentage_score_performance": 75,
+                "weighted_score_performance": 37.5
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 24,
+                "percentage_score_quarterly": 60,
+                "weighted_score_quarterly": 12
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 67.78
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 79
+            }
+        },
+        "TAVU,RENY DENIEZE, RAMOS": {
+            "student_name": "TAVU,RENY DENIEZE, RAMOS",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    16,
+                    11,
+                    13,
+                    9,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 49,
+                "percentage_score_written": 56.32,
+                "weighted_score_written": 16.9
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    6,
+                    6,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 43,
+                "percentage_score_performance": 71.67,
+                "weighted_score_performance": 35.84
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 18,
+                "percentage_score_quarterly": 45,
+                "weighted_score_quarterly": 9
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 61.74
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 76
+            }
+        },
+        "VARGAS,REIGN BEYONCE, GUILLERMO": {
+            "student_name": "VARGAS,REIGN BEYONCE, GUILLERMO",
+            "WRITTEN WORKS": {
+                "written_works_scores": [
+                    17,
+                    9,
+                    13,
+                    6,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_scores_written": 45,
+                "percentage_score_written": 51.72,
+                "weighted_score_written": 15.52
+            },
+            "PERFORMANCE TASK": {
+                "performance_task_scores": [
+                    15,
+                    5,
+                    5,
+                    8,
+                    8,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_score_performance": 41,
+                "percentage_score_performance": 68.33,
+                "weighted_score_performance": 34.17
+            },
+            "QUARTERLY ASSESSMENT": {
+                "total_score_quarterly": 12,
+                "percentage_score_quarterly": 30,
+                "weighted_score_quarterly": 6
+            },
+            "INITIAL GRADE": {
+                "initial_grades": 55.69
+            },
+            "QUARTERLY GRADE": {
+                "transmuted_grades": 73
+            }
+        }
+    },
+    "hps_class_record": {
+        "HIGHEST POSSIBLE SCORE": {
+            "hps_written_works": {
+                "scores_hps_written": [
+                    20,
+                    20,
+                    15,
+                    20,
+                    12,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_ww_hps": 87,
+                "percentage_hps_written": 100,
+                "weight_input_written": 0.3
+            },
+            "hps_performance": {
+                "scores_hps_performance": [
+                    20,
+                    10,
+                    10,
+                    10,
+                    10,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "total_pt_hps": 60,
+                "percentage_hps_performance": 100,
+                "weight_input_performance": 0.5
+            },
+            "hps_quarterly": {
+                "total_qa_hps": 40,
+                "percentage_hps_quarterly": 100,
+                "weight_input_quarterly": 0.2
+            }
+        }
+    }
+}
