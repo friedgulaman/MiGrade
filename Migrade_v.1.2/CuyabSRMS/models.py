@@ -625,6 +625,7 @@ class AdvisoryClass(models.Model):
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
     grades_data = models.JSONField(null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, limit_choices_to={'class_type': 'advisory'})
 
     def set_grades_data(self, data):

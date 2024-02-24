@@ -225,64 +225,79 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
 @require_POST
 def accept_message(request):
     message_id = request.POST.get('message_id')
+    teacher = request.user.teacher
+
     try:
         message = InboxMessage.objects.get(pk=message_id)
         json_data = json.loads(message.json_data)
         
-        if check_existing_data(message, json_data): 
+        existing_data = check_existing_data(json_data) 
+        
+        if existing_data['exists']: 
             message.delete()
-            return JsonResponse({'success': True, 'message': 'Data already exists in AdvisoryClass'})
+            return JsonResponse({'success': True, 'message': existing_data['message']})
         else:
-            save_data(message, json_data)  # Call save_data only once
+            save_data(message, json_data, teacher)  # Call save_data only once
             save_accepted_message(message)  # Call save_accepted_message to save the accepted message
             message.delete()
             return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
     except InboxMessage.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Message not found'})
 
-
-
-def check_existing_data(message, json_data):
+def check_existing_data(json_data):
     quarter_field_mapping = {
         "1st Quarter": "first_quarter",
         "2nd Quarter": "second_quarter",
         "3rd Quarter": "third_quarter",
         "4th Quarter": "fourth_quarter"
     }
-    
+
+    all_students_exist = True  # Flag to track if data exists for all students
+
     for student in json_data.get('students', []):
         student_name = student.get('name')
+        student_exists = False  # Flag to track if data exists for current student
+
         for quarter in student.get('quarter', {}):
             field_name = quarter_field_mapping.get(quarter)
             if not field_name:
                 continue
-            
+
             existing_advisory_classes = AdvisoryClass.objects.filter(
                 grade=json_data.get('grade'),
                 section=json_data.get('section'),
                 student__name=student_name,
             )
-            
+
             for existing_advisory_class in existing_advisory_classes:
                 grades_data = existing_advisory_class.get_grades_data()
                 if not grades_data:
                     continue
-                
+
                 subject_teacher_data = grades_data.get(json_data.get('subject'), {})
                 existing_grade = subject_teacher_data.get(field_name)
                 if existing_grade is None:
-                    return False  # No existing value found, so we can save the data
-                
+                    continue  # No existing value found, continue searching
+
                 # If the existing grade is not the same as the transmuted grade, continue searching
                 if existing_grade != student['quarter'][quarter]:
                     continue
                 else:
-                    return True  # Found existing value matching the transmuted grade
-            
-    return False  # No existing value found, so we can save the data
+                    student_exists = True  # Data exists for current student
+                    break  # No need to continue searching for this student
+
+            if student_exists:
+                break  # No need to continue searching if data exists for current student
+        else:
+            all_students_exist = False  # Data doesn't exist for at least one student
+
+    if all_students_exist:
+        return {'exists': True, 'message': 'Data already exists in AdvisoryClass'}
+    else:
+        return {'exists': False, 'message': 'No existing data found in AdvisoryClass'}
 
 
-def save_data(message, json_data):
+def save_data(message, json_data, teacher):
     quarter_field_mapping = {
         "1st Quarter": "first_quarter",
         "2nd Quarter": "second_quarter",
@@ -312,37 +327,45 @@ def save_data(message, json_data):
             existing_advisory_classes = advisory_classes_by_student.get(student_name, [])
 
             for advisory_class in existing_advisory_classes:
-                grades_data = advisory_class.get_grades_data()
-                subject_teacher_data = grades_data.get(json_data.get('subject'), {})
-                existing_grade = subject_teacher_data.get(quarter_field_mapping[quarter])
+                grades_data = advisory_class.grades_data
+                subject_teacher_data = grades_data.get(json_data.get('subject'), {})  # Get existing or empty dictionary
 
-                if existing_grade != transmuted_grade:
-                    subject_teacher_data[quarter_field_mapping[quarter]] = transmuted_grade
-                    # Add from_teacher_id to the subject_teacher_data dictionary
-                    subject_teacher_data['from_teacher_id'] = json_data.get('teacher')
-                    subject_teacher_data['subject'] = json_data.get('subject')
-                    advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
-                    advisory_class.save()
-                else:
-                    print(f"{quarter} already has the same value for {student_name}.")
+                # Update the subject_teacher_data with the new grade and teacher info
+                subject_teacher_data[quarter_field_mapping[quarter]] = transmuted_grade
+                subject_teacher_data['from_teacher_id'] = json_data.get('teacher')
+                subject_teacher_data['subject'] = json_data.get('subject')
+
+                # Compute the final grade
+# Compute the final grade
+                quarter_grades = [float(subject_teacher_data[q]) for q in quarter_field_mapping.values() if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]  # Ensure the value is not empty
+                final_grade = round(sum(quarter_grades) / len(quarter_grades), 2) if quarter_grades else None
+
+                subject_teacher_data['final_grade'] = final_grade
+
+                # Set the updated subject_teacher_data back to the grades_data
+                advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
+                advisory_class.save()
+                print(f"Updated AdvisoryClass with {json_data.get('subject')} {quarter} for {student_name}.")
 
             # If no existing advisory classes, create a new one
             if not existing_advisory_classes:
                 new_advisory_class = AdvisoryClass(
                     grade=json_data.get('grade'),
                     section=json_data.get('section'),
+                    teacher=teacher,
                     student=student_instance,
                 )
+                quarters = quarter_field_mapping[quarter]
                 # Add from_teacher_id to the subject_teacher_data dictionary
                 subject_teacher_data = {
                     "subject": json_data.get('subject'),
                     "from_teacher_id": json_data.get('teacher'),
-                    quarter: transmuted_grade,
+                    quarters: transmuted_grade,
+                    'final_grade': transmuted_grade  # Assuming the final grade is initially set to the first quarter grade
                 }
                 new_advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
                 new_advisory_class.save()
                 print(f"Saved new AdvisoryClass with {quarter} for {student_name}.")
-
 
 def save_accepted_message(message):
     try:

@@ -1063,38 +1063,50 @@ def student_list_for_advisory(request):
     if user.is_authenticated and hasattr(user, 'teacher'):
         # Retrieve the teacher associated with the user
         teacher = user.teacher
-        teacher_id = teacher.id
-
+        teacher_id = teacher.id 
 
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
-        
-        
-        # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section)
 
         # Fetch advisory classes based on teacher, grade, and section
-        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section).values('subject', 'from_teacher_id').distinct()
-        quarters = advisory_classes.values_list('first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter').distinct()
-       
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
+
+        if advisory_classes.exists():
+            unique_keys = set()  # Initialize an empty set to store unique keys and from_teacher_ids
+            for advisory_class in advisory_classes:
+                grades_data = advisory_class.grades_data
+                if grades_data:
+                    for key, value in grades_data.items():
+                        unique_keys.add((key, value.get('from_teacher_id')))  # Add (key, from_teacher_id) tuple to the set
+
+            # Print the unique keys
+            print("Unique keys and from_teacher_ids in grades_data for all AdvisoryClass objects:", unique_keys)
+        else:
+            print("No AdvisoryClass objects found for the specified criteria")
+
+        # Filter students based on the class type
+        students = Student.objects.filter(grade=grade, section=section)
         students_filtered = []
         for student in students:
             class_type_json = student.class_type
-            if teacher_id in class_type_json:
-                if class_type_json[teacher_id] == "Subject Class":
-                    students_filtered.append(student)
+            if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
+                students_filtered.append(student)
+
+        # print(f"students filtered: {students_filtered}")
+        print(f"advisory classess: {advisory_classes}")
+        unique_keys_context = list(unique_keys)
+        print(unique_keys_context)
 
         context = {
             'grade': grade,
             'section': section,
-            'advisory_classes': advisory_classes,
-            'students': students,
-            'quarters': quarters,
+            'unique_keys': unique_keys_context,
+            'students': students_filtered,
             'class_type': class_type,
-           
         }
-    return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
+        return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
 
 def display_advisory_data(request):
         # Assuming the user is logged in
@@ -1107,28 +1119,77 @@ def display_advisory_data(request):
 
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
-        class_type = request.GET.get('class_type')
-        subject = request.GET.get('subject')
+        key = request.GET.get('key')
+        print(key)
         
         
         # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        students = Student.objects.filter(grade=grade, section=section)
         # Fetch advisory classes based on teacher, grade, and section
-        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, subject=subject)
+        advisory_classes = AdvisoryClass.objects.filter(
+            grade=grade, 
+            section=section, 
+            grades_data__has_key=key
+        )
 
+        for advisory_class in advisory_classes:
+            print(f"Advisory class: {advisory_class}")
+            print("Grades data:")
+            grades_data = advisory_class.grades_data
+            if grades_data:
+                specific_key = key
+                if specific_key in grades_data:
+                    print(f"Value for {specific_key}: {grades_data[specific_key]}")
+                else:
+                    print(f"Key {specific_key} not found in grades_data")
+            else:
+                print("No grades data available")
+        # print(advisory_classes)
+        # print(key)
        
         context = {
             'grade': grade,
-            'subject': subject,
+            'subject': key,
             'section': section,
             'advisory_classes': advisory_classes,
             'students': students,
-            'class_type': class_type,
+            # 'class_type': class_type,
            
         }
             
     return render(request, 'teacher_template/adviserTeacher/subject_quarter_advisory.html', context)
 
+
+def update_final_grade(request):
+    if request.method == 'POST' and request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        final_grade = request.POST.get('final_grade')
+        subject = request.POST.get('subject')
+        grade = request.POST.get('grade')
+        section = request.POST.get('section')
+
+        print(final_grade)
+        print(subject)
+        print(grade)
+        print(section)
+
+        try:
+            advisory_class = AdvisoryClass.objects.get(grade=grade, section=section)
+        except AdvisoryClass.DoesNotExist:
+            return JsonResponse({'error': 'Advisory class not found for grade and section'}, status=404)
+
+        grades_data = advisory_class.grades_data or {}
+        
+        if subject in grades_data:
+            grades_data[subject]= final_grade
+        else:
+            grades_data[subject] = {final_grade}
+        
+        advisory_class.grades_data = grades_data
+        advisory_class.save()
+
+        return JsonResponse({'message': 'Final grade updated successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def display_student_transmuted_grades(request):
     grade = request.GET.get('grade')

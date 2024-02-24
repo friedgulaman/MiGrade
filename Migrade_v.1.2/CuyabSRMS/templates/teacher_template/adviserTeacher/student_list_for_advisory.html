@@ -200,7 +200,6 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                         <p id="grade" style="display: none;">{{ grade }}</p>
                                         <p id="section" style="display: none;">{{ section }}</p>
                                         <div class="table-responsive ">
-                                            {% if advisory_classes %}
                                             <table class="table table-hover text-center ">
                                                 <thead class="text-center">
                                                     <tr>
@@ -208,26 +207,25 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                         <th>Subject Teacher</th>
                                                         <th></th>
                                                     </tr>
-                                                    <tbody class="text-muted" >
-                                                        {% if advisory_classes %}
-                                                            {% for advisory_class in advisory_classes %}
-                                                                <tr  onclick="showQuarters('{{ grade }}','{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">
-                                                                    <td id="subject">{{ advisory_class.subject }}</td>
-                                                                    <td>{{ advisory_class.from_teacher_id }}</td>
+                                                    {% load custom_filters %}
+                                                    <tbody class="text-muted">
+                                                        {% if unique_keys %}
+                                                            {% for key, from_teacher_id in unique_keys %}
+                                                                <tr onclick="showQuarters('{{ grade }}', '{{ section }}', '{{ key }}', '{{ from_teacher_id }}')">
+                                                                    <td>{{ key }}</td>
+                                                                    <td>{{ from_teacher_id }}</td>
                                                                     <td class="text-muted view">View Details</td>
                                                                 </tr>
                                                             {% endfor %}
                                                         {% else %}
                                                             <tr>
-                                                                <td colspan="4">No class records found.</td>
+                                                                <td colspan="3">No class records found.</td>
                                                             </tr>
                                                         {% endif %}
                                                     </tbody>
                                                     
+                                                    
                                             </table>
-                                            {% else %}
-                                            <p>No class records found.</p>
-                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -256,9 +254,10 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-    var showQuarters = function(grade, section, subject, teacher_id){
-        var url = "{% url 'display_advisory_data' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject) + "&teacher_id=" + encodeURIComponent(teacher_id);
-            window.location.href = url;
+    var showQuarters = function(grade, section, key, from_teacher_id){
+
+    var url = "{% url 'display_advisory_data' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&key=" + encodeURIComponent(key) + "&from_teacher_id=" + encodeURIComponent(from_teacher_id);
+    window.location.href = url;
     };
     
  
