@@ -280,7 +280,7 @@ def process_excel_file(file_path):
             key_value_pairs = {}
 
             for i, row in enumerate(row_list, start=1):
-                print(f"Processing Row {i}: {row}")  # Add this line to debug
+                # print(f"Processing Row {i}: {row}")  # Add this line to debug
 
                 for term in terms_to_find:
                     if term in row:
@@ -291,10 +291,10 @@ def process_excel_file(file_path):
                             key_value_pairs[term.replace(" ", "_")] = None
 
             # Print LRN data and key-value pairs
-            print("LRN Data:")
-            print(lrn_data)
-            print("Key-Value Pairs:")
-            print(key_value_pairs)
+            # print("LRN Data:")
+            # print(lrn_data)
+            # print("Key-Value Pairs:")
+            # print(key_value_pairs)
 
             return {'lrn_data': lrn_data, 'key_value_pairs': key_value_pairs}
         else:
@@ -348,10 +348,10 @@ def upload(request):
             result_data = process_excel_file(temp_file_path)
 
             if result_data is not None:
-                print("LRN Data:")
-                print(result_data['lrn_data'])
-                print("Key-Value Pairs:")
-                print(result_data['key_value_pairs'])
+                # print("LRN Data:")
+                # print(result_data['lrn_data'])
+                # print("Key-Value Pairs:")
+                # print(result_data['key_value_pairs'])
                 return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html', result_data)
             else:
                 messages.error(request, "Failed to process the Excel File")
@@ -390,6 +390,8 @@ def save_json_data(request):
                 subject = 'Advisory Class'
             elif class_type_data == 'Subject':
                 subject = 'Subject Class'
+            elif class_type_data == 'advisory_Subject':
+                subject = 'Advisory Class, Subject Class'
 
             teacher_id = teacher.id
 
@@ -401,7 +403,7 @@ def save_json_data(request):
             log_activity(user, action, details)
 
             logs = user, action, details    
-            print(logs)
+            # print(logs)
 
             grade, _ = Grade.objects.get_or_create(name=grade_name)
 
@@ -443,46 +445,80 @@ def save_json_data(request):
                 teacher.grade_section[grade.name] = section.name
                 teacher.save()
 
+                
+
                 # Get or create the Student object based on LRN and teacher
                 student, created = Student.objects.get_or_create(
                     lrn=lrn,
+                    school_year=school_year,
                     defaults={
                         'name': name,
                         'sex': sex,
                         'birthday': birthday,
+                        'lrn':lrn,
                         'school_id': school_id,
                         'district': district,
                         'division': division,
                         'school_name': school_name,
-                        'school_year': school_year,
                         'grade': grade.name,
                         'section': section.name,
                         'class_type': class_type  # Save the class type on Student
                     }
                 )
+   
 
-                # Update class_type for existing student
-                existing_class_type = student.class_type or {}
+                existing_class_type = student.class_type 
+                print(f"existing class type : {existing_class_type}")
 
-                # Update the existing class_type with the new value
+                # if teacher_id in existing_class_type:
+                #     existing_class_type[teacher_id] += f", {subject}"
+                # else:
+                print(f"before student school year exist: {class_type}")
                 existing_class_type.update(class_type)
+                print(f"existing class type.append : {existing_class_type}")
+                
 
+
+                # print(f"Student.School year: {student.school_year}")
+                # print(f"school year: {school_year}")
                 # Update class_type for existing student
                 if not created:
-                    student.class_type = existing_class_type
-                    student.save()
-
+                    
+                    print(f"during student school year exist: {existing_class_type}")
+                    # Check if the existing student has the same school year
+                    if student.school_year == school_year:
+                            print(f"after student school year exist: {existing_class_type}")
+                            student.class_type =  existing_class_type
+                            print(f"student class type: {student.class_type}")
+                            student.save()
+                            
+                    else:
+                        # If LRN exists but different school year, create a new entry
+                        student = Student.objects.create(
+                            lrn=lrn,
+                            name=name,
+                            sex=sex,
+                            birthday=birthday,
+                            school_id=school_id,
+                            district=district,
+                            division=division,
+                            school_name=school_name,
+                            school_year=school_year,
+                            grade=grade.name,
+                            section=section.name,
+                            class_type=class_type
+                        )
                 # Update other fields if needed
-                student.name = name
-                student.sex = sex
-                student.birthday = birthday
-                student.school_id = school_id
-                student.division = division
-                student.district = district
-                student.school_name = school_name
-                student.school_year = school_year
-                student.grade = grade.name
-                student.section = section.name
+                # student.name = name
+                # student.sex = sex
+                # student.birthday = birthday
+                # student.school_id = school_id
+                # student.division = division
+                # student.district = district
+                # student.school_name = school_name
+                # student.school_year = school_year
+                # student.grade = grade.name
+                # student.section = section.name
             
 
                 # Save the associated objects before saving the student
@@ -499,8 +535,6 @@ def save_json_data(request):
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
-
-
 
 
 
@@ -906,7 +940,8 @@ def display_students(request):
                     combination['class_type'] = class_type_value
                     class_type_list.append(combination)
 
-        print(f"{class_type_list}")
+        
+        print(f"Class type: {class_type_list}")
 
         context = {
             'teacher': teacher,
@@ -1116,50 +1151,19 @@ def student_list_for_advisory(request):
                 'average_score': average_score,
             })
 
-        quarters = '1st Quarter'
+        # Find top 10 students with highest average scores
         top_ten_students = QuarterlyGrades.objects.filter(
-            student__grade=grade,
-            student__section=section,
-            quarter=quarters
-        )
-        print(top_ten_students)
+            student__grade=grade, student__section=section, quarter=quarter
+        ).annotate(avg_score=Avg('grades__average_score')).order_by('-avg_score')[:10]
 
         top_ten_student_data = []
-
-        for student in top_ten_students:
-            # Access the grades data from the student object
-            grades_data = student.grades
-            
-            try:
-                # Parse the JSON data
-                grades_dict = json.loads(grades_data)
-                
-                # Extract the average_score from the JSON data
-                average_score = float(grades_dict.get('average_score', 0))
-                
-            except (ValueError, TypeError) as e:
-                print(f"Error parsing JSON data: {e}")
-                average_score = 0
-            
-            student_name = student.student.name
-
-            # Append the extracted data to the list
+        for rank, student in enumerate(top_ten_students, start=1):
             top_ten_student_data.append({
-                'student_name': student_name,
-                'average_score': average_score,
+                'rank': rank,
+                'student_name': student.student.name,
+                'average_score': student.avg_score,
             })
 
-        # Now, perform the computation of average score in Python
-        # Compute the average score by summing up and dividing by the number of students
-        total_score = sum(student_data['average_score'] for student_data in top_ten_student_data)
-        average_score_overall = total_score / len(top_ten_student_data)
-
-        # Print the overall average score
-        print(f"Overall average score: {average_score_overall}")
-
-        # Now you have top_ten_student_data list containing top ten student data with their average scores
-        # You can use this list as needed
-        print(top_ten_student_data)
 
         context = {
             'grade': grade,
@@ -1323,7 +1327,6 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 def grade_summary(request, grade, section, quarter):
     students = AdvisoryClass.objects.filter(grade=grade, section=section)
 
-    # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
         '1st Quarter': 'first_quarter',
@@ -1332,39 +1335,37 @@ def grade_summary(request, grade, section, quarter):
         '4th Quarter': 'fourth_quarter',
     }
 
-    # Fetch subject-wise grades for each student
-    for student in students:
-        grades_data = student.grades_data
-        subject_grades[student.student.name] = {}
-        grades = []  # List to store grades for calculating mean
+    for advisory_class in students:
+        student = advisory_class.student
+        grades_data = advisory_class.grades_data
+        subject_grades[student.name] = {}
 
         for subject, grades_info in grades_data.items():
-            if quarter_mapping[quarter] in grades_info:
-                subject_grade = grades_info[quarter_mapping[quarter]]
-                print(subject_grade)
-                subject_grades[student.student.name][subject] = subject_grade
-                if subject_grade is not None:
-                    grades.append(float(subject_grade))
+            quarter_grade = grades_info.get(quarter_mapping.get(quarter))
+            if quarter_grade is not None:
+                subject_grades[student.name][subject] = quarter_grade
 
-        # Calculate average score
-        if grades:
-            subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
-        else:
-            subject_grades[student.student.name]['average_score'] = None
+        average_score = subject_grades[student.name].get('average_score')
+        if average_score is None:
+            grades = subject_grades[student.name].values()
+            if grades:
+                total_score = sum(float(grade) for grade in grades)
+                average_score = int(round(total_score / len(grades)))
+                subject_grades[student.name]['average_score'] = str(round(average_score, 2))
+                print(average_score)
+            else:
+                subject_grades[student.name]['average_score'] = None
 
-        # Check if QuarterlyGrades entry already exists for this student and quarter
-        existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
-        if not existing_entry:
-            # Save grades to QuarterlyGrades model
-            QuarterlyGrades.objects.create(
-                student=student.student,
-                quarter=quarter,
-                grades=subject_grades[student.student.name]
-            )
-        elif existing_entry.grades != subject_grades[student.student.name]:
-            # Update the existing entry if the grades are different
-            existing_entry.grades = subject_grades[student.student.name]
+        existing_entry = QuarterlyGrades.objects.filter(student=student, quarter=quarter).first()
+        if existing_entry:
+            existing_entry.grades = subject_grades[student.name]
             existing_entry.save()
+        else:
+            QuarterlyGrades.objects.create(
+                student=student,
+                quarter=quarter,
+                grades=subject_grades[student.name]
+            )
 
     subjects = list(students.first().grades_data.keys()) if students else []
 
@@ -1376,6 +1377,7 @@ def grade_summary(request, grade, section, quarter):
     }
 
     return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
+
 
 
 def get_subject_score(student, subject, quarter):
@@ -1596,57 +1598,44 @@ def display_all_final_grades(request, grade, section):
     try:
         students = Student.objects.filter(grade=grade, section=section)
         # Fetch all distinct subjects for the specified grade and section
-        subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
 
         final_grades = []
         for student in students:
             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': [], 'student': student}
 
-            for subject in subjects:
-                subject_name = subject['subject']
-                subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+            for advisory_class in advisory_classes:
+                for subject_name, subject_data in advisory_class.grades_data.items():
+                    subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
 
-                # Retrieve final grades from the FinalGrade model
-                final_grade = FinalGrade.objects.filter(
-                    teacher__classrecord__grade=grade,
-                    teacher__classrecord__section=section,
-                    student=student,
-                ).first()
+                    # Retrieve final grades from the AdvisoryClass model
+                    final_grade_data = subject_data
+                    final_grade = final_grade_data.get('final_grade')
+                    subject_info['final_grade'] = final_grade if final_grade is not None else 0
+                    subject_info['quarter_grades'] = final_grade_data
 
-                if final_grade:
-                    final_grade_data = final_grade.final_grade
-                    if isinstance(final_grade_data, str):  # Check if the data is a string
-                        final_grade_data = json.loads(final_grade_data)  # Parse JSON string to dictionary
+                    # Get the teacher's name
+                    teacher_id = final_grade_data.get('from_teacher_id')
+                    teacher_name = ""
+                    if teacher_id:
+                        teacher = Teacher.objects.filter(user__username=teacher_id).first()
+                        if teacher:
+                            teacher_name = teacher.user.get_full_name()
+                        else:
+                            teacher_name = "Unknown Teacher"
+                    else:
+                        teacher_name = "Unknown Teacher"
+                    subject_info['teacher_name'] = teacher_name
 
-                    # Find the subject entry in final_grade_data
-                    for entry in final_grade_data:
-                        if entry['subject'] == subject_name:
-                            subject_info['final_grade'] = entry['final_grade']
-                            subject_info['quarter_grades'] = entry['quarter_grades']
-                            break  # Stop searching once the subject is found
-
-                # Get the teacher's name from the ClassRecord
-                class_record = ClassRecord.objects.filter(
-                    grade=grade,
-                    section=section,
-                    subject=subject_name
-                ).first()
-
-                # Ensure that the class_record and its teacher exist
-                if class_record and class_record.teacher:
-                    subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
-                else:
-                    subject_info['teacher_name'] = "Unknown Teacher"
-
-                student_data['subjects'].append(subject_info)
+                    student_data['subjects'].append(subject_info)
 
             # Append student data to the final grades
             final_grades.append(student_data)
 
         # Compute the general average for each student
         for student_data in final_grades:
-            total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
-            num_subjects = len(student_data['subjects'])
+            total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects'] if subject_info['final_grade'] is not None])
+            num_subjects = len([subject_info['final_grade'] for subject_info in student_data['subjects'] if subject_info['final_grade'] is not None])
             student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
             save_general_average(student_data, grade, section)
             
@@ -1663,8 +1652,6 @@ def display_all_final_grades(request, grade, section):
         print(f"An error occurred while displaying all final grades: {str(e)}")
         # Return an HTTP 500 Internal Server Error response
         return HttpResponse("Internal Server Error", status=500)
-
-
     
 @login_required
 @transaction.atomic

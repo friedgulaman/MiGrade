@@ -70,8 +70,8 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
-    class Meta:
-        unique_together = ('lrn', 'school_year')
+    # class Meta:
+    #     unique_together = ('lrn', 'teacher')
 
 
     

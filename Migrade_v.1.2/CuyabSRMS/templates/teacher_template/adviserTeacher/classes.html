@@ -55,7 +55,7 @@ New Class List
                                             {% for grade_section in unique_grades_sections %}
                                             {% with class_type_dict=grade_section.class_type|safe %}
                                             {% if teacher.id|add:" " in class_type_dict %}
-                                            {% if class_type_dict == 'Advisory Class' %}
+                                            {% if class_type_dict == 'Advisory Class' or 'Advisory Class, Subject Class' in class_type_dict %}
                                             <li class="d-block p-2">
                                                 <div class="btn-group">
                                                     <button type="button"
@@ -134,7 +134,7 @@ New Class List
                                             {% for grade_section in unique_grades_sections %}
                                             {% with class_type_dict=grade_section.class_type|safe %}
                                             {% if teacher.id|add:" " in class_type_dict %}
-                                            {% if class_type_dict == 'Subject Class' %}
+                                            {% if class_type_dict == 'Subject Class' or 'Advisory Class, Subject Class' in class_type_dict %}
                                             <li class="d-block p-2">
                                                 <div class="btn-group">
                                                     <button type="button"

@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.db import transaction
 from collections import defaultdict
 from django.db import IntegrityError
+from django.db.models import Q
 
 
 def transfer_record(request):
@@ -112,6 +113,8 @@ def submit_json(request):
         grade = json_data.get('transferRecords', [])[0].get('grade', None)
         section = json_data.get('transferRecords', [])[0].get('section', None)
 
+        class_type = "Advisory" or "Advisory Class, Subject Class"
+
         # Check if the section with the specified name, class_type, and teacher_id exists
         existing_section = Section.objects.filter(name=section, class_type="Advisory", teacher_id=to_teacher).exists()
 
@@ -145,8 +148,10 @@ def transfer_json_to_teacher(request):
             print(json_data)
             print(file_name)
             print(from_teacher_id)
+            class_types_to_check = ['Advisory Class', 'Advisory Class, Subject Class']
             # Check if the section with the specified name, class_type, and teacher_id exists
-            existing_section = Section.objects.filter(name=section, class_type__contains={target_teacher_id: 'Advisory Class'}).exists()
+            existing_section = Section.objects.filter( Q(name=section) &
+    (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]))).exists()
             print(existing_section)
             if existing_section:
                 # Save the data to the InboxMessage model
