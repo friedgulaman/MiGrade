@@ -45,6 +45,11 @@ import base64
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 @login_required
 def home_admin(request):
@@ -57,8 +62,7 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
-    announcements = Announcement.objects.all()
-    
+   
    
     context = {
         'grades': grades,
@@ -69,10 +73,14 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
-        'announcements': announcements,
+       
 
     }
     return render(request, 'admin_template/home_admin.html', context)
+def admin_base(request):
+    announcements = Announcement.objects.all()
+    return {'announcements': announcements}
+
 
 def add_teacher(request):
     return render(request, 'admin_template/add_teacher.html')
@@ -584,12 +592,13 @@ def add_teacher_save(request):
         messages.error(request, "Invalid Method ")
         return redirect('teachers')
     else:
+        default = os.getenv("DEFAULT_PASSWORD")
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         middle_ini = request.POST.get('middle_ini')
         username = request.POST.get('username')
         email = request.POST.get('email')
-        password = request.POST.get('password', 'default_pass')
+        password = request.POST.get('password', default)
         user = request.user
 
         try:
@@ -1034,7 +1043,7 @@ def create_announcement(request):
         try:
             Announcement.objects.create(title=title, content=content)
             messages.success(request, 'Announcement created successfully')
-            return redirect('home_admin')
+            return render(request, 'admin_template/announcement.html')
         except Exception as e:
             messages.error(request, f'Failed to create Announcement: {e}')
 
@@ -1051,18 +1060,17 @@ def delete_announcement(request, announcement_id):
 
 
 def user_list(request):
-    # Retrieve a list of teachers (users with user_type == 2)
-    teachers = CustomUser.objects.filter(user_type=2)
-    return render(request, 'admin_template/home_admin.html', {'teachers': teachers})
+    teachers = CustomUser.objects.filter(user_type=2)  # Assuming 1 represents "Teacher" in your model
+    return render(request, 'teacher_list.html', {'teachers': teachers})
 
-def user_activity_log(request, user_id):
-    # Retrieve the teacher object or return a 404 error if not found
-    teacher = get_object_or_404(Teacher, id=user_id, user_type=2)
-    
-    # Retrieve the activity log for the specified teacher
-    activity_log = ActivityLog.objects.filter(user_id=teacher).order_by('-timestamp')
-    
-    return render(request, 'admin_template/user_activity_log.html', {'teacher': teacher, 'activity_log': activity_log})
+def user_activities(request):
+    user_id = request.GET.get('id')
+    if user_id:
+        activities = ActivityLog.objects.filter(user_id=user_id)
+        return render(request, 'admin_template/user_activities.html', {'activities': activities})
+    else:
+        # Handle case when no user ID is provided
+        return render(request, 'error.html', {'error_message': 'User ID is required'})
 
 
 

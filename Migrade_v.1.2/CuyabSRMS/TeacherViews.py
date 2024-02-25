@@ -59,6 +59,9 @@ from openpyxl import load_workbook
 from django.utils.timezone import now
 from django.core.exceptions import MultipleObjectsReturned
 import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 @login_required
 def home_teacher(request):
@@ -116,8 +119,32 @@ def dashboard(request):
 
 # Your combined view
 def process_google_sheet(spreadsheet_id, sheet_name):
+    # Read environment variables
+    project_id = os.getenv("SHEET_PROJECT_ID")
+    private_key_id = os.getenv("SHEET_PRIVATE_KEY_ID")
+    private_key = os.getenv("SHEET_PRIVATE_KEY")
+    client_email = os.getenv("SHEET_CLIENT_EMAIL")
+    client_id = os.getenv("SHEET_CLIENT_ID")
+
+    # Construct JSON data using environment variables
+    data = {
+        "type": "service_account",
+        "project_id": project_id,
+        "private_key_id": private_key_id,
+        "private_key": private_key,
+        "client_email": client_email,
+        "client_id": client_id,
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}",
+        "universe_domain": "googleapis.com"
+    }
+
+    # Convert dictionary to JSON string
+    service_account = json.dumps(data, indent=4)
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-    SERVICE_ACCOUNT_FILE = 'keys.json'
+    SERVICE_ACCOUNT_FILE = 'service_account'
 
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -925,9 +952,6 @@ def sf9(request):
 @login_required
 def delete_student(request, grade, section):
     user = request.user
-            
-
-
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
         students = Student.objects.filter(grade=grade, section=section, teacher=teacher)
@@ -968,7 +992,7 @@ def student_list_for_subject(request):
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
-        # Fetch students based on grade and section
+        # Fetch students based on grade and section     
         students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
 
         # Fetch distinct subjects based on grade and section

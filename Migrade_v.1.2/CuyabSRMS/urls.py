@@ -86,7 +86,7 @@ urlpatterns = [
     path('create/', admin_required(AdminViews.create_announcement), name='create_announcement'),
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
     path('users/', admin_required(AdminViews.user_list), name='user_list'),
-    path('user/<int:user_id>/activity-log/', admin_required(AdminViews.user_activity_log), name='user_activity_log'),
+    path('user_activities', admin_required(AdminViews.user_activities), name='user_activities'),
 
 
     path('school-information/', AdminViews.school_information_view, name='school_information'),

@@ -10,7 +10,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from .models import SchoolInformation
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def custom_404(request, exception=None):
     return render(request, 'custom_404.html', status=404) 
@@ -49,13 +51,14 @@ def ShowLoginPage(request):
 def doLogin(request):
     if request.method == "POST":
         captcha_response = request.POST.get("g-recaptcha-response")
+        captcha = os.getenv("CAPTCHA")
         
         if not captcha_response:
             messages.error(request, "Please complete the reCAPTCHA.")
             return redirect('ShowLoginPage')
         
         data = {
-            'secret': '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW',
+            'secret': captcha,
             'response': captcha_response
         }
         
