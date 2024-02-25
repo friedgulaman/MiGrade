@@ -1151,18 +1151,46 @@ def student_list_for_advisory(request):
                 'average_score': average_score,
             })
 
-        # Find top 10 students with highest average scores
-        top_ten_students = QuarterlyGrades.objects.filter(
-            student__grade=grade, student__section=section, quarter=quarter
-        ).annotate(avg_score=Avg('grades__average_score')).order_by('-avg_score')[:10]
+        top_10_students_per_subject = {}
 
-        top_ten_student_data = []
-        for rank, student in enumerate(top_ten_students, start=1):
-            top_ten_student_data.append({
-                'rank': rank,
-                'student_name': student.student.name,
-                'average_score': student.avg_score,
-            })
+
+                # Iterate over each AdvisoryClass instance
+        for advisory_class in advisory_classes:
+            # Extract grades_data as a dictionary
+            grades_data = advisory_class.grades_data
+           
+            if grades_data:
+                # Iterate over each subject in the grades_data
+                for subject, subject_data in grades_data.items():
+                    # Get the student's name from the AdvisoryClass instance
+                    student_name = advisory_class.student.name
+                   
+                    # Get the final grade for the current subject
+                    final_grade = subject_data.get('final_grade')
+                   
+                    # Check if final_grade is None or not a number
+                    if final_grade is not None and isinstance(final_grade, (int, float)):
+                        # Convert final_grade to float if it's not None and is a number
+                        final_grade = float(final_grade)
+                    else:
+                        # If final_grade is None or not a number, set it to 0
+                        final_grade = 0
+                   
+                    # Initialize the list for the current subject if not present
+                    if subject not in top_10_students_per_subject:
+                        top_10_students_per_subject[subject] = []
+                   
+                    # Append the student name and final grade to the subject's list
+                    top_10_students_per_subject[subject].append((student_name, final_grade))
+
+
+        # Iterate over each subject in the dictionary
+        for subject, students_list in top_10_students_per_subject.items():
+            # Sort the students_list based on the final grade in descending order
+            students_list.sort(key=lambda x: x[1], reverse=True)
+           
+            # Select the top 10 students for the current subject
+            top_10_students_per_subject[subject] = students_list[:10]
 
 
         context = {
@@ -1173,10 +1201,14 @@ def student_list_for_advisory(request):
             'class_type': class_type,
             'data': data,
             'quarter': quarter,
-            'top_ten_students': top_ten_student_data,
+            'top_10_students_per_subject': top_10_students_per_subject,
         }
 
+
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
+
+
 
 
 def display_advisory_data(request):
@@ -1327,6 +1359,7 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 def grade_summary(request, grade, section, quarter):
     students = AdvisoryClass.objects.filter(grade=grade, section=section)
 
+    # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
         '1st Quarter': 'first_quarter',
@@ -1335,37 +1368,39 @@ def grade_summary(request, grade, section, quarter):
         '4th Quarter': 'fourth_quarter',
     }
 
-    for advisory_class in students:
-        student = advisory_class.student
-        grades_data = advisory_class.grades_data
-        subject_grades[student.name] = {}
+    # Fetch subject-wise grades for each student
+    for student in students:
+        grades_data = student.grades_data
+        subject_grades[student.student.name] = {}
+        grades = []  # List to store grades for calculating mean
 
         for subject, grades_info in grades_data.items():
-            quarter_grade = grades_info.get(quarter_mapping.get(quarter))
-            if quarter_grade is not None:
-                subject_grades[student.name][subject] = quarter_grade
+            if quarter_mapping[quarter] in grades_info:
+                subject_grade = grades_info[quarter_mapping[quarter]]
+                print(subject_grade)
+                subject_grades[student.student.name][subject] = subject_grade
+                if subject_grade is not None:
+                    grades.append(float(subject_grade))
 
-        average_score = subject_grades[student.name].get('average_score')
-        if average_score is None:
-            grades = subject_grades[student.name].values()
-            if grades:
-                total_score = sum(float(grade) for grade in grades)
-                average_score = int(round(total_score / len(grades)))
-                subject_grades[student.name]['average_score'] = str(round(average_score, 2))
-                print(average_score)
-            else:
-                subject_grades[student.name]['average_score'] = None
-
-        existing_entry = QuarterlyGrades.objects.filter(student=student, quarter=quarter).first()
-        if existing_entry:
-            existing_entry.grades = subject_grades[student.name]
-            existing_entry.save()
+        # Calculate average score
+        if grades:
+            subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
         else:
+            subject_grades[student.student.name]['average_score'] = None
+
+        # Check if QuarterlyGrades entry already exists for this student and quarter
+        existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
+        if not existing_entry:
+            # Save grades to QuarterlyGrades model
             QuarterlyGrades.objects.create(
-                student=student,
+                student=student.student,
                 quarter=quarter,
-                grades=subject_grades[student.name]
+                grades=subject_grades[student.student.name]
             )
+        elif existing_entry.grades != subject_grades[student.student.name]:
+            # Update the existing entry if the grades are different
+            existing_entry.grades = subject_grades[student.student.name]
+            existing_entry.save()
 
     subjects = list(students.first().grades_data.keys()) if students else []
 
@@ -1377,7 +1412,6 @@ def grade_summary(request, grade, section, quarter):
     }
 
     return render(request, 'teacher_template/adviserTeacher/quarterly_summary.html', context)
-
 
 
 def get_subject_score(student, subject, quarter):
@@ -1598,44 +1632,57 @@ def display_all_final_grades(request, grade, section):
     try:
         students = Student.objects.filter(grade=grade, section=section)
         # Fetch all distinct subjects for the specified grade and section
-        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
+        subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
         final_grades = []
         for student in students:
             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': [], 'student': student}
 
-            for advisory_class in advisory_classes:
-                for subject_name, subject_data in advisory_class.grades_data.items():
-                    subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+            for subject in subjects:
+                subject_name = subject['subject']
+                subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
 
-                    # Retrieve final grades from the AdvisoryClass model
-                    final_grade_data = subject_data
-                    final_grade = final_grade_data.get('final_grade')
-                    subject_info['final_grade'] = final_grade if final_grade is not None else 0
-                    subject_info['quarter_grades'] = final_grade_data
+                # Retrieve final grades from the FinalGrade model
+                final_grade = FinalGrade.objects.filter(
+                    teacher__classrecord__grade=grade,
+                    teacher__classrecord__section=section,
+                    student=student,
+                ).first()
 
-                    # Get the teacher's name
-                    teacher_id = final_grade_data.get('from_teacher_id')
-                    teacher_name = ""
-                    if teacher_id:
-                        teacher = Teacher.objects.filter(user__username=teacher_id).first()
-                        if teacher:
-                            teacher_name = teacher.user.get_full_name()
-                        else:
-                            teacher_name = "Unknown Teacher"
-                    else:
-                        teacher_name = "Unknown Teacher"
-                    subject_info['teacher_name'] = teacher_name
+                if final_grade:
+                    final_grade_data = final_grade.final_grade
+                    if isinstance(final_grade_data, str):  # Check if the data is a string
+                        final_grade_data = json.loads(final_grade_data)  # Parse JSON string to dictionary
 
-                    student_data['subjects'].append(subject_info)
+                    # Find the subject entry in final_grade_data
+                    for entry in final_grade_data:
+                        if entry['subject'] == subject_name:
+                            subject_info['final_grade'] = entry['final_grade']
+                            subject_info['quarter_grades'] = entry['quarter_grades']
+                            break  # Stop searching once the subject is found
+
+                # Get the teacher's name from the ClassRecord
+                class_record = ClassRecord.objects.filter(
+                    grade=grade,
+                    section=section,
+                    subject=subject_name
+                ).first()
+
+                # Ensure that the class_record and its teacher exist
+                if class_record and class_record.teacher:
+                    subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
+                else:
+                    subject_info['teacher_name'] = "Unknown Teacher"
+
+                student_data['subjects'].append(subject_info)
 
             # Append student data to the final grades
             final_grades.append(student_data)
 
         # Compute the general average for each student
         for student_data in final_grades:
-            total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects'] if subject_info['final_grade'] is not None])
-            num_subjects = len([subject_info['final_grade'] for subject_info in student_data['subjects'] if subject_info['final_grade'] is not None])
+            total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
+            num_subjects = len(student_data['subjects'])
             student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
             save_general_average(student_data, grade, section)
             
@@ -1652,6 +1699,8 @@ def display_all_final_grades(request, grade, section):
         print(f"An error occurred while displaying all final grades: {str(e)}")
         # Return an HTTP 500 Internal Server Error response
         return HttpResponse("Internal Server Error", status=500)
+
+
     
 @login_required
 @transaction.atomic

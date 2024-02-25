@@ -290,36 +290,75 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                     
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
                         <div class="container mt-4">
-                            <h4 class="card-title">Top 10 Students for {{ quarter }}</h4>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Rank</th>
-                                            <th>Student Name</th>
-                                            <th>Average Score</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Iterate over the top 10 students -->
-                                        {% for student_data in top_ten_students %}
-                                            <tr>
-                                                <td>{{ student_data.no }}</td>
-                                                <td>{{ student_data.student_name }}</td>
-                                                <td>{{ student_data.average_score }}</td>
-                                            </tr>
+                            <!-- Dropdown menu for selecting the subject -->
+                            <div class="mb-3">
+                                <label for="subjectSelect" class="form-label">Select Subject:</label>
+                                <select class="form-select" id="subjectSelect" onchange="filterStudents(this.value)">
+                                    <option value="">Select a Subject</option>
+                                    <!-- Iterate over each subject -->
+                                    {% for subject in top_10_students_per_subject.keys %}
+                                        <option value="{{ subject }}">{{ subject }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="grid-margin stretch-card">
+                                <div>
+                                    <div class="card-body">
+                                        <h4 class="card-title">Top 10 Students per Subject</h4>
+                                        <!-- Iterate over each subject -->
+                                        {% for subject, students in top_10_students_per_subject.items %}
+                                            <div class="mb-4" id="{{ subject }}">
+                                                <h5>{{ subject }}</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Rank</th>
+                                                                <th>Student Name</th>
+                                                                <th>Final Grade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <!-- Iterate over the top 10 students for the current subject -->
+                                                            {% for student, final_grade in students %}
+                                                                <tr>
+                                                                    <td>{{ forloop.counter }}</td>
+                                                                    <td>{{ student }}</td>
+                                                                    <td>{{ final_grade }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         {% endfor %}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
             </section>
         </div>
     </div>
 </section>
 <!-- jQuery CDN -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function filterStudents(subject) {
+        // Hide all subject tables
+        document.querySelectorAll('.mb-4').forEach(function(table) {
+            table.style.display = 'none';
+        });
+
+
+        // Show the selected subject table
+        if (subject) {
+            document.getElementById(subject).style.display = 'block';
+        }
+    }
+</script>
+
 <script>
     function submitFormAndRememberScroll() {
         // Store the current scroll position in session storage
