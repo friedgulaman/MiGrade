@@ -35,7 +35,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.template.loader import render_to_string
-
+from django.db.models import Avg
 from django.template import RequestContext
 #Grade
 from django.http import JsonResponse
@@ -53,7 +53,7 @@ from django.utils import translation
 from django.db import transaction
 from statistics import mean
 from django.core.exceptions import MultipleObjectsReturned
-
+from json import loads as json_loads
 
 @login_required
 def home_teacher(request):
@@ -1068,12 +1068,14 @@ def student_list_for_advisory(request):
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
+        quarter = request.GET.get('quarter', '1st Quarter')  # Default to 1st Quarter if not provided
 
         # Fetch advisory classes based on teacher, grade, and section
         advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
 
+        unique_keys = set()  # Initialize an empty set here
+
         if advisory_classes.exists():
-            unique_keys = set()  # Initialize an empty set to store unique keys and from_teacher_ids
             for advisory_class in advisory_classes:
                 grades_data = advisory_class.grades_data
                 if grades_data:
@@ -1093,10 +1095,71 @@ def student_list_for_advisory(request):
             if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
                 students_filtered.append(student)
 
-        # print(f"students filtered: {students_filtered}")
-        print(f"advisory classess: {advisory_classes}")
+        # Unique keys context
         unique_keys_context = list(unique_keys)
-        print(unique_keys_context)
+
+        # Filter quarterly grades based on the selected quarter
+        quarterly_grades = QuarterlyGrades.objects.filter(student__grade=grade, student__section=section, quarter=quarter)
+
+        # Prepare data to pass to the template
+        data = []
+        for index, grades in enumerate(quarterly_grades, start=1):
+            student_name = grades.student.name
+            subjects_grades = grades.grades
+            average_score = subjects_grades.pop('average_score', None)
+            subjects_data = [{'subject': subject, 'score': score} for subject, score in subjects_grades.items()]
+
+            data.append({
+                'no': index,
+                'student_name': student_name,
+                'subjects_data': subjects_data,
+                'average_score': average_score,
+            })
+
+        quarters = '1st Quarter'
+        top_ten_students = QuarterlyGrades.objects.filter(
+            student__grade=grade,
+            student__section=section,
+            quarter=quarters
+        )
+        print(top_ten_students)
+
+        top_ten_student_data = []
+
+        for student in top_ten_students:
+            # Access the grades data from the student object
+            grades_data = student.grades
+            
+            try:
+                # Parse the JSON data
+                grades_dict = json.loads(grades_data)
+                
+                # Extract the average_score from the JSON data
+                average_score = float(grades_dict.get('average_score', 0))
+                
+            except (ValueError, TypeError) as e:
+                print(f"Error parsing JSON data: {e}")
+                average_score = 0
+            
+            student_name = student.student.name
+
+            # Append the extracted data to the list
+            top_ten_student_data.append({
+                'student_name': student_name,
+                'average_score': average_score,
+            })
+
+        # Now, perform the computation of average score in Python
+        # Compute the average score by summing up and dividing by the number of students
+        total_score = sum(student_data['average_score'] for student_data in top_ten_student_data)
+        average_score_overall = total_score / len(top_ten_student_data)
+
+        # Print the overall average score
+        print(f"Overall average score: {average_score_overall}")
+
+        # Now you have top_ten_student_data list containing top ten student data with their average scores
+        # You can use this list as needed
+        print(top_ten_student_data)
 
         context = {
             'grade': grade,
@@ -1104,9 +1167,13 @@ def student_list_for_advisory(request):
             'unique_keys': unique_keys_context,
             'students': students_filtered,
             'class_type': class_type,
+            'data': data,
+            'quarter': quarter,
+            'top_ten_students': top_ten_student_data,
         }
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
 
 def display_advisory_data(request):
         # Assuming the user is logged in
@@ -1254,29 +1321,30 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 
 
 def grade_summary(request, grade, section, quarter):
-    students = FinalGrade.objects.filter(grade=grade, section=section)
+    students = AdvisoryClass.objects.filter(grade=grade, section=section)
 
     # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
-        '1st Quarter': '1st Quarter',
-        '2nd Quarter': '2nd Quarter',
-        '3rd Quarter': '3rd Quarter',
-        '4th Quarter': '4th Quarter',
+        '1st Quarter': 'first_quarter',
+        '2nd Quarter': 'second_quarter',
+        '3rd Quarter': 'third_quarter',
+        '4th Quarter': 'fourth_quarter',
     }
 
     # Fetch subject-wise grades for each student
     for student in students:
-        subjects = get_subjects(student.student)
+        grades_data = student.grades_data
         subject_grades[student.student.name] = {}
         grades = []  # List to store grades for calculating mean
-        for subject in subjects:
-            db_quarter = quarter_mapping.get(quarter, quarter)
-            subject_grade = get_subject_score(student.student, subject, db_quarter)
-            print(subject_grade)
-            subject_grades[student.student.name][subject] = subject_grade
-            if subject_grade is not None:
-                grades.append(subject_grade)
+
+        for subject, grades_info in grades_data.items():
+            if quarter_mapping[quarter] in grades_info:
+                subject_grade = grades_info[quarter_mapping[quarter]]
+                print(subject_grade)
+                subject_grades[student.student.name][subject] = subject_grade
+                if subject_grade is not None:
+                    grades.append(float(subject_grade))
 
         # Calculate average score
         if grades:
@@ -1298,7 +1366,7 @@ def grade_summary(request, grade, section, quarter):
             existing_entry.grades = subject_grades[student.student.name]
             existing_entry.save()
 
-    subjects = get_subjects(students.first().student) if students else []
+    subjects = list(students.first().grades_data.keys()) if students else []
 
     context = {
         'students': students,
@@ -1311,40 +1379,43 @@ def grade_summary(request, grade, section, quarter):
 
 
 def get_subject_score(student, subject, quarter):
+    quarter_mapping = {
+        '1st Quarter': 'first_quarter',
+        '2nd Quarter': 'second_quarter',
+        '3rd Quarter': 'third_quarter',
+        '4th Quarter': 'fourth_quarter',
+    }
+    
     try:
-        # Fetch the FinalGrade instance for the given student, subject, and quarter
-        grade_instance = FinalGrade.objects.get(
+        # Fetch the AdvisoryClass instance for the given student, subject, and quarter
+        advisory_instance = AdvisoryClass.objects.get(
             student=student,
             grade=student.grade,
             section=student.section,
         )
-        
-        # Access the final_grade JSONField and retrieve the score for the given subject and quarter
-        final_grade_data = json.loads(grade_instance.final_grade)  # Assuming final_grade is a JSON string
-        
-        # Loop through each entry in final_grade_data
-        for entry in final_grade_data:
-            if entry.get('subject') == subject:
-                # Check if the quarter grades exist for the subject
-                quarter_grades = entry.get('quarter_grades', {})
-                subject_score = quarter_grades.get(quarter)
-                return subject_score  # Return the score if found
-        
+
+        # Access the grades_data JSONField and retrieve the score for the given subject and quarter
+        grades_data = advisory_instance.grades_data
+
+        if subject in grades_data:
+            quarter_grades = grades_data[subject]
+            subject_score = quarter_grades.get(quarter_mapping[quarter])
+            return subject_score  # Return the score if found
+
         # If subject or quarter not found, return None
         return None
 
-    except FinalGrade.DoesNotExist:
-        # Handle the case where the FinalGrade record does not exist
+    except AdvisoryClass.DoesNotExist:
+        # Handle the case where the AdvisoryClass record does not exist
         return None
 
     except MultipleObjectsReturned:
-        # Handle the case where multiple FinalGrade records are returned
+        # Handle the case where multiple AdvisoryClass records are returned
         # For example, you can log a warning or return a default value
         return None
 
-    except json.JSONDecodeError:
-        # Handle JSON decoding error
-        # Log the error or return None
+    except KeyError:
+        # Handle the case where the subject or quarter key is not found in the grades_data
         return None
     
 def get_subjects(student):

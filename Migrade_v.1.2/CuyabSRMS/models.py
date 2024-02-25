@@ -71,7 +71,7 @@ class Student(models.Model):
         return self.name
 
     class Meta:
-        unique_together = ('lrn', 'teacher')
+        unique_together = ('lrn', 'school_year')
 
 
     

@@ -130,11 +130,11 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
-                                aria-selected="false">Subjects</a>
+                                aria-selected="false">Final Grade per Subject</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly" role="tab"
-                                aria-selected="false">Quarterly Grades</a>
+                                aria-selected="false">Summary of Quarterly Grades</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#rankings" role="tab"
@@ -236,23 +236,116 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
   
                     </div>
 
+                        
+                    <div class="tab-pane fade show" id="quarterly" role="tabpanel" aria-labelledby="subjects">
+                        <div class="container mt-4">
+                            <div class="grid-margin stretch-card">
+                                <div>
+                                    <div class="card-body">
+                                        <form id="quarterForm" method="get">
+                                            <!-- Hidden input fields for grade, section, and class_type -->
+                                            <input type="hidden" name="grade" value="{{ grade }}">
+                                            <input type="hidden" name="section" value="{{ section }}">
+                                            <input type="hidden" name="class_type" value="{{ class_type }}">
+                                        
+                                            <!-- Select dropdown for the quarter -->
+                                            <select name="quarter" onchange="submitFormAndRememberScroll()">
+                                                <option value="1st Quarter" {% if quarter == '1st Quarter' %} selected {% endif %}>1st Quarter</option>
+                                                <option value="2nd Quarter" {% if quarter == '2nd Quarter' %} selected {% endif %}>2nd Quarter</option>
+                                                <option value="3rd Quarter" {% if quarter == '3rd Quarter' %} selected {% endif %}>3rd Quarter</option>
+                                                <option value="4th Quarter" {% if quarter == '4th Quarter' %} selected {% endif %}>4th Quarter</option>
+                                            </select>
+                                        </form>
+                                        <h4 class="card-title mt-4">Summary of Quarterly Grades ({{quarter}})</h4>
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Student Name</th>
+                                                    {% for subject_data in data.0.subjects_data %}
+                                                        <th>{{ subject_data.subject }}</th>
+                                                    {% endfor %}
+                                                    <th>Average Score</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in data %}
+                                                    <tr>
+                                                        <td>{{ item.no }}</td>
+                                                        <td>{{ item.student_name }}</td>
+                                                            {% for subject_data in item.subjects_data %}
+                                                                <td>{{ subject_data.score|default_if_none:""}}</td>
+                                                            {% endfor %}
 
-                    <div class="tab-pane fade show " id="quarterly" role="tabpanel" aria-labelledby="subjects">
-                        3
+                                                        <td>{{ item.average_score|default_if_none:"" }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
-                        4
+                        <div class="container mt-4">
+                            <h4 class="card-title">Top 10 Students for {{ quarter }}</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Student Name</th>
+                                            <th>Average Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Iterate over the top 10 students -->
+                                        {% for student_data in top_ten_students %}
+                                            <tr>
+                                                <td>{{ student_data.no }}</td>
+                                                <td>{{ student_data.student_name }}</td>
+                                                <td>{{ student_data.average_score }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-
-
-
             </section>
         </div>
     </div>
 </section>
 <!-- jQuery CDN -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function submitFormAndRememberScroll() {
+        // Store the current scroll position in session storage
+        sessionStorage.setItem('scrollPosition', window.scrollY);
 
+        // Submit the form
+        document.getElementById('quarterForm').submit();
+    }
+
+    // Restore scroll position when the page loads
+    window.onload = function() {
+        var scrollPosition = sessionStorage.getItem('scrollPosition');
+        if (scrollPosition !== null) {
+            window.scrollTo(0, scrollPosition);
+            sessionStorage.removeItem('scrollPosition'); // Remove stored scroll position
+        }
+
+        // Check if there is a query parameter for the quarter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const quarter = urlParams.get('quarter');
+        if (quarter !== null) {
+            // Activate the #quarterly tab
+            $('a[href="#quarterly"]').tab('show');
+        }
+    };
+</script>
 <script>
     var showQuarters = function(grade, section, key, from_teacher_id){
 
