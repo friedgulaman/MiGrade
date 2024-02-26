@@ -610,6 +610,11 @@ def get_students_by_grade_and_section(request):
             quarter_name = request.POST.get("quarter")
 
             user = request.user
+
+            all_school_info = SchoolInformation.objects.all()
+
+            for school_info in all_school_info:
+                school_year = school_info.school_year
             
 
             teacher = get_object_or_404(Teacher, user=user)
@@ -624,6 +629,7 @@ def get_students_by_grade_and_section(request):
                 subject=subject_name,
                 quarters=quarter_name,
                 teacher=teacher,
+                school_year=school_year,
             )
 
             classrecord.save()
@@ -1011,14 +1017,15 @@ def sf9(request):
     return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
 
 @login_required
-def delete_student(request, grade, section):
-    user = request.user
-            
-
+def delete_class(request, grade, section):
+    user = request.user            
 
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
-        students = Student.objects.filter(grade=grade, section=section, teacher=teacher)
+        students = Student.objects.filter(grade=grade, section=section)
+
+        print(f"grade: {grade}")
+        print(f"section: {section}")
 
         if students.exists():
             # Assuming you have some permission checks here before deleting
@@ -1039,6 +1046,35 @@ def delete_student(request, grade, section):
 
     # If the user is not a teacher or if the permissions check fails
     return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
+
+@login_required
+def delete_class_subject(request, grade, section):
+    user = request.user
+
+    if user.user_type == 2:  # Assuming user_type 2 represents a teacher
+        teacher = get_object_or_404(Teacher, user=user)
+        students = Student.objects.filter(grade=grade, section=section)
+
+        if students.exists():
+            for student in students:
+                class_type = student.class_type
+                if str(teacher.id) in class_type:
+                    del class_type[str(teacher.id)]  # Delete the key associated with the teacher's ID
+                    student.class_type = class_type
+                    student.save()
+
+            # Delete associated ClassRecord records
+            ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
+
+            action = f'{user} deleted a Class named {grade} {section}'
+            details = f'{user} deleted a Class named {grade} {section} in the system.'
+            log_activity(user, action, details)
+
+            return redirect('display_students')  # Redirect to your desired page after deletion
+        else:
+            return redirect('display_students')  # Redirect if no students found
+    else:
+        return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
 
 def student_list_for_subject(request):
     # Assuming the user is logged in
@@ -1067,7 +1103,7 @@ def student_list_for_subject(request):
         students_filtered = []
         for student in students:
             class_type_json = student.class_type
-            if teacher_id in class_type_json:
+            if class_type_json is not None and teacher_id in class_type_json:
                 if class_type_json[teacher_id] == "Subject Class":
                     students_filtered.append(student)
                     

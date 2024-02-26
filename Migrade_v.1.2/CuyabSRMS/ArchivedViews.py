@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.http import HttpResponseRedirect
 from .utils import log_activity
 from django.db import IntegrityError
-
+from django.http import HttpResponse
 def archive_class_record(request, class_record_id):
     
     try:
@@ -21,10 +21,11 @@ def archive_class_record(request, class_record_id):
                 subject=class_record.subject,
                 teacher=class_record.teacher,
                 quarters=class_record.quarters,
+                school_year=class_record.school_year
             )
             class_record_teacher = class_record.teacher
 
-            
+
             user = request.user
             action = f'{user} archive a Class Record "{class_record.name}"'
             details = f'{user} archived the Class Record {class_record.name} in the system.'
@@ -101,6 +102,7 @@ def restore_archived_record(request, archived_record_id):
                 subject=archived_record.subject,
                 teacher=archived_record.teacher,
                 quarters=archived_record.quarters,
+                school_year=archived_record.school_year
             )
 
             user = request.user
@@ -170,14 +172,16 @@ def archive_students_with_grade_and_section(request, grade, section):
         with transaction.atomic():
 
             # Get the students with the specified grade and section
-            students_to_archive = Student.objects.filter(grade=grade, section=section, teacher=request.user.teacher)
-            class_records_to_archive = ClassRecord.objects.filter(grade=grade, section=section, teacher=request.user.teacher)
+            students_to_archive = Student.objects.filter(grade=grade, section=section)
+            class_records_to_archive = ClassRecord.objects.filter(grade=grade, section=section)
 
             user = request.user
             action = f'{user} archive a Class "{grade} {section}"'
             details = f'{user} archived the Class {grade} {section} in the system.'
             log_activity(user, action, details)
 
+            print(f"grade: {grade}")
+            print(f"section: {section}")
             logs = user, action, details    
             print(logs)
 
@@ -192,6 +196,7 @@ def archive_students_with_grade_and_section(request, grade, section):
                         teacher=class_record.teacher,
                         quarters=class_record.quarters,
                         date_archived=timezone.now(),
+                        school_year=class_record.school_year
                     )
 
                     # Log the archived class record
@@ -215,6 +220,7 @@ def archive_students_with_grade_and_section(request, grade, section):
                             existing_archived_student.archived_school_year = student.school_year
                             existing_archived_student.archived_grade = student.grade
                             existing_archived_student.archived_section = student.section
+                            existing_archived_student.archived_class_type = student.class_type
                             existing_archived_student.save()
                             print(f"Updated archived student: {existing_archived_student.archived_name}")
                             
@@ -234,7 +240,8 @@ def archive_students_with_grade_and_section(request, grade, section):
                                 archived_school_name=student.school_name,
                                 archived_school_year=student.school_year,
                                 archived_grade=student.grade,
-                                archived_section=student.section
+                                archived_section=student.section,
+                                archived_class_type=student.class_type
                             )
                             print(f"Archived student: {archived_student.archived_name}")
 
@@ -353,6 +360,7 @@ def archive_students_with_grade_and_section(request, grade, section):
                 students_to_archive.delete()
                 class_records_to_archive.delete()
 
+                
                 referer_url = request.META.get('HTTP_REFERER')
                 if referer_url:
                     # Redirect to the referer URL
@@ -377,7 +385,8 @@ def archive_students_with_grade_and_section(request, grade, section):
                             archived_school_name=student.school_name,
                             archived_school_year=student.school_year,
                             archived_grade=student.grade,
-                            archived_section=student.section
+                            archived_section=student.section,
+                            archived_class_type=student.class_type
                         )
 
                     # Log the archived student
@@ -501,13 +510,13 @@ def archive_students_with_grade_and_section(request, grade, section):
                 else:
                     # If referer URL is not available, redirect to a default URL
                     return redirect('archived_records')  # Redirect to the archived records page
-                
-    
+            
 
     except Exception as e:
+        
         # Handle exceptions gracefully
         print(f"Error occurred during archiving: {str(e)}")
-        return redirect('error_page')  # Redirect to an error page or handle as needed
+        return HttpResponse("An error occurred during archival: " + str(e), status=500)
     
 
 
@@ -533,7 +542,8 @@ def restore_archived_students(request, grade, section):
                         section=archived_class_record.section,
                         subject=archived_class_record.subject,
                         teacher=archived_class_record.teacher,
-                        quarters=archived_class_record.quarters
+                        quarters=archived_class_record.quarters,
+                        school_year=archived_class_record.school_year
                     )
                     print(f"Restore classrecord for {class_record.name}")
 
@@ -557,7 +567,8 @@ def restore_archived_students(request, grade, section):
                             school_name=archived_grade_score.student.archived_school_name,
                             school_year=archived_grade_score.student.archived_school_year,
                             grade=archived_grade_score.student.archived_grade,
-                            section=archived_grade_score.student.archived_section
+                            section=archived_grade_score.student.archived_section,
+                            class_type=archived_grade_score.student.archived_class_type
                         )
                         print(f"Restore student for {student.name}")
 
@@ -689,7 +700,8 @@ def restore_archived_students(request, grade, section):
                         school_name=archived_student.archived_school_name,
                         school_year=archived_student.archived_school_year,
                         grade=archived_student.archived_grade,
-                        section=archived_student.archived_section
+                        section=archived_student.archived_section,
+                        class_type=archived_student.archived_class_type
                     )
 
                         # Restore associated grade scores

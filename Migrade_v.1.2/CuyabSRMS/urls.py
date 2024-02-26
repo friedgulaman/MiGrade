@@ -168,7 +168,8 @@ urlpatterns = [
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
     path('display_classrecord/<int:class_record_id>/', teacher_required(TeacherViews.display_classrecord), name='display_classrecord'),
     path('display_students', TeacherViews.display_students, name='display_students'),
-    path('delete_student/<str:grade>/<str:section>/',TeacherViews.delete_student, name='delete_student'),
+    path('delete_class/<str:grade>/<str:section>/',TeacherViews.delete_class, name='delete_class'),
+     path('delete_class_subject/<str:grade>/<str:section>/',TeacherViews.delete_class_subject, name='delete_class_subject'),
     path('view_classrecord', TeacherViews.view_classrecord, name='view_classrecord'),
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
     path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
@@ -202,7 +203,7 @@ urlpatterns = [
     path('archived-records/', ArchivedViews.archived_records, name='archived_records'),
     path('restore-archived-record/<int:archived_record_id>/', ArchivedViews.restore_archived_record, name='restore_archived_record'),
     path('archive-class-record/<int:class_record_id>/', ArchivedViews.archive_class_record, name='archive_class_record'),
-    path('archive_students/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
+    path('archive_students_with_grade_and_section/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
     path('restore_archived_students/<str:grade>/<str:section>/', ArchivedViews.restore_archived_students, name='restore_archived_students'),
 
 

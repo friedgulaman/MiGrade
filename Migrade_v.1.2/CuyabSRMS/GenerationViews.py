@@ -71,6 +71,11 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
     media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
 
+    if not os.path.exists(media_directory):
+        os.makedirs(media_directory)
+
+    if not os.path.exists(created_directory):
+        os.makedirs(created_directory)
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
@@ -155,6 +160,12 @@ def generate_final_and_general_grades(request, grade, section):
     # current_directory = os.getcwd()
     media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
+
+    if not os.path.exists(media_directory):
+        os.makedirs(media_directory)
+
+    if not os.path.exists(created_directory):
+        os.makedirs(created_directory)
 
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -402,6 +413,11 @@ def generate_excel_for_sf9(request, student_id):
     media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
 
+    if not os.path.exists(media_directory):
+        os.makedirs(media_directory)
+
+    if not os.path.exists(created_directory):
+        os.makedirs(created_directory)
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 

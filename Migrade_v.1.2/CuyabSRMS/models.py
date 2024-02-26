@@ -93,7 +93,8 @@ class Student(models.Model):
             archived_school_name=self.school_name,
             archived_school_year=self.school_year,
             archived_grade=self.grade,
-            archived_section=self.section
+            archived_section=self.section,
+            archived_class_type=self.class_type
         )
 
         # Delete the student after archiving
@@ -107,7 +108,7 @@ class ArchivedStudent(models.Model):
     archived_lrn = models.CharField(max_length=12)
     archived_sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
     archived_birthday = models.CharField(max_length=10, default='N/A')
-    archived_teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
+    archived_teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE, null=True)
     archived_school_id = models.CharField(max_length=50, null=True, blank=True)
     archived_division = models.CharField(max_length=255, null=True, blank=True)
     archived_district = models.CharField(max_length=255, null=True, blank=True)
@@ -115,6 +116,7 @@ class ArchivedStudent(models.Model):
     archived_school_year = models.CharField(max_length=50, null=True, blank=True)
     archived_grade = models.CharField(max_length=50, null=True, blank=True) 
     archived_section = models.CharField(max_length=50, null=True, blank=True)
+    archived_class_type = models.JSONField(null=True)  # New field for class type
 
     def __str__(self):
         return f"Archived Student: {self.archived_name}"
@@ -133,7 +135,8 @@ class ArchivedStudent(models.Model):
             school_name=self.archived_school_name,
             school_year=self.archived_school_year,
             grade=self.archived_grade,
-            section=self.archived_section
+            section=self.archived_section,
+            class_type=self.archived_class_type
             # Populate other fields as needed
         )
         # Delete the ArchivedStudent instance after restoration
@@ -228,6 +231,7 @@ class ClassRecord(models.Model):
                     teacher=self.teacher,
                     quarters=self.quarters,
                     date_archived=self.date_modified,
+                    school_year=self.school_year
                 )
 
                 # Delete the ClassRecord instance after archiving
@@ -249,6 +253,7 @@ class ArchivedClassRecord(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
+    school_year = models.CharField(max_length=50, null=True)
 
     def restore(self):
         try:
@@ -260,7 +265,8 @@ class ArchivedClassRecord(models.Model):
                     section=self.section,
                     subject=self.subject,
                     teacher=self.teacher,
-                    quarters=self.quarters
+                    quarters=self.quarters,
+                    school_year=self.school_year
                 )
                 
                 # Restore related objects (e.g., GradeScores)
@@ -650,7 +656,33 @@ class AdvisoryClass(models.Model):
         if self.grades_data and subject in self.grades_data:
             return self.grades_data[subject]
         return None
-   
+
+class ArchivedAdvisoryClass(models.Model):
+    grade = models.CharField(max_length=50, null=True, blank=True)
+    section = models.CharField(max_length=50, null=True, blank=True)
+    grades_data = models.JSONField(null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, limit_choices_to={'class_type': 'advisory'})
+    date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
+
+    def set_grades_data(self, data):
+        self.grades_data = json.dumps(data)
+
+    def get_grades_data(self):
+        return self.grades_data if self.grades_data else {}
+
+    def set_grade_for_subject(self, subject, grades):
+        if not self.grades_data:
+            self.grades_data = {}
+        if subject not in self.grades_data:
+            self.grades_data[subject] = {}
+        self.grades_data[subject].update(grades)
+        
+    def get_grade_for_subject(self, subject):
+        if self.grades_data and subject in self.grades_data:
+            return self.grades_data[subject]
+        return None
+    
 class Announcement(models.Model):
 
     title = models.CharField(max_length=100)
