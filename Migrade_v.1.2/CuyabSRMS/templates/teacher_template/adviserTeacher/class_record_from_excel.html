@@ -1,0 +1,34 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+    New Class Record
+{% endblock title %}
+{% block main_content %}
+
+
+<section class="container p-5">
+    <div>
+        <div class="card p-5 text-center">        
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% if error %}
+                <div class="alert alert-danger">
+                    Error processing the file. Please try again.
+                </div>
+                <button class="btn btn-primary" onclick="tryAgain()">Try Again</button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<script>
+    var tryAgain = function () {
+        var url = "{% url 'get_grade_details' %}";
+        window.location.href = url;
+    };
+    </script>
+{% endblock main_content %}

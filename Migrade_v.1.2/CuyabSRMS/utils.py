@@ -897,8 +897,11 @@ def write_sf9_grades(back_sheet, final_grade, general_average):
 
         back_sheet.cell(row=22, column=18, value=general_average.general_average)
 
-#SUMMARRY OF QUARTERLY GRADES
 
+
+
+#SUMMARRY OF QUARTERLY GRADES
+        
 def write_school_info_quarterly(input_sheet, school_info, quarterly_grades_query):
     column_coordinates_region = 7
     column_coordinates_school_name = 7
@@ -946,6 +949,7 @@ def write_school_info_quarterly(input_sheet, school_info, quarterly_grades_query
         input_sheet.cell(row=row_coordinates, column=column_coordinates_grade_section, value=grade_section)
         input_sheet.cell(row=row_coordinates, column=column_coordinates_teacher, value=teacher_name)
 
+        
 
 def write_student_name_quarterly(input_sheet, quarterly_grades_query):
 
@@ -961,6 +965,7 @@ def write_student_name_quarterly(input_sheet, quarterly_grades_query):
 
     for quarterly_grade in quarterly_grades_query:  # Retrieve the related student
          # Check if the related student exists
+       
 
         if quarterly_grade.student.sex == 'M':
             value_to_write = quarterly_grade.student.name
@@ -991,6 +996,7 @@ def write_quarterly_grade_AP(sheet, quarterly_grades_query):
                 sheet.cell(row=row_coordinates_female, column=column_coordinates_AP, value=value_to_write)
                 row_coordinates_female += 1
 
+   
 
 def write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query):
     column_coordinates_ENGLISH = 6
@@ -1079,6 +1085,7 @@ def write_student_name_general_average(sheet, general_grades_query):
 
     for general_average_grade in general_grades_query:  # Retrieve the related student
          # Check if the related student exists
+       
 
         if general_average_grade.student.sex == 'M':
             value_to_write = general_average_grade.student.name

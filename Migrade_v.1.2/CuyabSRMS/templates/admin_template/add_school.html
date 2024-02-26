@@ -5,6 +5,7 @@ Home
 {% endblock page_title %}
 
 {% block main_content %}
+{% load static %}
 <div class="container-fluid">
     <h3>School Information</h3>
     <form method="post" action="{% url 'add_school' %}">

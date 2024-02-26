@@ -83,11 +83,12 @@ urlpatterns = [
     # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', admin_required( AdminViews.save_edited_data), name='save_edited_data'),
     path('announcement', admin_required(AdminViews.announcement), name="announcement"),
-    path('announcement_list/', admin_required(AdminViews.announcement_list), name='announcement_list'),
     path('create/', admin_required(AdminViews.create_announcement), name='create_announcement'),
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
-     path('school-information/', AdminViews.school_information_view, name='school_information'),
-     path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('users/', admin_required(AdminViews.user_list), name='user_list'),
+    path('user_activities', admin_required(AdminViews.user_activities), name='user_activities'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
     path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
     path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
     path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
@@ -95,7 +96,7 @@ urlpatterns = [
     path('add/', AdminViews.add_school_view, name='add_school'),
     path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
     path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
-     path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
     path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
     path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
     path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
@@ -104,9 +105,29 @@ urlpatterns = [
     path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
     path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
     path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
-     path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
+    path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
 
 
+
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('add/', AdminViews.add_school_view, name='add_school'),
+    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
+    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('add/', AdminViews.add_school_view, name='add_school'),
+    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
+    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
+    path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
 
 
 
@@ -134,7 +155,10 @@ urlpatterns = [
     path('toggle_class_type/', teacher_required(TeacherViews.toggle_class_type), name='toggle_class_type'),
     path('display_advisory_data', teacher_required(TeacherViews.display_advisory_data), name='display_advisory_data'),
     path('display_student_transmuted_grades/', teacher_required(TeacherViews.display_student_transmuted_grades), name='display_student_transmuted_grades'),
-     path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
+
+    path('class_record_upload', teacher_required(TeacherViews.class_record_upload), name='class_record_upload'),
+
+    path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
 
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
@@ -184,8 +208,9 @@ urlpatterns = [
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
     path('sf9/', TeacherViews.sf9, name='sf9'),
     path('get_sections_classrecord/', TeacherViews.get_sections_classrecord, name='get_sections_classrecord'),
-   # urls.py
 
+   
+   # urls.py
     # Generation
 
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', GenerationViews.generate_excel_for_grades, 

@@ -2,14 +2,20 @@
         <ul class="nav">
           <li class="nav-item">
             <a class="nav-link" href="{% url 'home_admin' %}">
-              <i class="mdi mdi-grid-large menu-icon"></i>
+              <i class="icon-home menu-icon"></i>
               <span class="menu-title">Home</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'school_information' %}">
-              <i class="mdi mdi-grid-large menu-icon"></i>
+              <i class="icon-info menu-icon"></i>
               <span class="menu-title">School Information</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'announcement' %}">
+              <i class="icon-speech menu-icon"></i>
+              <span class="menu-title">Announcement</span>
             </a>
           </li>
           <!-- Manage Class -->
@@ -17,42 +23,42 @@
           <!-- Teacher -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'teachers' %}">
-              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <i class="menu-icon icon-people"></i>
               <span class="menu-title">Teacher</span>
             </a>
           </li>
           <!-- Students -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'students' %}" >
-              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <i class="menu-icon icon-graduation"></i>
               <span class="menu-title">Students</span>
             </a>
           </li>
           <!-- Grade Levels & Sections -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'grade_and_section' %}">
-              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <i class="menu-icon icon-paper-clip"></i>
               <span class="menu-title">Grades & Sections </span>
             </a>
           </li>
           <!-- SUBJECT -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'subjects' %}" >
-              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <i class="menu-icon icon-book-open"></i>
               <span class="menu-title">Subjects</span>
             </a>
           </li>
           <!-- QUARTERS -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'quarters' %}" >
-              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <i class="menu-icon icon-pie-chart"></i>
               <span class="menu-title">Quarters</span>
             </a>
           </li>
           <!-- Uploading Docs -->
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-documents" aria-expanded="false" aria-controls="ui-">
-              <i class="menu-icon mdi mdi-floor-plan"></i>
+              <i class="menu-icon icon-paper"></i>
               <span class="menu-title">School Form 10</span>
               <i class="menu-arrow"></i>
             </a>

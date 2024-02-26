@@ -56,6 +56,7 @@ class Teacher(models.Model):
         return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
 
 class Student(models.Model):
+    
     name = models.CharField(max_length=255)
     lrn = models.CharField(max_length=12)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
@@ -144,12 +145,14 @@ class ArchivedStudent(models.Model):
         return restored_student
     
 class Grade(models.Model):
+    
     name = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 class Section(models.Model):
+    
     name = models.CharField(max_length=50, null=True, blank=True)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='sections')
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')
@@ -160,6 +163,7 @@ class Section(models.Model):
         return self.name
 
 class Quarters(models.Model):
+
     id = models.AutoField(primary_key=True)
     quarters = models.CharField(max_length=30, blank=True, null=True)
 
@@ -178,6 +182,8 @@ class Subject(models.Model):
     
     
 class ClassRecord(models.Model):
+    
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     grade = models.CharField(max_length=50, blank=True, null=True)  # Add a foreign key to Grade
@@ -245,6 +251,8 @@ class ClassRecord(models.Model):
 
 
 class ArchivedClassRecord(models.Model):
+    
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     grade = models.CharField(max_length=50, blank=True, null=True)
@@ -399,6 +407,7 @@ class GradeScores(models.Model):
     
 
 class FinalGrade(models.Model):
+    
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     grade = models.CharField(max_length=50)
@@ -465,6 +474,7 @@ class ArchivedFinalGrade(models.Model):
             return None
 
 class GeneralAverage(models.Model):
+    
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
@@ -474,6 +484,7 @@ class GeneralAverage(models.Model):
         return f"{self.student_name} - {self.grade} - {self.section} - General Average: {self.general_average}"
 
 class QuarterlyGrades(models.Model):
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     quarter = models.CharField(max_length=100)
     grades = models.JSONField(null=True)
@@ -633,6 +644,7 @@ class AcceptedMessage(models.Model):
         return f"AcceptedMessage {self.message_id}"
     
 class AdvisoryClass(models.Model):
+    
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
     grades_data = models.JSONField(null=True, blank=True)

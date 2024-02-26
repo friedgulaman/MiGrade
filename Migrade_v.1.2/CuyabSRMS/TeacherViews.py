@@ -4,6 +4,8 @@ import os
 import io
 import re
 
+from requests import request
+
 from CuyabSRMS.utils import transmuted_grade, log_activity
 from .utils import log_activity
 from django import forms
@@ -41,6 +43,7 @@ from django.template import RequestContext
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.core.files.uploadedfile import TemporaryUploadedFile
+import openpyxl
 from django.http import HttpResponseForbidden
 
 #Grade
@@ -53,6 +56,13 @@ from django.utils import translation
 from django.db import transaction
 from statistics import mean
 from django.core.exceptions import MultipleObjectsReturned
+from openpyxl import load_workbook
+from django.utils.timezone import now
+from django.core.exceptions import MultipleObjectsReturned
+import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from json import loads as json_loads
 
 @login_required
@@ -111,8 +121,32 @@ def dashboard(request):
 
 # Your combined view
 def process_google_sheet(spreadsheet_id, sheet_name):
+    # Read environment variables
+    project_id = os.getenv("SHEET_PROJECT_ID")
+    private_key_id = os.getenv("SHEET_PRIVATE_KEY_ID")
+    private_key = os.getenv("SHEET_PRIVATE_KEY")
+    client_email = os.getenv("SHEET_CLIENT_EMAIL")
+    client_id = os.getenv("SHEET_CLIENT_ID")
+
+    # Construct JSON data using environment variables
+    data = {
+        "type": "service_account",
+        "project_id": project_id,
+        "private_key_id": private_key_id,
+        "private_key": private_key,
+        "client_email": client_email,
+        "client_id": client_id,
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}",
+        "universe_domain": "googleapis.com"
+    }
+
+    # Convert dictionary to JSON string
+    service_account = json.dumps(data, indent=4)
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-    SERVICE_ACCOUNT_FILE = 'keys.json'
+    SERVICE_ACCOUNT_FILE = 'service_account'
 
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -1017,8 +1051,8 @@ def sf9(request):
     return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
 
 @login_required
-def delete_class(request, grade, section):
-    user = request.user            
+def delete_student(request, grade, section):
+    user = request.user
 
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
@@ -2118,15 +2152,19 @@ def validate_score(request):
 def delete_classrecord(request, class_record_id):
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
     user = request.user
-    class_record_name = class_record.name  # Assuming grade is a field in your ClassRecord model
-  
+    class_record_name = class_record.name
 
     # Assuming you have some permission checks here before deleting
-    class_record.delete()
-    action = f'{user} delete a Classrecord name "{class_record_name}"'
-    details = f'{user} deleted a Classrecord named "{class_record_name}" in the system.'
+
+    # Delete associated GradeScores records based on class record id
+    GradeScores.objects.filter(class_record_id=class_record_id).delete()
+
+    action = f'{user} deleted a Classrecord named "{class_record_name}"'
+    details = f'{user} deleted a Classrecord named "{class_record_name}" in the system along with its GradeScores.'
     log_activity(user, action, details)
 
+    # Now, delete the ClassRecord
+    class_record.delete()
 
     return JsonResponse({'message': 'Record deleted successfully'})
 
@@ -2138,3 +2176,462 @@ def class_records_list(request):
 def tempo_newupload(request):
     return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html')
 
+def read_excel_values(excel_file, sheet_name):
+    # Loading the workbook
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    data = []
+    start_reading = False
+
+    for row in sheet.iter_rows():
+        row_values = []
+        for cell in row[1:]:
+            cell_value = cell.value
+            row_values.append(cell_value)
+        
+        if any(cell_value is not None and cell_value != 0 for cell_value in row_values):
+            if any(isinstance(cell_value, str) and ("MALE" in cell_value or "FEMALE" in cell_value) for cell_value in row_values):
+                start_reading = True
+            
+            if start_reading:
+                data.append(row_values)
+
+    return data
+
+
+def process_row(row):
+    # Find the index of the first non-None element after index 0
+    index = 1
+    while index < len(row) and row[index] is None:
+        index += 1
+
+    # Remove the three None values next to index 0
+    row = [row[0]] + row[index:]
+
+    # Find the index of the last non-None element
+    last_index = len(row) - 1
+    while last_index >= 0 and row[last_index] is None:
+        last_index -= 1
+
+    # Remove all None values from the end of the list until reaching a non-None value
+    row = row[:last_index + 1]
+
+    return row
+
+def divide_scores(score_list):
+    written_works_scores = score_list[:10]
+    
+    # Check if there are enough elements in the score_list for written works
+    if len(score_list) >= 13:
+        total_scores_written = score_list[10]
+        percentage_score_written = score_list[11]
+        weighted_score_written = score_list[12]
+    else:
+        # Set default values if there are not enough elements for written works
+        total_scores_written = None
+        percentage_score_written = None
+        weighted_score_written = None
+    
+    written_works_dict = {
+        "written_works_scores": written_works_scores,
+        "total_scores_written": total_scores_written,
+        "percentage_score_written": percentage_score_written,
+        "weighted_score_written": weighted_score_written
+    }
+
+    # Extract Performance Task scores and related values
+    performance_task_scores = score_list[13:23]
+    
+    # Check if there are enough elements in the score_list for performance task
+    if len(score_list) >= 26:
+        total_score_performance = score_list[23]
+        percentage_score_performance = score_list[24]
+        weighted_score_performance = score_list[25]
+    else:
+        # Set default values if there are not enough elements for performance task
+        total_score_performance = None
+        percentage_score_performance = None
+        weighted_score_performance = None
+    
+    performance_task_dict = {
+        "performance_task_scores": performance_task_scores,
+        "total_score_performance": total_score_performance,
+        "percentage_score_performance": percentage_score_performance,
+        "weighted_score_performance": weighted_score_performance
+    }
+
+    # Check if there are enough elements in the score_list for Quarterly Assessment
+    if len(score_list) >= 29:
+        quarterly_assessment = {
+            "total_score_quarterly": score_list[26],
+            "percentage_score_quarterly": score_list[27],
+            "weighted_score_quarterly": score_list[28]
+        }
+    else:
+        quarterly_assessment = None
+    
+    # Check if there are enough elements in the score_list for Initial Grade
+    if len(score_list) >= 30:
+        initial_grade = {"initial_grades": score_list[29]}
+    else:
+        initial_grade = None
+    
+    # Check if there are enough elements in the score_list for Quarterly Grade
+    if len(score_list) >= 31:
+        quarterly_grade = {"transmuted_grades": score_list[30]}
+    else:
+        quarterly_grade = None
+    
+    return {
+        "WRITTEN WORKS": written_works_dict,
+        "PERFORMANCE TASK": performance_task_dict,
+        "QUARTERLY ASSESSMENT": quarterly_assessment,
+        "INITIAL GRADE": initial_grade,
+        "QUARTERLY GRADE": quarterly_grade
+    }
+
+
+
+def class_record_details(excel_file, sheet_name):
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    teacher_row = None
+    school_row = None
+
+    for row in sheet.iter_rows():
+        row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
+        
+        if "TEACHER:" in row_values:
+            grade_section = row_values[2].split('-')
+            if len(grade_section) > 1:
+                quarter = map_quarter(row_values[0])  # Map the quarter using the map_quarter function
+                grade = grade_section[0].strip()
+                section = grade_section[1].strip()
+                # Map the grade using the map_grade function
+                grade = map_grade(grade)
+                teacher_row = {
+                    "quarters": quarter,
+                    "grade": grade,
+                    "section": section,
+                    "subject": row_values[6]
+                }
+            else:
+                print("Grade section not formatted correctly:", row_values[2])
+        
+        if "SCHOOL NAME" in row_values:
+            school_row = {
+                "school_name": row_values[1],
+                "school_id": row_values[3],
+                "school_year": row_values[5]
+            }
+
+        if "REGION" in row_values:
+            region_row = {
+                "region": row_values[1],
+                "division": row_values[3],
+                "district": row_values[5]
+            }
+
+        if teacher_row and school_row and region_row:
+            break
+
+    return teacher_row, school_row, region_row
+
+
+def divide_hps(row):
+    # Divide into sections
+    hps_written_works = row[:13]
+    hps_performance = row[13:26]
+    hps_quarterly = row[26:]
+
+    # Extract values for hps_written_works
+    scores_hps_written = hps_written_works[:10]
+    total_ww_hps = hps_written_works[10]
+    percentage_hps_written = hps_written_works[11]
+    weight_input_written = hps_written_works[12]
+
+    # Extract values for hps_performance
+    scores_hps_performance = hps_performance[:10]
+    total_pt_hps = hps_performance[10]
+    percentage_hps_performance = hps_performance[11]
+    weight_input_performance = hps_performance[12]
+
+    # Extract values for hps_quarterly
+    total_qa_hps = hps_quarterly[0]
+    percentage_hps_quarterly = hps_quarterly[1]
+    weight_input_quarterly = hps_quarterly[2]
+
+    return {
+        "hps_written_works": {
+            "scores_hps_written": scores_hps_written,
+            "total_ww_hps": total_ww_hps,
+            "percentage_hps_written": percentage_hps_written,
+            "weight_input_written": weight_input_written
+        },
+        "hps_performance": {
+            "scores_hps_performance": scores_hps_performance,
+            "total_pt_hps": total_pt_hps,
+            "percentage_hps_performance": percentage_hps_performance,
+            "weight_input_performance": weight_input_performance
+        },
+        "hps_quarterly": {
+            "total_qa_hps": total_qa_hps,
+            "percentage_hps_quarterly": percentage_hps_quarterly,
+            "weight_input_quarterly": weight_input_quarterly
+        }
+    }
+
+
+def find_highest_possible_scores(excel_file, sheet_name):
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    hps_row = None
+
+    for row in sheet.iter_rows():
+        row_values = [cell.value for cell in row]
+        
+        # Check if the row contains the header "HIGHEST POSSIBLE SCORE" or "HIGHEST POSSIBLE SCORES"
+        if "HIGHEST POSSIBLE SCORE" in row_values:
+            # Exclude the first element (index 0) from the row_values list
+            row_values = row_values[1:]
+            # Process the row to remove leading and trailing None values
+            hps_row = process_row(row_values)
+            break
+
+    return [hps_row] if hps_row is not None else []
+
+def map_grade(grade):
+    grade_map = {
+        '1': 'Grade 1',
+        'one': 'Grade 1',
+        'grade 1': 'Grade 1',
+        'GRADE ONE': 'Grade 1',
+        '2': 'Grade 2',
+        'two': 'Grade 2',
+        'grade 2': 'Grade 2',
+        'GRADE TWO': 'Grade 2',
+        '3': 'Grade 3',
+        'three': 'Grade 3',
+        'grade 3': 'Grade 3',
+        'GRADE THREE': 'Grade 3',
+        '4': 'Grade 4',
+        'four': 'Grade 4',
+        'grade 4': 'Grade 4',
+        'GRADE FOUR': 'Grade 4',
+        '5': 'Grade 5',
+        'five': 'Grade 5',
+        'grade 5': 'Grade 5',
+        'GRADE FIVE': 'Grade 5',
+        '6': 'Grade 6',
+        'six': 'Grade 6',
+        'grade 6': 'Grade 6',
+        'I': 'Grade 1',
+        'II': 'Grade 2',
+        'III': 'Grade 3',
+        'IV': 'Grade 4',
+        'V': 'Grade 5',
+        'VI': 'Grade 6',
+
+    }
+    return grade_map.get(grade.lower(), 'Unknown Grade')
+
+def map_quarter(quarter):
+    quarter_map = {
+        '1': '1st Quarter',
+        'first quarter': '1st Quarter',
+        'first': '1st Quarter',
+        '1st': '1st Quarter',
+        '2': '2nd Quarter',
+        'second quarter': '2nd Quarter',
+        'second': '2nd Quarter',
+        '2nd': '2nd Quarter',
+        '3': '3rd Quarter',
+        'third quarter': '3rd Quarter',
+        'third': '3rd Quarter',
+        '3rd': '3rd Quarter',
+        '4': '4th Quarter',
+        'fourth quarter': '4th Quarter',
+        'fourth': '4th Quarter',
+        '4th': '4th Quarter',
+        '1ST QUARTER': '1st Quarter',
+        'FIRST QUARTER': '1st Quarter',
+        '2ND QUARTER': '2nd Quarter',
+        'SECOND QUARTER': '2nd Quarter',
+        '3RD QUARTER': '3rd Quarter',
+        'THIRD QUARTER': '3rd Quarter',
+        '4TH QUARTER': '4th Quarter',
+        'FOURTH QUARTER': '4th Quarter',
+    }
+    return quarter_map.get(quarter.lower(), 'Unknown Quarter')
+
+def map_data_to_model(json_data, teacher_id, request):
+    # Initialize messages list
+    messages_list = []
+    success = True
+    try:
+        # Extract details from JSON
+        teacher_info = json_data['details']['teacher_info']
+        students_scores = json_data['students_scores']
+        hps_class_record = json_data['hps_class_record']['HIGHEST POSSIBLE SCORE']
+
+        # Create ClassRecord instance
+        class_record_instance = ClassRecord.objects.create(
+            name=f"{teacher_info['grade']} - {teacher_info['section']} - {teacher_info['subject']} - {teacher_info['quarters']}",
+            grade=teacher_info['grade'],
+            section=teacher_info['section'],
+            subject=teacher_info['subject'],
+            quarters=teacher_info['quarters'],
+            teacher_id=teacher_id
+        )
+
+        # Iterate over student names in JSON data
+        for student_name, student_data in students_scores.items():
+            # Find the student with the same name and teacher ID
+            try:
+                student = Student.objects.get(name=student_name, teacher_id=teacher_id)
+            except Student.DoesNotExist:
+                messages_list.append(('error', f"Student '{student_name}' does not exist in the database for the provided criteria."))
+                continue  # Skip this student if not found
+
+            try:
+                # Function to replace None values with empty strings in a list
+                def replace_none_with_empty(lst):
+                    return ["" if item is None else item for item in lst]
+
+                # Now, when saving GradeScores instance, preprocess the lists
+                GradeScores.objects.create(
+                    student=student,
+                    class_record=class_record_instance,
+                    scores_hps_written=replace_none_with_empty(hps_class_record.get('hps_written_works', {}).get('scores_hps_written', [])),
+                    scores_hps_performance=replace_none_with_empty(hps_class_record.get('hps_performance', {}).get('scores_hps_performance', [])),
+                    total_ww_hps=hps_class_record['hps_written_works'].get('total_ww_hps', ""),
+                    total_pt_hps=hps_class_record['hps_performance'].get('total_pt_hps', ""),
+                    total_qa_hps=hps_class_record['hps_quarterly'].get('total_qa_hps', ""),
+                    written_works_scores=replace_none_with_empty(student_data.get('WRITTEN WORKS', {}).get('written_works_scores', [])),
+                    performance_task_scores=replace_none_with_empty(student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', [])),
+                    initial_grades=student_data.get('INITIAL GRADE', {}).get('initial_grades', ""),
+                    transmuted_grades=student_data.get('QUARTERLY GRADE', {}).get('transmuted_grades', ""),
+                    total_score_written=student_data.get('WRITTEN WORKS', {}).get('total_scores_written', ""),
+                    total_score_performance=student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', ""),
+                    total_score_quarterly=student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', ""),
+                    percentage_score_written=student_data.get('WRITTEN WORKS', {}).get('percentage_score_written', ""),
+                    percentage_score_performance=student_data.get('PERFORMANCE TASK', {}).get('percentage_score_performance', ""),
+                    percentage_score_quarterly=student_data.get('QUARTERLY ASSESSMENT', {}).get('percentage_score_quarterly', ""),
+                    weight_input_written=int(hps_class_record['hps_written_works'].get('weight_input_written', "") * 100),
+                    weight_input_performance=int(hps_class_record['hps_performance'].get('weight_input_performance', "") * 100),
+                    weight_input_quarterly=int(hps_class_record['hps_quarterly'].get('weight_input_quarterly', "") * 100),
+                    weighted_score_written=student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', ""),
+                    weighted_score_performance=student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', ""),
+                    weighted_score_quarterly=student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
+                )
+            except Exception as e:
+                messages_list.append(('error', f"Error occurs in student '{student_name}': {e}"))
+
+        # Add success message
+        messages_list.append(('success', 'Class record uploaded successfully.'))
+
+    except Exception as e:
+        messages_list.append(('error', f"Error code: {e}"))
+        success = False
+
+    # Loop through messages list and add messages to request
+    for message_type, message_text in messages_list:
+        if message_type == 'success':
+            messages.success(request, message_text)
+        elif message_type == 'error':
+            messages.error(request, message_text)
+
+    return success
+
+
+@login_required
+@require_POST
+def class_record_upload(request):
+    if request.method == 'POST':
+        excel_file = request.FILES['excel_file']
+        sheet_name = request.POST.get('sheet_name')
+        try:
+            class_record_data = read_excel_values(excel_file, sheet_name)
+
+            # Process each row in class_record_data
+            class_record_data_scores = [process_row(row) for row in class_record_data]
+
+            # Create a dictionary where student's name is the key and the rest of the row values are stored as a list
+            class_record_data_scores_with_names = {}
+            for row in class_record_data_scores:
+                # Check if the student name contains 'FEMALE' or 'MALE'
+                if "FEMALE" not in row[0]:
+                    student_name = row[0]
+                    student_info = {'student_name': student_name}
+                    
+                    # Find the index of the first non-zero and non-None value
+                    index = 1
+                    while index < len(row) and (row[index] == 0 or row[index] is None):
+                        index += 1
+
+                    # Remove leading occurrences of 0 or None
+                    cleaned_row = row[index:] if index < len(row) else []
+
+                    # Update the dictionary with the cleaned row values
+                    student_info.update(divide_scores(cleaned_row))
+                    class_record_data_scores_with_names[student_name] = student_info
+
+
+            # Remove the first student from the dictionary
+            if class_record_data_scores_with_names:
+                del class_record_data_scores_with_names[next(iter(class_record_data_scores_with_names))]
+
+            # Store the result as JSON in the variable students_scores
+            students_scores = class_record_data_scores_with_names
+
+            teacher_info, school_info, region_info = class_record_details(excel_file, sheet_name)
+            
+            highest_possible_scores = find_highest_possible_scores(excel_file, sheet_name)
+            highest_possible_scores_with_label = {}
+
+            for row in highest_possible_scores:
+                hps_label = row.pop(0)
+                highest_possible_scores_with_label[hps_label] = divide_hps(row)
+
+            hps_class_record = highest_possible_scores_with_label
+
+            # Store both results in a single dictionary
+            extracted_class_record = {
+                "details": {
+                    "teacher_info": teacher_info,
+                    "school_info": school_info,
+                    "region_info": region_info
+                },
+                "students_scores": students_scores,
+                "hps_class_record": hps_class_record
+            }
+            
+            # Save extracted_class_record as a JSON file
+            json_filename = 'result.json'
+            json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+
+            # Ensure the directory exists, if not create it
+            os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
+            with open(json_path, 'w') as json_file:
+                json.dump(extracted_class_record, json_file, indent=4)  
+            
+            # Map the loaded JSON data to the model
+            success = map_data_to_model(extracted_class_record, request.user.teacher.id, request)  # Passing request object
+
+            if success:
+                return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
+            else:
+                # If there's an error, return the same template with an error flag
+                return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html', {'error': True})
+        except Exception as e:
+            # Add error message
+            messages.error(request, f'Error processing file: {e}')
+
+        return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
+    else:
+        # Return a response in case of non-POST requests
+        return HttpResponse("Only POST requests are allowed.")
