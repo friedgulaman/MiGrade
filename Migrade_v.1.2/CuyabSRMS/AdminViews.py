@@ -1348,6 +1348,7 @@ def detect_and_convert_tables(request):
                     # Extract text content of header and body rows
                     for row in table.header_rows:
                         row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        row_hps = "HIGHEST POSSIBLE SCORE"
                         table_data.append(row_content)
 
                     for row in table.body_rows:
@@ -1411,3 +1412,4 @@ def layout_to_text(layout, document_text):
         end_index = text_segment.end_index
         text_content += document_text[start_index:end_index]
     return text_content
+    

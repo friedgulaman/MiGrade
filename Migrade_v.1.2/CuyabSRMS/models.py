@@ -6,12 +6,15 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
 from django.conf import settings
-
+import json
 from datetime import datetime
 import re
 from django.utils import timezone
 from django.db import transaction
 import os
+from django.db.models import Avg
+from django.db.models import F, Subquery, OuterRef, Value
+from django.db.models.functions import Cast
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -57,7 +60,7 @@ class Student(models.Model):
     lrn = models.CharField(max_length=12)
     sex = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')))
     birthday = models.CharField(max_length=10, default='N/A')
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     school_id = models.CharField(max_length=50, null=True, blank=True)
     division = models.CharField(max_length=255, null=True, blank=True)
     district = models.CharField(max_length=255, null=True, blank=True)
@@ -65,7 +68,7 @@ class Student(models.Model):
     school_year = models.CharField(max_length=50, null=True, blank=True)
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
-    class_type = models.CharField(max_length=50, null=True, blank=True)  # New field for class type
+    class_type = models.JSONField(null=True)  # New field for class type
 
     def __str__(self):
         return self.name
@@ -148,7 +151,7 @@ class Section(models.Model):
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='sections')
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')
     total_students = models.PositiveIntegerField(default=0)
-    class_type = models.CharField(max_length=50, null=True, blank=True)
+    class_type = models.JSONField(null=True, blank=True)
     
     def __str__(self):
         return self.name
@@ -180,6 +183,7 @@ class ClassRecord(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Add a foreign key to Teacher
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_modified = models.DateTimeField(auto_now=True)
+    school_year = models.CharField(max_length=50, null=True)
 
     def archive(self):
         try:
@@ -211,7 +215,7 @@ class ClassRecord(models.Model):
                         weight_input_performance=gradescore.weight_input_performance,
                         weight_input_quarterly=gradescore.weight_input_quarterly,
                         weighted_score_written=gradescore.weighted_score_written,
-                        weighted_score_performance=gradescore.weighted_score_performance,
+                          weighted_score_performance=gradescore.weighted_score_performance,
                         weighted_score_quarterly=gradescore.weighted_score_quarterly,
                     )
 
@@ -471,6 +475,8 @@ class QuarterlyGrades(models.Model):
     def __str__(self):
         return f"{self.student.name}'s grades for {self.quarter}"
 
+
+    
 class ArchivedGeneralAverage(models.Model):
     archived_student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
     archived_grade = models.CharField(max_length=50)
@@ -623,20 +629,36 @@ class AcceptedMessage(models.Model):
 class AdvisoryClass(models.Model):
     grade = models.CharField(max_length=50, null=True, blank=True)
     section = models.CharField(max_length=50, null=True, blank=True)
-    subject = models.CharField(max_length=50, null=True, blank=True)
-    first_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    second_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    third_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    fourth_quarter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    from_teacher_id = models.CharField(max_length=50, null=True, blank=True)
+    grades_data = models.JSONField(null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, limit_choices_to={'class_type': 'advisory'})
 
+    def set_grades_data(self, data):
+        self.grades_data = json.dumps(data)
+
+    def get_grades_data(self):
+        return self.grades_data if self.grades_data else {}
+
+    def set_grade_for_subject(self, subject, grades):
+        if not self.grades_data:
+            self.grades_data = {}
+        if subject not in self.grades_data:
+            self.grades_data[subject] = {}
+        self.grades_data[subject].update(grades)
+        
+    def get_grade_for_subject(self, subject):
+        if self.grades_data and subject in self.grades_data:
+            return self.grades_data[subject]
+        return None
    
 class Announcement(models.Model):
+
     title = models.CharField(max_length=100)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
+
         return self.title
+    

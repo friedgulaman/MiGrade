@@ -53,7 +53,9 @@ New Class List
                                         {% if unique_grades_sections %}
                                         <ul class="d-flex flex-wrap justify-content-start align-items-center">
                                             {% for grade_section in unique_grades_sections %}
-                                            {% if grade_section.class_type == 'Advisory' %}
+                                            {% with class_type_dict=grade_section.class_type|safe %}
+                                            {% if teacher.id|add:" " in class_type_dict %}
+                                            {% if class_type_dict == 'Advisory Class' or 'Advisory Class, Subject Class' in class_type_dict %}
                                             <li class="d-block p-2">
                                                 <div class="btn-group">
                                                     <button type="button"
@@ -112,7 +114,10 @@ New Class List
                                                     </div>
                                                 </div>
                                             </li>
+                                            
                                             {% endif %}
+                                            {% endif %}
+                                            {% endwith %}
                                         {% endfor %}
                                         {% endif %}
                                         </ul>
@@ -127,7 +132,9 @@ New Class List
                                         {% if unique_grades_sections %}
                                         <ul class="d-flex flex-wrap justify-content-start align-items-center">
                                             {% for grade_section in unique_grades_sections %}
-                                            {% if grade_section.class_type == 'Subject' %}
+                                            {% with class_type_dict=grade_section.class_type|safe %}
+                                            {% if teacher.id|add:" " in class_type_dict %}
+                                            {% if class_type_dict == 'Subject Class' or 'Advisory Class, Subject Class' in class_type_dict %}
                                             <li class="d-block p-2">
                                                 <div class="btn-group">
                                                     <button type="button"
@@ -187,6 +194,8 @@ New Class List
                                                 </div>
                                             </li>
                                             {% endif %}
+                                            {% endif %}
+                                            {% endwith %}
                                         {% endfor %}
                                         {% endif %}
                                         </ul>

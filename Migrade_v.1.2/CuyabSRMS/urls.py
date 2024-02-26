@@ -134,7 +134,7 @@ urlpatterns = [
     path('toggle_class_type/', teacher_required(TeacherViews.toggle_class_type), name='toggle_class_type'),
     path('display_advisory_data', teacher_required(TeacherViews.display_advisory_data), name='display_advisory_data'),
     path('display_student_transmuted_grades/', teacher_required(TeacherViews.display_student_transmuted_grades), name='display_student_transmuted_grades'),
-
+     path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
 
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
@@ -166,7 +166,7 @@ urlpatterns = [
     # path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
-    path('display_classrecord/<int:class_record_id>/', TeacherViews.display_classrecord, name='display_classrecord'),
+    path('display_classrecord/<int:class_record_id>/', teacher_required(TeacherViews.display_classrecord), name='display_classrecord'),
     path('display_students', TeacherViews.display_students, name='display_students'),
     path('delete_student/<str:grade>/<str:section>/',TeacherViews.delete_student, name='delete_student'),
     path('view_classrecord', TeacherViews.view_classrecord, name='view_classrecord'),
