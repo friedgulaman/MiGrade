@@ -1051,7 +1051,7 @@ def sf9(request):
     return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
 
 @login_required
-def delete_student(request, grade, section):
+def delete_class(request, grade, section):
     user = request.user
 
     if user.user_type == 2:

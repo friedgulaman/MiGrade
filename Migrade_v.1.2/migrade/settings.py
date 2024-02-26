@@ -44,7 +44,7 @@ SECRET_KEY = django
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['192.168.1.5']
+ALLOWED_HOSTS = ['*']
 # http://127.0.0.1:8000/
 
 # ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1']
@@ -105,7 +105,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.1.7',
+        'NAME': 'migrade_v.1.8',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   
