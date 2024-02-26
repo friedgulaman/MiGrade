@@ -69,7 +69,7 @@ New Class List
             class="btn btn-primary mt-3 container d-flex justify-content-center align-center">
             <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator1" style="display: none;" role="status"
               aria-hidden="true"></span>
-            Upload
+              <span id="upload_btn_1_text">Upload</span>
           </button>
         </form>
 
@@ -104,7 +104,7 @@ New Class List
             class="btn btn-primary mt-3 container d-flex justify-content-center align-center">
             <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator2" style="display: none;" role="status"
               aria-hidden="true"></span>
-            Upload
+              <span id="upload_btn_2_text">Upload</span>
           </button>
         </form>
 
@@ -222,9 +222,7 @@ New Class List
 
 
 </section>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
   // JavaScript to handle the back button click event
@@ -237,6 +235,9 @@ New Class List
     // Show the loading indicator for Form 1
     document.getElementById('loadingIndicator1').style.display = 'block';
 
+     // Change the text to "Loading, please wait..."
+     document.getElementById('upload_btn_1_text').innerText = 'Uploading, please wait...';
+
     // Optionally, you can disable the submit button to prevent multiple submissions
     document.getElementById('upload_btn_1').setAttribute('disabled', 'true');
   });
@@ -244,6 +245,9 @@ New Class List
   document.getElementById('form2').addEventListener('submit', function () {
     // Show the loading indicator for Form 2
     document.getElementById('loadingIndicator2').style.display = 'block';
+
+     // Change the text to "Loading, please wait..."
+     document.getElementById('upload_btn_2_text').innerText = 'Uploading, please wait...';
 
     // Optionally, you can disable the submit button to prevent multiple submissions
     document.getElementById('upload_btn_2').setAttribute('disabled', 'true');

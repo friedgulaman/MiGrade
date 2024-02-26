@@ -3,6 +3,7 @@
 MiGrade - Adviser Teacher
 {% endblock %}
 {% block main_content %}
+{% load static %}
 <style>
   /* CSS to remove the outline */
   #no-outline {
@@ -17,7 +18,7 @@ MiGrade - Adviser Teacher
     cursor: pointer;
   }
   section{
-    background-image: url('static/star-admin/images/bg_home_teacher_2.png');
+    background-image: url('/static/star-admin/images/bg_home_teacher_2.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;

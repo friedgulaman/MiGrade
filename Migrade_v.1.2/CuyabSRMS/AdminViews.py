@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
+from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
 from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
@@ -45,6 +46,11 @@ import base64
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 @login_required
 def home_admin(request):
@@ -57,8 +63,7 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
-    announcements = Announcement.objects.all()
-    
+   
    
     context = {
         'grades': grades,
@@ -69,10 +74,14 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
-        'announcements': announcements,
+       
 
     }
     return render(request, 'admin_template/home_admin.html', context)
+def admin_base(request):
+    announcements = Announcement.objects.all()
+    return {'announcements': announcements}
+
 
 def add_teacher(request):
     return render(request, 'admin_template/add_teacher.html')
@@ -584,12 +593,13 @@ def add_teacher_save(request):
         messages.error(request, "Invalid Method ")
         return redirect('teachers')
     else:
+        default = os.getenv("DEFAULT_PASSWORD")
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         middle_ini = request.POST.get('middle_ini')
         username = request.POST.get('username')
         email = request.POST.get('email')
-        password = request.POST.get('password', 'default_pass')
+        password = request.POST.get('password', default)
         user = request.user
 
         try:
@@ -1020,12 +1030,11 @@ def sf10_views(request):
     return render(request, 'admin_template/sf10.html', context)
 
 def announcement(request):
-    return render(request, 'admin_template/announcement.html')
-
-def announcement_list(request):
     announcements = Announcement.objects.all()
     return render(request, 'admin_template/announcement.html', {'announcements': announcements})
 
+
+   
 def create_announcement(request):
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -1035,11 +1044,11 @@ def create_announcement(request):
         try:
             Announcement.objects.create(title=title, content=content)
             messages.success(request, 'Announcement created successfully')
-            return redirect('home_admin')
+            return render(request, 'admin_template/announcement.html')
         except Exception as e:
             messages.error(request, f'Failed to create Announcement: {e}')
 
-    return render(request, 'admin_template/home_admin.html')
+    return render(request, 'admin_template/announcement.html')
 
 def delete_announcement(request, announcement_id):
     announcement = get_object_or_404(Announcement, pk=announcement_id)
@@ -1048,6 +1057,26 @@ def delete_announcement(request, announcement_id):
         return JsonResponse({'success': True, 'message': 'Announcement deleted successfully'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Failed to delete announcement: {e}'})
+
+
+
+def user_list(request):
+    teachers = CustomUser.objects.filter(user_type=2)  # Assuming 1 represents "Teacher" in your model
+    return render(request, 'teacher_list.html', {'teachers': teachers})
+
+def user_activities(request):
+    user_id = request.GET.get('id')
+    if user_id:
+        activities = ActivityLog.objects.filter(user_id=user_id)
+        return render(request, 'admin_template/user_activities.html', {'activities': activities})
+    else:
+        # Handle case when no user ID is provided
+        return render(request, 'error.html', {'error_message': 'User ID is required'})
+
+
+
+
+
 
    
 def sf10_edit_view(request, id):

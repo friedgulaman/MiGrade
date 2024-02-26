@@ -46,6 +46,22 @@
   .forgot_pass {
     font-size: 10px;
   }
+  /* CSS for the animation */
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Apply animation to alert messages */
+  .alert {
+    animation: slideInLeft 0.5s ease-out;
+  }
 </style>
 
 <div id="alert">
@@ -85,7 +101,7 @@
         <div class="brand-logo">
           <img src="{% static 'star-admin/images/logo_migrade.png' %}" alt="logo">
         </div>
-        <p class="desc">A Web Based Student Record Management System utilizing Optical Character Recognition for Cuyab
+        <p class="desc container">A Web Based Student Record Management System utilizing Optical Character Recognition for Cuyab
           Elementary School</p>
         <button id="toggle-login" class="btn btn-success container w-50">&rarr;</button>
       </div>
@@ -113,12 +129,10 @@
         <div class="">
           <div class="g-recaptcha d-flex justify-content-center align-center mb-2"
             data-sitekey="6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI"></div>
-          <button class="btn btn-primary container btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn"
-            type="submit">
-            <span class="spinner-grow spinner-grow-sm d-none me-2" id="spinner-grow" role="status"
-              aria-hidden="true"></span>
-            SIGN IN
-          </button>
+            <button class="btn btn-primary container d-flex justify-content-center container btn-primary btn-lg font-weight-medium auth-form-btn align-center" id="upload_btn_1" type="submit">
+              <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator1" style="display: none;" role="status" aria-hidden="true"></span>
+              <span id="upload_btn_1_text">SIGN IN</span>
+            </button>
         </div>
 
 
@@ -176,7 +190,11 @@
       event.stopPropagation();
     } else {
       // Show the loading spinner while the login request is being processed
-      document.getElementById("spinner-grow").classList.remove("d-none");
+      document.getElementById('loadingIndicator1').style.display = 'block';
+      // Change the text to "Loading, please wait..."
+      document.getElementById('upload_btn_1_text').innerText = 'SIGNING IN...';
+      // Optionally, you can disable the submit button to prevent multiple submissions
+      document.getElementById('upload_btn_1').setAttribute('disabled', 'true');
     }
     form.classList.add("was-validated");
   });

@@ -15,7 +15,9 @@ from . info import *
 from .info import EMAIL_USE_TLS, EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_PORT
 from django.conf.urls.static import static
 import sys
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,13 +37,14 @@ EMAIL_DEBUG = True
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wdke-rd%j16gdotni4rj$mgdqy__%d4#sin44zug-z67e!(xg0'
+django = os.getenv("DJANGO")
+SECRET_KEY = django
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1',]
+ALLOWED_HOSTS = ['*']
 # http://127.0.0.1:8000/
 
 # ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1']
@@ -90,6 +93,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'CuyabSRMS.AdminViews.admin_base',
 
             ],
         },
@@ -101,7 +105,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.1.7',
+        'NAME': 'migrade_v.1.8',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   
@@ -154,7 +158,8 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # Include your project's static files
-    os.path.join(BASE_DIR, 'static/node_modules/bootstrap/dist'),  # Include Bootstrap from npm
+    os.path.join(BASE_DIR, 'static/node_modules/bootstrap/dist'), 
+    os.path.join(BASE_DIR, 'static/star-admin/'),  
 ]
 
 # Static files (CSS, JavaScript, Images)
