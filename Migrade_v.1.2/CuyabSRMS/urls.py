@@ -87,6 +87,26 @@ urlpatterns = [
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
     path('users/', admin_required(AdminViews.user_list), name='user_list'),
     path('user_activities', admin_required(AdminViews.user_activities), name='user_activities'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('add/', AdminViews.add_school_view, name='add_school'),
+    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
+    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    path('add/', AdminViews.add_school_view, name='add_school'),
+    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
+    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
+    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
+    path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
+
 
 
     path('school-information/', AdminViews.school_information_view, name='school_information'),
@@ -138,6 +158,7 @@ urlpatterns = [
 
     path('class_record_upload', teacher_required(TeacherViews.class_record_upload), name='class_record_upload'),
 
+    path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
 
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
@@ -169,9 +190,10 @@ urlpatterns = [
     # path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
-    path('display_classrecord/<int:class_record_id>/', TeacherViews.display_classrecord, name='display_classrecord'),
+    path('display_classrecord/<int:class_record_id>/', teacher_required(TeacherViews.display_classrecord), name='display_classrecord'),
     path('display_students', TeacherViews.display_students, name='display_students'),
-    path('delete_student/<str:grade>/<str:section>/',TeacherViews.delete_student, name='delete_student'),
+    path('delete_class/<str:grade>/<str:section>/',TeacherViews.delete_class, name='delete_class'),
+     path('delete_class_subject/<str:grade>/<str:section>/',TeacherViews.delete_class_subject, name='delete_class_subject'),
     path('view_classrecord', TeacherViews.view_classrecord, name='view_classrecord'),
     path('edit_record/<int:record_id>/', TeacherViews.edit_record, name='edit_record'),
     path('display_quarterly_summary/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', TeacherViews.display_quarterly_summary, name='display_quarterly_summary'),
@@ -206,7 +228,7 @@ urlpatterns = [
     path('archived-records/', ArchivedViews.archived_records, name='archived_records'),
     path('restore-archived-record/<int:archived_record_id>/', ArchivedViews.restore_archived_record, name='restore_archived_record'),
     path('archive-class-record/<int:class_record_id>/', ArchivedViews.archive_class_record, name='archive_class_record'),
-    path('archive_students/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
+    path('archive_students_with_grade_and_section/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
     path('restore_archived_students/<str:grade>/<str:section>/', ArchivedViews.restore_archived_students, name='restore_archived_students'),
 
 

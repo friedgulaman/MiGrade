@@ -15,7 +15,7 @@ from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse
-
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 import pandas as pd
 from googleapiclient.discovery import build
@@ -37,13 +37,14 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.template.loader import render_to_string
-
+from django.db.models import Avg
 from django.template import RequestContext
 #Grade
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.core.files.uploadedfile import TemporaryUploadedFile
 import openpyxl
+from django.http import HttpResponseForbidden
 
 #Grade
 from django.http import JsonResponse
@@ -62,6 +63,7 @@ import logging
 import os
 from dotenv import load_dotenv
 load_dotenv()
+from json import loads as json_loads
 
 @login_required
 def home_teacher(request):
@@ -312,7 +314,7 @@ def process_excel_file(file_path):
             key_value_pairs = {}
 
             for i, row in enumerate(row_list, start=1):
-                print(f"Processing Row {i}: {row}")  # Add this line to debug
+                # print(f"Processing Row {i}: {row}")  # Add this line to debug
 
                 for term in terms_to_find:
                     if term in row:
@@ -323,10 +325,10 @@ def process_excel_file(file_path):
                             key_value_pairs[term.replace(" ", "_")] = None
 
             # Print LRN data and key-value pairs
-            print("LRN Data:")
-            print(lrn_data)
-            print("Key-Value Pairs:")
-            print(key_value_pairs)
+            # print("LRN Data:")
+            # print(lrn_data)
+            # print("Key-Value Pairs:")
+            # print(key_value_pairs)
 
             return {'lrn_data': lrn_data, 'key_value_pairs': key_value_pairs}
         else:
@@ -380,10 +382,10 @@ def upload(request):
             result_data = process_excel_file(temp_file_path)
 
             if result_data is not None:
-                print("LRN Data:")
-                print(result_data['lrn_data'])
-                print("Key-Value Pairs:")
-                print(result_data['key_value_pairs'])
+                # print("LRN Data:")
+                # print(result_data['lrn_data'])
+                # print("Key-Value Pairs:")
+                # print(result_data['key_value_pairs'])
                 return render(request, 'teacher_template/adviserTeacher/tempo_newupload.html', result_data)
             else:
                 messages.error(request, "Failed to process the Excel File")
@@ -415,7 +417,19 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
-            class_type = received_data.get('classType', '')  # New field for class type
+            class_type_data = received_data.get('classType', '')   # New field for class type
+
+            subject = ''
+            if class_type_data == 'Advisory':
+                subject = 'Advisory Class'
+            elif class_type_data == 'Subject':
+                subject = 'Subject Class'
+            elif class_type_data == 'advisory_Subject':
+                subject = 'Advisory Class, Subject Class'
+
+            teacher_id = teacher.id
+
+            class_type = {teacher_id: subject}
 
             user = request.user
             action = f'{user} create a Class {grade_name} {section_name}'
@@ -423,7 +437,30 @@ def save_json_data(request):
             log_activity(user, action, details)
 
             logs = user, action, details    
-            print(logs)
+            # print(logs)
+
+            grade, _ = Grade.objects.get_or_create(name=grade_name)
+
+            section, _ = Section.objects.get_or_create(name=section_name, grade=grade)
+
+                            # Increment the total_students field for the respective section
+            section.total_students += 1
+            # Initialize or get the existing class_type dictionary for the section
+            existing_class_type = section.class_type or {}
+
+            # Check if the class_type already exists
+            if any(existing_teacher_id == teacher_id for existing_teacher_id in existing_class_type):
+                # Raise an error indicating that the class_type already exists
+                raise ValidationError("Class type already exists for this teacher.")
+
+            # Update the existing class_type with the new value
+            existing_class_type.update(class_type)
+
+            # Save the class_type on the Section object
+            section.class_type = existing_class_type
+
+            # Save the Section object
+            section.save()
 
             for item in received_data['rows']:
                 lrn = item.get('LRN')
@@ -432,15 +469,8 @@ def save_json_data(request):
                 birthday = item.get('Birthday')
 
                 # Create or update the Grade object
-                grade, _ = Grade.objects.get_or_create(name=grade_name)
 
                 # Create or update the Section object
-                section, _ = Section.objects.get_or_create(name=section_name, grade=grade, teacher=teacher)
-
-                # Increment the total_students field for the respective section
-                section.total_students += 1
-                section.class_type = class_type  # Save the class type on Section
-                section.save()
 
                 # Initialize or get the existing grade_section dictionary
                 teacher.grade_section = teacher.grade_section or {}
@@ -449,41 +479,84 @@ def save_json_data(request):
                 teacher.grade_section[grade.name] = section.name
                 teacher.save()
 
-                # Create or update the Student object based on LRN and teacher
+                
+
+                # Get or create the Student object based on LRN and teacher
                 student, created = Student.objects.get_or_create(
                     lrn=lrn,
-                    teacher=teacher,
+                    school_year=school_year,
                     defaults={
                         'name': name,
                         'sex': sex,
                         'birthday': birthday,
+                        'lrn':lrn,
                         'school_id': school_id,
                         'district': district,
                         'division': division,
                         'school_name': school_name,
-                        'school_year': school_year,
                         'grade': grade.name,
                         'section': section.name,
                         'class_type': class_type  # Save the class type on Student
                     }
                 )
+   
 
+                existing_class_type = student.class_type 
+                print(f"existing class type : {existing_class_type}")
+
+                # if teacher_id in existing_class_type:
+                #     existing_class_type[teacher_id] += f", {subject}"
+                # else:
+                print(f"before student school year exist: {class_type}")
+                existing_class_type.update(class_type)
+                print(f"existing class type.append : {existing_class_type}")
+                
+
+
+                # print(f"Student.School year: {student.school_year}")
+                # print(f"school year: {school_year}")
+                # Update class_type for existing student
+                if not created:
+                    
+                    print(f"during student school year exist: {existing_class_type}")
+                    # Check if the existing student has the same school year
+                    if student.school_year == school_year:
+                            print(f"after student school year exist: {existing_class_type}")
+                            student.class_type =  existing_class_type
+                            print(f"student class type: {student.class_type}")
+                            student.save()
+                            
+                    else:
+                        # If LRN exists but different school year, create a new entry
+                        student = Student.objects.create(
+                            lrn=lrn,
+                            name=name,
+                            sex=sex,
+                            birthday=birthday,
+                            school_id=school_id,
+                            district=district,
+                            division=division,
+                            school_name=school_name,
+                            school_year=school_year,
+                            grade=grade.name,
+                            section=section.name,
+                            class_type=class_type
+                        )
                 # Update other fields if needed
-                student.name = name
-                student.sex = sex
-                student.birthday = birthday
-                student.school_id = school_id
-                student.division = division
-                student.district = district
-                student.school_name = school_name
-                student.school_year = school_year
-                student.grade = grade.name
-                student.section = section.name
-                student.class_type = class_type  # Update the class type on Student
+                # student.name = name
+                # student.sex = sex
+                # student.birthday = birthday
+                # student.school_id = school_id
+                # student.division = division
+                # student.district = district
+                # student.school_name = school_name
+                # student.school_year = school_year
+                # student.grade = grade.name
+                # student.section = section.name
+            
 
                 # Save the associated objects before saving the student
                 grade.save()
-                section.save()
                 student.save()
 
             response_data = {'message': 'JSON data saved successfully'}
@@ -496,8 +569,6 @@ def save_json_data(request):
     else:
         response_data = {'message': 'Method not allowed'}
         return JsonResponse(response_data, status=405)
-
-
 
 
 
@@ -573,6 +644,11 @@ def get_students_by_grade_and_section(request):
             quarter_name = request.POST.get("quarter")
 
             user = request.user
+
+            all_school_info = SchoolInformation.objects.all()
+
+            for school_info in all_school_info:
+                school_year = school_info.school_year
             
 
             teacher = get_object_or_404(Teacher, user=user)
@@ -587,13 +663,14 @@ def get_students_by_grade_and_section(request):
                 subject=subject_name,
                 quarters=quarter_name,
                 teacher=teacher,
+                school_year=school_year,
             )
 
             classrecord.save()
 
 
             # Query the database to retrieve students based on the selected grade and section
-            students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
+            students = Student.objects.filter(grade=grade_name, section=section_name)
 
             subject = Subject.objects.get(name=subject_name)
 
@@ -652,6 +729,8 @@ def calculate_grades(request):
         print(request.POST)
         print(grade_name)
         print(section_name)
+        print(subject_name)
+        print(quarters_name)
 
 
         scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
@@ -684,7 +763,7 @@ def calculate_grades(request):
         logs = user, action, details    
         print(logs)
 
-        students = Student.objects.filter(grade=grade_name, section=section_name, class_type='Subject')
+        students = Student.objects.filter(grade=grade_name, section=section_name)
         
         for student in students:
             scores_written_works = []
@@ -832,7 +911,12 @@ def display_classrecord(request, class_record_id=None):
     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
 
+    teacher = request.user.teacher
+    # print(request.user)
+    teacher_id = teacher.id
 
+    if teacher_id != class_record.teacher_id:
+        return HttpResponseForbidden("You don't have permission to access this class record.")
     # If class_record_id is not provided, you may want to handle this case differently
     # For example, you can provide a list of available ClassRecord objects for the user to choose from
 
@@ -880,16 +964,33 @@ def display_students(request):
 
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
-        students = Student.objects.filter(teacher=teacher)
+        teacher_id = str(teacher.id)  # Convert teacher id to string for comparison
+
+        # Filter students based on the teacher_id in class_type
+        students = Student.objects.filter(class_type__has_key=teacher_id)
         unique_combinations = students.values('grade', 'section', 'class_type').distinct()
+        class_type_list = []
+
+        # Fetch the class type separately
+        for combination in unique_combinations:
+            class_type_dict = combination['class_type']
+            if class_type_dict:  # Ensure class_type is not None
+                if teacher_id in class_type_dict:  # Check if teacher_id exists in class_type_dict keys
+                    class_type_value = class_type_dict[teacher_id]  # Get the value using the teacher_id key
+                    combination['class_type'] = class_type_value
+                    class_type_list.append(combination)
+
+        
+        print(f"Class type: {class_type_list}")
 
         context = {
             'teacher': teacher,
-            'unique_grades_sections': unique_combinations,
+            'unique_grades_sections': class_type_list,
         }
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
+
 
 def toggle_class_type_function(student):
     # Toggle the class type for the given student
@@ -952,9 +1053,13 @@ def sf9(request):
 @login_required
 def delete_student(request, grade, section):
     user = request.user
+
     if user.user_type == 2:
         teacher = get_object_or_404(Teacher, user=user)
-        students = Student.objects.filter(grade=grade, section=section, teacher=teacher)
+        students = Student.objects.filter(grade=grade, section=section)
+
+        print(f"grade: {grade}")
+        print(f"section: {section}")
 
         if students.exists():
             # Assuming you have some permission checks here before deleting
@@ -976,6 +1081,35 @@ def delete_student(request, grade, section):
     # If the user is not a teacher or if the permissions check fails
     return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
 
+@login_required
+def delete_class_subject(request, grade, section):
+    user = request.user
+
+    if user.user_type == 2:  # Assuming user_type 2 represents a teacher
+        teacher = get_object_or_404(Teacher, user=user)
+        students = Student.objects.filter(grade=grade, section=section)
+
+        if students.exists():
+            for student in students:
+                class_type = student.class_type
+                if str(teacher.id) in class_type:
+                    del class_type[str(teacher.id)]  # Delete the key associated with the teacher's ID
+                    student.class_type = class_type
+                    student.save()
+
+            # Delete associated ClassRecord records
+            ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
+
+            action = f'{user} deleted a Class named {grade} {section}'
+            details = f'{user} deleted a Class named {grade} {section} in the system.'
+            log_activity(user, action, details)
+
+            return redirect('display_students')  # Redirect to your desired page after deletion
+        else:
+            return redirect('display_students')  # Redirect if no students found
+    else:
+        return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
+
 def student_list_for_subject(request):
     # Assuming the user is logged in
     user = request.user
@@ -984,20 +1118,29 @@ def student_list_for_subject(request):
     if user.is_authenticated and hasattr(user, 'teacher'):
         # Retrieve the teacher associated with the user
         teacher = user.teacher
+        teacher_id = teacher.id
 
         grade = request.GET.get('grade')
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
+        print(class_type)
         
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
-        # Fetch students based on grade and section     
-        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        # Fetch students based on grade and section
+        students = Student.objects.filter(grade=grade, section=section)
 
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
 
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if class_type_json is not None and teacher_id in class_type_json:
+                if class_type_json[teacher_id] == "Subject Class":
+                    students_filtered.append(student)
+                    
         top_students = (
             GeneralAverage.objects.filter(grade=grade, section=section)
             .order_by('-general_average')[:10]
@@ -1025,28 +1168,118 @@ def student_list_for_advisory(request):
     if user.is_authenticated and hasattr(user, 'teacher'):
         # Retrieve the teacher associated with the user
         teacher = user.teacher
+        teacher_id = teacher.id 
 
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
-        
-        
-        # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        quarter = request.GET.get('quarter', '1st Quarter')  # Default to 1st Quarter if not provided
+
         # Fetch advisory classes based on teacher, grade, and section
-        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section).values('subject', 'from_teacher_id').distinct()
-        quarters = advisory_classes.values_list('first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter').distinct()
-       
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
+
+        unique_keys = set()  # Initialize an empty set here
+
+        if advisory_classes.exists():
+            for advisory_class in advisory_classes:
+                grades_data = advisory_class.grades_data
+                if grades_data:
+                    for key, value in grades_data.items():
+                        unique_keys.add((key, value.get('from_teacher_id')))  # Add (key, from_teacher_id) tuple to the set
+
+            # Print the unique keys
+            print("Unique keys and from_teacher_ids in grades_data for all AdvisoryClass objects:", unique_keys)
+        else:
+            print("No AdvisoryClass objects found for the specified criteria")
+
+        # Filter students based on the class type
+        students = Student.objects.filter(grade=grade, section=section)
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
+                students_filtered.append(student)
+
+        # Unique keys context
+        unique_keys_context = list(unique_keys)
+
+        # Filter quarterly grades based on the selected quarter
+        quarterly_grades = QuarterlyGrades.objects.filter(student__grade=grade, student__section=section, quarter=quarter)
+
+        # Prepare data to pass to the template
+        data = []
+        for index, grades in enumerate(quarterly_grades, start=1):
+            student_name = grades.student.name
+            subjects_grades = grades.grades
+            average_score = subjects_grades.pop('average_score', None)
+            subjects_data = [{'subject': subject, 'score': score} for subject, score in subjects_grades.items()]
+
+            data.append({
+                'no': index,
+                'student_name': student_name,
+                'subjects_data': subjects_data,
+                'average_score': average_score,
+            })
+
+        top_10_students_per_subject = {}
+
+
+                # Iterate over each AdvisoryClass instance
+        for advisory_class in advisory_classes:
+            # Extract grades_data as a dictionary
+            grades_data = advisory_class.grades_data
+           
+            if grades_data:
+                # Iterate over each subject in the grades_data
+                for subject, subject_data in grades_data.items():
+                    # Get the student's name from the AdvisoryClass instance
+                    student_name = advisory_class.student.name
+                   
+                    # Get the final grade for the current subject
+                    final_grade = subject_data.get('final_grade')
+                   
+                    # Check if final_grade is None or not a number
+                    if final_grade is not None and isinstance(final_grade, (int, float)):
+                        # Convert final_grade to float if it's not None and is a number
+                        final_grade = float(final_grade)
+                    else:
+                        # If final_grade is None or not a number, set it to 0
+                        final_grade = 0
+                   
+                    # Initialize the list for the current subject if not present
+                    if subject not in top_10_students_per_subject:
+                        top_10_students_per_subject[subject] = []
+                   
+                    # Append the student name and final grade to the subject's list
+                    top_10_students_per_subject[subject].append((student_name, final_grade))
+
+
+        # Iterate over each subject in the dictionary
+        for subject, students_list in top_10_students_per_subject.items():
+            # Sort the students_list based on the final grade in descending order
+            students_list.sort(key=lambda x: x[1], reverse=True)
+           
+            # Select the top 10 students for the current subject
+            top_10_students_per_subject[subject] = students_list[:10]
+
+
         context = {
             'grade': grade,
             'section': section,
-            'advisory_classes': advisory_classes,
-            'students': students,
-            'quarters': quarters,
+            'unique_keys': unique_keys_context,
+            'students': students_filtered,
             'class_type': class_type,
-           
+            'data': data,
+            'quarter': quarter,
+            'top_10_students_per_subject': top_10_students_per_subject,
         }
-    return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
+
+        return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+
+
+
+
 
 def display_advisory_data(request):
         # Assuming the user is logged in
@@ -1059,28 +1292,77 @@ def display_advisory_data(request):
 
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
-        class_type = request.GET.get('class_type')
-        subject = request.GET.get('subject')
+        key = request.GET.get('key')
+        print(key)
         
         
         # Fetch students based on grade and section
-        students = Student.objects.filter(grade=grade, section=section, class_type=class_type)
+        students = Student.objects.filter(grade=grade, section=section)
         # Fetch advisory classes based on teacher, grade, and section
-        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, subject=subject)
+        advisory_classes = AdvisoryClass.objects.filter(
+            grade=grade, 
+            section=section, 
+            grades_data__has_key=key
+        )
 
+        for advisory_class in advisory_classes:
+            print(f"Advisory class: {advisory_class}")
+            print("Grades data:")
+            grades_data = advisory_class.grades_data
+            if grades_data:
+                specific_key = key
+                if specific_key in grades_data:
+                    print(f"Value for {specific_key}: {grades_data[specific_key]}")
+                else:
+                    print(f"Key {specific_key} not found in grades_data")
+            else:
+                print("No grades data available")
+        # print(advisory_classes)
+        # print(key)
        
         context = {
             'grade': grade,
-            'subject': subject,
+            'subject': key,
             'section': section,
             'advisory_classes': advisory_classes,
             'students': students,
-            'class_type': class_type,
+            # 'class_type': class_type,
            
         }
             
     return render(request, 'teacher_template/adviserTeacher/subject_quarter_advisory.html', context)
 
+
+def update_final_grade(request):
+    if request.method == 'POST' and request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        final_grade = request.POST.get('final_grade')
+        subject = request.POST.get('subject')
+        grade = request.POST.get('grade')
+        section = request.POST.get('section')
+
+        print(final_grade)
+        print(subject)
+        print(grade)
+        print(section)
+
+        try:
+            advisory_class = AdvisoryClass.objects.get(grade=grade, section=section)
+        except AdvisoryClass.DoesNotExist:
+            return JsonResponse({'error': 'Advisory class not found for grade and section'}, status=404)
+
+        grades_data = advisory_class.grades_data or {}
+        
+        if subject in grades_data:
+            grades_data[subject]= final_grade
+        else:
+            grades_data[subject] = {final_grade}
+        
+        advisory_class.grades_data = grades_data
+        advisory_class.save()
+
+        return JsonResponse({'message': 'Final grade updated successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def display_student_transmuted_grades(request):
     grade = request.GET.get('grade')
@@ -1145,29 +1427,30 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 
 
 def grade_summary(request, grade, section, quarter):
-    students = FinalGrade.objects.filter(grade=grade, section=section)
+    students = AdvisoryClass.objects.filter(grade=grade, section=section)
 
     # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
-        '1st Quarter': '1st Quarter',
-        '2nd Quarter': '2nd Quarter',
-        '3rd Quarter': '3rd Quarter',
-        '4th Quarter': '4th Quarter',
+        '1st Quarter': 'first_quarter',
+        '2nd Quarter': 'second_quarter',
+        '3rd Quarter': 'third_quarter',
+        '4th Quarter': 'fourth_quarter',
     }
 
     # Fetch subject-wise grades for each student
     for student in students:
-        subjects = get_subjects(student.student)
+        grades_data = student.grades_data
         subject_grades[student.student.name] = {}
         grades = []  # List to store grades for calculating mean
-        for subject in subjects:
-            db_quarter = quarter_mapping.get(quarter, quarter)
-            subject_grade = get_subject_score(student.student, subject, db_quarter)
-            print(subject_grade)
-            subject_grades[student.student.name][subject] = subject_grade
-            if subject_grade is not None:
-                grades.append(subject_grade)
+
+        for subject, grades_info in grades_data.items():
+            if quarter_mapping[quarter] in grades_info:
+                subject_grade = grades_info[quarter_mapping[quarter]]
+                print(subject_grade)
+                subject_grades[student.student.name][subject] = subject_grade
+                if subject_grade is not None:
+                    grades.append(float(subject_grade))
 
         # Calculate average score
         if grades:
@@ -1189,7 +1472,7 @@ def grade_summary(request, grade, section, quarter):
             existing_entry.grades = subject_grades[student.student.name]
             existing_entry.save()
 
-    subjects = get_subjects(students.first().student) if students else []
+    subjects = list(students.first().grades_data.keys()) if students else []
 
     context = {
         'students': students,
@@ -1202,40 +1485,43 @@ def grade_summary(request, grade, section, quarter):
 
 
 def get_subject_score(student, subject, quarter):
+    quarter_mapping = {
+        '1st Quarter': 'first_quarter',
+        '2nd Quarter': 'second_quarter',
+        '3rd Quarter': 'third_quarter',
+        '4th Quarter': 'fourth_quarter',
+    }
+    
     try:
-        # Fetch the FinalGrade instance for the given student, subject, and quarter
-        grade_instance = FinalGrade.objects.get(
+        # Fetch the AdvisoryClass instance for the given student, subject, and quarter
+        advisory_instance = AdvisoryClass.objects.get(
             student=student,
             grade=student.grade,
             section=student.section,
         )
-        
-        # Access the final_grade JSONField and retrieve the score for the given subject and quarter
-        final_grade_data = json.loads(grade_instance.final_grade)  # Assuming final_grade is a JSON string
-        
-        # Loop through each entry in final_grade_data
-        for entry in final_grade_data:
-            if entry.get('subject') == subject:
-                # Check if the quarter grades exist for the subject
-                quarter_grades = entry.get('quarter_grades', {})
-                subject_score = quarter_grades.get(quarter)
-                return subject_score  # Return the score if found
-        
+
+        # Access the grades_data JSONField and retrieve the score for the given subject and quarter
+        grades_data = advisory_instance.grades_data
+
+        if subject in grades_data:
+            quarter_grades = grades_data[subject]
+            subject_score = quarter_grades.get(quarter_mapping[quarter])
+            return subject_score  # Return the score if found
+
         # If subject or quarter not found, return None
         return None
 
-    except FinalGrade.DoesNotExist:
-        # Handle the case where the FinalGrade record does not exist
+    except AdvisoryClass.DoesNotExist:
+        # Handle the case where the AdvisoryClass record does not exist
         return None
 
     except MultipleObjectsReturned:
-        # Handle the case where multiple FinalGrade records are returned
+        # Handle the case where multiple AdvisoryClass records are returned
         # For example, you can log a warning or return a default value
         return None
 
-    except json.JSONDecodeError:
-        # Handle JSON decoding error
-        # Log the error or return None
+    except KeyError:
+        # Handle the case where the subject or quarter key is not found in the grades_data
         return None
     
 def get_subjects(student):
@@ -1486,7 +1772,7 @@ def display_all_final_grades(request, grade, section):
 
 
     
-
+@login_required
 @transaction.atomic
 def update_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1499,7 +1785,7 @@ def update_score(request):
 
 
          # Assuming you want to filter students by both name and teacher
-        students = Student.objects.filter(name=student_name, teacher=request.user.teacher)
+        students = Student.objects.filter(name=student_name)
 
         # Ensure there is exactly one matching student
         if students.count() == 1:

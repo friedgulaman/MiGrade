@@ -26,3 +26,7 @@ def replace(value, arg):
     Replaces all occurrences of arg in the given string with an empty string.
     """
     return value.replace(arg, '')
+
+@register.filter
+def get_dict_keys(dictionary):
+    return dictionary.keys()

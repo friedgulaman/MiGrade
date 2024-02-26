@@ -2,6 +2,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse

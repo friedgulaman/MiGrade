@@ -130,11 +130,11 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
-                                aria-selected="false">Subjects</a>
+                                aria-selected="false">Final Grade per Subject</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly" role="tab"
-                                aria-selected="false">Quarterly Grades</a>
+                                aria-selected="false">Summary of Quarterly Grades</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#rankings" role="tab"
@@ -200,7 +200,6 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                         <p id="grade" style="display: none;">{{ grade }}</p>
                                         <p id="section" style="display: none;">{{ section }}</p>
                                         <div class="table-responsive ">
-                                            {% if advisory_classes %}
                                             <table class="table table-hover text-center ">
                                                 <thead class="text-center">
                                                     <tr>
@@ -208,26 +207,25 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                         <th>Subject Teacher</th>
                                                         <th></th>
                                                     </tr>
-                                                    <tbody class="text-muted" >
-                                                        {% if advisory_classes %}
-                                                            {% for advisory_class in advisory_classes %}
-                                                                <tr  onclick="showQuarters('{{ grade }}','{{ section }}', '{{ advisory_class.subject }}', '{{ advisory_class.from_teacher_id }}')">
-                                                                    <td id="subject">{{ advisory_class.subject }}</td>
-                                                                    <td>{{ advisory_class.from_teacher_id }}</td>
+                                                    {% load custom_filters %}
+                                                    <tbody class="text-muted">
+                                                        {% if unique_keys %}
+                                                            {% for key, from_teacher_id in unique_keys %}
+                                                                <tr onclick="showQuarters('{{ grade }}', '{{ section }}', '{{ key }}', '{{ from_teacher_id }}')">
+                                                                    <td>{{ key }}</td>
+                                                                    <td>{{ from_teacher_id }}</td>
                                                                     <td class="text-muted view">View Details</td>
                                                                 </tr>
                                                             {% endfor %}
                                                         {% else %}
                                                             <tr>
-                                                                <td colspan="4">No class records found.</td>
+                                                                <td colspan="3">No class records found.</td>
                                                             </tr>
                                                         {% endif %}
                                                     </tbody>
                                                     
+                                                    
                                             </table>
-                                            {% else %}
-                                            <p>No class records found.</p>
-                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -238,15 +236,107 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
   
                     </div>
 
+                        
+                    <div class="tab-pane fade show" id="quarterly" role="tabpanel" aria-labelledby="subjects">
+                        <div class="container mt-4">
+                            <div class="grid-margin stretch-card">
+                                <div>
+                                    <div class="card-body">
+                                        <form id="quarterForm" method="get">
+                                            <!-- Hidden input fields for grade, section, and class_type -->
+                                            <input type="hidden" name="grade" value="{{ grade }}">
+                                            <input type="hidden" name="section" value="{{ section }}">
+                                            <input type="hidden" name="class_type" value="{{ class_type }}">
+                                        
+                                            <!-- Select dropdown for the quarter -->
+                                            <select name="quarter" onchange="submitFormAndRememberScroll()">
+                                                <option value="1st Quarter" {% if quarter == '1st Quarter' %} selected {% endif %}>1st Quarter</option>
+                                                <option value="2nd Quarter" {% if quarter == '2nd Quarter' %} selected {% endif %}>2nd Quarter</option>
+                                                <option value="3rd Quarter" {% if quarter == '3rd Quarter' %} selected {% endif %}>3rd Quarter</option>
+                                                <option value="4th Quarter" {% if quarter == '4th Quarter' %} selected {% endif %}>4th Quarter</option>
+                                            </select>
+                                        </form>
+                                        <h4 class="card-title mt-4">Summary of Quarterly Grades ({{quarter}})</h4>
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Student Name</th>
+                                                    {% for subject_data in data.0.subjects_data %}
+                                                        <th>{{ subject_data.subject }}</th>
+                                                    {% endfor %}
+                                                    <th>Average Score</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in data %}
+                                                    <tr>
+                                                        <td>{{ item.no }}</td>
+                                                        <td>{{ item.student_name }}</td>
+                                                            {% for subject_data in item.subjects_data %}
+                                                                <td>{{ subject_data.score|default_if_none:""}}</td>
+                                                            {% endfor %}
 
-                    <div class="tab-pane fade show " id="quarterly" role="tabpanel" aria-labelledby="subjects">
-                        3
+                                                        <td>{{ item.average_score|default_if_none:"" }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
-                        4
+                        <div class="container mt-4">
+                            <!-- Dropdown menu for selecting the subject -->
+                            <div class="mb-3">
+                                <label for="subjectSelect" class="form-label">Select Subject:</label>
+                                <select class="form-select" id="subjectSelect" onchange="filterStudents(this.value)">
+                                    <option value="">Select a Subject</option>
+                                    <!-- Iterate over each subject -->
+                                    {% for subject in top_10_students_per_subject.keys %}
+                                        <option value="{{ subject }}">{{ subject }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="grid-margin stretch-card">
+                                <div>
+                                    <div class="card-body">
+                                        <h4 class="card-title">Top 10 Students per Subject</h4>
+                                        <!-- Iterate over each subject -->
+                                        {% for subject, students in top_10_students_per_subject.items %}
+                                            <div class="mb-4" id="{{ subject }}">
+                                                <h5>{{ subject }}</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Rank</th>
+                                                                <th>Student Name</th>
+                                                                <th>Final Grade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <!-- Iterate over the top 10 students for the current subject -->
+                                                            {% for student, final_grade in students %}
+                                                                <tr>
+                                                                    <td>{{ forloop.counter }}</td>
+                                                                    <td>{{ student }}</td>
+                                                                    <td>{{ final_grade }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-
 
             </section>
         </div>
@@ -254,11 +344,52 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
 </section>
 <!-- jQuery CDN -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function filterStudents(subject) {
+        // Hide all subject tables
+        document.querySelectorAll('.mb-4').forEach(function(table) {
+            table.style.display = 'none';
+        });
+
+
+        // Show the selected subject table
+        if (subject) {
+            document.getElementById(subject).style.display = 'block';
+        }
+    }
+</script>
 
 <script>
-    var showQuarters = function(grade, section, subject, teacher_id){
-        var url = "{% url 'display_advisory_data' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&subject=" + encodeURIComponent(subject) + "&teacher_id=" + encodeURIComponent(teacher_id);
-            window.location.href = url;
+    function submitFormAndRememberScroll() {
+        // Store the current scroll position in session storage
+        sessionStorage.setItem('scrollPosition', window.scrollY);
+
+        // Submit the form
+        document.getElementById('quarterForm').submit();
+    }
+
+    // Restore scroll position when the page loads
+    window.onload = function() {
+        var scrollPosition = sessionStorage.getItem('scrollPosition');
+        if (scrollPosition !== null) {
+            window.scrollTo(0, scrollPosition);
+            sessionStorage.removeItem('scrollPosition'); // Remove stored scroll position
+        }
+
+        // Check if there is a query parameter for the quarter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const quarter = urlParams.get('quarter');
+        if (quarter !== null) {
+            // Activate the #quarterly tab
+            $('a[href="#quarterly"]').tab('show');
+        }
+    };
+</script>
+<script>
+    var showQuarters = function(grade, section, key, from_teacher_id){
+
+    var url = "{% url 'display_advisory_data' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&key=" + encodeURIComponent(key) + "&from_teacher_id=" + encodeURIComponent(from_teacher_id);
+    window.location.href = url;
     };
     
  
