@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Grades</title>
+</head>
+<body>
+    <h1>Final Grades - {{ grade }} {{ section }} - {{ subject }}</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Subject</th>
+                <th>First Quarter</th>
+                <th>Second Quarter</th>
+                <th>Third Quarter</th>
+                <th>Fourth Quarter</th>
+                <th>Final Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            {% for student in final_grades %}
+                <td>{{forloop.counter}}</td>
+            {% for subject_data in student.subjects %}
+          
+                <td>{{ student.name }}</td>
+                <td>{{ subject_data.subject }}</td>
+                <td>{{ subject_data.quarter_grades.first_quarter }}</td>
+                <td>{{ subject_data.quarter_grades.second_quarter }}</td>
+                <td>{{ subject_data.quarter_grades.third_quarter }}</td>
+                <td>{{ subject_data.quarter_grades.fourth_quarter }}</td>
+                <td>{{ subject_data.final_grade }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

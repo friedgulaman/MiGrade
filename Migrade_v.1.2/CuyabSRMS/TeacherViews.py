@@ -1188,7 +1188,7 @@ def student_list_for_advisory(request):
                         unique_keys.add((key, value.get('from_teacher_id')))  # Add (key, from_teacher_id) tuple to the set
 
             # Print the unique keys
-            print("Unique keys and from_teacher_ids in grades_data for all AdvisoryClass objects:", unique_keys)
+            # print("Unique keys and from_teacher_ids in grades_data for all AdvisoryClass objects:", unique_keys)
         else:
             print("No AdvisoryClass objects found for the specified criteria")
 
@@ -1220,47 +1220,89 @@ def student_list_for_advisory(request):
                 'subjects_data': subjects_data,
                 'average_score': average_score,
             })
+        
+        students = AdvisoryClass.objects.filter(grade=grade, section=section)
+        # Dictionary to store subject-wise grades and average score for each student
+        subject_grades = {}
+        quarter_mapping = {
+            '1st Quarter': 'first_quarter',
+            '2nd Quarter': 'second_quarter',
+            '3rd Quarter': 'third_quarter',
+            '4th Quarter': 'fourth_quarter',
+        }
 
-        top_10_students_per_subject = {}
+        # Fetch subject-wise grades for each student
+        for student in students:
+            grades_data = student.grades_data
+            subject_grades[student.student.name] = {}
+            grades = []  # List to store grades for calculating mean
 
+            for subject, grades_info in grades_data.items():
+                if quarter_mapping[quarter] in grades_info:
+                    subject_grade = grades_info[quarter_mapping[quarter]]
+                    # print(subject_grade)
+                    subject_grades[student.student.name][subject] = subject_grade
+                    if subject_grade is not None:
+                        grades.append(float(subject_grade))
 
-                # Iterate over each AdvisoryClass instance
-        for advisory_class in advisory_classes:
-            # Extract grades_data as a dictionary
-            grades_data = advisory_class.grades_data
-           
-            if grades_data:
-                # Iterate over each subject in the grades_data
-                for subject, subject_data in grades_data.items():
-                    # Get the student's name from the AdvisoryClass instance
-                    student_name = advisory_class.student.name
-                   
-                    # Get the final grade for the current subject
-                    final_grade = subject_data.get('final_grade')
-                   
-                    # Check if final_grade is None or not a number
-                    if final_grade is not None and isinstance(final_grade, (int, float)):
-                        # Convert final_grade to float if it's not None and is a number
-                        final_grade = float(final_grade)
-                    else:
-                        # If final_grade is None or not a number, set it to 0
-                        final_grade = 0
-                   
-                    # Initialize the list for the current subject if not present
-                    if subject not in top_10_students_per_subject:
-                        top_10_students_per_subject[subject] = []
-                   
-                    # Append the student name and final grade to the subject's list
-                    top_10_students_per_subject[subject].append((student_name, final_grade))
+            # Calculate average score
+            if grades:
+                subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
+            else:
+                subject_grades[student.student.name]['average_score'] = None
 
+            # Check if QuarterlyGrades entry already exists for this student and quarter
+            existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
+            if not existing_entry:
+                # Save grades to QuarterlyGrades model
+                QuarterlyGrades.objects.create(
+                    student=student.student,
+                    quarter=quarter,
+                    grades=subject_grades[student.student.name]
+                )
+            elif existing_entry.grades != subject_grades[student.student.name]:
+                # Update the existing entry if the grades are different
+                existing_entry.grades = subject_grades[student.student.name]
+                existing_entry.save()
 
-        # Iterate over each subject in the dictionary
-        for subject, students_list in top_10_students_per_subject.items():
-            # Sort the students_list based on the final grade in descending order
-            students_list.sort(key=lambda x: x[1], reverse=True)
-           
-            # Select the top 10 students for the current subject
-            top_10_students_per_subject[subject] = students_list[:10]
+        subjects = list(students.first().grades_data.keys()) if students else []
+
+        # students_advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
+
+        # # Dictionary to hold students' grades per quarter
+        # students_quarterly_grades = {}
+
+        # # Iterate over each AdvisoryClass instance
+        # for advisory_class in students_advisory_classes:
+        #     # Extract grades_data as a dictionary
+        #     grades_data = advisory_class.grades_data
+
+        #     if grades_data:
+        #         # Get the student's name from the AdvisoryClass instance
+        #         student_name = advisory_class.student.name
+        #         mapped_quarter = quarter_mapping.get(quarter)
+        #         # Iterate over each subject in the grades_data
+        #         for subject, subject_data in grades_data.items():
+        #             # Check if the subject has the specified quarter grades
+        #             if mapped_quarter in subject_data:
+        #                 # Get the final grade for the specified quarter
+        #                 final_grade = subject_data[mapped_quarter].get('final_grade')
+
+        #                 # Check if final_grade is a number
+        #                 if final_grade is not None and isinstance(final_grade, (int, float)):
+        #                     # Convert final_grade to float
+        #                     final_grade = float(final_grade)
+
+        #                     # Add the student's grade for the quarter
+        #                     if student_name not in students_quarterly_grades:
+        #                         students_quarterly_grades[student_name] = {}
+
+        #                     students_quarterly_grades[student_name][subject] = final_grade
+        # # Sort students based on their grades for the specified quarter from highest to lowest
+        # sorted_students = sorted(students_quarterly_grades.items(), key=lambda x: x[1].get(quarter, 0), reverse=True)
+
+        # print(f"students quarterly {students_quarterly_grades}")
+        # print(f"sortedstudents: {sorted_students}")
 
 
         context = {
@@ -1271,9 +1313,8 @@ def student_list_for_advisory(request):
             'class_type': class_type,
             'data': data,
             'quarter': quarter,
-            'top_10_students_per_subject': top_10_students_per_subject,
+            # 'top_10_students_per_subject': sorted_students,  # Updated with sorted students
         }
-
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
 
@@ -1293,7 +1334,7 @@ def display_advisory_data(request):
         grade = request.GET.get('grade')    
         section = request.GET.get('section')
         key = request.GET.get('key')
-        print(key)
+        # print(key)
         
         
         # Fetch students based on grade and section
@@ -1306,15 +1347,15 @@ def display_advisory_data(request):
         )
 
         for advisory_class in advisory_classes:
-            print(f"Advisory class: {advisory_class}")
-            print("Grades data:")
+            # print(f"Advisory class: {advisory_class}")
+            # print("Grades data:")
             grades_data = advisory_class.grades_data
             if grades_data:
                 specific_key = key
-                if specific_key in grades_data:
-                    print(f"Value for {specific_key}: {grades_data[specific_key]}")
-                else:
-                    print(f"Key {specific_key} not found in grades_data")
+                # if specific_key in grades_data:
+                #     # print(f"Value for {specific_key}: {grades_data[specific_key]}")
+                # else:
+                #     print(f"Key {specific_key} not found in grades_data")
             else:
                 print("No grades data available")
         # print(advisory_classes)
@@ -1428,7 +1469,7 @@ def display_quarterly_summary(request, grade, section, subject, class_record_id)
 
 def grade_summary(request, grade, section, quarter):
     students = AdvisoryClass.objects.filter(grade=grade, section=section)
-
+    print(request)
     # Dictionary to store subject-wise grades and average score for each student
     subject_grades = {}
     quarter_mapping = {
@@ -1614,55 +1655,95 @@ def calculate_save_final_grades(grade, section, subject, students, subjects):
 
 
 def display_final_grades(request, grade, section, subject):
-    try:
-        teacher = request.user.teacher
-        students = Student.objects.filter(grade=grade, section=section)
-        
-        # Filter subjects to only include the specified subject
-        subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject, teacher_id=teacher)
+    teacher = request.user.teacher
+    students = Student.objects.filter(grade=grade, section=section)
+    
+    advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
 
-        calculate_save_final_grades(grade, section, subject, students, subjects)
-
-        final_grades = []
-        for student in students:
+    final_grades = []
+    for advisory_class in advisory_classes:
+        for student in students.filter(id=advisory_class.student_id):
             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
 
-            # Retrieve final grades from the FinalGrade model
-            final_grade = FinalGrade.objects.filter(
-                teacher__classrecord__grade=grade,
-                teacher__classrecord__section=section,
-                student=student
-            ).first()
+            grades_data = advisory_class.grades_data
+            if grades_data and subject in grades_data:
+                subject_info = grades_data[subject]
+                subject_data = {
+                    'subject': subject,
+                    'quarter_grades': {
+                        'first_quarter': subject_info.get('first_quarter', ''),
+                        'second_quarter': subject_info.get('second_quarter', ''),
+                        'third_quarter': subject_info.get('third_quarter', ''),
+                        'fourth_quarter': subject_info.get('fourth_quarter', ''),
+                        # Add more quarters if available
+                    },
+                    'final_grade': subject_info.get('final_grade', ''),
+                    'teacher_name': subject_info.get('from_teacher_id', 'Unknown Teacher')
+                }
+                student_data['subjects'].append(subject_data)
 
-            if final_grade:
-                final_grade_info = json.loads(final_grade.final_grade)  # Convert JSON string to list of dictionaries
-                for subject_info in final_grade_info:
-                    if subject_info['subject'] == subject:  # Filter by subject
-                        subject_data = {
-                            'subject': subject_info.get('subject', 'Unknown Subject'),
-                            'quarter_grades': subject_info['quarter_grades'],
-                            'final_grade': subject_info['final_grade'],
-                            'teacher_name': subject_info['teacher_name']
-                        }
-                        student_data['subjects'].append(subject_data)
-
-            # Append student data to the final grades
             final_grades.append(student_data)
 
-        context = {
-            'grade': grade,
-            'section': section,
-            'final_grades': final_grades,
-            'subject': subject,  # Pass the subject to the template
-        }
 
-        return render(request, "teacher_template/adviserTeacher/final_grades.html", context)
+    context = {
+        'grade': grade,
+        'section': section,
+        'final_grades': final_grades,
+        'subject': subject,  # Pass the subject to the template
+    }
+
+    return render(request, "teacher_template/adviserTeacher/new_final_grades.html", context)
+
+# def display_final_grades(request, grade, section, subject):
+#     # try:
+#         teacher = request.user.teacher
+#         students = Student.objects.filter(grade=grade, section=section)
+        
+#         # Filter subjects to only include the specified subject
+#         subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject, teacher_id=teacher)
+
+#         calculate_save_final_grades(grade, section, subject, students, subjects)
+
+#         final_grades = []
+#         for student in students:
+#             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
+
+#             # Retrieve final grades from the FinalGrade model
+#             final_grade = FinalGrade.objects.filter(
+#                 teacher__classrecord__grade=grade,
+#                 teacher__classrecord__section=section,
+#                 student=student
+#             ).first()
+
+#             if final_grade:
+#                 final_grade_info = json.loads(final_grade.final_grade)  # Convert JSON string to list of dictionaries
+#                 for subject_info in final_grade_info:
+#                     if subject_info['subject'] == subject:  # Filter by subject
+#                         subject_data = {
+#                             'subject': subject_info.get('subject', 'Unknown Subject'),
+#                             'quarter_grades': subject_info['quarter_grades'],
+#                             'final_grade': subject_info['final_grade'],
+#                             'teacher_name': subject_info['teacher_name']
+#                         }
+#                         student_data['subjects'].append(subject_data)
+
+#             # Append student data to the final grades
+#             final_grades.append(student_data)
+
+#         context = {
+#             'grade': grade,
+#             'section': section,
+#             'final_grades': final_grades,
+#             'subject': subject,  # Pass the subject to the template
+#         }
+
+#         return render(request, "teacher_template/adviserTeacher/final_grades.html", context)
     
-    except Exception as e:
-        # Log the exception for debugging
-        print(f"An error occurred: {str(e)}")
-        # Return an HTTP 500 Internal Server Error response
-        return HttpResponse("Internal Server Error", status=500)
+    # except Exception as e:
+    #     # Log the exception for debugging
+    #     print(f"An error occurred: {str(e)}")
+    #     # Return an HTTP 500 Internal Server Error response
+    #     return HttpResponse("Internal Server Error", status=500)
 
 
 
@@ -1696,79 +1777,178 @@ def save_general_average(student_data, grade, section):
                 general_average=general_average
             )
 
-
-
 def display_all_final_grades(request, grade, section):
-    try:
-        students = Student.objects.filter(grade=grade, section=section)
-        # Fetch all distinct subjects for the specified grade and section
-        subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+    students = Student.objects.filter(grade=grade, section=section)
+    advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
 
-        final_grades = []
-        for student in students:
-            student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': [], 'student': student}
+    final_grades = []
+    for student in students:
+        student_data = {
+            'id': student.id,
+            'name': student.name,
+            'grade': grade,
+            'section': section,
+            'subjects': [],
+            'student': student
+        }
 
-            for subject in subjects:
-                subject_name = subject['subject']
-                subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+        for advisory_class in advisory_classes.filter(student=student):
+            grades_data = advisory_class.grades_data
+            for subject, subject_info in grades_data.items():
+                # Access grades data for each subject
+                subject_data = {
+                    'subject': subject,
+                    'quarter_grades': {
+                        'first_quarter': subject_info.get('first_quarter', ''),
+                        'second_quarter': subject_info.get('second_quarter', ''),
+                        'third_quarter': subject_info.get('third_quarter', ''),
+                        'fourth_quarter': subject_info.get('fourth_quarter', ''),
+                        # Add more quarters if available
+                    },
+                    'final_grade': subject_info.get('final_grade', ''),
+                    'teacher_name': subject_info.get('from_teacher_id', 'Unknown Teacher')
+                }
+                student_data['subjects'].append(subject_data)
 
-                # Retrieve final grades from the FinalGrade model
-                final_grade = FinalGrade.objects.filter(
-                    teacher__classrecord__grade=grade,
-                    teacher__classrecord__section=section,
-                    student=student,
-                ).first()
+        # Append student data to the final grades
+        final_grades.append(student_data)
+    
+    # Compute the general average and save it for each student
+    for student_data in final_grades:
+        total_final_grade = 0
+        num_subjects = len(student_data['subjects'])
+        for subject_info in student_data['subjects']:
+            final_grade = subject_info['final_grade']
+            try:
+                total_final_grade += float(final_grade)
+            except ValueError:
+                # Handle the case where final_grade is not a valid number
+                pass
 
-                if final_grade:
-                    final_grade_data = final_grade.final_grade
-                    if isinstance(final_grade_data, str):  # Check if the data is a string
-                        final_grade_data = json.loads(final_grade_data)  # Parse JSON string to dictionary
+        student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
+        save_general_average(student_data, grade, section)
 
-                    # Find the subject entry in final_grade_data
-                    for entry in final_grade_data:
-                        if entry['subject'] == subject_name:
-                            subject_info['final_grade'] = entry['final_grade']
-                            subject_info['quarter_grades'] = entry['quarter_grades']
-                            break  # Stop searching once the subject is found
+        sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
+        highest_per_quarter = {
+            'first_quarter': [],
+            'second_quarter': [],
+            'third_quarter': [],
+            'fourth_quarter': [],
+        }
 
-                # Get the teacher's name from the ClassRecord
-                class_record = ClassRecord.objects.filter(
-                    grade=grade,
-                    section=section,
-                    subject=subject_name
-                ).first()
+        # Populate data for each quarter
+        for quarter in ['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter']:
+            sorted_students = sorted(final_grades, key=lambda x: float(x['subjects'][0]['quarter_grades'].get(quarter, '0') or '0'), reverse=True)
+            highest_per_quarter[quarter] = sorted_students  
 
-                # Ensure that the class_record and its teacher exist
-                if class_record and class_record.teacher:
-                    subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
-                else:
-                    subject_info['teacher_name'] = "Unknown Teacher"
 
-                student_data['subjects'].append(subject_info)
 
-            # Append student data to the final grades
-            final_grades.append(student_data)
+        general_averages = GeneralAverage.objects.filter(grade=grade, section=section)
 
-        # Compute the general average for each student
-        for student_data in final_grades:
-            total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
-            num_subjects = len(student_data['subjects'])
-            student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
-            save_general_average(student_data, grade, section)
-            
+    # Sort GeneralAverage instances based on the general average from highest to lowest
+        sorted_general_averages = general_averages.order_by('-general_average')
+
+        print(highest_per_quarter)
+        # Now you have a dictionary 'highest_per_quarter' where each quarter maps to a list of students
+        # The students are sorted in descending order of their grades for each quarter
+
+        
         context = {
             'grade': grade,
             'section': section,
-            'final_grades': final_grades,
+            'final_grades': sorted_final_grades,
+            'highest_per_quarter': highest_per_quarter,
+             'general_averages': sorted_general_averages
         }
+        
+        # context = {
+        #     'grade': grade,
+        #     'section': section,
+        #     'final_grades': final_grades,
+        # }
 
-        return render(request, "teacher_template/adviserTeacher/all_final_grades.html", context)
+    return render(request, "teacher_template/adviserTeacher/new_all_final_grades.html", context)
+
     
-    except Exception as e:
-        # Log the exception for debugging
-        print(f"An error occurred while displaying all final grades: {str(e)}")
-        # Return an HTTP 500 Internal Server Error response
-        return HttpResponse("Internal Server Error", status=500)
+    # except Exception as e:
+    #     # Log the exception for debugging
+    #     print(f"An error occurred while displaying all final grades: {str(e)}")
+    #     # Return an HTTP 500 Internal Server Error response
+    #     return HttpResponse("Internal Server Error", status=500)
+
+
+
+# def display_all_final_grades(request, grade, section):
+#     try:
+#         students = Student.objects.filter(grade=grade, section=section)
+#         # Fetch all distinct subjects for the specified grade and section
+#         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+
+#         final_grades = []
+#         for student in students:
+#             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': [], 'student': student}
+
+#             for subject in subjects:
+#                 subject_name = subject['subject']
+#                 subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
+
+#                 # Retrieve final grades from the FinalGrade model
+#                 final_grade = FinalGrade.objects.filter(
+#                     teacher__classrecord__grade=grade,
+#                     teacher__classrecord__section=section,
+#                     student=student,
+#                 ).first()
+
+#                 if final_grade:
+#                     final_grade_data = final_grade.final_grade
+#                     if isinstance(final_grade_data, str):  # Check if the data is a string
+#                         final_grade_data = json.loads(final_grade_data)  # Parse JSON string to dictionary
+
+#                     # Find the subject entry in final_grade_data
+#                     for entry in final_grade_data:
+#                         if entry['subject'] == subject_name:
+#                             subject_info['final_grade'] = entry['final_grade']
+#                             subject_info['quarter_grades'] = entry['quarter_grades']
+#                             break  # Stop searching once the subject is found
+
+#                 # Get the teacher's name from the ClassRecord
+#                 class_record = ClassRecord.objects.filter(
+#                     grade=grade,
+#                     section=section,
+#                     subject=subject_name
+#                 ).first()
+
+#                 # Ensure that the class_record and its teacher exist
+#                 if class_record and class_record.teacher:
+#                     subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
+#                 else:
+#                     subject_info['teacher_name'] = "Unknown Teacher"
+
+#                 student_data['subjects'].append(subject_info)
+
+#             # Append student data to the final grades
+#             final_grades.append(student_data)
+
+#         # Compute the general average for each student
+#         for student_data in final_grades:
+#             total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
+#             num_subjects = len(student_data['subjects'])
+#             student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
+#             save_general_average(student_data, grade, section)
+            
+#         context = {
+#             'grade': grade,
+#             'section': section,
+#             'final_grades': final_grades,
+#         }
+
+#         return render(request, "teacher_template/adviserTeacher/all_final_grades.html", context)
+    
+#     except Exception as e:
+#         # Log the exception for debugging
+#         print(f"An error occurred while displaying all final grades: {str(e)}")
+#         # Return an HTTP 500 Internal Server Error response
+#         return HttpResponse("Internal Server Error", status=500)
 
 
     
@@ -2342,46 +2522,47 @@ def class_record_details(excel_file, sheet_name):
 
 def divide_hps(row):
     # Divide into sections
-    hps_written_works = row[:13]
-    hps_performance = row[13:26]
-    hps_quarterly = row[26:]
+ if len(row) >= 27:
+        hps_written_works = row[:13]
+        hps_performance = row[13:26]
+        hps_quarterly = row[26:]
 
-    # Extract values for hps_written_works
-    scores_hps_written = hps_written_works[:10]
-    total_ww_hps = hps_written_works[10]
-    percentage_hps_written = hps_written_works[11]
-    weight_input_written = hps_written_works[12]
+        # Extract values for hps_written_works
+        scores_hps_written = hps_written_works[:10]
+        total_ww_hps = hps_written_works[10] if len(hps_written_works) > 10 else None
+        percentage_hps_written = hps_written_works[11] if len(hps_written_works) > 11 else None
+        weight_input_written = hps_written_works[12] if len(hps_written_works) > 12 else None
 
-    # Extract values for hps_performance
-    scores_hps_performance = hps_performance[:10]
-    total_pt_hps = hps_performance[10]
-    percentage_hps_performance = hps_performance[11]
-    weight_input_performance = hps_performance[12]
+        # Extract values for hps_performance
+        scores_hps_performance = hps_performance[:10]
+        total_pt_hps = hps_performance[10] if len(hps_performance) > 10 else None
+        percentage_hps_performance = hps_performance[11] if len(hps_performance) > 11 else None
+        weight_input_performance = hps_performance[12] if len(hps_performance) > 12 else None
 
-    # Extract values for hps_quarterly
-    total_qa_hps = hps_quarterly[0]
-    percentage_hps_quarterly = hps_quarterly[1]
-    weight_input_quarterly = hps_quarterly[2]
+        # Extract values for hps_quarterly
+        total_qa_hps = hps_quarterly[0] if len(hps_quarterly) > 0 else None
+        percentage_hps_quarterly = hps_quarterly[1] if len(hps_quarterly) > 1 else None
+        weight_input_quarterly = hps_quarterly[2] if len(hps_quarterly) > 2 else None
 
-    return {
-        "hps_written_works": {
-            "scores_hps_written": scores_hps_written,
-            "total_ww_hps": total_ww_hps,
-            "percentage_hps_written": percentage_hps_written,
-            "weight_input_written": weight_input_written
-        },
-        "hps_performance": {
-            "scores_hps_performance": scores_hps_performance,
-            "total_pt_hps": total_pt_hps,
-            "percentage_hps_performance": percentage_hps_performance,
-            "weight_input_performance": weight_input_performance
-        },
-        "hps_quarterly": {
-            "total_qa_hps": total_qa_hps,
-            "percentage_hps_quarterly": percentage_hps_quarterly,
-            "weight_input_quarterly": weight_input_quarterly
+        return {
+            "hps_written_works": {
+                "scores_hps_written": scores_hps_written,
+                "total_ww_hps": total_ww_hps,
+                "percentage_hps_written": percentage_hps_written,
+                "weight_input_written": weight_input_written
+            },
+            "hps_performance": {
+                "scores_hps_performance": scores_hps_performance,
+                "total_pt_hps": total_pt_hps,
+                "percentage_hps_performance": percentage_hps_performance,
+                "weight_input_performance": weight_input_performance
+            },
+            "hps_quarterly": {
+                "total_qa_hps": total_qa_hps,
+                "percentage_hps_quarterly": percentage_hps_quarterly,
+                "weight_input_quarterly": weight_input_quarterly
+            }
         }
-    }
 
 
 def find_highest_possible_scores(excel_file, sheet_name):
@@ -2471,14 +2652,15 @@ def map_data_to_model(json_data, teacher_id, request):
     # Initialize messages list
     messages_list = []
     success = True
-    try:
+    # try:
         # Extract details from JSON
-        teacher_info = json_data['details']['teacher_info']
-        students_scores = json_data['students_scores']
-        hps_class_record = json_data['hps_class_record']['HIGHEST POSSIBLE SCORE']
+    teacher_info = json_data['details']['teacher_info']
+    students_scores = json_data['students_scores']
+    hps_class_record = json_data['hps_class_record']['HIGHEST POSSIBLE SCORE']
+    
 
         # Create ClassRecord instance
-        class_record_instance = ClassRecord.objects.create(
+    class_record_instance = ClassRecord.objects.create(
             name=f"{teacher_info['grade']} - {teacher_info['section']} - {teacher_info['subject']} - {teacher_info['quarters']}",
             grade=teacher_info['grade'],
             section=teacher_info['section'],
@@ -2488,54 +2670,88 @@ def map_data_to_model(json_data, teacher_id, request):
         )
 
         # Iterate over student names in JSON data
-        for student_name, student_data in students_scores.items():
+    for student_name, student_data in students_scores.items():
             # Find the student with the same name and teacher ID
             try:
-                student = Student.objects.get(name=student_name, teacher_id=teacher_id)
+                student = Student.objects.get(name=student_name)
             except Student.DoesNotExist:
                 messages_list.append(('error', f"Student '{student_name}' does not exist in the database for the provided criteria."))
                 continue  # Skip this student if not found
 
-            try:
+            # try:
                 # Function to replace None values with empty strings in a list
-                def replace_none_with_empty(lst):
+            def replace_none_with_empty(lst):
                     return ["" if item is None else item for item in lst]
+            
+            total_ww_hps = hps_class_record['hps_written_works'].get('total_ww_hps', "")
+            total_pt_hps = hps_class_record['hps_performance'].get('total_pt_hps', "")
+            total_qa_hps = hps_class_record['hps_quarterly'].get('total_qa_hps', "")
+            scores_hps_written = replace_none_with_empty(hps_class_record['hps_written_works'].get('scores_hps_written', []))
+            scores_hps_performance = replace_none_with_empty(hps_class_record['hps_performance'].get('scores_hps_performance', []))
+            written_works_scores = replace_none_with_empty(student_data.get('WRITTEN WORKS', {}).get('written_works_scores', []))
+            performance_task_scores = replace_none_with_empty(student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', []))
+            initial_grades = student_data.get('INITIAL GRADE', {}).get('initial_grades', "")
+            transmuted_grades = student_data.get('QUARTERLY GRADE', {}).get('transmuted_grades', "")
+            total_score_written = student_data.get('WRITTEN WORKS', {}).get('total_scores_written', "")
+            total_score_performance = student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', "")
+            total_score_quarterly = student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', "")
+            percentage_score_written = student_data.get('WRITTEN WORKS', {}).get('percentage_score_written', "")
+            percentage_score_performance = student_data.get('PERFORMANCE TASK', {}).get('percentage_score_performance', "")
+            percentage_score_quarterly = student_data.get('QUARTERLY ASSESSMENT', {}).get('percentage_score_quarterly', "")
+            weighted_score_written = student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
+            weighted_score_performance = student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', "")
+            weighted_score_quarterly = student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
+
+            # total_ww_hps = "" if total_ww_hps is None else total_ww_hps
+            # total_pt_hps = "" if total_pt_hps is None else total_pt_hps
+            # total_qa_hps = "" if total_qa_hps is None else total_qa_hps
+            # initial_grades = "" if initial_grades is None else initial_grades
+            # transmuted_grades = "" if transmuted_grades is None else transmuted_grades
+            # total_score_written = "" if total_score_written is None else total_score_written
+            # total_score_performance = "" if total_score_performance is None else total_score_performance
+            # total_score_quarterly = "" if total_score_quarterly is None else total_score_quarterly
+            # percentage_score_written = "" if percentage_score_written is None else percentage_score_written
+            # percentage_score_performance = "" if percentage_score_performance is None else percentage_score_performance
+            # percentage_score_quarterly = "" if percentage_score_quarterly is None else percentage_score_quarterly
+            # weighted_score_written = "" if weighted_score_written is None else weighted_score_written
+            # weighted_score_performance = "" if weighted_score_performance is None else weighted_score_performance
+            # weighted_score_quarterly = "" if weighted_score_quarterly is None else weighted_score_quarterly
 
                 # Now, when saving GradeScores instance, preprocess the lists
-                GradeScores.objects.create(
+            GradeScores.objects.create(
                     student=student,
                     class_record=class_record_instance,
-                    scores_hps_written=replace_none_with_empty(hps_class_record.get('hps_written_works', {}).get('scores_hps_written', [])),
-                    scores_hps_performance=replace_none_with_empty(hps_class_record.get('hps_performance', {}).get('scores_hps_performance', [])),
-                    total_ww_hps=hps_class_record['hps_written_works'].get('total_ww_hps', ""),
-                    total_pt_hps=hps_class_record['hps_performance'].get('total_pt_hps', ""),
-                    total_qa_hps=hps_class_record['hps_quarterly'].get('total_qa_hps', ""),
-                    written_works_scores=replace_none_with_empty(student_data.get('WRITTEN WORKS', {}).get('written_works_scores', [])),
-                    performance_task_scores=replace_none_with_empty(student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', [])),
-                    initial_grades=student_data.get('INITIAL GRADE', {}).get('initial_grades', ""),
-                    transmuted_grades=student_data.get('QUARTERLY GRADE', {}).get('transmuted_grades', ""),
-                    total_score_written=student_data.get('WRITTEN WORKS', {}).get('total_scores_written', ""),
-                    total_score_performance=student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', ""),
-                    total_score_quarterly=student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', ""),
-                    percentage_score_written=student_data.get('WRITTEN WORKS', {}).get('percentage_score_written', ""),
-                    percentage_score_performance=student_data.get('PERFORMANCE TASK', {}).get('percentage_score_performance', ""),
-                    percentage_score_quarterly=student_data.get('QUARTERLY ASSESSMENT', {}).get('percentage_score_quarterly', ""),
-                    weight_input_written=int(hps_class_record['hps_written_works'].get('weight_input_written', "") * 100),
-                    weight_input_performance=int(hps_class_record['hps_performance'].get('weight_input_performance', "") * 100),
-                    weight_input_quarterly=int(hps_class_record['hps_quarterly'].get('weight_input_quarterly', "") * 100),
-                    weighted_score_written=student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', ""),
-                    weighted_score_performance=student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', ""),
-                    weighted_score_quarterly=student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
+                    scores_hps_written=scores_hps_written,
+                    scores_hps_performance=scores_hps_performance,
+                    total_ww_hps=total_ww_hps,
+                    total_pt_hps=total_pt_hps,
+                    total_qa_hps=total_qa_hps,
+                    written_works_scores=written_works_scores,
+                    performance_task_scores=performance_task_scores,
+                    initial_grades=initial_grades,
+                    transmuted_grades=transmuted_grades,
+                    total_score_written=total_score_written,
+                    total_score_performance=total_score_performance,
+                    total_score_quarterly=total_score_quarterly,
+                    percentage_score_written=percentage_score_written,
+                    percentage_score_performance=percentage_score_performance,
+                    percentage_score_quarterly=percentage_score_quarterly,
+                    weight_input_written=int(hps_class_record.get('hps_written_works', {}).get('weight_input_written', 0) * 100),
+                    weight_input_performance=int(hps_class_record.get('hps_performance', {}).get('weight_input_performance', 0) * 100),
+                    weight_input_quarterly=int(hps_class_record.get('hps_quarterly', {}).get('weight_input_quarterly', 0) * 100),
+                    weighted_score_written=weighted_score_written,
+                    weighted_score_performance=weighted_score_performance,
+                    weighted_score_quarterly=weighted_score_quarterly
                 )
-            except Exception as e:
-                messages_list.append(('error', f"Error occurs in student '{student_name}': {e}"))
+            # except Exception as e:
+            #     messages_list.append(('error', f"Error occurs in student '{student_name}': {e}"))
 
         # Add success message
-        messages_list.append(('success', 'Class record uploaded successfully.'))
+    messages_list.append(('success', 'Class record uploaded successfully.'))
 
-    except Exception as e:
-        messages_list.append(('error', f"Error code: {e}"))
-        success = False
+    # except Exception as e:
+    #     messages_list.append(('error', f"Error code: {e}"))
+    #     success = False
 
     # Loop through messages list and add messages to request
     for message_type, message_text in messages_list:
@@ -2553,17 +2769,17 @@ def class_record_upload(request):
     if request.method == 'POST':
         excel_file = request.FILES['excel_file']
         sheet_name = request.POST.get('sheet_name')
-        try:
-            class_record_data = read_excel_values(excel_file, sheet_name)
+        # try:
+        class_record_data = read_excel_values(excel_file, sheet_name)
 
             # Process each row in class_record_data
-            class_record_data_scores = [process_row(row) for row in class_record_data]
-
+        class_record_data_scores = [process_row(row) for row in class_record_data]
+      
             # Create a dictionary where student's name is the key and the rest of the row values are stored as a list
-            class_record_data_scores_with_names = {}
-            for row in class_record_data_scores:
+        class_record_data_scores_with_names = {}
+        for row in class_record_data_scores:
                 # Check if the student name contains 'FEMALE' or 'MALE'
-                if "FEMALE" not in row[0]:
+                if isinstance(row[0], str) and "FEMALE" not in row[0]:
                     student_name = row[0]
                     student_info = {'student_name': student_name}
                     
@@ -2581,25 +2797,25 @@ def class_record_upload(request):
 
 
             # Remove the first student from the dictionary
-            if class_record_data_scores_with_names:
+        if class_record_data_scores_with_names:
                 del class_record_data_scores_with_names[next(iter(class_record_data_scores_with_names))]
 
             # Store the result as JSON in the variable students_scores
-            students_scores = class_record_data_scores_with_names
+        students_scores = class_record_data_scores_with_names
 
-            teacher_info, school_info, region_info = class_record_details(excel_file, sheet_name)
+        teacher_info, school_info, region_info = class_record_details(excel_file, sheet_name)
             
-            highest_possible_scores = find_highest_possible_scores(excel_file, sheet_name)
-            highest_possible_scores_with_label = {}
+        highest_possible_scores = find_highest_possible_scores(excel_file, sheet_name)
+        highest_possible_scores_with_label = {}
 
-            for row in highest_possible_scores:
+        for row in highest_possible_scores:
                 hps_label = row.pop(0)
                 highest_possible_scores_with_label[hps_label] = divide_hps(row)
 
-            hps_class_record = highest_possible_scores_with_label
+        hps_class_record = highest_possible_scores_with_label
 
             # Store both results in a single dictionary
-            extracted_class_record = {
+        extracted_class_record = {
                 "details": {
                     "teacher_info": teacher_info,
                     "school_info": school_info,
@@ -2607,29 +2823,29 @@ def class_record_upload(request):
                 },
                 "students_scores": students_scores,
                 "hps_class_record": hps_class_record
-            }
+        }
             
             # Save extracted_class_record as a JSON file
-            json_filename = 'result.json'
-            json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+        json_filename = 'result.json'
+        json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
 
             # Ensure the directory exists, if not create it
-            os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
 
-            with open(json_path, 'w') as json_file:
+        with open(json_path, 'w') as json_file:
                 json.dump(extracted_class_record, json_file, indent=4)  
             
             # Map the loaded JSON data to the model
-            success = map_data_to_model(extracted_class_record, request.user.teacher.id, request)  # Passing request object
+        success = map_data_to_model(extracted_class_record, request.user.teacher.id, request)  # Passing request object
 
-            if success:
+        if success:
                 return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
-            else:
+        else:
                 # If there's an error, return the same template with an error flag
                 return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html', {'error': True})
-        except Exception as e:
-            # Add error message
-            messages.error(request, f'Error processing file: {e}')
+        # except Exception as e:
+        #     # Add error message
+        #     messages.error(request, f'Error processing file: {e}')
 
         return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
     else:

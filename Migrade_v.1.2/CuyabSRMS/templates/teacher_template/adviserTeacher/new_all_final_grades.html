@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Final Grades</title>
+</head>
+<body>
+    <a href="{% url 'view_classrecord' %}">View Class Record</a>
+    <h1>All Final Grades</h1>
+
+    {% if final_grades %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Grade</th>
+                    <th>Section</th>
+                    <!-- Columns for subjects -->
+                    {% for subject_info in final_grades.0.subjects %}
+                    <th colspan="5">{{ subject_info.subject }}</th>
+                     {% endfor %}
+                    <th>General Average</th>
+                </tr>
+                <tr>
+                    <th>ID</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <!-- Quarter grades and final grade -->
+                    {% for subject_info in final_grades.0.subjects %}
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                        <th>4</th>
+                        <th>Final Grade</th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_data in final_grades %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ student_data.name }}</td>
+                        <td>{{ student_data.grade }}</td>
+                        <td>{{ student_data.section }}</td>
+                        <!-- Loop through subject info -->
+                        {% for subject_info in student_data.subjects %}
+                            <!-- Loop through quarter grades and final grade -->
+                            {% for quarter, grade in subject_info.quarter_grades.items %}
+                                <td>{{ grade|floatformat:2 }}</td>
+                            {% endfor %}
+                            <td>{{ subject_info.final_grade|floatformat:2 }}</td>
+                        {% endfor %}
+                        <!-- Display general average -->
+                        <td>{{ student_data.general_average|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% load custom_filters %}
+        <h2>Highest Grades Per Quarter</h2>
+        <ul>
+            {% for quarter, students in highest_per_quarter.items %}
+                <li><strong>{{ quarter }}:</strong></li>
+                <ol>
+                    {% for student in students %}
+                        <li>
+                            {% if student.subjects %}
+                                {% for subject in student.subjects %}
+                                    {{ student.name }} - {{ subject.subject }}: {{ subject.quarter_grades|get_item:quarter }}
+                                    <br>
+                                {% endfor %}
+                            {% else %}
+                                No subject data available
+                            {% endif %}
+                        </li>
+                    {% empty %}
+                        <li>No students available</li>
+                    {% endfor %}
+                </ol>
+            {% empty %}
+                <li>No data available</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No final grades found.</p>
+    {% endif %}
+    <h1>Highest General Averages for Grade {{ grade }}, Section {{ section }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Student Name</th>
+                <th>General Average</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for average in general_averages %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{ average.student }}</td>
+                <td>{{ average.general_average }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

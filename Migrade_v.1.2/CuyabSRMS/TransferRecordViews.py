@@ -206,7 +206,14 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     teacher = request.user.teacher
     teacher_id = teacher.id
     # Filter Section objects based on provided parameters
-    sections = Section.objects.filter(name=section, class_type__contains={teacher_id: 'Subject Class'})
+    class_types_to_check = ['Subject Class', 'Advisory Class, Subject Class']
+
+    sections = Section.objects.filter(
+    Q(name=section) &
+    (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]) )
+)
+    
+    
 
 
     # Check if there is more than one Section returned

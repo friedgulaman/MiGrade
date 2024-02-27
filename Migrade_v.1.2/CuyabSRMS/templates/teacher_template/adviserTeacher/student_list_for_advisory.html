@@ -130,7 +130,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
-                                aria-selected="false">Final Grade per Subject</a>
+                                aria-selected="false">Final Grade (Subject)</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly" role="tab"
@@ -255,6 +255,9 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                 <option value="3rd Quarter" {% if quarter == '3rd Quarter' %} selected {% endif %}>3rd Quarter</option>
                                                 <option value="4th Quarter" {% if quarter == '4th Quarter' %} selected {% endif %}>4th Quarter</option>
                                             </select>
+                                            <button type="button" class="btn btn-link refresh-button" onclick="refreshQuarterlyTab()">
+                                                <i class="fas fa-sync-alt"></i> <!-- Refresh icon -->
+                                            </button>
                                         </form>
                                         <h4 class="card-title mt-4">Summary of Quarterly Grades ({{quarter}})</h4>
                                         <table class="table table-hover">
@@ -344,6 +347,24 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
 </section>
 <!-- jQuery CDN -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function refreshQuarterlyTab() {
+        // Store the current tab information in sessionStorage
+        sessionStorage.setItem('currentTab', 'quarterly');
+
+        // Reload the page
+        location.reload();
+    }
+
+    // Ensure jQuery is loaded before using it
+    $(document).ready(function() {
+        var currentTab = sessionStorage.getItem('currentTab');
+        if (currentTab === 'quarterly') {
+            // Activate the #quarterly tab
+            $('a[href="#quarterly"]').tab('show');
+        }
+    });
+</script>
 <script>
     function filterStudents(subject) {
         // Hide all subject tables
