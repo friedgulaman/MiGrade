@@ -256,7 +256,7 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                     <tr>
                                                         <th>Quarter</th>
                                                         <th>Subject</th>
-                                                        <th></th>
+                                                        <th>Send to Adviser</th>
                                                         
                                                     </tr>
                                                 </thead>
@@ -290,13 +290,51 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                         </div>
                     </div>
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
-                        <h2>Top 10 Students by General Average:</h2>
-                        <ol>
-                            {% for student in top_students %}
-                                <li>{{ student.student.name }} - General Average: {{ student.general_average }}</li>
-                            {% endfor %}
-                        </ol>
+                        <div class="container mt-4">
+                            <div class="grid-margin stretch-card">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h1 class="card-title">Subject Rankings</h1>
+                                        <select id="subjectSelect" onchange="toggleSubjectRankings()">
+                                            <option value="" selected disabled>Select Subject</option>
+                                            {% for subject in subjects %}
+                                            <option value="{{ subject.subject }}">{{ subject.subject }}</option>
+                                        {% endfor %}
+                                        </select>
+                                        <div id="subjectRankings">
+                                            {% for subject, grades in subject_grades.items %}
+                                                <div class="subjectRanking" id="{{ subject }}">
+                                                    <h3>{{ subject }}</h3>
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Student Name</th>
+                                                                <th>Highest Initial Grade</th>
+                                                                <th>Transmuted Grade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for grade in grades %}
+                                                                <tr>
+                                                                    <td>{{ forloop.counter }}</td>
+                                                                    <td>{{ grade.student_name }}</td>
+                                                                    <td>{{ grade.highest_initial_grade }}</td>
+                                                                    <td>{{ grade.transmuted_grade }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <p id="noData" style="display: none;">No data available</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                 </div>
 
 
@@ -307,7 +345,33 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
 </section>
 <!-- jQuery CDN -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function toggleSubjectRankings() {
+        var subjectSelect = document.getElementById("subjectSelect");
+        var selectedSubject = subjectSelect.value;
+        var subjectRankings = document.getElementById("subjectRankings");
+        var noData = document.getElementById("noData");
 
+        // Hide all subject rankings initially
+        var subjectDivs = subjectRankings.getElementsByClassName("subjectRanking");
+        for (var i = 0; i < subjectDivs.length; i++) {
+            subjectDivs[i].style.display = "none";
+        }
+
+        // Show the selected subject's rankings
+        if (selectedSubject) {
+            var selectedSubjectDiv = document.getElementById(selectedSubject);
+            if (selectedSubjectDiv) {
+                selectedSubjectDiv.style.display = "block";
+                noData.style.display = "none"; // Hide the "No data available" message
+            } else {
+                noData.style.display = "block"; // Show the "No data available" message if the subject is not found
+            }
+        } else {
+            noData.style.display = "block"; // Show the "No data available" message if no subject is selected
+        }
+    }
+</script>
 <script>
     // JavaScript to handle the back button click event
     document.querySelector(".back-button").addEventListener("click", function () {

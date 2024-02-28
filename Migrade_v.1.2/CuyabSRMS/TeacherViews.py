@@ -1130,22 +1130,48 @@ def student_list_for_subject(request):
 
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
+        print(students)
 
         # Fetch distinct subjects based on grade and section
-        subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
+        subjects = ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).values('subject').distinct()
+        print(subjects)
 
-        students_filtered = []
-        for student in students:
-            class_type_json = student.class_type
-            if class_type_json is not None and teacher_id in class_type_json:
-                if class_type_json[teacher_id] == "Subject Class":
-                    students_filtered.append(student)
-                    
-        top_students = (
-            GeneralAverage.objects.filter(grade=grade, section=section)
-            .order_by('-general_average')[:10]
-            
-        )
+        # Initialize a dictionary to store highest initial grade and transmuted grades per subject
+        subject_grades = {}
+
+
+        # Loop through each subject
+        for subject in subjects:
+            subject_name = subject['subject']
+            subject_students = students
+
+            print(subject_students)
+            # Fetch highest initial grade and transmuted grades for students in this subject
+            subject_grades[subject_name] = []
+            for student in subject_students:
+                # Retrieve the student's highest initial grade
+                # Retrieve the student's highest initial grade for the specific subject
+                # Retrieve the student's highest initial grade for the specific subject
+                highest_initial_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name).order_by('-initial_grades').first()
+
+                # Retrieve the student's transmuted grade for the specific subject
+                transmuted_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name).order_by('transmuted_grades').first()
+
+
+                # If both initial grade and transmuted grade exist, append the data to the subject_grades dictionary
+                if highest_initial_grade is not None and transmuted_grade is not None:
+                    # Append the student's data to the subject grades list
+                    subject_grades[subject_name].append({
+                        'student_name': student.name,
+                        'highest_initial_grade': highest_initial_grade.initial_grades,
+                        'transmuted_grade': transmuted_grade.transmuted_grades
+                    })
+            # Sort the students for this subject by highest initial grade
+            subject_grades[subject_name].sort(key=lambda x: x['highest_initial_grade'], reverse=True)
+
+
+        # Filter students based on class type
+        # students_filtered = [student for student in students if student.class_type.get(str(teacher_id)) == "Subject Class" or "Advisory Class, Subject Class" in student.class_type]
 
     context = {
         'grade': grade,
@@ -1154,8 +1180,7 @@ def student_list_for_subject(request):
         'students': students,
         'class_records': class_records,
         'subjects': subjects,
-        'top_students': top_students,
-        
+        'subject_grades': subject_grades,
     }
 
     return render(request, 'teacher_template/adviserTeacher/student_list_for_subject.html', context)
@@ -1267,43 +1292,75 @@ def student_list_for_advisory(request):
 
         subjects = list(students.first().grades_data.keys()) if students else []
 
-        # students_advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
+        students = Student.objects.filter(grade=grade, section=section)
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
 
-        # # Dictionary to hold students' grades per quarter
-        # students_quarterly_grades = {}
+        final_grades = []
+        for student in students:
+            student_data = {
+                'id': student.id,
+                'name': student.name,
+                'grade': grade,
+                'section': section,
+                'subjects': [],
+                'student': student
+            }
 
-        # # Iterate over each AdvisoryClass instance
-        # for advisory_class in students_advisory_classes:
-        #     # Extract grades_data as a dictionary
-        #     grades_data = advisory_class.grades_data
+            for advisory_class in advisory_classes.filter(student=student):
+                grades_data = advisory_class.grades_data
+                for subject, subject_info in grades_data.items():
+                    # Access grades data for each subject
+                    subject_data = {
+                        'subject': subject,
+                        'quarter_grades': {
+                            'first_quarter': subject_info.get('first_quarter', ''),
+                            'second_quarter': subject_info.get('second_quarter', ''),
+                            'third_quarter': subject_info.get('third_quarter', ''),
+                            'fourth_quarter': subject_info.get('fourth_quarter', ''),
+                            # Add more quarters if available
+                        },
+                        'final_grade': subject_info.get('final_grade', ''),
+                        'teacher_name': subject_info.get('from_teacher_id', 'Unknown Teacher')
+                    }
+                    student_data['subjects'].append(subject_data)
 
-        #     if grades_data:
-        #         # Get the student's name from the AdvisoryClass instance
-        #         student_name = advisory_class.student.name
-        #         mapped_quarter = quarter_mapping.get(quarter)
-        #         # Iterate over each subject in the grades_data
-        #         for subject, subject_data in grades_data.items():
-        #             # Check if the subject has the specified quarter grades
-        #             if mapped_quarter in subject_data:
-        #                 # Get the final grade for the specified quarter
-        #                 final_grade = subject_data[mapped_quarter].get('final_grade')
+            # Append student data to the final grades
+            final_grades.append(student_data)
+        
+        # Compute the general average and save it for each student
+        for student_data in final_grades:
+            total_final_grade = 0
+            num_subjects = len(student_data['subjects'])
+            for subject_info in student_data['subjects']:
+                final_grade = subject_info['final_grade']
+                try:
+                    total_final_grade += float(final_grade)
+                except ValueError:
+                    # Handle the case where final_grade is not a valid number
+                    pass
 
-        #                 # Check if final_grade is a number
-        #                 if final_grade is not None and isinstance(final_grade, (int, float)):
-        #                     # Convert final_grade to float
-        #                     final_grade = float(final_grade)
+            student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
+            save_general_average(student_data, grade, section)
 
-        #                     # Add the student's grade for the quarter
-        #                     if student_name not in students_quarterly_grades:
-        #                         students_quarterly_grades[student_name] = {}
+            sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
+            highest_per_quarter = {
+                'first_quarter': [],
+                'second_quarter': [],
+                'third_quarter': [],
+                'fourth_quarter': [],
+            }
 
-        #                     students_quarterly_grades[student_name][subject] = final_grade
-        # # Sort students based on their grades for the specified quarter from highest to lowest
-        # sorted_students = sorted(students_quarterly_grades.items(), key=lambda x: x[1].get(quarter, 0), reverse=True)
+            # Populate data for each quarter
+            for quarters in ['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter']:
+                sorted_students = sorted(final_grades, key=lambda x: float(x['subjects'][0]['quarter_grades'].get(quarters, '0') or '0'), reverse=True)
+                highest_per_quarter[quarters] = sorted_students  
 
-        # print(f"students quarterly {students_quarterly_grades}")
-        # print(f"sortedstudents: {sorted_students}")
 
+
+            general_averages = GeneralAverage.objects.filter(grade=grade, section=section)
+
+        # Sort GeneralAverage instances based on the general average from highest to lowest
+            sorted_general_averages = general_averages.order_by('-general_average')
 
         context = {
             'grade': grade,
@@ -1313,7 +1370,11 @@ def student_list_for_advisory(request):
             'class_type': class_type,
             'data': data,
             'quarter': quarter,
-            # 'top_10_students_per_subject': sorted_students,  # Updated with sorted students
+            'final_grades': sorted_final_grades,
+            'highest_per_quarter': highest_per_quarter,
+             'general_averages': sorted_general_averages
+
+         
         }
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)

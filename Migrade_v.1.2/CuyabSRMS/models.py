@@ -706,3 +706,15 @@ class Announcement(models.Model):
 
         return self.title
     
+class AttendanceRecord(models.Model):
+
+     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+     attendance_record = models.JSONField(null=True)
+
+class LearnersObservation(models.Model):
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    quarter_1 = models.JSONField(null=True)
+    quarter_2 = models.JSONField(null=True)
+    quarter_3 = models.JSONField(null=True)
+    quarter_4 = models.JSONField(null=True)
