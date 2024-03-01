@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
+from .models import MT, ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
 from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
@@ -50,6 +50,38 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+@login_required
+def manage_master_teacher(request):
+        masters = MT.objects.all()
+        return render(request, 'admin_template/manage_master.html', {'masters': masters})
+
+@csrf_exempt
+@login_required
+def add_mt(request):
+    if request.method == 'POST':
+        user_username = request.POST.get('user')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        if user_username and email and password:
+            try:
+                # Create CustomUser instance
+                CustomUser = get_user_model()
+                user = CustomUser.objects.create_user(username=user_username, first_name=first_name, last_name=last_name, email=email, password=password, user_type=4)
+
+                # Create MT instance with the created CustomUser
+                mt = MT.objects.create(user=user, email=email, password=password)
+                return JsonResponse({'success': True, 'mt_id': mt.id})
+            except IntegrityError:
+                return JsonResponse({'success': False, 'error_message': 'Email address already exists'})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error_message': str(e)})
+        else:
+            return JsonResponse({'success': False, 'error_message': 'Invalid form data'})
+
+    return JsonResponse({'success': False, 'error_message': 'Invalid request'})
 
 
 @login_required
@@ -63,6 +95,7 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
+    
    
    
     context = {
@@ -74,6 +107,7 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
+        
        
 
     }
@@ -593,10 +627,10 @@ def add_teacher_save(request):
         messages.error(request, "Invalid Method ")
         return redirect('teachers')
     else:
-        default = os.getenv("DEFAULT_PASSWORD")
+        default = os.getenv("TEACHER")
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        middle_ini = request.POST.get('middle_ini')
+        middle_ini = request.POST.get('middle_ini', '')
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password', default)

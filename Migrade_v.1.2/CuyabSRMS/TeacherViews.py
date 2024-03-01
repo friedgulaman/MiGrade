@@ -23,7 +23,7 @@ from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
 import logging
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+
 from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages

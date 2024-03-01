@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import URLPattern, path, include
 
 
-from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews, SuperAdminViews, MasterTeacherViews
 
 from .DashboardViews import StudentChartDataView
 from django.contrib import admin
@@ -128,7 +128,8 @@ urlpatterns = [
     path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
     path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
     path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
-
+    path('manage_master_teacher', AdminViews.manage_master_teacher, name='manage_master_teacher'),
+    path('add_mt', AdminViews.add_mt, name='add_mt'),
 
 
     # Adviser Teacher
@@ -233,12 +234,26 @@ urlpatterns = [
 
 
 
-   
+    # superadmin
+    path('home_superadmin', SuperAdminViews.home_superadmin, name='home_superadmin'),
+    path('manage_admin', SuperAdminViews.manage_admin, name='manage_admin'),
+    path('super_manage_master_teacher', SuperAdminViews.super_manage_master_teacher, name='super_manage_master_teacher'),
+    path('manage_teacher', SuperAdminViews.manage_teacher, name='manage_teacher'),
+    path('add_admin', SuperAdminViews.add_admin, name='add_admin'),    
+    path('get-admin-data/', SuperAdminViews.get_admin_data, name='get_admin_data'),
+    path('update-admin/', SuperAdminViews.update_admin, name='update_admin'),
+    path('delete-admin/', SuperAdminViews.delete_admin, name='delete_admin'),
 
-    # # Student
-    # path('student_list/', StudentViews.student_list, name='student_list'),
 
-   path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
+    # master teacher
+    path('home_mt', MasterTeacherViews.home_mt, name='home_mt'),
+    path('add_master', MasterTeacherViews.add_master, name='add_master'),    
+    path('get-master-data/', MasterTeacherViews.get_master_data, name='get_master_data'),
+    path('update-master/', MasterTeacherViews.update_master, name='update_master'),
+    path('delete-master/', MasterTeacherViews.delete_master, name='delete_master'),
+
+
+    path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
 ]
 
 

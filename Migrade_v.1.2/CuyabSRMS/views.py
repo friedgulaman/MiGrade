@@ -3,13 +3,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
-from .models import ActivityLog, Admin, Announcement, Teacher  # Import the ActivityLog and Teacher models
+from .models import ActivityLog, Admin, Announcement, Teacher
 from .utils import log_activity
 import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import SchoolInformation
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,7 +16,9 @@ load_dotenv()
 def custom_404(request, exception=None):
     return render(request, 'custom_404.html', status=404) 
     
-  
+def home_superadmin(request):
+    return render(request, 'superadmin_template/home_superadmin.html') 
+
 def teachers_activity(request):
     if request.user.is_authenticated:
         user = request.user
@@ -40,13 +41,19 @@ def admin_activity(request):
     
 def ShowLoginPage(request):
     if request.user.is_authenticated:
-        # User is already logged in, so redirect them to the home page or the appropriate page
-        if request.user.user_type == 2:  # Assuming '2' represents a teacher user type
+        # User is already logged in, so redirect them to the appropriate page based on user type
+        if request.user.user_type == 1:  # SuperAdmin user type
+            return redirect('home_superadmin')
+        elif request.user.user_type == 2:  # Teacher user type
             return redirect('home_teacher')
-        else:
+        elif request.user.user_type == 3:  # Admin user type
             return redirect('home_admin')
-    else:
-        return render(request, 'login_page.html')
+        elif request.user.user_type == 4:  # MT user type
+            return redirect('home_mt')
+        else:
+            # Handle other user types or redirect to a generic home page
+            pass
+    return render(request, 'login_page.html')
 
 def doLogin(request):
     if request.method == "POST":
@@ -73,23 +80,26 @@ def doLogin(request):
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 
                 # Log the user login activity
-                user = request.user
                 action = f'{user} logged in'
                 details = f'{user} logged in to the system.'
                 log_activity(user, action, details)
                 
-                if user.user_type == 2:
+                if user.user_type == 1:
+                    return redirect('home_superadmin')
+                elif user.user_type == 2:
                     return redirect('home_teacher') 
-                else:
+                elif user.user_type == 3:
                     return redirect('home_admin')
+                elif user.user_type == 4:
+                    return redirect('home_mt')
+                else:
+                    # Handle other user types or redirect to a generic home page
+                    pass
             else:
                 messages.error(request, "Invalid Login Credentials!")
-                return redirect('ShowLoginPage')
         else:
             messages.error(request, "Invalid reCAPTCHA. Please try again.")
-            return redirect('ShowLoginPage')
-    else:
-        return HttpResponse("<h2>Method Not Allowed</h2>")
+    return redirect('ShowLoginPage')
 
 def get_user_details(request):
     if request.user.is_authenticated:

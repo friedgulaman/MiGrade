@@ -18,25 +18,71 @@ from django.db.models.functions import Cast
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
-        (1, "Admin"),
+        (1, "Super"),
         (2, "Teacher"), 
+        (3, "Admin"),
+        (4, "MT"),
     )
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES)
     middle_ini = models.CharField(max_length=1, blank=True, null=True)  # Add the middle_ini field here
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default_profile_img.jpg')
 
     def __str__(self):
-        return self.username  # You can choose any field that you want to display here
-    
-class Admin(models.Model):
-    username = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=225)
+        return self.username
+
+class SuperAdmin(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Admin: {self.username.username}, Email: {self.email}, Created: {self.created_at}"
+        return f"SuperAdmin: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+
+class Admin(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Admin: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+
+class MT(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"MT: {self.user.username}, Email: {self.email}, Created: {self.created_at}"
+
+class Teacher(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    grade_section = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+    
+@receiver(post_save, sender=CustomUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.user_type == 2:  # Check if the user is a teacher
+            Teacher.objects.create(user=instance)  # Create a Teacher object associated with the CustomUser
+        elif instance.user_type == 3:
+            Admin.objects.create(user=instance)
+        elif instance.user_type == 4:
+            MT.objects.create(user=instance)
+
+
+@receiver(post_save, sender=CustomUser)
+def save_user_profile(sender, instance, **kwargs):
+    if instance.user_type == 1:
+        super_admin, created = SuperAdmin.objects.get_or_create(user=instance)
+    elif instance.user_type == 3:
+        admin, created = Admin.objects.get_or_create(user=instance)
+    elif instance.user_type == 4:
+        mt, created = MT.objects.get_or_create(user=instance)
+
 
 class SchoolInformation(models.Model):
     region = models.CharField(max_length=100)
@@ -46,14 +92,6 @@ class SchoolInformation(models.Model):
     district = models.CharField(max_length=100)
     school_year = models.CharField(max_length=100)
     
-class Teacher(models.Model):
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    grade_section = models.JSONField(null=True, blank=True)
-
-    def __str__(self):
-        return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
 
 class Student(models.Model):
     
@@ -513,17 +551,6 @@ class ArchivedQuarterlyGrades(models.Model):
         return f"Archived {self.archived_student.name}'s grades for {self.archived_quarter}"
 
 
-@receiver(post_save, sender=CustomUser)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created and instance.user_type == 2:  # Check if the user is a teacher
-        Teacher.objects.create(user=instance)  # Create a Teacher object associated with the CustomUser
-
-@receiver(post_save, sender=CustomUser)
-def save_user_profile(sender, instance, **kwargs):
-    if instance.user_type == 1:
-        instance.admin.save()
-    if instance.user_type == 2:
-        instance.teacher.save()
 
 
 class ProcessedDocument(models.Model):

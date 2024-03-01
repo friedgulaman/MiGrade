@@ -1,0 +1,285 @@
+{% extends 'superadmin_template/super_base.html' %}
+{% block page_title %}
+    SuperAdmin
+{% endblock page_title %}
+{% block main_content %}
+<style>
+    .delete-quarter-btn {
+ text-decoration: none;
+ cursor: pointer;
+ color: red;
+ border: none;
+ background: none;
+ transition: color 0.3s; /* Smooth color transition */
+
+ /* Shake animation on hover */
+ position: relative;
+}
+
+.delete-quarter-btn:hover {
+ color: darkred; /* Change color on hover */
+ animation: shake 0.5s;
+}
+
+/* Define the shake animation */
+@keyframes shake {
+ 0% { transform: translateX(0); }
+ 25% { transform: translateX(-5px); }
+ 50% { transform: translateX(5px); }
+ 75% { transform: translateX(-5px); }
+ 100% { transform: translateX(0); }
+}
+.edit-quarter-btn{
+ text-decoration: none;
+}
+</style>
+<section class=" container p-4">
+ <h3 class="mb-4 ">Manage Master Teacher</h3>
+ <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+     <ul class="nav nav-tabs text" role="tablist">
+         <li class="nav-ite m">
+             <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
+                 aria-controls="create" aria-selected="true">Create</a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+                 aria-selected="false">Display</a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#update" role="tab"
+                 aria-selected="false">Update</a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#delete" role="tab"
+                 aria-selected="false">Delete</a>
+         </li>
+     </ul>
+ </div>
+
+ <div class="tab-content tab-content-basic">
+     <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+         <div class="container ">
+             <div class="card">
+                 <div class="card-body">
+                     <h4 class="card-title">Add Quarter</h4>
+                     <form id="addQuarterForm">
+                         {% csrf_token %}
+                         <div class="form-group">  
+                         <label for="addQuarters">Quarter:</label>
+                         <input type="text" class="form-control" id="addQuarters" name="quarters" required>
+                         </div>
+                         <button class="btn btn-primary" type="button" id="saveAddQuarterBtn">Save Quarter</button>
+                     </form>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+     <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+         <div class="container-fluid ">
+             <div class="card">
+                 <div class="card-body">
+                     <h4 class="card-title p-3">List of Quarters</h4>
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead>
+                                 <tr>
+                                     <th>Quarters</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 {% for quarter in quarters %}
+                                 <tr>
+                                     <td>
+                                         {{ quarter.quarters }}
+                                     </td>
+                                     <td>
+                                 </tr>
+                                 {% endfor %}
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+         </div>
+
+     <div class="tab-pane fade show" id="update" role="tabpanel" aria-labelledby="update">
+         <div class="container-fluid  ">
+             <div class="card">
+                 <div class="card-body">
+                     <h4 class="card-title p-3">Update Quarters</h4>
+                     <div class="table-responsive">
+                         <table class="table table-hover">
+                             <thead>
+                                 <tr>
+                                     <th>Quarters</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 {% for quarter in quarters %}
+                                 <tr>
+                                     <td>
+                                         <a href="#" class="edit-quarter-btn" data-quarter-id="{{ quarter.id }}">{{ quarter.quarters }}</a>
+                                     </td>
+                                     <td>
+                                 </tr>
+                                 {% endfor %}
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+     <div class="tab-pane fade show" id="delete" role="tabpanel" aria-labelledby="delete">
+         <div class="container-fluid ">
+             <div class="card">
+                 <div class="card-body">
+                     <h4 class="card-title p-3">Delete Quarters</h4>
+                     <div class="table-responsive">
+                         <table class="table table-hover ">
+                             <thead >
+                                 <tr>
+                                     <th>Quarters</th>
+                                     <th></th>
+                                 </tr>
+                             </thead>
+                             <tbody >
+                                 {% for quarter in quarters %}
+                                 <tr >
+                                     <td>
+                                        {{ quarter.quarters }}
+                                     </td>
+                                     <td>
+                                         <button class="delete-quarter-btn" data-quarter-id="{{ quarter.id }}">
+                                             <i class="fas fa-trash-alt"></i></button>
+                                     </td>
+                                 </tr>
+                                 {% endfor %}
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+</section>
+
+<!-- Modal for Editing Quarter -->
+<div id="editQuarterModal" class="modal" tabindex="-1" role="dialog">
+ <div class="modal-dialog" role="document">
+     <div class="modal-content">
+         <div class="modal-header">
+             <h5 class="modal-title">Edit Quarter</h5>
+             <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                 <span aria-hidden="true">&times;</span>
+             </button>
+         </div>
+         <div class="modal-body">
+             <form id="editQuarterForm">
+                 {% csrf_token %}
+                 <input type="hidden" id="editQuarterId" name="quarterId">
+                 <label for="editQuarters">Quarters:</label>
+                 <input type="text" id="editQuarters" name="quarters">
+                 <button type="button" id="saveEditQuarterBtn">Save Changes</button>
+             </form>
+         </div>
+     </div>
+ </div>
+</div>
+
+
+<!-- Include necessary JavaScript and jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+ $(document).ready(function () {
+     // Edit Quarter Button Click Event
+     $('.edit-quarter-btn').click(function () {
+         var quarterId = $(this).data('quarter-id');
+         $('#editQuarterId').val(quarterId);
+
+         // AJAX request to fetch quarter details
+         $.ajax({
+             url: '/get_quarters_data/',
+             type: 'GET',
+             data: { 'quarterId': quarterId },
+             success: function (data) {
+                 $('#editQuarters').val(data.quarters);
+                 $('#editQuarterModal').modal('show');
+             },
+             error: function (error) {
+                 console.error('Error fetching quarter details:', error);
+             }
+         });
+     });
+
+     // Save Edit Quarter Button Click Event
+     $('#saveEditQuarterBtn').click(function () {
+         // AJAX request to update quarter details
+         $.ajax({
+             url: '/update_quarter/',
+             type: 'POST',
+             data: $('#editQuarterForm').serialize(),
+             success: function (response) {
+                 // Handle success (e.g., close the modal, update the list)
+                 $('#editQuarterModal').modal('hide');
+                 alert('Quarter details updated successfully!');
+                 // You may choose to update the list dynamically without a page reload
+                 location.reload();
+             },
+             error: function (error) {
+                 console.error('Error updating quarter details:', error);
+             }
+         });
+     });
+
+     // Delete Quarter Button Click Event
+     $('.delete-quarter-btn').click(function () {
+         var quarterId = $(this).data('quarter-id');
+
+         // Confirm before deleting
+         var confirmDelete = confirm('Are you sure you want to delete this quarter?');
+         if (!confirmDelete) {
+             return;  // User cancelled the deletion
+         }
+
+         // AJAX request to delete quarter
+         $.ajax({
+             url: '/delete_quarter/',
+             type: 'POST',
+             data: { 'quarterId': quarterId },
+             success: function (response) {
+                 // Handle success (e.g., remove the quarter from the list)
+                 alert('Quarter deleted successfully!');
+                 // You may choose to update the list dynamically without a page reload
+                 location.reload();
+             },
+             error: function (error) {
+                 console.error('Error deleting quarter:', error);
+             }
+         });
+     });
+
+     // Save Add Quarter Button Click Event
+     $('#saveAddQuarterBtn').click(function () {
+        
+         $.ajax({
+             url: '/add_quarter/',
+             type: 'POST',
+             data: $('#addQuarterForm').serialize(),
+             success: function (response) {
+                 alert('Quarter added successfully!');
+                 // You may choose to update the list dynamically without a page reload
+                 location.reload();
+             },
+             error: function (error) {
+                 console.error('Error adding quarter:', error);
+             }
+         });
+     });
+ });
+</script>
+{% endblock main_content %}
