@@ -1,0 +1,148 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+    New Class Record
+{% endblock title %}
+{% block main_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#delete-month-button').on('click', function() {
+                var selectedMonth = $('#delete-month-dropdown').val();
+                var grade = "{{ grade }}";  // Access grade from template context
+                var section = "{{ section }}";  // Access section from template context
+    
+                // AJAX request to delete the month from the backend
+                    $.ajax({
+                        url: '/delete-month/',
+                        method: 'POST',
+                        data: {
+                            student_id: null,  // You need to provide the correct student ID
+                            month: selectedMonth,
+                            grade: grade,
+                            section: section,
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                alert('Month deleted successfully');
+                                location.reload();
+                            } else {
+                                console.error('Failed to delete month:', response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error deleting month:', error);
+                        }
+                    });
+                
+            });
+        });
+            $('td[data-record]').on('blur', function() {
+                var cell = $(this);
+                var newValue = cell.text().trim();
+                var recordId = cell.data('record');
+                var field = cell.data('field');
+    
+                // Read the hidden input fields
+                var studentId = cell.closest('tr').find('input[name="student_id"]').val();
+                var month = cell.closest('tr').find('input[name="month"]').val();
+                var key = cell.closest('tr').find('input[name="key"]').val();
+
+                console.log(studentId)
+                console.log(month)
+                console.log(key)
+    
+                // AJAX request to update the attendance record
+                $.ajax({
+                    url: '/update-attendance-record/',
+                    method: 'POST',
+                    data: {
+                        student_id: studentId,
+                        month: month,
+                        key: key,
+                        new_value: newValue
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Record updated successfully');
+                            location.reload();
+                        } else {
+                            console.error('Failed to update record:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error updating record:', error);
+                    }
+                });
+            });
+    </script>
+</head>
+<body>
+    <div class="main-content">
+    <h1>Attendance Records of {{ grade }} {{ section }}</h1>
+    <div class="attendance-controls">
+    <select id="delete-month-dropdown">
+        {% for month in months %}
+            <option value="{{ month }}">{{ month }}</option>
+        {% endfor %}
+    </select>
+    <button id="delete-month-button">Delete Month</button>
+    </div>
+    {% if attendance_records %}
+    <div class="attendance-table">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Attendance Record</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_attendance_records in attendance_records %}
+                    <tr>
+                        <td>{{ student_attendance_records.0.student.name }}</td>
+                        
+                        <td>
+                            <table border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>No. of School Days</th>
+                                        <th>No. of Days Present</th>
+                                        <th>No. of Days Absent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for month, record in student_attendance_records.0.attendance_record.items %}
+                                        <tr>
+                                            <td>{{ month }}</td>
+                                            <input type="hidden" name="student_id" value="{{ student_attendance_records.0.student.id }}">
+                                            <input type="hidden" name="grade" value="{{ student_attendance_records.0.student.grade }}">
+                                            <input type="hidden" name="section" value="{{ student_attendance_records.0.student.section }}">
+                                            <input type="hidden" name="month" value="{{ month }}">
+                                            {% for key, value in record.items %}
+                                                <input type="hidden" name="key" value="{{ key }}">
+                                                <td contenteditable="true" data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ month }}-{{ key }}">{{ value }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endif %}
+</div>
+</body>
+</html>
+{% endblock main_content %}

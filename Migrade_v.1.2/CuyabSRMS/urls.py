@@ -208,8 +208,16 @@ urlpatterns = [
     path('validate_score/', TeacherViews.validate_score, name='validate_score'),
     path('sf9/', TeacherViews.sf9, name='sf9'),
     path('get_sections_classrecord/', TeacherViews.get_sections_classrecord, name='get_sections_classrecord'),
-
-   
+     path('create-attendance/', TeacherViews.create_attendance_view, name='create_attendance_view'),
+    path('save_attendance_record/', TeacherViews.save_attendance_record, name='save_attendance_record'),
+      path('attendance-records/<str:grade>/<str:section>/', TeacherViews.attendance_record_view, name='attendance_records'),
+       path('update-attendance-record/', TeacherViews.update_attendance_record, name='update_attendance_record'),
+      path('delete-month/', TeacherViews.delete_month, name='delete_month'),
+     path('teacher_upload_documents/', TeacherViews.teacher_upload_documents_ocr, name='teacher_upload_documents'),
+         path('teacher_sf10_views/', TeacherViews.teacher_sf10_views, name='teacher_sf10_views'),
+     path('teacher_batch_process_documents/', TeacherViews.teacher_batch_process_documents, name='teacher_batch_process_documents'),
+    path('teacher_sf10_edit_view/<int:id>/', TeacherViews.teacher_sf10_edit_view, name='teacher_sf10_edit_view'),
+    path('teacher_sf10/edit/<int:id>/', TeacherViews.teacher_sf10_edit, name='teacher_sf10_edit'),
    # urls.py
     # Generation
 

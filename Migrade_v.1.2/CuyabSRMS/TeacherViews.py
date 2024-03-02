@@ -3,15 +3,15 @@ import json
 import os
 import io
 import re
-
+from dateutil import parser
 from requests import request
-
+import base64
 from CuyabSRMS.utils import transmuted_grade, log_activity
 from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
-from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
+from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades, AttendanceRecord, LearnersObservation
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse
@@ -28,7 +28,7 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages
 #OCR
-from .forms import DocumentUploadForm
+from .forms import DocumentUploadForm, DocumentBatchUploadForm
 from .models import ProcessedDocument, ExtractedData, Section
 from google.cloud import documentai_v1beta3 as documentai
 from django.shortcuts import render
@@ -45,7 +45,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.files.uploadedfile import TemporaryUploadedFile
 import openpyxl
 from django.http import HttpResponseForbidden
-
+from django.utils import timezone
 #Grade
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -64,6 +64,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from json import loads as json_loads
+from django.db.models import Q
+import datetime
+from datetime import datetime
 
 @login_required
 def home_teacher(request):
@@ -1093,7 +1096,12 @@ def delete_class_subject(request, grade, section):
             for student in students:
                 class_type = student.class_type
                 if str(teacher.id) in class_type:
-                    del class_type[str(teacher.id)]  # Delete the key associated with the teacher's ID
+                    if class_type.get(str(teacher.id)) == 'Advisory Class, Subject Class':
+                        # Update the class_type to contain only 'Advisory Class'
+                        class_type[str(teacher.id)] = 'Advisory Class'
+                    else:
+                        del class_type[str(teacher.id)]  # Delete the key associated with the teacher's ID
+
                     student.class_type = class_type
                     student.save()
 
@@ -1109,6 +1117,7 @@ def delete_class_subject(request, grade, section):
             return redirect('display_students')  # Redirect if no students found
     else:
         return JsonResponse({'message': 'Unable to delete students. Permission denied.'}, status=403)
+
 
 def student_list_for_subject(request):
     # Assuming the user is logged in
@@ -1167,7 +1176,7 @@ def student_list_for_subject(request):
                         'transmuted_grade': transmuted_grade.transmuted_grades
                     })
             # Sort the students for this subject by highest initial grade
-            subject_grades[subject_name].sort(key=lambda x: x['highest_initial_grade'], reverse=True)
+            subject_grades[subject_name].sort(key=lambda x: x['highest_initial_grade'] if x['highest_initial_grade'] is not None else 0, reverse=True)
 
 
         # Filter students based on class type
@@ -1333,8 +1342,9 @@ def student_list_for_advisory(request):
             num_subjects = len(student_data['subjects'])
             for subject_info in student_data['subjects']:
                 final_grade = subject_info['final_grade']
-                try:
-                    total_final_grade += float(final_grade)
+                try:    
+                    if final_grade is not None:
+                        total_final_grade += float(final_grade) 
                 except ValueError:
                     # Handle the case where final_grade is not a valid number
                     pass
@@ -1342,18 +1352,24 @@ def student_list_for_advisory(request):
             student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
             save_general_average(student_data, grade, section)
 
-            sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
-            highest_per_quarter = {
-                'first_quarter': [],
-                'second_quarter': [],
-                'third_quarter': [],
-                'fourth_quarter': [],
-            }
+        sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
+        highest_per_quarter = {
+            'first_quarter': [],
+            'second_quarter': [],
+            'third_quarter': [],
+            'fourth_quarter': [],
+        }
 
-            # Populate data for each quarter
-            for quarters in ['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter']:
-                sorted_students = sorted(final_grades, key=lambda x: float(x['subjects'][0]['quarter_grades'].get(quarters, '0') or '0'), reverse=True)
-                highest_per_quarter[quarters] = sorted_students  
+        # Populate data for each quarter
+        for quarters in ['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter']:
+            sorted_students = []
+            for student in final_grades:
+                if 'subjects' in student and student['subjects']:  # Check if 'subjects' list exists and is not empty
+                    quarter_grades = student['subjects'][0]['quarter_grades'].get(quarters)
+                    if quarter_grades is not None and quarter_grades != '':
+                        sorted_students.append(student)
+            sorted_students = sorted(sorted_students, key=lambda x: float(x['subjects'][0]['quarter_grades'].get(quarters, '0') or '0'), reverse=True)
+            highest_per_quarter[quarters] = sorted_students
 
 
 
@@ -1379,9 +1395,198 @@ def student_list_for_advisory(request):
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
 
+def create_attendance_view(request):
+    if request.method == 'GET':
+        # Assuming you pass students_filtered to the template context
+        grade = request.GET.get('grade')
+        section = request.GET.get('section')
+        teacher = request.user.teacher
+        teacher_id = teacher.id 
+        class_type = request.GET.get('class_type')
+        print(grade)
+        print(section)
+        print(teacher_id)
+        print(class_type)
+        students = Student.objects.filter(grade=grade, section=section)
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
+                students_filtered.append(student)
+
+        print(students_filtered)
+        context = {
+            'students': students_filtered,
+        }
+        return render(request, 'teacher_template/adviserTeacher/create_attendance.html', context)
+    
+def save_attendance_record(request):
+    if request.method == 'POST':
+        month = request.POST.get('month')
+        school_days = request.POST.get('school_days')
+        students = request.POST.getlist('student_id')
+        response_data = {'message': 'Attendance records saved successfully'}
+
+        # Loop through the students and process their attendance data
+        for student_id in students:
+            # Retrieve days_present and days_absent data
+            days_present = request.POST.get(f'days_present_{student_id}')
+            days_absent = request.POST.get(f'days_absent_{student_id}')
+
+            try:
+                student = Student.objects.get(id=student_id)
+            except Student.DoesNotExist:
+                # Create a new student if not exists
+                student = Student.objects.create(id=student_id)
+
+            # Check if an attendance record exists for the student and month
+            try:
+                attendance_record = AttendanceRecord.objects.get(
+                    student=student,
+                    attendance_record__has_key=month  # Filter records based on the key
+                )
+
+                # Update the existing attendance record with new data
+                existing_data = attendance_record.attendance_record.get(month, {})
+                existing_data['No. of School Days'] = school_days
+                existing_data['No. of Days Present'] = days_present
+                existing_data['No. of Days Absent'] = days_absent
+                attendance_record.attendance_record[month] = existing_data
+                attendance_record.save()
 
 
+            except AttendanceRecord.DoesNotExist:
+                # If the AttendanceRecord does not exist for the student and month,
+                # create a new record with the given data and month
+                # Check if the student has any existing records, if not, create a new one
+                if not AttendanceRecord.objects.filter(student=student).exists():
+                    AttendanceRecord.objects.create(
+                        student=student,
+                        attendance_record={
+                            month: {
+                                'No. of School Days': school_days,
+                                'No. of Days Present': days_present,
+                                'No. of Days Absent': days_absent
+                            }
+                        }
+                    )
+                else:
+                    # Retrieve all existing records for the student
+                    existing_records = AttendanceRecord.objects.filter(student=student)
+                    # Update all existing records by adding the new month and its data
+                    for record in existing_records:
+                        record.attendance_record[month] = {
+                            'No. of School Days': school_days,
+                            'No. of Days Present': days_present,
+                            'No. of Days Absent': days_absent
+                        }
+                        record.save()
 
+        return JsonResponse(response_data, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@csrf_exempt
+def delete_month(request):
+    if request.method == 'POST':
+        grade = request.POST.get('grade')
+        section = request.POST.get('section')
+        month = request.POST.get('month')
+
+        try:
+            # Get all students in the specified grade and section
+            students = Student.objects.filter(grade=grade, section=section)
+            
+            for student in students:
+                # Get the attendance record for the student
+                try:
+                    record = AttendanceRecord.objects.get(student=student)
+                    if month in record.attendance_record:
+                        del record.attendance_record[month]
+                        record.save()
+                except AttendanceRecord.DoesNotExist:
+                    pass
+
+            return JsonResponse({'status': 'success'})
+        
+        except Student.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'No students found for the specified grade and section'})
+    
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    
+def attendance_record_view(request, grade, section):
+    # Filter students based on grade and section
+    students = Student.objects.filter(grade=grade, section=section)
+    # Initialize an empty list to store attendance records for all students
+    attendance_records = []
+
+    # Loop through each student and collect their attendance records
+    for student in students:
+        # Filter attendance records based on the current student
+        records_for_student = AttendanceRecord.objects.filter(student=student)
+
+        # Extend the attendance_records list with the records_for_student QuerySet
+        attendance_records.append(records_for_student)
+
+
+    months = set()
+    for records in attendance_records:
+        for record in records:
+            if record.attendance_record:
+                months.update(record.attendance_record.keys())
+
+    # Pass the attendance records to the template for rendering
+    context = {
+        'grade': grade,
+        'section': section,
+        'attendance_records': attendance_records,
+        'months': months
+    }
+
+    # Render the template with the attendance record data
+    return render(request, 'teacher_template/adviserTeacher/attendance_record_view.html', context)
+
+@csrf_exempt
+def update_attendance_record(request):
+    if request.method == 'POST':
+        record_id = request.POST.get('student_id')
+        month = request.POST.get('month')  # Month for which data is updated
+        field_name = request.POST.get('key')  # Field to update: "No. of School Days", "No. of Days Present", "No. of Days Absent"
+        new_value = request.POST.get('new_value')  # New value to update
+
+ 
+        try:
+            # Fetch the AttendanceRecord object
+            record = AttendanceRecord.objects.get(student=record_id)
+            
+            # Parse the JSON field
+            attendance_record = record.attendance_record
+
+            
+            
+            # Update the value based on the month and field name
+            if month in attendance_record and field_name in attendance_record[month]:
+                attendance_record[month][field_name] = new_value
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Month or field name not found'})
+
+            # Save the updated JSON field back to the object
+            record.save()
+
+            # Respond with a success message
+            return JsonResponse({'status': 'success'})
+        
+        except AttendanceRecord.DoesNotExist:
+            # Respond with an error message if the record does not exist
+            return JsonResponse({'status': 'error', 'message': 'Record not found'})
+        
+        except Exception as e:
+            # Respond with an error message if any other exception occurs
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    else:
+        # Respond with an error message for invalid request methods
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
 def display_advisory_data(request):
         # Assuming the user is logged in
@@ -2912,3 +3117,412 @@ def class_record_upload(request):
     else:
         # Return a response in case of non-POST requests
         return HttpResponse("Only POST requests are allowed.")
+
+
+
+def teacher_upload_documents_ocr(request):
+    if request.method == 'POST':
+        form = DocumentUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            
+            uploaded_file = request.FILES['document']
+            name = uploaded_file.name
+            teacher = request.user.teacher
+            
+        
+            # Sanitize the filename by replacing spaces and special characters with underscores
+            filename = 'processed_documents/' + name.replace(' ', '_').replace(',', '').replace('(', '').replace(')', '')
+            file_extension = os.path.splitext(filename)[-1].lower()
+            print(filename)
+            
+            
+            if ProcessedDocument.objects.filter(document=filename).exists():
+                messages.error(request, 'Document with the same name already exists.')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            # Replace 'YOUR_PROJECT_ID' with your Google Cloud project ID.
+
+            user = request.user
+            action = f'{user} upload SF10 "{name}"'
+            details = f'{user} upload SF10 "{name}" in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
+
+            project_id = '1083879771832'
+
+
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+
+            client = documentai.DocumentProcessorServiceClient()
+
+            # Define the processor resource name.
+            processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
+
+            
+
+            # Read the document content from the uploaded file.
+            content = uploaded_file.read()
+
+            # Determine the MIME type based on the file extension.
+            file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
+            if file_extension in ['.pdf']:
+                mime_type = "application/pdf"
+            elif file_extension in ['.jpg', '.jpeg']:
+                mime_type = "image/jpeg"
+            else:
+                # Handle unsupported file types or provide an error message.
+                return render(request, 'unsupported_file_type.html')
+
+            # Configure the processing request.
+            processing_request = {
+                "name": processor_name,
+                "document": {"content": content, "mime_type": mime_type},
+            }
+
+            # Process the document.
+            response = client.process_document(request=processing_request)
+
+            # Access the extracted text from the document content.
+            document = response.document
+            text = document.text
+
+            data_by_type = {
+                'Type': [],
+                'Raw Value': [],
+                'Normalized Value': [],
+                'Confidence': [],
+            }
+
+            # Iterate through your data extraction process and populate the dictionary
+            for entity in document.entities:
+                data_by_type['Type'].append(entity.type_)
+                data_by_type['Raw Value'].append(entity.mention_text)
+                data_by_type['Normalized Value'].append(entity.normalized_value.text)
+                data_by_type['Confidence'].append(f"{entity.confidence:.0%}")
+
+                # Get Properties (Sub-Entities) with confidence scores
+                for prop in entity.properties:
+                    data_by_type['Type'].append(prop.type_)
+                    data_by_type['Raw Value'].append(prop.mention_text)
+                    data_by_type['Normalized Value'].append(prop.normalized_value.text)
+                    data_by_type['Confidence'].append(f"{prop.confidence:.0%}")
+
+            print(data_by_type)
+
+            # Create a ProcessedDocument instance and save it
+            processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now(), teacher=teacher)
+            processed_document.save()
+
+            my_data = ExtractedData(processed_document=processed_document)
+
+            # Define a mapping of keys from data_by_type to ExtractedData fields
+            key_mapping = {
+                'Last_Name': 'last_name',
+                'First_Name': 'first_name',
+                'Middle_Name': 'middle_name',
+                'SEX': 'sex',
+                'Classified_as_Grade': 'classified_as_grade',
+                'LRN': 'lrn',
+                'Name_of_School': 'name_of_school',
+                'School_Year': 'school_year',
+                'General_Average': 'general_average',
+                'Birthdate': 'birthdate',
+            }
+
+            last_values = {}
+
+            for i in range(len(data_by_type['Type'])):
+                data_type = data_by_type['Type'][i]
+                raw_value = data_by_type['Raw Value'][i]
+
+                # Update the last value for the type
+                last_values[data_type] = {'value': raw_value}
+
+            # Set the last values to the corresponding fields in my_data
+            for key, field_name in key_mapping.items():
+                if key in last_values:
+                    setattr(my_data, field_name, last_values[key]['value'])
+
+            # # Handle birthdate separately
+            #     if 'Birthdate' in key_mapping:
+            #         birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+            #         if birthdate_index is not None:
+            #             birthdate_str = data_by_type['Raw Value'][birthdate_index]
+            #             try:
+            #                 # Provide a specific format string based on the expected format
+            #                 my_data.birthdate = parser.parse(birthdate_str).date()
+            #             except ValueError as e:
+            #                 print(f"Error parsing birthdate: {e}")
+            if 'Birthdate' in key_mapping:
+                birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                if birthdate_index is not None:
+                    birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                    try:
+                        # Provide a specific format string based on the expected format
+                        my_data.birthdate = parser.parse(birthdate_str).date()
+                    except ValueError as e:
+                        print(f"Error parsing birthdate: {e}")
+
+            my_data.save()
+
+            # response = FileResponse(open(processed_document.document.path, 'rb'), content_type='application/pdf')
+            # response['Content-Disposition'] = f'inline; filename="{uploaded_file.name}"'
+            # return response
+
+            pdf_content_base64 = base64.b64encode(content).decode('utf-8')
+
+        return redirect('teacher_sf10_views')
+        # return render(request, 'admin_template/edit_extracted_data.html', {
+        #         # 'extracted_data': extracted_data_for_review,
+        #         'document_text': text,
+        #         'uploaded_document_url': processed_document.document.url,
+        #         # 'all_extracted_data': all_extracted_data,
+        #         'processed_document': processed_document,
+        #         'download_link': processed_document.document.url,
+        #         'data_by_type': data_by_type,
+        #         # 'extracted_text': extracted_text 
+        #         'extracted_data': my_data,
+        #         'pdf_content_base64': pdf_content_base64, 
+        #     })
+    else: 
+        form = DocumentUploadForm()
+
+    return render(request, 'teacher_template/adviserTeacher/teacher_upload_documents.html', {'form': form})
+
+
+def teacher_sf10_views(request):
+    # Retrieve the search query from the request's GET parameters
+    search_query = request.GET.get('search', '')
+    teacher = request.user.teacher
+    print(teacher)
+    # If a search query is present, filter the ExtractedData model
+    if search_query:
+        # You can customize the fields you want to search on
+        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average','processed_document__teacher__user__first_name', 'processed_document__teacher__user__last_name']
+        
+        # Use Q objects to create a complex OR query
+        query = Q()
+        for field in search_fields:
+            query |= Q(**{f'{field}__icontains': search_query})
+
+        # Filter the ExtractedData model based on the search query
+        all_extracted_data = ExtractedData.objects.filter(query)
+    else:
+        # If no search query, retrieve all records
+        all_extracted_data = ExtractedData.objects.filter(processed_document__teacher=teacher)
+
+    # Pass the filtered data and search query to the template context
+    context = {
+        'all_extracted_data': all_extracted_data,
+        'search_query': search_query,
+        }
+
+        # Render the sf10.html template with the context data
+    return render(request, 'teacher_template/adviserTeacher/teacher_sf10.html', context)
+
+
+def teacher_batch_process_documents(request):
+
+    if request.method == 'POST':
+        form = DocumentBatchUploadForm(request.POST, request.FILES)
+
+    
+        if form.is_valid():
+            uploaded_files = request.FILES.getlist('documents')
+            teacher = request.user.teacher
+            for uploaded_file in uploaded_files:
+                
+                
+                name = uploaded_file.name
+                filename = 'processed_documents/' + name.replace(' ', '_').replace(',', '').replace('(', '').replace(')', '')
+
+                if ProcessedDocument.objects.filter(document=filename).exists():
+                    messages.error(request, 'Document with the same name already exists.')
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+                user = request.user
+                action = f'{user} upload SF10 "{name}"'
+                details = f'{user} upload SF10 "{name}" in the system.'
+                log_activity(user, action, details)
+
+                logs = user, action, details    
+                print(logs)
+
+                project_id = '1083879771832'
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+                client = documentai.DocumentProcessorServiceClient()
+                processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
+
+                content = uploaded_file.read()
+                file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
+                if file_extension in ['.pdf']:
+                    mime_type = "application/pdf"
+                elif file_extension in ['.jpg', '.jpeg']:
+                    mime_type = "image/jpeg"
+                else:
+                    messages.error(request, f'Unsupported file type for document "{name}".')
+                    continue
+
+                processing_request = {
+                    "name": processor_name,
+                    "document": {"content": content, "mime_type": mime_type},
+                }
+
+                try:
+                    response = client.process_document(request=processing_request)
+                    document = response.document
+                    text = document.text
+                    data_by_type = {
+                        'Type': [],
+                        'Raw Value': [],
+                        'Normalized Value': [],
+                        'Confidence': [],
+                    }
+
+                    # Iterate through your data extraction process and populate the dictionary
+                    for entity in document.entities:
+                        data_by_type['Type'].append(entity.type_)
+                        data_by_type['Raw Value'].append(entity.mention_text)
+                        data_by_type['Normalized Value'].append(entity.normalized_value.text)
+                        data_by_type['Confidence'].append(f"{entity.confidence:.0%}")
+
+                        # Get Properties (Sub-Entities) with confidence scores
+                        for prop in entity.properties:
+                            data_by_type['Type'].append(prop.type_)
+                            data_by_type['Raw Value'].append(prop.mention_text)
+                            data_by_type['Normalized Value'].append(prop.normalized_value.text)
+                            data_by_type['Confidence'].append(f"{prop.confidence:.0%}")
+
+                    print(data_by_type)
+
+                    # Create a ProcessedDocument instance and save it
+                    processed_document = ProcessedDocument(document=uploaded_file, upload_date=timezone.now(), teacher=teacher)
+                    processed_document.save()
+
+                    my_data = ExtractedData(processed_document=processed_document)
+
+                    # Define a mapping of keys from data_by_type to ExtractedData fields
+                    key_mapping = {
+                        'Last_Name': 'last_name',
+                        'First_Name': 'first_name',
+                        'Middle_Name': 'middle_name',
+                        'SEX': 'sex',
+                        'Classified_as_Grade': 'classified_as_grade',
+                        'LRN': 'lrn',
+                        'Name_of_School': 'name_of_school',
+                        'School_Year': 'school_year',
+                        'General_Average': 'general_average',
+                        'Birthdate': 'birthdate',
+                    }
+
+                    last_values = {}
+
+                    for i in range(len(data_by_type['Type'])):
+                        data_type = data_by_type['Type'][i]
+                        raw_value = data_by_type['Raw Value'][i]
+
+                        # Update the last value for the type
+                        last_values[data_type] = {'value': raw_value}
+
+                    # Set the last values to the corresponding fields in my_data
+                    for key, field_name in key_mapping.items():
+                        if key in last_values:
+                            setattr(my_data, field_name, last_values[key]['value'])
+
+                    # # Handle birthdate separately
+                    #     if 'Birthdate' in key_mapping:
+                    #         birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                    #         if birthdate_index is not None:
+                    #             birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                    #             try:
+                    #                 # Provide a specific format string based on the expected format
+                    #                 my_data.birthdate = parser.parse(birthdate_str).date()
+                    #             except ValueError as e:
+                    #                 print(f"Error parsing birthdate: {e}")
+                    if 'Birthdate' in key_mapping:
+                        birthdate_index = data_by_type['Type'].index('Birthdate') if 'Birthdate' in data_by_type['Type'] else None
+                        if birthdate_index is not None:
+                            birthdate_str = data_by_type['Raw Value'][birthdate_index]
+                            try:
+                                # Provide a specific format string based on the expected format
+                                my_data.birthdate = parser.parse(birthdate_str).date()
+                            except ValueError as e:
+                                print(f"Error parsing birthdate: {e}")
+
+                    my_data.save()
+
+
+                except Exception as e:
+                    messages.error(request, f'Error processing document "{name}": {str(e)}')
+
+            messages.success(request, 'Documents processed successfully.')
+            return redirect('teacher_sf10_views')
+            # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    else:
+        form = DocumentBatchUploadForm()
+
+    return render(request, 'teacher_template/adviserTeacher/teacher_batch_process_documents.html', {'form': form})
+
+def teacher_sf10_edit_view(request, id):
+    extracted_data = get_object_or_404(ExtractedData, id=id)
+
+    # Assuming you have 'processed_document' field in your ExtractedData model
+    processed_document = extracted_data.processed_document
+
+    # Access the PDF content from the 'document' field of the 'ProcessedDocument' object
+    pdf_content = processed_document.document.read()
+
+    # Convert the content to base64 encoding
+    pdf_content_base64 = base64.b64encode(pdf_content).decode('utf-8')
+
+    return render(request, 'teacher_template/adviserTeacher/teacher_edit_sf10.html', {'extracted_data': extracted_data, 'pdf_content_base64': pdf_content_base64})
+
+def teacher_sf10_edit(request, id):
+
+    extracted_data = get_object_or_404(ExtractedData, id=id)
+
+    if request.method == 'POST':
+        # Assuming form data is sent via POST request
+        # Retrieve and process the form data for editing
+        extracted_data.last_name = request.POST.get('Last_Name', '')
+        extracted_data.first_name = request.POST.get('First_Name', '')
+        extracted_data.middle_name = request.POST.get('Middle_Name', '')
+        extracted_data.sex = request.POST.get('SEX', '')
+        extracted_data.classified_as_grade = request.POST.get('Classified_as_Grade', '')
+        extracted_data.lrn = request.POST.get('LRN', '')
+        extracted_data.name_of_school = request.POST.get('Name_of_School', '')
+        extracted_data.school_year = request.POST.get('School_Year', '')
+        extracted_data.general_average = request.POST.get('General_Average', '')
+
+        sf10_name = f"{extracted_data.first_name} {extracted_data.last_name}"
+        user = request.user
+        action = f'{user} updates information of the SF10 of "{sf10_name}"'
+        details = f'{user} updates information of the SF10 of "{sf10_name} in the system.'
+        log_activity(user, action, details)
+
+        logs = user, action, details    
+        print(logs)
+  
+        # Handle birthdate format conversion
+        birthdate_str = request.POST.get('Birthdate', '')
+        # Attempt to create the announcement
+        try:
+            birthdate_obj = datetime.strptime(birthdate_str, "%b. %d, %Y")
+            extracted_data.birthdate = birthdate_obj.strftime("%Y-%m-%d")
+        except ValueError:
+            # Handle invalid birthdate format
+            pass  # You may want to add proper error handling here
+
+        # Save the changes to the ExtractedData instance
+        extracted_data.save()
+
+
+        # Redirect to a success page or any other appropriate URL
+        return HttpResponseRedirect(reverse('teacher_sf10_views') + '?success=true')
+
+    # Render the edit_sf10.html template with the ExtractedData instance
+    return render(request, 'teacher_template/adviserTeacher/teacher_edit_sf10.html', {'extracted_data': extracted_data})
+

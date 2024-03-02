@@ -193,6 +193,7 @@ class ClassRecord(models.Model):
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_modified = models.DateTimeField(auto_now=True)
     school_year = models.CharField(max_length=50, null=True)
+    
 
     def archive(self):
         try:
@@ -262,6 +263,7 @@ class ArchivedClassRecord(models.Model):
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
     school_year = models.CharField(max_length=50, null=True)
+    # is_restore_approved = models.BooleanField(null=True)
 
     def restore(self):
         try:
@@ -529,7 +531,7 @@ def save_user_profile(sender, instance, **kwargs):
 class ProcessedDocument(models.Model):
     document = models.FileField(upload_to='processed_documents/')
     upload_date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, null=True, blank=True, on_delete=models.CASCADE)
 
 
     def __str__(self):

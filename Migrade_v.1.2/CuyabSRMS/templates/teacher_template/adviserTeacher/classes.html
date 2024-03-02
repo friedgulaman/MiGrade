@@ -100,9 +100,9 @@ New Class List
                                                             <a class="dropdown-item text-danger"
                                                                 href="{% url 'delete_class' grade_section.grade grade_section.section %}"
                                                                 onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">Delete</a>
-                                                            <a class="dropdown-item text-warning"
+                                                            {% comment %} <a class="dropdown-item text-warning"
                                                                 href="{% url 'archive_students_with_grade_and_section' grade_section.grade grade_section.section  %}"
-                                                                onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</a>
+                                                                onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</a> {% endcomment %}
                                                             {% comment %} <form id="archiveForm" method="post"
                                                                 action="{% url 'archive_students_with_grade_and_section' grade=grade_section.grade section=grade_section.section %}">
                                                                 {% csrf_token %}

@@ -129,6 +129,14 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 aria-controls="students" aria-selected="true">Students</a>
                         </li>
                         <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#attendance_record" role="tab"
+                                aria-selected="false">Attendance Record</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#learners_observation" role="tab"
+                                aria-selected="false">Learner`s Observe Values</a>
+                        </li>
+                        <li class="nav-item ">
                             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly" role="tab"
                                 aria-selected="false">Summary of Quarterly Grades</a>
                         </li>
@@ -143,6 +151,10 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         <li class="nav-item ">
                             <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#rankings" role="tab"
                                 aria-selected="false">Rankings</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#Upload_sf_10" role="tab"
+                                aria-selected="false">SF10</a>
                         </li>
                     </ul>
                 </div>
@@ -191,6 +203,14 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade show" id="attendance_record" role="tabpanel" aria-labelledby="attendance_record">
+                        <div class="container mt-4">
+                            <a href="{% url 'create_attendance_view' %}?grade={{ grade }}&section={{ section }}&teacher_id={{ teacher_id }}&class_type={{ class_type }}">Create Attendance</a>
+                            <br>
+                            <a href="{% url 'attendance_records' grade=grade section=section %}">Read Attendance Records</a>
                         </div>
                     </div>
                     <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
@@ -396,11 +416,34 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             </div>
                         </div>
                     </div>
+
+                    <div class="tab-pane fade show" id="Upload_sf_10" role="tabpanel" aria-labelledby="Upload_sf_10">
+                        <div class="nav flex-column sub-menu">
+                            <div class="nav-item">
+                                <a class="nav-link upload-button" href="{% url 'teacher_upload_documents' %}">
+                                    <i class="fas fa-upload"></i> <!-- Upload icon -->
+                                    <span>Upload</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a class="nav-link batch-upload-button" href="{% url 'teacher_batch_process_documents' %}">
+                                    <i class="fas fa-upload"></i> <!-- Batch upload icon -->
+                                    <span>Batch Upload</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a class="nav-link files-button" href="{% url 'teacher_sf10_views' %}">
+                                    <i class="fas fa-file-alt"></i> <!-- Files icon -->
+                                    <span>Files</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
             </section>
         </div>
     </div>
 </section>
-<!-- jQuery CDN -->
 <script>
     function submitFormAndRememberScroll(selectedQuarter) {
         // Store the current scroll position in session storage
@@ -492,6 +535,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         });
     });
 </script>
+
 <!-- <script>
     function filterStudents(subject) {
         // Hide all subject tables

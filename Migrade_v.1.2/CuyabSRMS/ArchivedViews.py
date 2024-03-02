@@ -21,7 +21,8 @@ def archive_class_record(request, class_record_id):
                 subject=class_record.subject,
                 teacher=class_record.teacher,
                 quarters=class_record.quarters,
-                school_year=class_record.school_year
+                school_year=class_record.school_year,
+                is_restore_approve = False
             )
             class_record_teacher = class_record.teacher
 
@@ -94,16 +95,24 @@ def restore_archived_record(request, archived_record_id):
     
     try:
         with transaction.atomic():
-            # Create a new instance of ClassRecord using archived data
-            class_record = ClassRecord.objects.create(
-                name=archived_record.name,
-                grade=archived_record.grade,
-                section=archived_record.section,
-                subject=archived_record.subject,
-                teacher=archived_record.teacher,
-                quarters=archived_record.quarters,
-                school_year=archived_record.school_year
-            )
+
+            archived_records = ArchivedClassRecord.objects.filter(id=archived_record_id, is_restore_approved=False)
+            restore = is_restore_approved = True
+            for restore_approved in archived_records:
+                restore_approved.is_restore_approved = restore
+                archived_record.save()
+
+            # # Create a new instance of ClassRecord using archived data
+            # class_record = ClassRecord.objects.create(
+            #     name=archived_record.name,
+            #     grade=archived_record.grade,
+            #     section=archived_record.section,
+            #     subject=archived_record.subject,
+            #     teacher=archived_record.teacher,
+            #     quarters=archived_record.quarters,
+            #     school_year=archived_record.school_year,
+
+            # )
 
             user = request.user
             action = f'{user} restore a Class Record "{archived_record.name}"'

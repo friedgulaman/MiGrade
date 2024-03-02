@@ -1,0 +1,198 @@
+
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+    New Class Record
+{% endblock title %}
+{% block main_content %}
+<style>
+.back-button {
+    color: #1027ac;
+    font-size: 30px;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+<div class="container">
+    <div class=" me-4">
+        <a class="back-button">&larr;</a>
+    </div>
+    <form id="attendance-form">
+        {% csrf_token %}
+        <table class="table" id="attendance-table">
+            <thead>
+                <tr>       <button type="submit" id="save-attendance">Save Attendance</button>
+                    <th>No.</th>
+                    <th>Student Name</th>
+                    <th>Month: 
+                        <select id="select-month" name="month">
+                            <option value="">Select Month</option>
+                            <option value="JANUARY">January</option>
+                            <option value="FEBRUARY">February</option>
+                            <option value="MARCH">March</option>
+                            <option value="APRIL">April</option>
+                            <option value="MAY">May</option>
+                            <option value="JUNE">June</option>
+                            <option value="JULY">July</option>
+                            <option value="AUGUST">August</option>
+                            <option value="SEPTEMBER">September</option>
+                            <option value="OCTOBER">October</option>
+                            <option value="NOVEMBER">November</option>
+                            <option value="DECEMBER">December</option>
+                        </select>
+                    </th>
+                    <th>
+                        No. of School Days: <br>
+                        <input type="number" id="school-days-input" name="school_days" placeholder="Enter School Days">
+                    </th>
+                    <th>No. of Days Present</th>
+                    <th>No. of Days Absent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ student.name }}</td> <input type="hidden" name="student_id" value="{{ student.id }}">
+                    <td class="editable month" data-student-id="{{ student.id }}" data-field="month"></td>
+                    <td class="editable school-days" data-student-id="{{ student.id }}" data-field="school_days"></td>
+                    <td contenteditable="true" id="days_present_{{ student.id }}" class="editable days-present" data-student-id="{{ student.id }}" data-field="days_present"></td>
+                    <td  id="days_absent_{{ student.id }}" class="editable days-absent" data-student-id="{{ student.id }}" data-field="days_absent"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('attendance-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            var formData = new FormData(this); // Create form data object
+            
+            document.querySelectorAll('.editable.days-present').forEach(function(cell) {
+                var studentId = cell.dataset.studentId;
+                var daysPresent = cell.innerText.trim();
+                formData.append('days_present_' + studentId, daysPresent);
+            });
+            
+            document.querySelectorAll('.editable.days-absent').forEach(function(cell) {
+                var studentId = cell.dataset.studentId;
+                var daysAbsent = cell.innerText.trim();
+                formData.append('days_absent_' + studentId, daysAbsent);
+            });
+            console.log(formData)
+            // Send AJAX request to save attendance record
+            fetch("{% url 'save_attendance_record' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Attendance records saved successfully');
+                    // You can add further logic here if needed
+                } else {
+                    alert('Failed to save attendance records');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving attendance records');
+            });
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event listeners for the editable cells
+        var editableCells = document.querySelectorAll('.editable');
+        editableCells.forEach(function(cell) {
+            cell.addEventListener('input', function() {
+                // Get the relevant data
+                var studentId = this.getAttribute('data-student-id');
+                var field = this.getAttribute('data-field');
+
+                // Update the corresponding cell if it's school days or days present
+                if (field === 'school_days' || field === 'days_present') {
+                    var schoolDays = parseInt(document.querySelector('.editable.school-days[data-student-id="' + studentId + '"]').innerText.trim()) || 0;
+                    var daysPresent = parseInt(document.querySelector('.editable.days-present[data-student-id="' + studentId + '"]').innerText.trim()) || 0;
+                    var daysAbsent = schoolDays - daysPresent;
+
+                    // Update the "Days Absent" cell
+                    var absentCell = document.querySelector('.editable.days-absent[data-student-id="' + studentId + '"]');
+                    if (absentCell) {
+                        absentCell.innerText = daysAbsent;
+                    }
+                }
+            });
+        });
+    });
+</script>
+<script>
+    document.querySelector(".back-button").addEventListener("click", function () {
+        window.history.back();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var schoolDaysInput = document.getElementById('school-days-input');
+
+        // Event listener for the input field
+        schoolDaysInput.addEventListener('input', function() {
+            var schoolDaysValue = this.value.trim();
+
+            // Update all school days cells with the entered value
+            var schoolDaysCells = document.querySelectorAll('.editable.school-days');
+            schoolDaysCells.forEach(function(cell) {
+                cell.innerText = schoolDaysValue;
+            });
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event listener for the select dropdown
+        document.getElementById('select-month').addEventListener('change', function() {
+            var selectedMonth = this.value;
+            if (selectedMonth) {
+                // Update all month cells with the selected month
+                var monthCells = document.querySelectorAll('.editable.month');
+                monthCells.forEach(function(cell) {
+                    cell.innerText = selectedMonth;
+                });
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all editable cells
+        var editableCells = document.querySelectorAll('.editable');
+
+        // Add event listener to each editable cell
+        editableCells.forEach(function(cell) {
+            cell.addEventListener('keydown', function(event) {
+                var keyCode = event.keyCode;
+                var currentCell = event.target;
+                var row = currentCell.parentElement;
+                var rowIndex = row.rowIndex;
+                var cellIndex = currentCell.cellIndex;
+                var numRows = row.parentElement.rows.length;
+                var numCols = row.cells.length;
+
+                // Move based on arrow key pressed
+                if (keyCode === 37 && cellIndex > 0) { // Left arrow
+                    row.cells[cellIndex - 1].focus();
+                } else if (keyCode === 38 && rowIndex > 0) { // Up arrow
+                    row.parentElement.rows[rowIndex - 2].cells[cellIndex].focus();
+                } else if (keyCode === 39 && cellIndex < numCols - 1) { // Right arrow
+                    row.cells[cellIndex + 1].focus();
+                } else if (keyCode === 40 && rowIndex < numRows - 1) { // Down arrow
+                    row.parentElement.rows[rowIndex + 0].cells[cellIndex].focus();
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock main_content %}

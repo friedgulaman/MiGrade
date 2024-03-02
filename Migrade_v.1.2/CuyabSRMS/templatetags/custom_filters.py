@@ -21,6 +21,13 @@ def get_item(dictionary, key):
     return None
 
 @register.filter
+def get_value(dictionary, key):
+    """
+    Custom template filter to retrieve a value from a dictionary.
+    """
+    return dictionary.get(key, '')
+
+@register.filter
 def get_item_rank(dictionary, key):
     if isinstance(dictionary, dict):
         return dictionary.get(key, '')

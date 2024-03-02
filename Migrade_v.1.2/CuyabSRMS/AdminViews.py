@@ -1007,7 +1007,7 @@ def sf10_views(request):
     # If a search query is present, filter the ExtractedData model
     if search_query:
         # You can customize the fields you want to search on
-        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average']
+        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average', 'processed_document__teacher__user__first_name', 'processed_document__teacher__user__last_name', 'processed_document__upload_date']
         
         # Use Q objects to create a complex OR query
         query = Q()
