@@ -1132,18 +1132,18 @@ def student_list_for_subject(request):
         grade = request.GET.get('grade')
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
-        print(class_type)
+        # print(class_type)
         
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
-        print(students)
+        # print(students)
 
         # Fetch distinct subjects based on grade and section
         subjects = ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).values('subject').distinct()
-        print(subjects)
+        # print(subjects)
 
         # Initialize a dictionary to store highest initial grade and transmuted grades per subject
         subject_grades = {}
@@ -1154,7 +1154,7 @@ def student_list_for_subject(request):
             subject_name = subject['subject']
             subject_students = students
 
-            print(subject_students)
+            # print(subject_students)
             # Fetch highest initial grade and transmuted grades for students in this subject
             subject_grades[subject_name] = []
             for student in subject_students:

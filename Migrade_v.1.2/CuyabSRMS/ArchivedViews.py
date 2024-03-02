@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.db import transaction
-from .models import ClassRecord, ArchivedClassRecord, GradeScores, ArchivedGradeScores, Student, ArchivedStudent, FinalGrade, ArchivedFinalGrade, GeneralAverage, ArchivedGeneralAverage, ArchivedQuarterlyGrades, QuarterlyGrades
+from .models import ClassRecord, ArchivedClassRecord, GradeScores, ArchivedGradeScores, Student, ArchivedStudent, FinalGrade, ArchivedFinalGrade, GeneralAverage, ArchivedGeneralAverage, ArchivedQuarterlyGrades, QuarterlyGrades, RestoreRequest
 import logging
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from .utils import log_activity
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.contrib import messages
+
 def archive_class_record(request, class_record_id):
     
     try:
@@ -21,8 +23,7 @@ def archive_class_record(request, class_record_id):
                 subject=class_record.subject,
                 teacher=class_record.teacher,
                 quarters=class_record.quarters,
-                school_year=class_record.school_year,
-                is_restore_approve = False
+                school_year=class_record.school_year
             )
             class_record_teacher = class_record.teacher
 
@@ -96,23 +97,25 @@ def restore_archived_record(request, archived_record_id):
     try:
         with transaction.atomic():
 
-            archived_records = ArchivedClassRecord.objects.filter(id=archived_record_id, is_restore_approved=False)
-            restore = is_restore_approved = True
-            for restore_approved in archived_records:
-                restore_approved.is_restore_approved = restore
-                archived_record.save()
+            
+            # archived_record = ArchivedClassRecord.objects.filter(id=archived_record_id)
+            # archived_record = ArchivedClassRecord.objects.filter(id=archived_record_id, is_restore_approved=False)
+            # restore = is_restore_approved = True
+            # for restore_approved in archived_records:
+            #     restore_approved.is_restore_approved = restore
+            #     archived_record.save()
 
-            # # Create a new instance of ClassRecord using archived data
-            # class_record = ClassRecord.objects.create(
-            #     name=archived_record.name,
-            #     grade=archived_record.grade,
-            #     section=archived_record.section,
-            #     subject=archived_record.subject,
-            #     teacher=archived_record.teacher,
-            #     quarters=archived_record.quarters,
-            #     school_year=archived_record.school_year,
+            # Create a new instance of ClassRecord using archived data
+            class_record = ClassRecord.objects.create(
+                name=archived_record.name,
+                grade=archived_record.grade,
+                section=archived_record.section,
+                subject=archived_record.subject,
+                teacher=archived_record.teacher,
+                quarters=archived_record.quarters,
+                school_year=archived_record.school_year,
 
-            # )
+            )
 
             user = request.user
             action = f'{user} restore a Class Record "{archived_record.name}"'
@@ -161,15 +164,79 @@ def restore_archived_record(request, archived_record_id):
             archived_record.delete()
 
 
-            return redirect('archived_records')
+            return redirect('admin_archived_records')
     except Exception as e:
         print(f"Error occurred during restoration: {str(e)}")
         return redirect('error_page')  # Redirect to an error page or handle as needed
 
-def archived_records(request):
+def initiate_restore_request(request, archived_record_id):
+    archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
+    if request.method == 'POST':
+        # Check if a restore request already exists for the archived record
+        existing_request = RestoreRequest.objects.filter(archived_record=archived_record).exists()
+        if existing_request:
+            # If a restore request already exists, show a message and redirect back
+            messages.error(request, 'A restore request already exists for this archived record.')
+            return redirect('archived_records')
+        else:
+            # If no restore request exists, create a new restore request
+            RestoreRequest.objects.create(archived_record=archived_record, requester=request.user.teacher)
+            messages.success(request, 'Restore request created successfully.')
+            return redirect('archived_records')  # Redirect to archived records page or a thank you page
+    return render(request, 'archive_template/initiate_restore_request.html', {'archived_record': archived_record})
+
+def restore_requests(request):
+    # Assuming you have a model for restore requests with a foreign key to the User model
+    restore_requests = RestoreRequest.objects.all()
+    return render(request, 'archive_template/restore_requests.html', {'restore_requests': restore_requests})
+
+def confirm_restore(request, archived_record_id):
+    try:
+        archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
+        return render(request, 'archive_template/confirm_restore.html', {'archived_record': archived_record})
+    except ArchivedClassRecord.DoesNotExist:
+        return redirect('error_page')  
+    
+def view_restore_request(request, request_id):
+    restore_request = RestoreRequest.objects.get(id=request_id)
+    return render(request, 'archive_template/view_restore_request.html', {'restore_request': restore_request})
+
+def approve_restore_request(request, request_id):
+    restore_request = RestoreRequest.objects.get(id=request_id)
+    # Perform logic to approve the request
+    restore_request.status = 'Approved'
+    restore_request.save()
+    # Redirect to the confirm_restore view with the archived record ID
+    return redirect('confirm_restore', archived_record_id=restore_request.archived_record.id)
+
+def deny_restore_request(request, request_id):
+    restore_request = RestoreRequest.objects.get(id=request_id)
+    # Perform logic to deny the request
+    restore_request.status = 'Denied'
+    restore_request.save()
+    return redirect('restore_requests')
+
+
+
+def admin_archived_records(request):
     archived_records = ArchivedClassRecord.objects.all()
     archived_students =  ArchivedStudent.objects.values('archived_grade', 'archived_section').distinct()
-    return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records, 'archived_students': archived_students})
+    return render(request, 'archive_template/admin_archived_records.html', {'archived_records': archived_records, 'archived_students': archived_students})
+
+
+def archived_records(request):
+    # Retrieve all archived class records
+    archived_records = ArchivedClassRecord.objects.all()
+    
+    # Retrieve distinct archived student information
+    archived_students = ArchivedStudent.objects.values('archived_grade', 'archived_section').distinct()
+    
+    # Retrieve all pending restore requests
+    restore_requests = RestoreRequest.objects.filter(status='Pending')
+    print(restore_requests)
+    
+    # Render the template with the archived records, students, and restore requests
+    return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records, 'archived_students': archived_students, 'restore_requests': restore_requests})
 
 # def archived_records(request):
 #     archived_records = ArchivedClassRecord.objects.all()

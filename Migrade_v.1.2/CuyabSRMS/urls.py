@@ -238,7 +238,13 @@ urlpatterns = [
     path('archive-class-record/<int:class_record_id>/', ArchivedViews.archive_class_record, name='archive_class_record'),
     path('archive_students_with_grade_and_section/<str:grade>/<str:section>/', ArchivedViews.archive_students_with_grade_and_section, name='archive_students_with_grade_and_section'),
     path('restore_archived_students/<str:grade>/<str:section>/', ArchivedViews.restore_archived_students, name='restore_archived_students'),
-
+    path('admin_archived-records/', ArchivedViews.admin_archived_records, name='admin_archived_records'),
+    path('confirm_restore/<int:archived_record_id>/', ArchivedViews.confirm_restore, name='confirm_restore'),
+    path('view_restore_request/<int:request_id>/', ArchivedViews.view_restore_request, name='view_restore_request'),
+    path('approve_restore_request/<int:request_id>/', ArchivedViews.approve_restore_request, name='approve_restore_request'),
+    path('deny_restore_request/<int:request_id>/', ArchivedViews.deny_restore_request, name='deny_restore_request'),
+    path('restore-requests/', ArchivedViews.restore_requests, name='restore_requests'), 
+    path('initiate-restore/<int:archived_record_id>/', ArchivedViews.initiate_restore_request, name='initiate_restore_request'),
 
 
    

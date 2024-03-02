@@ -720,3 +720,9 @@ class LearnersObservation(models.Model):
     quarter_2 = models.JSONField(null=True)
     quarter_3 = models.JSONField(null=True)
     quarter_4 = models.JSONField(null=True)
+
+class RestoreRequest(models.Model):
+    archived_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE)
+    requester = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
+    date_requested = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='Pending')

@@ -1,0 +1,44 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+    Initiate Restore Request
+{% endblock title %}
+{% block main_content %}
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Initiate Restore Request</h1>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <p>You are about to initiate a restore request for the following archived record:</p>
+                        <ul>
+                            <li><strong>Name:</strong> {{ archived_record.name }}</li>
+                            <li><strong>Grade:</strong> {{ archived_record.grade }}</li>
+                            <li><strong>Section:</strong> {{ archived_record.section }}</li>
+                            <!-- Add other relevant details of the archived record -->
+                        </ul>
+                        <p>Are you sure you want to proceed?</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Yes, Initiate Restore Request</button>
+                            <a href="{% url 'archived_records' %}" class="btn btn-secondary">Cancel</a>
+                        </form>
+                    </div>
+                    <!-- /.panel-body -->
+                </div>
+                <!-- /.panel -->
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+</div>
+<!-- /.main-content -->
+{% endblock main_content %}

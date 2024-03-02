@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Restoration</title>
+</head>
+<body>
+    <h1>Confirm Restoration</h1>
+    <p>Are you sure you want to restore the following archived record?</p>
+    <ul>
+        <li><strong>Name:</strong> {{ archived_record.name }}</li>
+        <li><strong>Grade:</strong> {{ archived_record.grade }}</li>
+        <li><strong>Section:</strong> {{ archived_record.section }}</li>
+        <!-- Add other fields as needed -->
+    </ul>
+    <form action="{% url 'restore_archived_record' archived_record.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Yes, Restore</button>
+        <a href="{% url 'restore_requests' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</body>
+</html>

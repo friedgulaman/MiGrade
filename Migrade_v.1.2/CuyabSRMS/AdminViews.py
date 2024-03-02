@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
-from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation, ArchivedClassRecord, ArchivedStudent
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -1441,4 +1441,5 @@ def layout_to_text(layout, document_text):
         end_index = text_segment.end_index
         text_content += document_text[start_index:end_index]
     return text_content
-    
+
+
