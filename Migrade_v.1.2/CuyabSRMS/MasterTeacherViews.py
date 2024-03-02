@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render
-from CuyabSRMS.models import MT, SuperAdmin, Admin, CustomUser, ActivityLog
+from CuyabSRMS.models import MT, InboxMessage, SuperAdmin, Admin, CustomUser, ActivityLog
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404, redirect
@@ -137,3 +137,42 @@ def delete_master(request):
         except Exception as e:
             response_data = {'message': f'Error deleting master and user: {str(e)}'}
             return JsonResponse(response_data, status=500)
+
+
+def inbox_open_mt(request):
+    try:
+        # Get all inbox messages
+        inbox_messages = InboxMessage.objects.all()
+
+        return render(request, 'master_template/inbox_mt.html', {'inbox_messages': inbox_messages}) 
+
+    except Exception as e:
+        # Handle any exceptions 
+        print(f"Error in inbox_open: {e}")
+        return render(request, 'master_template/inbox_mt.html', {'inbox_messages': []})
+
+
+
+
+
+
+
+@login_required
+def accept_message_mt(request):
+    if request.method == 'POST':
+        message_id = request.POST.get('message_id')
+        try:
+            # Retrieve the InboxMessage object
+            message = InboxMessage.objects.get(pk=message_id)
+            # Update the accepted field to True
+            message.approved = True
+            # Set the accepted_by field to the current MT user
+            message.approved_by = MT.objects.get(user=request.user)
+            message.save()
+            return JsonResponse({'success': True, 'message': 'Message accepted successfully.'})
+        except InboxMessage.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Message not found.'})
+        except MT.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'MT user not found.'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})

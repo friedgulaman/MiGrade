@@ -176,8 +176,13 @@ def inbox_open(request):
             print(teacher)
             # Get inbox messages where the logged-in teacher is the intended recipient
             inbox_messages = InboxMessage.objects.filter(to_teacher=teacher)
+            accepted_messages = AcceptedMessage.objects.filter(accepted_by_id=teacher)
 
-            return render(request, 'teacher_template/adviserTeacher/inbox.html', {'inbox_messages': inbox_messages})
+            context = {
+                'inbox_messages': inbox_messages,
+                'accepted_messages': accepted_messages
+            }
+            return render(request, 'teacher_template/adviserTeacher/inbox.html', context)
 
         else:
             # Handle the case where the logged-in user is not a teacher
@@ -244,7 +249,6 @@ def accept_message(request):
         else:
             save_data(message, json_data, teacher)  # Call save_data only once
             save_accepted_message(message)  # Call save_accepted_message to save the accepted message
-            message.delete()
             return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
     except InboxMessage.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Message not found'})
@@ -374,11 +378,15 @@ def save_data(message, json_data, teacher):
 
 def save_accepted_message(message):
     try:
+        accepted_by_id=message.to_teacher
+        teacher_instance = get_object_or_404(Teacher, pk=accepted_by_id)
         # Attempt to create the AcceptedMessage instance
         AcceptedMessage.objects.create(
             message_id=message.id,
             file_name=message.file_name,
-            json_data=message.json_data
+            json_data=message.json_data,
+            approved_by=message.approved_by,
+            accepted_by=teacher_instance
         )
     except IntegrityError as e:
         # Handle duplicate primary key error

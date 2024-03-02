@@ -251,6 +251,8 @@ urlpatterns = [
     path('get-master-data/', MasterTeacherViews.get_master_data, name='get_master_data'),
     path('update-master/', MasterTeacherViews.update_master, name='update_master'),
     path('delete-master/', MasterTeacherViews.delete_master, name='delete_master'),
+    path('inbox_open_mt/', MasterTeacherViews.inbox_open_mt, name='inbox_open_mt'),
+    path('accept_message_mt', MasterTeacherViews.accept_message_mt, name='accept_message_mt'),
 
 
     path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),

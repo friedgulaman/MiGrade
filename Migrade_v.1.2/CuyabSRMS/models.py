@@ -656,7 +656,17 @@ class InboxMessage(models.Model):
     from_teacher = models.CharField(max_length=50, null=True, blank=True)
     file_name = models.CharField(max_length=50, null=True, blank=True)
     json_data = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    date_received = models.DateTimeField(auto_now_add=True)
+    approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(MT, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_messages')
+    date_approved = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.approved and not self.date_approved:
+            self.date_approved = timezone.now()
+        elif not self.approved:
+            self.date_approved = None
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"
@@ -665,10 +675,13 @@ class AcceptedMessage(models.Model):
     message_id = models.IntegerField(primary_key=True)
     file_name = models.CharField(max_length=255)
     json_data = models.JSONField()
+    accepted_by = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
     accepted_at = models.DateTimeField(auto_now_add=True)
+    approved_by = models.ForeignKey(MT, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"AcceptedMessage {self.message_id}"
+
     
 class AdvisoryClass(models.Model):
     

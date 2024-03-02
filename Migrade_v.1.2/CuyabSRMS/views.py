@@ -216,7 +216,7 @@ def change_password(request):
 @login_required
 def admin_profile_page(request):
     try:
-        admin = Admin.objects.get(username=request.user)  # Get the admin object associated with the user
+        admin = Admin.objects.get(user=request.user)  # Get the admin object associated with the user
         context = {
             'admin': admin,
         }

@@ -11,7 +11,7 @@ from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
-from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
+from .models import AdvisoryClass, Grade, GradeScores, SchoolInformation, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse

@@ -84,6 +84,7 @@ def add_mt(request):
     return JsonResponse({'success': False, 'error_message': 'Invalid request'})
 
 
+
 @login_required
 def home_admin(request):
     # Retrieve the grades queryset

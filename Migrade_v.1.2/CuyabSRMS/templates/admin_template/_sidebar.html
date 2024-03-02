@@ -22,10 +22,21 @@
           <li class="nav-item nav-category">Manage</li>
           <!-- Teacher -->
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'manage_master_teacher' %}">
+            <a class="nav-link" data-bs-toggle="collapse" href="#ui-master" aria-expanded="false" aria-controls="ui-master">
               <i class="menu-icon icon-eyeglass"></i>
               <span class="menu-title">Master Teacher</span>
+              <i class="menu-arrow"></i>
             </a>
+            <div class="collapse" id="ui-master">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{% url 'manage_master_teacher' %}">Create Master Teacher</a></li>
+              </ul>
+            </div>
+            <div class="collapse" id="ui-master">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="#">Assign Master Teacher</a></li>
+              </ul>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'teachers' %}">
