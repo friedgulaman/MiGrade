@@ -1,106 +1,88 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'home_admin' %}">
-              <i class="icon-home menu-icon"></i>
-              <span class="menu-title">Home</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'school_information' %}">
-              <i class="icon-info menu-icon"></i>
-              <span class="menu-title">School Information</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'announcement' %}">
-              <i class="icon-speech menu-icon"></i>
-              <span class="menu-title">Announcement</span>
-            </a>
-          </li>
-          <!-- Manage Class -->
-          <li class="nav-item nav-category">Manage</li>
-          <!-- Teacher -->
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-master" aria-expanded="false" aria-controls="ui-master">
-              <i class="menu-icon icon-eyeglass"></i>
-              <span class="menu-title">Master Teacher</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-master">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'manage_master_teacher' %}">Create Master Teacher</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="ui-master">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="#">Assign Master Teacher</a></li>
-              </ul>
-            </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'teachers' %}">
-              <i class="menu-icon icon-people"></i>
-              <span class="menu-title">Teacher</span>
-            </a>
-          </li>
-          <!-- Students -->
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'students' %}" >
-              <i class="menu-icon icon-graduation"></i>
-              <span class="menu-title">Students</span>
-            </a>
-          </li>
-          <!-- Grade Levels & Sections -->
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'grade_and_section' %}">
-              <i class="menu-icon icon-paper-clip"></i>
-              <span class="menu-title">Grades & Sections </span>
-            </a>
-          </li>
-          <!-- SUBJECT -->
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'subjects' %}" >
-              <i class="menu-icon icon-book-open"></i>
-              <span class="menu-title">Subjects</span>
-            </a>
-          </li>
-          <!-- QUARTERS -->
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'quarters' %}" >
-              <i class="menu-icon icon-pie-chart"></i>
-              <span class="menu-title">Quarters</span>
-            </a>
-          </li>
-          <!-- Uploading Docs -->
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-documents" aria-expanded="false" aria-controls="ui-">
-              <i class="menu-icon icon-paper"></i>
-              <span class="menu-title">School Form 10</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-documents">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">Upload</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="ui-documents">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'batch_process_documents' %}">Batch Upload</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="ui-documents">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">Files</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="ui-documents">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li>
-              </ul>
-            </div>
-          </li>
-          
+  <ul class="nav">
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'home_admin' %}">
+        <i class="icon-home menu-icon"></i>
+        <span class="menu-title">Home</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'school_information' %}">
+        <i class="icon-info menu-icon"></i>
+        <span class="menu-title">School Information</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'announcement' %}">
+        <i class="icon-speech menu-icon"></i>
+        <span class="menu-title">Announcement</span>
+      </a>
+    </li>
+    <!-- Manage Class -->
+    <li class="nav-item nav-category">Manage</li>
+    <!-- Teacher -->
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="collapse" href="#ui-master" aria-expanded="false" aria-controls="ui-master">
+        <i class="menu-icon icon-eyeglass"></i>
+        <span class="menu-title">Master Teacher</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="ui-master">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item "><a class="nav-link" href="{% url 'manage_master_teacher' %}">Create Master Teacher</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'assign_master' %}">Assign Master Teacher</a></li>
         </ul>
-      </nav>
-      
+      </div>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'teachers' %}">
+        <i class="menu-icon icon-people"></i>
+        <span class="menu-title">Teacher</span>
+      </a>
+    </li>
+    <!-- Students -->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'students' %}">
+        <i class="menu-icon icon-graduation"></i>
+        <span class="menu-title">Students</span>
+      </a>
+    </li>
+    <!-- Grade Levels & Sections -->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'grade_and_section' %}">
+        <i class="menu-icon icon-paper-clip"></i>
+        <span class="menu-title">Grades & Sections</span>
+      </a>
+    </li>
+    <!-- SUBJECT -->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'subjects' %}">
+        <i class="menu-icon icon-book-open"></i>
+        <span class="menu-title">Subjects</span>
+      </a>
+    </li>
+    <!-- QUARTERS -->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'quarters' %}">
+        <i class="menu-icon icon-pie-chart"></i>
+        <span class="menu-title">Quarters</span>
+      </a>
+    </li>
+    <!-- Uploading Docs -->
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="collapse" href="#ui-documents" aria-expanded="false" aria-controls="ui-documents">
+        <i class="menu-icon icon-paper"></i>
+        <span class="menu-title">School Form 10</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="ui-documents">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">Upload</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'batch_process_documents' %}">Batch Upload</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">Files</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</nav>

@@ -169,11 +169,7 @@ MiGrade - Admin
   #currentDateTime{
   font-size: clamp(8px, 2.5vw, 10px);
   }
-  .welcome{
-    max-width: 48px;
-    background-color:  #bcf2b2;
-    height: 6px;
-  }
+
   /* Define the CSS */
   @media (max-width: 600px) {
     .second{
@@ -188,7 +184,7 @@ MiGrade - Admin
 <section class="container ">
   
   <div class="m-3">
-    <div class="welcome mb-3"></div>
+  {% include 'admin_template/_green.html' %}
     <div class="d-flex justify-content-between align-items-center">
       <div class="ms-0 mb-3 ">
         <h4>Welcome, <span class="text-black fw-bold">{{ user }}</span></h4>

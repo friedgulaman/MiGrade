@@ -1,0 +1,143 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}
+Add master
+{% endblock page_title %}
+{% block main_content %}
+<section class="content container mt-2 vh-100">
+  {% include 'admin_template/_green.html' %}
+  <h3 class="mb-4 ">Assign Master Teacher</h3>
+  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+    <ul class="nav nav-tabs text" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
+          aria-controls="overview" aria-selected="true">Assign</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab"
+          aria-selected="false">Designation</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content tab-content-basic">
+    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+      
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">List of Grades and Sections</h4>
+
+            <!-- Add a form with select inputs for masters, grades, and sections -->
+            <form id="assignmentForm" method="POST" action="#">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="masterSelect">Select Adviser</label>
+                    <select class="form-control" id="masterSelect" name="master">
+                        <option value="" disabled selected>Select Adviser</option> <!-- master Placeholder -->
+                        {% for master in masters %}
+                            <option value="{{ master.id }}">{{ master.user.first_name }} {{ master.user.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                  <label for="gradeSelect">Select a Grade:</label>
+                  <select class="form-control" id="gradeSelect" name="grade">
+                      <option value="" disabled selected>Select a Grade</option> <!-- Grade Placeholder -->
+                      {% for grade in grades %}
+                          <option value="{{ grade.id }}">{{ grade.name }}</option>
+                      {% endfor %}
+                  </select>
+              </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button> 
+            </form>
+        </div>
+    </div>
+    </div>
+    <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
+      <div class="container-fluid ">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title p-3">List of masters</h4>
+                <div class="table-responsive">
+                    <table class="table text-muted text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Designation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for master in masters %}
+                            <tr>
+                                <td>
+                                    {{ master.user.id }}
+                                </td>
+                               <td>{{ master.user.username }}
+                               </td>
+                               <td>
+                                {% if master.assigned_grades %}
+                                    {{ master.assigned_grades }}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+  </div>
+
+
+
+</section>
+<script>
+  // Add event listener for cancel button
+  document.getElementById('cancelButton').addEventListener('click', function () {
+      // Clear the selected values in the form fields
+      document.getElementById('masterSelect').value = ''; // Clear master select
+      document.getElementById('gradeSelect').value = '';   // Clear grade select
+  });
+
+  // Add event listener for the form submission
+  document.getElementById('assignmentForm').addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent the form from submitting normally
+
+      // Get selected values from the form
+      var masterId = document.getElementById('masterSelect').value;
+      var gradeId = document.getElementById('gradeSelect').value;
+
+      // Send the data to the server using a POST request
+      fetch('/save_assignment/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': '{{ csrf_token }}', // Include the CSRF token
+          },
+          body: 'master=' + masterId + '&grade=' + gradeId,
+      })
+      .then(response => {
+          if (response.ok) {
+              // Handle success, e.g., show a success message or redirect to a success page
+              alert('Assignment saved successfully');
+              location.reload(); // Reload the page
+          } else {
+              // Handle errors, e.g., show an error message
+              response.text().then(errorMessage => {
+                  alert('Failed to save assignment: ' + errorMessage);
+              });
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while processing your request.');
+      });
+  });
+</script>
+
+{% endblock main_content %}

@@ -72,8 +72,6 @@ urlpatterns = [
     path('add_teacher', admin_required(AdminViews.add_teacher), name="add_teacher"),
     path('add_teacher_save', admin_required(AdminViews.add_teacher_save), name="add_teacher_save"),
     path('get_sections/', admin_required(AdminViews.get_sections), name='get_sections'),
-    path('assign_teacher', admin_required(AdminViews.assign_teacher), name="assign_teacher"),
-    path('save_assignment/', admin_required(AdminViews.save_assignment), name='save_assignment'),
     path('search/', admin_required(AdminViews.search_students), name='search_students'),
     path('upload_documents/', admin_required(AdminViews.upload_documents_ocr), name='upload_documents'),
     path('save_edited_data/', admin_required(AdminViews.save_edited_data), name='save_edited_data'),
@@ -129,6 +127,8 @@ urlpatterns = [
     path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
     path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
     path('manage_master_teacher', AdminViews.manage_master_teacher, name='manage_master_teacher'),
+    path('assign_master', AdminViews.assign_master, name='assign_master'),
+    path('save_assignment/', admin_required(AdminViews.save_assignment), name='save_assignment'),
     path('add_mt', AdminViews.add_mt, name='add_mt'),
 
 

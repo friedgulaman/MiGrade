@@ -50,9 +50,10 @@ class MT(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    assigned_grades = models.JSONField(default=list, null=True, blank=True)  # JSONField to store assigned grades
 
     def __str__(self):
-        return f"MT: {self.user.username}, Email: {self.email}, Created: {self.created_at}"
+        return f"MT: {self.user.username}, Created: {self.created_at}"
 
 class Teacher(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
@@ -183,7 +184,6 @@ class ArchivedStudent(models.Model):
         return restored_student
     
 class Grade(models.Model):
-    
     name = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):

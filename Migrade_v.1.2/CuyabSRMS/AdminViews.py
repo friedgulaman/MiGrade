@@ -37,6 +37,8 @@ from dateutil import parser
 import pandas as pd
 from google.api_core.client_options import ClientOptions
 
+from django.db.models import Value
+from django.db.models.functions import Cast
 
 
 from django.contrib.auth.decorators import login_required
@@ -55,6 +57,51 @@ def manage_master_teacher(request):
         masters = MT.objects.all()
         return render(request, 'admin_template/manage_master.html', {'masters': masters})
 
+@login_required
+def assign_master(request):
+    all_grades = Grade.objects.all()
+    assigned_grades = set()
+
+    # Collect all assigned grades from MT instances
+    for mt in MT.objects.all():
+        assigned_grades.update(mt.assigned_grades)
+
+    # Filter grades based on whether they are assigned or not
+    unassigned_grades = [grade for grade in all_grades if grade.name not in assigned_grades]
+
+    context = {
+        'grades': unassigned_grades,
+        'masters': MT.objects.all(),
+    }
+    return render(request, 'admin_template/assign_master.html', context)
+
+
+@login_required
+def save_assignment(request):
+    if request.method == 'POST':
+        master_id = request.POST.get('master')
+        grade_id = request.POST.get('grade')
+
+        if master_id and grade_id:
+            try:
+                master = get_object_or_404(MT, id=master_id)
+                grade = get_object_or_404(Grade, id=grade_id)
+                
+                assigned_grades = master.assigned_grades or []
+                assigned_grades.append(grade.name)
+                master.assigned_grades = assigned_grades
+                master.save()
+
+                messages.success(request, 'Assignment saved successfully')
+                return JsonResponse({'success': True})
+            except MT.DoesNotExist or Grade.DoesNotExist:
+                messages.error(request, 'Invalid master or grade')
+        else:
+            messages.error(request, 'Invalid data')
+    else:
+        messages.error(request, 'Invalid request method')
+
+    return JsonResponse({'success': False})
 @csrf_exempt
 @login_required
 def add_mt(request):
@@ -685,48 +732,6 @@ def get_sections(request):
     
 
 
-def assign_teacher(request):
-    # Retrieve the grades, teachers, and sections queryset
-    grades = Grade.objects.all()
-    teachers = Teacher.objects.all()
-    sections = Section.objects.all()
-
-    # Include the grades, sections, and teachers in the context
-    context = {
-        'grades': grades,
-        'sections': sections,
-        'teachers': teachers,
-    }
-    return render(request, 'admin_template/assign_teacher.html', context)
-
-def save_assignment(request):
-    if request.method == 'POST':
-        # Retrieve the data from the form
-        teacher_id = request.POST.get('teacher')
-        grade_id = request.POST.get('grade')
-        section_id = request.POST.get('section')
-
-        # Validate the data
-        if teacher_id and grade_id and section_id:
-            try:
-                section = Section.objects.get(id=section_id)
-                teacher = Teacher.objects.get(id=teacher_id)
-                # Assign the teacher to the section
-                section.teacher = teacher
-                section.save()
-                # Store a success message
-                messages.success(request, 'Assignment saved successfully')
-                return JsonResponse({'success': True})
-            except (Section.DoesNotExist, Teacher.DoesNotExist):
-                messages.error(request, 'Invalid teacher or section')
-        else:
-            # Handle the case where data is missing
-            messages.error(request, 'Invalid data')
-    else:
-        # Handle other request methods if needed
-        messages.error(request, 'Invalid request method')
-
-    return JsonResponse({'success': False})
 
 
 def add_grade_section(request):

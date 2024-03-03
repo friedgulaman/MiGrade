@@ -3,6 +3,7 @@
 Subject List
 {% endblock page_title %}
 {% block main_content %}
+{% include 'admin_template/_green.html' %}
   <h1>Subject List</h1>
   <table class="table">
     <a href="{% url 'add_subject' %}" class="btn btn-primary">Add Subject</a>
