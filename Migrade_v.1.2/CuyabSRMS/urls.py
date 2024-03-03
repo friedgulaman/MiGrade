@@ -87,6 +87,7 @@ urlpatterns = [
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
     path('users/', admin_required(AdminViews.user_list), name='user_list'),
     path('user_activities', admin_required(AdminViews.user_activities), name='user_activities'),
+    path('download-activities/', admin_required(AdminViews.download_activities), name='download_activities'),
     path('school-information/', AdminViews.school_information_view, name='school_information'),
     path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
     path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
@@ -161,19 +162,7 @@ urlpatterns = [
     path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
 
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
-    path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
-    path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
-    path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
-    path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
-    path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
-    path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
-    
 
-    path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
-    path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),
-    path('transfer_record', teacher_required(TransferRecordViews.transfer_record), name='transfer_record'),
-    # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
-    path('get_teacher_list/', teacher_required(TransferRecordViews.get_teacher_list), name='get_teacher_list'),
 
     path('home_teacher', TeacherViews.home_teacher, name="home_teacher"),
     path('home_adviser_teacher', TeacherViews.home_adviser_teacher, name="home_adviser_teacher"),
@@ -248,7 +237,23 @@ urlpatterns = [
 
 
    
+# transfer record Views
+    path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
+    path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
+    path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
+    path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
+    path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
+    path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
+    
 
+    path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
+    path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),
+    path('transfer_record', teacher_required(TransferRecordViews.transfer_record), name='transfer_record'),
+    # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
+    path('get_teacher_list/', teacher_required(TransferRecordViews.get_teacher_list), name='get_teacher_list'),
+
+
+    
     # # Student
     # path('student_list/', StudentViews.student_list, name='student_list'),
 

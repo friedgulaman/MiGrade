@@ -124,24 +124,42 @@ View Class Record
   }
 
   $(document).ready(function() {
-
     $.ajax({
-      type: "GET",
-      url: "{% url 'get_teacher_list' %}",
-      dataType: "json",
-      success: function(response) {
-        var teacherSelect = $("#teacherSelect");
-        $.each(response.teachers, function(index, teacher) {
-          teacherSelect.append($('<option>', {
-            value: teacher.id,
-            text: `${teacher.name} (ID: ${teacher.id})`
-          }));
-        });
-      },
-      error: function(xhr, status, error) {
-        console.error("Error fetching teacher list:", error);
-      }
+        type: "GET",
+        url: "{% url 'get_teacher_list' %}",
+        dataType: "json",
+        success: function(response) {
+            var teacherSelect = $("#teacherSelect");
+            $.each(response.teachers, function(index, teacher) {
+              var optionText = '';
+              var isFirst = true;
+              // Iterate through grade_section keys and values
+              $.each(teacher.grade_section, function(grade, section) {
+                  if (!isFirst) {
+                      optionText += ", ";
+                  }
+                  optionText += `${section}`;
+                  isFirst = false;
+              });
+              optionText += ` - ${teacher.name} (Class Adviser)`;
+                // Construct the option value
+                var optionValue = `${teacher.id}`;
+               
+                // Append option to select element
+                teacherSelect.append($('<option>', {
+                    value: optionValue,
+                    text: optionText
+                }));
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching teacher list:", error);
+        }
     });
+
+
+
+
     
     // Click event handler for submitting JSON data to the selected teacher
     $("#submitJsonBtn").click(function() {

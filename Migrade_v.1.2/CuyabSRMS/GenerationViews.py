@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Student, FinalGrade, GeneralAverage, ClassRecord, Subject, SchoolInformation, QuarterlyGrades
+from .models import Student, FinalGrade, GeneralAverage, ClassRecord, Subject, SchoolInformation, QuarterlyGrades, AdvisoryClass
 from .views import log_activity
 import os
 import openpyxl
@@ -33,7 +33,7 @@ from .utils import (
     #FINAL GRADE AND GENERAL AVERAGE
     write_school_info_general_average,
     write_student_name_general_average,
-    write_final_grade_ENGLISH,
+    write_final_grade_subject
 )
 from .models import GradeScores
 
@@ -130,8 +130,9 @@ def generate_final_and_general_grades(request, grade, section):
         student__grade=grade, student__section=section,
     )
 
-    final_grades_query = FinalGrade.objects.filter(
-        student__grade=grade, student__section=section,
+    advisory_class_query = AdvisoryClass.objects.filter(
+        grade=grade,
+        section=section
     )
 
     school_info = SchoolInformation.objects.all()
@@ -154,7 +155,7 @@ def generate_final_and_general_grades(request, grade, section):
 
      # Original file path for SF9 template
         # Original file path
-    excel_file_name = "FINAL GRADE.xlsx"
+    excel_file_name = "GRADE 4-6_SUMMARY FINAL GRADES.xlsx"
 
     # Get the current working directory
     # current_directory = os.getcwd()
@@ -192,7 +193,15 @@ def generate_final_and_general_grades(request, grade, section):
         
         write_school_info_general_average(sheet, school_info, general_grades_query)
         write_student_name_general_average(sheet, general_grades_query)
-        write_final_grade_ENGLISH(sheet, final_grades_query, general_grades_query)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
+
         # write_quarterly_grade_AP(sheet, quarterly_grades_query)
         # write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query)
 
@@ -387,7 +396,7 @@ def generate_excel_for_sf9(request, student_id):
     # Retrieve the student object
     student = get_object_or_404(Student, id=student_id)
 
-    final_grade = FinalGrade.objects.filter(student=student).first()
+    advisory_class = AdvisoryClass.objects.filter(student=student).first()
 
     general_average = GeneralAverage.objects.filter(student=student).first()
 
@@ -444,7 +453,7 @@ def generate_excel_for_sf9(request, student_id):
             # Write SF9-specific data using a utility function (update this function based on your needs)
         write_sf9_data(front_sheet, student)
 
-        write_sf9_grades(back_sheet, final_grade, general_average)
+        write_sf9_grades(back_sheet, advisory_class, general_average)
 
             # Save the changes to the SF9 workbook
         workbook.save(copied_file_path)

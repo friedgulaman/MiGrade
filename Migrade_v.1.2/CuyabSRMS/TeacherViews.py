@@ -476,10 +476,13 @@ def save_json_data(request):
                 # Create or update the Section object
 
                 # Initialize or get the existing grade_section dictionary
-                teacher.grade_section = teacher.grade_section or {}
+                existing_grade_section = teacher.grade_section or {}
+
+                grade_section = f"{grade.name} {section.name}"
 
                 # Save the grade_section in the Teacher model
-                teacher.grade_section[grade.name] = section.name
+                existing_grade_section[grade_section] = subject
+                teacher.grade_section = existing_grade_section
                 teacher.save()
 
                 
@@ -969,8 +972,22 @@ def display_students(request):
         teacher = get_object_or_404(Teacher, user=user)
         teacher_id = str(teacher.id)  # Convert teacher id to string for comparison
 
-        # Filter students based on the teacher_id in class_type
-        students = Student.objects.filter(class_type__has_key=teacher_id)
+        # Fetch the school year from the SchoolInformation model
+        try:
+            school_info = SchoolInformation.objects.latest('id')
+            default_school_year = school_info.school_year
+        except SchoolInformation.DoesNotExist:
+            default_school_year = '2023-2024'  # Set a default value if no school year is found
+
+        # Get the school year from the request parameters or use the default value
+        school_year = request.GET.get('school_year', default_school_year)
+
+        # Fetch unique school years from the Student model
+        unique_school_years = Student.objects.values_list('school_year', flat=True).distinct()
+        print(unique_school_years)
+
+        # Filter students based on the teacher_id and school_year in class_type
+        students = Student.objects.filter(class_type__has_key=teacher_id, school_year=school_year)
         unique_combinations = students.values('grade', 'section', 'class_type').distinct()
         class_type_list = []
 
@@ -983,12 +1000,14 @@ def display_students(request):
                     combination['class_type'] = class_type_value
                     class_type_list.append(combination)
 
-        
         print(f"Class type: {class_type_list}")
 
         context = {
             'teacher': teacher,
             'unique_grades_sections': class_type_list,
+            'unique_school_years': unique_school_years,  # Pass the unique school years to the template
+            'default_school_year': default_school_year,
+            'selected_school_year': school_year,  # Pass the default school year to the template
         }
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
@@ -1061,9 +1080,6 @@ def delete_class(request, grade, section):
         teacher = get_object_or_404(Teacher, user=user)
         students = Student.objects.filter(grade=grade, section=section)
 
-        print(f"grade: {grade}")
-        print(f"section: {section}")
-
         if students.exists():
             # Assuming you have some permission checks here before deleting
             students.delete()
@@ -1071,11 +1087,25 @@ def delete_class(request, grade, section):
             # Delete associated ClassRecord records
             ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
 
+            # Delete the section
+            section_instance = Section.objects.filter(grade__name=grade, name=section).first()
+            if section_instance:
+                section_instance.delete()
+
+            # Remove the class type entry from the teacher's grade_section
+            if teacher.grade_section:
+                class_type_to_remove = f"{grade} {section}"
+                if class_type_to_remove in teacher.grade_section:
+                    del teacher.grade_section[class_type_to_remove]
+
+                # Save the updated grade_section
+                teacher.save()
+
             action = f'{user} delete a Class name {grade} {section}'
             details = f'{user} deleted a Class named {grade} {section} in the system.'
             log_activity(user, action, details)
 
-                # Redirect to a different page after deletion
+            # Redirect to a different page after deletion
             return redirect('display_students')  # Replace with your actual view name
         else:
             # Redirect to a different page if no students found
@@ -1099,6 +1129,13 @@ def delete_class_subject(request, grade, section):
                     if class_type.get(str(teacher.id)) == 'Advisory Class, Subject Class':
                         # Update the class_type to contain only 'Advisory Class'
                         class_type[str(teacher.id)] = 'Advisory Class'
+
+                        if teacher.grade_section:
+                            for key, value in teacher.grade_section.items():
+                                if key == f"{grade} {section}":
+                                    teacher.grade_section[key] = 'Advisory Class'
+                                    break
+
                     else:
                         del class_type[str(teacher.id)]  # Delete the key associated with the teacher's ID
 
@@ -1108,9 +1145,32 @@ def delete_class_subject(request, grade, section):
             # Delete associated ClassRecord records
             ClassRecord.objects.filter(grade=grade, section=section, teacher=teacher).delete()
 
+            # Delete the section
+            section_instance = Section.objects.filter(grade__name=grade, name=section).first()
+            if section_instance:
+                # Update the class_type for the section
+                class_type = section_instance.class_type
+                if str(teacher.id) in class_type:
+                    if class_type[str(teacher.id)] == 'Advisory Class, Subject Class':
+                        # Update the class_type to contain only 'Advisory Class'
+                        class_type[str(teacher.id)] = 'Advisory Class'
+
+                    else:
+                        del class_type[str(teacher.id)]  # Delete the key associated with the teacher's ID
+
+                    section_instance.class_type = class_type
+                    section_instance.save()
+
+                # Delete the section if it has no associated students
+                if section_instance.total_students == 0:
+                    section_instance.delete()
+
+
             action = f'{user} deleted a Class named {grade} {section}'
             details = f'{user} deleted a Class named {grade} {section} in the system.'
             log_activity(user, action, details)
+
+            teacher.save()
 
             return redirect('display_students')  # Redirect to your desired page after deletion
         else:
@@ -1193,6 +1253,7 @@ def student_list_for_subject(request):
     }
 
     return render(request, 'teacher_template/adviserTeacher/student_list_for_subject.html', context)
+    return render(request, 'teacher_template/adviserTeacher/quarter_records.html', context)
 
 def student_list_for_advisory(request):
     # Assuming the user is logged in
@@ -1378,6 +1439,27 @@ def student_list_for_advisory(request):
         # Sort GeneralAverage instances based on the general average from highest to lowest
             sorted_general_averages = general_averages.order_by('-general_average')
 
+        user = request.user
+        if hasattr(user, 'teacher'):
+            # Retrieve the teacher associated with the user
+            teacher = user.teacher
+
+            # Filter class records based on the teacher
+            class_records = ClassRecord.objects.filter(teacher=teacher)
+
+            # Keep track of unique grade and section combinations
+            unique_combinations = set()
+            unique_class_records = []
+
+            # Iterate through class records to filter out duplicates
+            for record in class_records:
+                combination = (record.grade, record.section)
+                # Check if the combination is unique
+                if combination not in unique_combinations:
+                    unique_combinations.add(combination)
+                    unique_class_records.append(record)
+
+
         context = {
             'grade': grade,
             'section': section,
@@ -1388,7 +1470,8 @@ def student_list_for_advisory(request):
             'quarter': quarter,
             'final_grades': sorted_final_grades,
             'highest_per_quarter': highest_per_quarter,
-             'general_averages': sorted_general_averages
+            'general_averages': sorted_general_averages,
+            'class_records': unique_class_records,
 
          
         }
@@ -2011,7 +2094,17 @@ def display_final_grades(request, grade, section, subject):
     #     # Return an HTTP 500 Internal Server Error response
     #     return HttpResponse("Internal Server Error", status=500)
 
-
+def determine_remarks(general_average):
+    if general_average >= 98:
+        return 'WITH HIGHEST HONOR'
+    elif general_average >= 95:
+        return 'WITH HIGH HONOR'
+    elif general_average >= 90:
+        return 'WITH HONOR'
+    elif general_average >= 75:
+        return 'PASSED'
+    else:
+        return 'FAILED'
 
 
 def save_general_average(student_data, grade, section):
@@ -2020,6 +2113,7 @@ def save_general_average(student_data, grade, section):
         # Extract relevant information from student_data
         student = student_data['student']
         general_average = round(student_data['general_average'], 2)
+        remarks = determine_remarks(general_average)
 
         # Filter GeneralAverage objects based on student, grade, and section
         general_average_records = GeneralAverage.objects.filter(
@@ -2033,6 +2127,7 @@ def save_general_average(student_data, grade, section):
             # Update the first record
             general_average_record = general_average_records.first()
             general_average_record.general_average = general_average
+            general_average_record.remarks = remarks
             general_average_record.save()
         else:
             # Create a new record if none exist
@@ -2040,7 +2135,8 @@ def save_general_average(student_data, grade, section):
                 student=student,
                 grade=grade,
                 section=section,
-                general_average=general_average
+                general_average=general_average,
+                remarks=remarks
             )
 
 def display_all_final_grades(request, grade, section):

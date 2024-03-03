@@ -36,9 +36,11 @@ from datetime import datetime
 from dateutil import parser
 import pandas as pd
 from google.api_core.client_options import ClientOptions
-
-
-
+import io
+from openpyxl import Workbook
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.utils.encoding import escape_uri_path
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 import base64
@@ -1067,16 +1069,44 @@ def user_list(request):
 def user_activities(request):
     user_id = request.GET.get('id')
     if user_id:
-        activities = ActivityLog.objects.filter(user_id=user_id)
-        return render(request, 'admin_template/user_activities.html', {'activities': activities})
+        activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
+        return render(request, 'admin_template/user_activities.html', {'activities': activities, 'user_id': user_id})
     else:
         # Handle case when no user ID is provided
-        return render(request, 'error.html', {'error_message': 'User ID is required'})
+        return render(request, 'error.html', {'error_message': 'User ID is required', 'user_id': None})
+    
+def download_activities(request):
+    user_id = request.GET.get('id')
+    if user_id:
+        activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
 
+        # Create the file path
+        filename = f"user_{user_id}_activities.xlsx"
+        filepath = os.path.join(settings.MEDIA_ROOT, filename)
 
+        # Create a workbook and add a worksheet
+        workbook = Workbook()
+        worksheet = workbook.active
 
+        # Write the column headers
+        headers = ['Timestamp', 'Action', 'Details']
+        worksheet.append(headers)
 
+        # Write activity log data
+        for activity in activities:
+            worksheet.append([activity.timestamp.strftime('%Y-%m-%d %H:%M:%S'), activity.action, activity.details])
 
+        # Save the workbook
+        workbook.save(filepath)
+
+        # Return the file as an attachment
+        with open(filepath, 'rb') as file:
+            response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    else:
+        # Return an HttpResponse with an error message
+        return HttpResponse('User ID is required', status=400)
 
    
 def sf10_edit_view(request, id):

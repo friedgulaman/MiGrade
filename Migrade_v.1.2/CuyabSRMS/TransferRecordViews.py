@@ -80,7 +80,29 @@ def transfer_details(request):
 def get_teacher_list(request):
     if request.method == 'GET':
         teachers = Teacher.objects.all()
-        teacher_list = [{'id': teacher.id, 'name': f"{teacher.user.first_name} {teacher.user.last_name}"} for teacher in teachers]
+        teacher_list = []
+
+        # Iterate through each teacher
+        for teacher in teachers:
+            # Check if grade_section exists and is not None
+            if teacher.grade_section:
+                # Filter the grade_section dictionary to include only keys with the desired values
+                filtered_grade_section = {key: value for key, value in teacher.grade_section.items() if
+                                          value in ['Advisory Class', 'Advisory Class, Subject Class']}
+
+                # If there are keys remaining after filtering, append them to the teacher_list
+                if filtered_grade_section:
+                    # Convert dict_keys object to list
+                    grade_sections = list(filtered_grade_section.keys())
+                    # Create a dictionary to store teacher information
+                    teacher_info = {
+                        'id': teacher.id,
+                        'name': f"{teacher.user.first_name} {teacher.user.last_name}",
+                        'grade_section': grade_sections  # Include only the keys
+                    }
+                    teacher_list.append(teacher_info)
+                print(grade_sections)
+
         return JsonResponse({'teachers': teacher_list})
 
     elif request.method == 'POST':

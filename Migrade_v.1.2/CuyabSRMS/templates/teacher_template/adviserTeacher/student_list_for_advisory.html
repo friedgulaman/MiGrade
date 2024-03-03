@@ -153,9 +153,15 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 aria-selected="false">Rankings</a>
                         </li>
                         <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#generate" role="tab"
+                                aria-selected="false">Generate</a>
+                        </li>
+                        {% if grade == "Grade 6" %}
+                        <li class="nav-item ">
                             <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#Upload_sf_10" role="tab"
                                 aria-selected="false">SF10</a>
                         </li>
+                        {% endif %}
                     </ul>
                 </div>
 
@@ -329,6 +335,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                         <th>Rank</th>
                                                         <th>Student Name</th>
                                                         <th>General Average</th>
+                                                        <th>Remarks</th> <!-- Added Remarks column -->
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -336,11 +343,12 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                     <tr>
                                                         <td>{{forloop.counter}}</td>
                                                         <td>{{ average.student }}</td>
-                                                        <td>{{ average.general_average }}</td>
+                                                        <td>{{ average.general_average|floatformat:0 }}</td>
+                                                        <td>{{ average.remarks }}</td> <!-- Added Remarks data -->
                                                     </tr>
                                                     {% empty %}
                                                     <tr>
-                                                        <td colspan="3">No data available</td>
+                                                        <td colspan="4">No data available</td>
                                                     </tr>
                                                     {% endfor %}
                                                 </tbody>
@@ -351,6 +359,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             </div>
                         </div>
                     </div>
+                    
                     
 
 
@@ -372,6 +381,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                     {% for subject_info in final_grades.0.subjects %}
                                                     <th colspan="5">{{ subject_info.subject }}</th>
                                                     {% endfor %}
+                                                    <th></th>
                                                     <th>General Average</th>
                                                 </tr>
                                                 <tr>
@@ -407,6 +417,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                         {% endfor %}
                                                         <!-- Display general average -->
                                                         <td>{{ student_data.general_average|floatformat:2 }}</td>
+                                                        <td>{{ student_data.general_average|floatformat:0 }}</td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -440,10 +451,58 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                         </div>
                     </div>
                     
-            </section>
+                    <div class="tab-pane fade show" id="generate" role="tabpanel" aria-labelledby="generate">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title card-title-dash">Generate Final Grade and General Average</h4>
+                                <form method="post" class="w-100">
+                                    {% csrf_token %}
+                                    <div class="mt-4">
+                                        <div class="row">
+                                            {% for record in class_records %}   
+                                                <div class="col-lg-4 mb-3">
+                                                    <div class="card border-0">
+                                                        <div class="card-body">
+                                                            <!-- <button type="button" class="btn btn-secondary btn-lg btn-block" onclick="showStudentList('{{ record.grade }}', '{{ record.section }}')"> -->
+                                                                <button type="button" class="btn btn-secondary btn-lg btn-block">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>{{ record.grade }} {{ record.section }}</span>
+                                                                    <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                                                        <g>
+                                                                            <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                                                            <path d="M0 0h24v24H0z" fill="none"></path>
+                                                                        </g>
+                                                                    </svg>
+                                                                </div>
+                                                            </button>
+                                                            <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}" class="btn btn-primary btn-sm btn-block mt-3">Generate Final Grade and General Average</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
         </div>
     </div>
 </section>
+<script>
+    var showStudentList = function(grade, section) {
+        var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        window.location.href = url;
+    };
+
+    var uploadPageURL = "{% url 'generate_grade_section_list' %}";
+
+    document.getElementById("uploadButton").addEventListener("click", function () {
+        // Redirect to the upload page
+        window.location.href = uploadPageURL;
+    });
+</script>
 <script>
     function submitFormAndRememberScroll(selectedQuarter) {
         // Store the current scroll position in session storage
