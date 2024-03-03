@@ -1,0 +1,16 @@
+{% extends 'master_template/master_base.html' %}
+{% block page_title %}
+    Quarters for Section
+{% endblock page_title %}
+{% block main_content %}
+<div class="container">
+    <h1>Quarters for Section "{{ section }}, {{ subject }}"</h1>
+    <ul>
+        {% for quarter in quarters %}
+            <li>{{ quarter }}</li>
+        {% empty %}
+            <li>No quarters found for this section.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock main_content %}

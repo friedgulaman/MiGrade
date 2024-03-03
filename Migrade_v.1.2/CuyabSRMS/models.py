@@ -682,6 +682,16 @@ class AcceptedMessage(models.Model):
     def __str__(self):
         return f"AcceptedMessage {self.message_id}"
 
+class ApprovedMessage(models.Model):
+    message_id = models.IntegerField(primary_key=True)
+    file_name = models.CharField(max_length=255)
+    json_data = models.JSONField()
+    approved_at = models.DateTimeField(auto_now_add=True)
+    approved_by = models.ForeignKey(MT, on_delete=models.SET_NULL, null=True, blank=True)
+    to_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"ApprovedMessage {self.message_id}"
     
 class AdvisoryClass(models.Model):
     

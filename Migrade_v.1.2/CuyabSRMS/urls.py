@@ -129,7 +129,10 @@ urlpatterns = [
     path('manage_master_teacher', AdminViews.manage_master_teacher, name='manage_master_teacher'),
     path('assign_master', AdminViews.assign_master, name='assign_master'),
     path('save_assignment/', admin_required(AdminViews.save_assignment), name='save_assignment'),
-    path('add_mt', AdminViews.add_mt, name='add_mt'),
+    path('add_master', AdminViews.add_master, name='add_master'),    
+    path('get-master-data/', AdminViews.get_master_data, name='get_master_data'),
+    path('update-master/', AdminViews.update_master, name='update_master'),
+    path('delete-master/', AdminViews.delete_master, name='delete_master'),
 
 
     # Adviser Teacher
@@ -247,13 +250,13 @@ urlpatterns = [
 
     # master teacher
     path('home_mt', MasterTeacherViews.home_mt, name='home_mt'),
-    path('add_master', MasterTeacherViews.add_master, name='add_master'),    
-    path('get-master-data/', MasterTeacherViews.get_master_data, name='get_master_data'),
-    path('update-master/', MasterTeacherViews.update_master, name='update_master'),
-    path('delete-master/', MasterTeacherViews.delete_master, name='delete_master'),
     path('inbox_open_mt/', MasterTeacherViews.inbox_open_mt, name='inbox_open_mt'),
     path('accept_message_mt', MasterTeacherViews.accept_message_mt, name='accept_message_mt'),
-
+    path('advisory_classes_mt', MasterTeacherViews.advisory_classes_mt, name='advisory_classes_mt'),
+    path('subject_classes_mt', MasterTeacherViews.subject_classes_mt, name='subject_classes_mt'),
+    path('distinct_sections', MasterTeacherViews.distinct_sections, name='distinct_sections'),
+    path('subject_quarters', MasterTeacherViews.subject_quarters, name='subject_quarters'),
+    path('subject_subjects', MasterTeacherViews.subject_subjects, name='subject_subjects'),
 
     path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
 ]

@@ -72,7 +72,7 @@ Inbox Messages
 
                                 <p><strong>File Name:</strong> {{ message.file_name|slice:"2:-2"|replace:"'"|replace:","}}</p>
 
-                                <p class="form-text"><strong>Seubject Teacher:</strong> {{ message.from_teacher }}</p>
+                                <p class="form-text"><strong>Subject Teacher:</strong> {{ message.from_teacher }}</p>
                                 <p class="form-text"><strong>Adviser:</strong> {{ message.to_teacher }}</p>
                                 <p class="form-text"><strong>Received at:</strong> {{ message.date_received }}</p>
                             </div>
@@ -101,37 +101,46 @@ Inbox Messages
         <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="p-1">History</h3>
+                    <h3 class="p-1">Inbox Messages</h3>
                 </div>
-                <div>
-                    {% if inbox_messages %}
-                    <ul>
-                        {% for message in inbox_messages %}
-                        {% if message.approved %}
-                        <li class="d-flex justify-content-between align-items-center me-3 p-3  message ">
-                            <div>
-                                {% load custom_filters %}
-
-                                <p><strong>File Name:</strong> {{ message.file_name|slice:"2:-2"|replace:"'"|replace:","}}</p>
-
-                                <p class="form-text"><strong>Seubject Teacher:</strong> {{ message.from_teacher }}</p>
-                                <p class="form-text"><strong>Adviser:</strong> {{ message.to_teacher }}</p>
-                                <p class="form-text"><strong>Approved at:</strong> {{ message.date_approved }}</p>
-                            </div>
-
-                            <!-- Add a data attribute for json_data -->
-                            <p class="json-data" style="display: none;">{{ message.json_data }}</p>
-                        </li>
-                        {% endif %}
-                  {% endfor %}
-              </ul>
-              {% else %}
-              <p class="p-4">No messages were approved.</p>
-              {% endif %}
+                <div class="table-responsive">
+                    {% if approved_messages %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Master Teacher</th>
+                                <th>Approved at</th>
+                                <th>To Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for message in approved_messages %}
+                            <tr class="message">
+                                <td>
+                                    {% load custom_filters %}
+                                     {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
+                                </td>
+                                <td>
+                                    <p>{{ message.approved_by.user.username }}</p>
+                                </td>
+                                <td>
+                                    <p> {{ message.approved_at }}</p>
+                                </td>
+                                <td>
+                                    <p> {{ message.to_teacher_id }}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="p-3">No messages were approved.</p>
+                    {% endif %}
                 </div>
             </div>
 
-
+</div>
 
 
 </section>
