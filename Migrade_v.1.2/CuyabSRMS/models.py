@@ -714,13 +714,29 @@ class AttendanceRecord(models.Model):
      student = models.ForeignKey(Student, on_delete=models.CASCADE)
      attendance_record = models.JSONField(null=True)
 
-class LearnersObservation(models.Model):
+class CoreValues(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(null=True)
 
+    def __str__(self):
+        return self.name
+
+class BehaviorStatement(models.Model):
+    core_value = models.ForeignKey(CoreValues, on_delete=models.CASCADE)
+    statement = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.statement
+
+class LearnersObservation(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     quarter_1 = models.JSONField(null=True)
     quarter_2 = models.JSONField(null=True)
     quarter_3 = models.JSONField(null=True)
     quarter_4 = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"LearnersObservation - Student: {self.student}"
 
 class RestoreRequest(models.Model):
     archived_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE)

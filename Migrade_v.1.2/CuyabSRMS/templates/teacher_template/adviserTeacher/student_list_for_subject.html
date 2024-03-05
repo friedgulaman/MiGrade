@@ -310,8 +310,8 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                             <tr>
                                                                 <th>#</th>
                                                                 <th>Student Name</th>
-                                                                <th>Highest Initial Grade</th>
-                                                                <th>Transmuted Grade</th>
+                                                                <th>Grade</th>
+                                                                <th>Remarks</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -319,8 +319,8 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                                 <tr>
                                                                     <td>{{ forloop.counter }}</td>
                                                                     <td>{{ grade.student_name }}</td>
-                                                                    <td>{{ grade.highest_initial_grade }}</td>
                                                                     <td>{{ grade.transmuted_grade }}</td>
+                                                                    <td>{{ grade.remarks }}</td>
                                                                 </tr>
                                                             {% endfor %}
                                                         </tbody>

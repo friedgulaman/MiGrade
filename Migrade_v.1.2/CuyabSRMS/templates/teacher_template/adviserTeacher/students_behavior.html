@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Learners Observation</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            border: 1px solid black;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Create Learners Observation</h2>
+    <p>Marking - Non-Numerical Rating:</p>
+    <ul>
+        <li>AO - Always Observed</li>
+        <li>SO - Sometimes Observed</li>
+        <li>RO - Rarely Observed</li>
+        <li>NO - Not Observed</li>
+    </ul>
+    <form id="observation-form">
+        {% csrf_token %}
+        <table id="observation-table">
+            <button type="submit" id="submit-btn">Submit</button>
+            <label for="quarter-select">Select Quarter:</label>
+            <select id="quarter-select">
+                <option value="1st Quarter">Quarter 1</option>
+                <option value="2nd Quarter">Quarter 2</option>
+                <option value="3rd Quarter">Quarter 3</option>
+                <option value="4th Quarter">Quarter 4</option>
+            </select>
+
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Student</th>
+            <th>Learner`s Observe Values</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{ student.name }}</td>
+                  <td>
+                    <table border="1">
+                      <thead>
+                          <tr>
+                              <th>Core Value</th>
+                              <th>Behavior Statements</th>
+                              <th colspan="4">Markings
+                              
+                              </th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for core_value in core_values %}
+                              {% for behavior_statement in core_value.behaviorstatement_set.all %}
+                                  <tr>
+                                      {% if forloop.first %}
+                                          <td rowspan="{{ core_value.behaviorstatement_set.count }}">{{ core_value.name }}</td>
+                                      {% endif %}
+                                      <td>{{ behavior_statement.statement }}</td>
+                                      <td contenteditable="True" class="marking-cell" data-student-id="{{ student.id }}" data-quarter="{{ quarter }}" data-core-value="{{ core_value.name }}" data-behavior-statement="{{ behavior_statement.statement }}"></td>
+                                  </tr>
+                              {% endfor %}
+                          {% endfor %}
+                      </tbody>
+                  </table>            
+                  </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#observation-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent the default form submission
+                
+                var observations = [];
+                var selectedQuarter = $('#quarter-select').val(); // Array to store observation data
+
+                // Loop through each marking cell
+                $('.marking-cell').each(function() {
+                    var studentId = $(this).data('student-id');
+                    var coreValueId = $(this).data('core-value');
+                    var behaviorStatementId = $(this).data('behavior-statement');
+                    var marking = $(this).text().trim(); // Get the text content of the cell
+                    
+                    console.log("Student ID:", studentId);
+                    console.log("Quarter:", selectedQuarter);
+                    console.log("Core Value ID:", coreValueId);
+                    console.log("Behavior Statement ID:", behaviorStatementId);
+                    console.log("Marking:", marking);
+                    // Create an observation object
+                    var observation = {
+                        student_id: studentId,
+                        quarter: selectedQuarter,
+                        core_value: coreValueId,
+                        behavior_statement: behaviorStatementId,
+                        marking: marking
+                    };
+
+                    console.log(observation)
+
+                    // Add the observation to the observations array
+                    observations.push(observation);
+                });
+
+                // Send the data to the server using AJAX
+                $.ajax({
+                    url: '{% url "save_observations" %}', // Replace with your endpoint URL
+                    method: 'POST',
+                    data: {
+                        observations: JSON.stringify(observations), // Convert observations array to JSON string
+                        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val() // Get CSRF token
+                    },
+                    success: function(response) {
+                        // Handle success response
+                        console.log(response);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

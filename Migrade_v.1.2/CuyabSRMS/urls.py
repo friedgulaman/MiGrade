@@ -207,6 +207,14 @@ urlpatterns = [
      path('teacher_batch_process_documents/', TeacherViews.teacher_batch_process_documents, name='teacher_batch_process_documents'),
     path('teacher_sf10_edit_view/<int:id>/', TeacherViews.teacher_sf10_edit_view, name='teacher_sf10_edit_view'),
     path('teacher_sf10/edit/<int:id>/', TeacherViews.teacher_sf10_edit, name='teacher_sf10_edit'),
+    path('create/core_values/', TeacherViews.create_core_values, name='create_core_values'),
+    path('create/behavior_statements/', TeacherViews.create_behavior_statements, name='create_behavior_statements'),
+    path('create_learners_observation/<str:grade>/<str:section>/', TeacherViews.create_learners_observation, name='create_learners_observation'),
+    path('students_behavior/<str:grade>/<str:section>/', TeacherViews.students_behavior_view, name='students_behavior'),
+    path('save-observations/', TeacherViews.save_observations, name='save_observations'),
+
+
+
    # urls.py
     # Generation
 

@@ -219,6 +219,17 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             <a href="{% url 'attendance_records' grade=grade section=section %}">Read Attendance Records</a>
                         </div>
                     </div>
+
+                    <div class="tab-pane fade show" id="learners_observation" role="tabpanel" aria-labelledby="learners_observation">
+                        <h2>Links to Create Observations</h2>
+                        <ul>
+                            <li><a href="{% url 'create_core_values' %}">Create Core Values</a></li>
+                            <li><a href="{% url 'create_behavior_statements' %}">Create Behavior Statements</a></li>
+                            <li><a href="{% url 'create_learners_observation' grade=grade section=section %}">Create Learners Observation</a></li>
+                            <a href="{% url 'students_behavior' grade=grade section=section %}">View Students Behavior</a>
+                        </ul>
+                    </div>
+                    
                     <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
 
                         <div class="container mt-4">

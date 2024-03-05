@@ -11,7 +11,7 @@ from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
-from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades, AttendanceRecord, LearnersObservation
+from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades, AttendanceRecord, LearnersObservation, CoreValues
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
 from django.http import HttpResponse
@@ -28,8 +28,8 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages
 #OCR
-from .forms import DocumentUploadForm, DocumentBatchUploadForm
-from .models import ProcessedDocument, ExtractedData, Section
+from .forms import DocumentUploadForm, DocumentBatchUploadForm, CoreValuesForm, BehaviorStatementForm, LearnersObservationForm
+from .models import ProcessedDocument, ExtractedData, Section, BehaviorStatement
 from google.cloud import documentai_v1beta3 as documentai
 from django.shortcuts import render
 from .views import *
@@ -1192,6 +1192,8 @@ def student_list_for_subject(request):
         grade = request.GET.get('grade')
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
+        # quarter = request.GET.get('quarter')
+        quarter = '1st Quarter'
         # print(class_type)
         
         # Filter class records based on the teacher
@@ -1219,13 +1221,16 @@ def student_list_for_subject(request):
             subject_grades[subject_name] = []
             for student in subject_students:
                 # Retrieve the student's highest initial grade
-                # Retrieve the student's highest initial grade for the specific subject
-                # Retrieve the student's highest initial grade for the specific subject
                 highest_initial_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name).order_by('-initial_grades').first()
 
                 # Retrieve the student's transmuted grade for the specific subject
-                transmuted_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name).order_by('transmuted_grades').first()
+                transmuted_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name, class_record__quarters=quarter).order_by('transmuted_grades').first()
+                if transmuted_grade:
+                    quarter = transmuted_grade.class_record.quarters
+                    print(quarter)
 
+                # Determine remarks based on transmuted grade
+                remarks = determine_remarks(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
 
                 # If both initial grade and transmuted grade exist, append the data to the subject_grades dictionary
                 if highest_initial_grade is not None and transmuted_grade is not None:
@@ -1233,10 +1238,12 @@ def student_list_for_subject(request):
                     subject_grades[subject_name].append({
                         'student_name': student.name,
                         'highest_initial_grade': highest_initial_grade.initial_grades,
-                        'transmuted_grade': transmuted_grade.transmuted_grades
+                        'transmuted_grade': transmuted_grade.transmuted_grades,
+                        'remarks': remarks
                     })
+
             # Sort the students for this subject by highest initial grade
-            subject_grades[subject_name].sort(key=lambda x: x['highest_initial_grade'] if x['highest_initial_grade'] is not None else 0, reverse=True)
+            subject_grades[subject_name].sort(key=lambda x: x['transmuted_grade'] if x['transmuted_grade'] is not None else 0, reverse=True)
 
 
         # Filter students based on class type
@@ -2043,58 +2050,11 @@ def display_final_grades(request, grade, section, subject):
 
     return render(request, "teacher_template/adviserTeacher/new_final_grades.html", context)
 
-# def display_final_grades(request, grade, section, subject):
-#     # try:
-#         teacher = request.user.teacher
-#         students = Student.objects.filter(grade=grade, section=section)
-        
-#         # Filter subjects to only include the specified subject
-#         subjects = ClassRecord.objects.filter(grade=grade, section=section, subject=subject, teacher_id=teacher)
-
-#         calculate_save_final_grades(grade, section, subject, students, subjects)
-
-#         final_grades = []
-#         for student in students:
-#             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': []}
-
-#             # Retrieve final grades from the FinalGrade model
-#             final_grade = FinalGrade.objects.filter(
-#                 teacher__classrecord__grade=grade,
-#                 teacher__classrecord__section=section,
-#                 student=student
-#             ).first()
-
-#             if final_grade:
-#                 final_grade_info = json.loads(final_grade.final_grade)  # Convert JSON string to list of dictionaries
-#                 for subject_info in final_grade_info:
-#                     if subject_info['subject'] == subject:  # Filter by subject
-#                         subject_data = {
-#                             'subject': subject_info.get('subject', 'Unknown Subject'),
-#                             'quarter_grades': subject_info['quarter_grades'],
-#                             'final_grade': subject_info['final_grade'],
-#                             'teacher_name': subject_info['teacher_name']
-#                         }
-#                         student_data['subjects'].append(subject_data)
-
-#             # Append student data to the final grades
-#             final_grades.append(student_data)
-
-#         context = {
-#             'grade': grade,
-#             'section': section,
-#             'final_grades': final_grades,
-#             'subject': subject,  # Pass the subject to the template
-#         }
-
-#         return render(request, "teacher_template/adviserTeacher/final_grades.html", context)
-    
-    # except Exception as e:
-    #     # Log the exception for debugging
-    #     print(f"An error occurred: {str(e)}")
-    #     # Return an HTTP 500 Internal Server Error response
-    #     return HttpResponse("Internal Server Error", status=500)
 
 def determine_remarks(general_average):
+    if general_average is None:
+        return 'No Grade'
+     
     if general_average >= 98:
         return 'WITH HIGHEST HONOR'
     elif general_average >= 95:
@@ -2237,81 +2197,6 @@ def display_all_final_grades(request, grade, section):
     #     print(f"An error occurred while displaying all final grades: {str(e)}")
     #     # Return an HTTP 500 Internal Server Error response
     #     return HttpResponse("Internal Server Error", status=500)
-
-
-
-# def display_all_final_grades(request, grade, section):
-#     try:
-#         students = Student.objects.filter(grade=grade, section=section)
-#         # Fetch all distinct subjects for the specified grade and section
-#         subjects = ClassRecord.objects.filter(grade=grade, section=section).values('subject').distinct()
-
-#         final_grades = []
-#         for student in students:
-#             student_data = {'id': student.id, 'name': student.name, 'grade': grade, 'section': section, 'subjects': [], 'student': student}
-
-#             for subject in subjects:
-#                 subject_name = subject['subject']
-#                 subject_info = {'name': subject_name, 'quarter_grades': {}, 'final_grade': 0}
-
-#                 # Retrieve final grades from the FinalGrade model
-#                 final_grade = FinalGrade.objects.filter(
-#                     teacher__classrecord__grade=grade,
-#                     teacher__classrecord__section=section,
-#                     student=student,
-#                 ).first()
-
-#                 if final_grade:
-#                     final_grade_data = final_grade.final_grade
-#                     if isinstance(final_grade_data, str):  # Check if the data is a string
-#                         final_grade_data = json.loads(final_grade_data)  # Parse JSON string to dictionary
-
-#                     # Find the subject entry in final_grade_data
-#                     for entry in final_grade_data:
-#                         if entry['subject'] == subject_name:
-#                             subject_info['final_grade'] = entry['final_grade']
-#                             subject_info['quarter_grades'] = entry['quarter_grades']
-#                             break  # Stop searching once the subject is found
-
-#                 # Get the teacher's name from the ClassRecord
-#                 class_record = ClassRecord.objects.filter(
-#                     grade=grade,
-#                     section=section,
-#                     subject=subject_name
-#                 ).first()
-
-#                 # Ensure that the class_record and its teacher exist
-#                 if class_record and class_record.teacher:
-#                     subject_info['teacher_name'] = f"{class_record.teacher.user.first_name} {class_record.teacher.user.last_name}"
-#                 else:
-#                     subject_info['teacher_name'] = "Unknown Teacher"
-
-#                 student_data['subjects'].append(subject_info)
-
-#             # Append student data to the final grades
-#             final_grades.append(student_data)
-
-#         # Compute the general average for each student
-#         for student_data in final_grades:
-#             total_final_grade = sum([subject_info['final_grade'] for subject_info in student_data['subjects']])
-#             num_subjects = len(student_data['subjects'])
-#             student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
-#             save_general_average(student_data, grade, section)
-            
-#         context = {
-#             'grade': grade,
-#             'section': section,
-#             'final_grades': final_grades,
-#         }
-
-#         return render(request, "teacher_template/adviserTeacher/all_final_grades.html", context)
-    
-#     except Exception as e:
-#         # Log the exception for debugging
-#         print(f"An error occurred while displaying all final grades: {str(e)}")
-#         # Return an HTTP 500 Internal Server Error response
-#         return HttpResponse("Internal Server Error", status=500)
-
 
     
 @login_required
@@ -2459,7 +2344,7 @@ def update_score(request):
             scores_list[column_index] = int(float(new_score))
         else:
             scores_list[column_index] = ''  # Or any default value you prefer
-# Or any default value you prefer
+        # Or any default value you prefer
 
         # Save the updated scores list to the model
         setattr(grade_score, scores_field, scores_list)
@@ -3622,3 +3507,136 @@ def teacher_sf10_edit(request, id):
     # Render the edit_sf10.html template with the ExtractedData instance
     return render(request, 'teacher_template/adviserTeacher/teacher_edit_sf10.html', {'extracted_data': extracted_data})
 
+
+def create_core_values(request):
+    if request.method == 'POST':
+        form = CoreValuesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('create_core_values')
+    else:
+        form = CoreValuesForm()
+    return render(request, 'teacher_template/adviserTeacher/create_core_values.html', {'form': form})
+
+def create_behavior_statements(request):
+    if request.method == 'POST':
+        form = BehaviorStatementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('create_behavior_statements')
+    else:
+        form = BehaviorStatementForm()
+    return render(request, 'teacher_template/adviserTeacher/create_behavior_statements.html', {'form': form})
+
+
+def create_learners_observation(request, grade, section):
+    behavior_statements = BehaviorStatement.objects.all()
+    students = Student.objects.filter(grade=grade, section=section)
+    core_values = CoreValues.objects.all()
+    quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'] 
+
+    if request.method == 'POST':
+        for student in students:
+            for quarter in range(1, 5):
+                for behavior_statement in behavior_statements:
+                    field_name = f'student_{student.id}_quarter_{quarter}_behavior_{behavior_statement.id}'
+                    marking = request.POST.get(field_name)
+                    # Process the marking data and save to the database as needed
+
+    # Create a dictionary to hold marking data for each student for each quarter
+    student_markings = {}
+    for student in students:
+        student_markings[student] = {}
+        for quarter in quarters:
+            student_markings[student][quarter] = {}
+            for behavior_statement in behavior_statements:
+                # Initialize marking to None
+                student_markings[student][quarter][behavior_statement] = None
+
+    print(behavior_statements)
+    # print(student_markings)
+    context = {
+        'students': students,
+        'behavior_statements': behavior_statements,
+        'quarters': quarters,
+        'student_markings': student_markings,
+        'core_values': core_values  # Pass the student markings to the template
+    }
+    # Render the form template with the behavior statements and students
+    return render(request, 'teacher_template/adviserTeacher/create_learners_observation.html', context)
+
+
+def students_behavior_view(request, grade, section):
+    students = Student.objects.filter(grade=grade, section=section)
+    core_values = CoreValues.objects.all()
+    behavior_statements = BehaviorStatement.objects.all()
+    quarters = ['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4'] 
+
+    core_values_length = len(core_values)
+    behavior_statements_length = len(behavior_statements)
+    rowspan = core_values_length * behavior_statements_length
+
+    context = {
+        'students': students, 
+        'behavior_statements': behavior_statements,
+        'core_values' : core_values,
+        'quarters': quarters,
+        'rowspan': rowspan,
+    }
+    return render(request, 'teacher_template/adviserTeacher/students_behavior.html', context)
+
+def save_observations(request):
+    if request.method == 'POST':
+        # try:
+            observations = json.loads(request.POST.get('observations'))
+
+            for observation in observations:
+                student_id = observation.get('student_id')
+                quarter_data = observation.get('quarter')
+                core_value = observation.get('core_value')
+                behavior_statement = observation.get('behavior_statement')
+                marking = observation.get('marking')
+
+                # Map quarter names to field names
+                quarter_field_map = {
+                    '1st Quarter': 'quarter_1',
+                    '2nd Quarter': 'quarter_2',
+                    '3rd Quarter': 'quarter_3',
+                    '4th Quarter': 'quarter_4'
+                }
+
+                # Get the corresponding field name for the quarter
+                quarter_field = quarter_field_map.get(quarter_data)
+
+                if not quarter_field:
+                    raise ValueError('Invalid quarter data')
+
+                # Retrieve or create LearnersObservation instance for the student
+                learner_observation, created = LearnersObservation.objects.get_or_create(student_id=student_id)
+
+                # Get the current observations for the quarter
+                current_observations = getattr(learner_observation, quarter_field)
+                if current_observations is None:
+                    current_observations = {}
+
+                # Ensure core_value exists in current_observations
+                if core_value not in current_observations:
+                    current_observations[core_value] = []
+
+                # Append the observation to the list of observations for the core value
+                current_observations[core_value].append({
+                    'behavior_statement': behavior_statement,
+                    'marking': marking
+                })
+
+                # Save the updated observations to the corresponding quarter field
+                setattr(learner_observation, quarter_field, current_observations)
+                learner_observation.save()
+
+
+
+            return JsonResponse({'message': 'Observations saved successfully.'})
+        # except Exception as e:
+        #     return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
