@@ -90,7 +90,7 @@ input[type="password"] {
       <div class="row g-0">
         <div class="col-md-3 text-center d-flex justify-content-center align-items-center">
           <div class="image-container ">
-            <img class="zoomable-image" src="{{ admin.username.profile_image.url }}" alt="Profile Photo Preview"
+            <img class="zoomable-image" src="{{ admin.user.profile_image.url }}" alt="Profile Photo Preview"
               data-bs-toggle="modal" data-bs-target="#photoUploadModal">
           </div>
         </div>
@@ -113,14 +113,14 @@ input[type="password"] {
                 <div class="col">
                   <label class="form-label form-text" for="username">User Name</label>
                   <input type="text" class="form-control input-field" id="username" name="username"
-                    value="{{ admin.username.username }}" aria-label="Email" readonly>
+                    value="{{ admin.user.username }}" aria-label="Email" readonly>
                 </div>
               </div>
               <div class="row mt-3 mb-3">
                 <div class="col">
                   <label class="form-label form-text" for="email">Email</label>
                   <input type="text" class="form-control input-field" id="email" name="email"
-                    value="{{ admin.username.email }}" aria-label="Email" readonly>
+                    value="{{ admin.user.email }}" aria-label="Email" readonly>
                 </div>
               </div>
               <div class="d-flex justify-content-end">
@@ -156,7 +156,7 @@ input[type="password"] {
             <div class="container text-center d-flex justify-content-center align-items-center">
               <div class="image-container ">
                 <img class="zoomable-image" id="profile_photo_preview"
-                  src="{% if admin.username.profile_image %}{{ admin.username.profile_image.url }}{% else %}# {% endif %}"
+                  src="{% if admin.user.profile_image %}{{ admin.user.profile_image.url }}{% else %}# {% endif %}"
                   alt="Profile Photo Preview" data-bs-toggle="modal" data-bs-target="#photoUploadModal">
               </div>
             </div>
@@ -293,7 +293,7 @@ input[type="password"] {
 
         reader.readAsDataURL(file);
       } else {
-        preview.src = "{% if admin.username.profile_image %}{{ admin.username.profile_image.url }}{% else %}#{% endif %}";
+        preview.src = "{% if admin.user.profile_image %}{{ admin.user.profile_image.url }}{% else %}#{% endif %}";
         // Hide the submit button when no new photo is selected
         document.getElementById("submit-button").style.display = "none";
       }

@@ -7,17 +7,22 @@ Inbox Messages
 
 {% block main_content %}
 <style>
-  .card{
-    max-height: 500px;
-    overflow: auto;
-  }
-  .message {
-    border-bottom: 1px solid #eaeaf1;
-  }
 
-  .message:hover {
+.message {
+    border-bottom: 1px solid #eaeaf1;
+}
+
+.message:hover {
     background: #eaeaf1;
-  }
+}
+
+.message:hover .open {
+    display: block;
+}
+
+.open {
+    display: none;
+}
 
   .accept-btn {
     color: green;
@@ -28,7 +33,7 @@ Inbox Messages
   .accept-btn:hover {
     opacity: 1;
     color: green;
-    scale: 1.3;
+    scale: 1.10;
   }
 
   .reject-btn {
@@ -40,8 +45,13 @@ Inbox Messages
   .reject-btn:hover {
     opacity: 1;
     color: red;
-    scale: 1.3;
+    scale: 1.10;
   }
+  .inbox{
+    max-height: 400px;
+    overflow: auto;
+  }
+
 </style>
 <section class="content container mt-2 vh-100">
   <div class="d-sm-flex align-items-center justify-content-between border-bottom">
@@ -57,51 +67,95 @@ Inbox Messages
     </ul>
   </div>
 
-  <div class="tab-content tab-content-basic">
+  <div class="tab-content tab-content-basic inbox">
     <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
       <div class="card">
-          <div class="card-body">
-              <h3 class="p-1">Inbox Messages</h3>
-          </div>
-          <div>
-              {% if inbox_messages %}
-              <ul>
-                  {% for message in inbox_messages %}
-                  {% if message.approved %}
-                  <li class="d-flex justify-content-between align-items-center me-3 p-3  message ">
-                      <div>
-                          {% load custom_filters %}
-  
-                          <p><strong>File Name:</strong> {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
-                          </p>
-  
-                          <p class="form-text"><strong>Sender:</strong> {{ message.from_teacher }}</p>
-                          <p class="form-text"><strong>Approved at: </strong> {{ message.date_approved }}</p>
+        <div class="card-body ">
+            <h3 class="p-1">Inbox Messages</h3>
+            <hr>
+        </div>
+        <div>
+            {% if inbox_messages %}
+            <ul>
+                {% for message in inbox_messages %}
+                
+                <li class="d-flex justify-content-between align-items-center me-3 p-3 mt-3  message " data-bs-toggle="modal" data-bs-target="#exampleModal{{ message.id }}" >
+                    <div >
+                        {% load custom_filters %}
+                        <p><strong> * {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}</strong></p> 
+                        <p class="form-text"><strong>From Teacher:</strong> {{ message.from_teacher }}</p>
+                        <p class="form-text"><strong>Approved at: </strong> {{ message.date_approved }}</p>
+                    </div>
+                    <div> 
+                      <p class="m-4 open text-muted">Open</p>                 
+                    </div>
+                </li>
+                <div class="modal fade" id="exampleModal{{ message.id }}" tabindex="-1" aria-labelledby="exampleModalLabel{{ message.id }}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                  <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLabel{{ message.id }}">Message Details</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                              <p class="json-data ">
+                                <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                  <strong>Grade:</strong> {{ message.json_data.grade }}<br>
+                                  <strong>Section:</strong> {{ message.json_data.section }}<br>
+                                  <strong>Subject:</strong> {{ message.json_data.subject }}<br>
+                                  <strong>From Teacher:</strong> {{ message.json_data.teacher }}<br>
+                                  
+                                </div>
+                                 <div>
+                                  <button class="btn accept-btn" data-message-id="{{ message.id }}">
+                                    <i class="fas fa-check"><p>Save Records</p></i>
+                                </button>
+                                <button class="btn reject-btn" data-message-id="{{ message.id }}">
+                                    <i class="fas fa-times"><p>Delete Message</p></i>
+                                </button>
+                                 </div>
+                                </div>
+                                  <hr>
+                                  <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                              <th></th>
+                                                <th>Student</th>
+                                                <th>Grades</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in message.json_data.students %}
+                                            <tr>
+                                              <td>{{ forloop.counter }}</td>
+                                                <td>{{ student.name }}</td>
+                                                <td>{{ student.quarter }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                              </p>
+                          </div>
                       </div>
-                      <div>
-                          <button class="btn  accept-btn" data-message-id="{{ message.id }}">
-                              <i class="fas fa-check"></i>
-                          </button>
-                          <button class="btn  reject-btn" data-message-id="{{ message.id }}">
-                              <i class="fas fa-times"></i>
-                          </button>
-                      </div>
-  
-                      <!-- Add a data attribute for json_data -->
-                      <p class="json-data" style="display: none;">{{ message.json_data }}</p>
-                  </li>
-                  {% endif %}
-                  {% endfor %}
-              </ul>
-              {% else %}
-              <p class="p-3">No messages were approved.</p>
-              {% endif %}
-          </div>
-      </div>
+                  </div>
+              </div>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="p-4">No messages.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    
   </div>
   
-    <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
-      <div class="card">
+  <div class="tab-pane fade show" id="audiences" role="tabpanel" aria-labelledby="audiences">
+    <div class="card">
         <div class="card-body">
             <h3 class="p-1">Inbox Messages</h3>
         </div>
@@ -111,22 +165,18 @@ Inbox Messages
                 <thead>
                     <tr>
                         <th>File Name</th>
-                        <th>Master Teacher</th>
                         <th>Accepted at</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for message in accepted_messages %}
-                    <tr class="message">
+                    <tr class="message" data-bs-toggle="modal" data-bs-target="#acceptedModal{{ message.id }}">
                         <td>
                             {% load custom_filters %}
-                             {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
+                            {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
                         </td>
                         <td>
-                            <p>{{ message.approved_by.user.username }}</p>
-                        </td>
-                        <td>
-                            <p> {{ message.accepted_at }}</p>
+                            <p>{{ message.accepted_at }}</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -135,10 +185,54 @@ Inbox Messages
             {% else %}
             <p class="p-3">No messages were approved.</p>
             {% endif %}
+            {% for message in accepted_messages %}
+            <div class="modal fade" id="acceptedModal{{ message.id }}" tabindex="-1" aria-labelledby="acceptedModalLabel{{ message.id }}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="acceptedModalLabel{{ message.id }}">Message Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="json-data">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Grade:</strong> {{ message.json_data.grade }}<br>
+                                        <strong>Section:</strong> {{ message.json_data.section }}<br>
+                                        <strong>Subject:</strong> {{ message.json_data.subject }}<br>
+                                        <strong>From Teacher:</strong> {{ message.json_data.teacher }}<br>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>Student</th>
+                                                <th>Grades</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in message.json_data.students %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ student.name }}</td>
+                                                <td>{{ student.quarter }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
-    
-
+</div>
 
 
 </section>

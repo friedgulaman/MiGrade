@@ -172,8 +172,6 @@ urlpatterns = [
     path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
     path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
     
-
-    path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
     path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),
     path('transfer_record', teacher_required(TransferRecordViews.transfer_record), name='transfer_record'),
     # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
@@ -250,8 +248,6 @@ urlpatterns = [
 
     # master teacher
     path('home_mt', MasterTeacherViews.home_mt, name='home_mt'),
-    path('inbox_open_mt/', MasterTeacherViews.inbox_open_mt, name='inbox_open_mt'),
-    path('accept_message_mt', MasterTeacherViews.accept_message_mt, name='accept_message_mt'),
     path('advisory_classes_mt', MasterTeacherViews.advisory_classes_mt, name='advisory_classes_mt'),
     path('subject_classes_mt', MasterTeacherViews.subject_classes_mt, name='subject_classes_mt'),
     path('distinct_sections', MasterTeacherViews.distinct_sections, name='distinct_sections'),

@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
@@ -30,8 +30,8 @@ def teachers_activity(request):
 @login_required
 def admin_activity(request):
     try:
-        admin = Admin.objects.get(username=request.user)
-        custom_user = admin.username  # Assuming 'username' is the ForeignKey to CustomUser in Admin model
+        admin = Admin.objects.get(user=request.user)
+        custom_user = admin.user  # Assuming 'username' is the ForeignKey to CustomUser in Admin model
         activity_logs = ActivityLog.objects.filter(user=custom_user).order_by('-timestamp')
         return render(request, 'admin_template/admin_activity.html', {'activity_logs': activity_logs})
     except Admin.DoesNotExist:
@@ -106,22 +106,23 @@ def get_user_details(request):
         return HttpResponse("User: " + request.user.email + " User Type: " + request.user.user_type)
     else:
         return HttpResponse("Please Login First")
-
+    
 def logout_user(request):
-    logout(request)
+    request.session.flush()  # or request.session.clear()
     messages.success(request, "Logout successfully!")
-    return HttpResponseRedirect('/')
+    return redirect('/')
 
 @login_required
 def profile_page(request):
     user = request.user  # Get the logged-in user
     user_type = user.user_type  # Get the user type
+    context = {}
+
     if user_type == 2:  # Assuming '2' represents a teacher user type
-        teacher = Teacher.objects.get(user=user)  # Get the teacher object associated with the user
-        context = {
-            'teacher': teacher,
-        }
-        return render(request, 'teacher_template/teacher_profile.html')
+        teacher = get_object_or_404(Teacher, user=user)  # Get the teacher object associated with the user
+        context['teacher'] = teacher
+
+    return render(request, 'teacher_template/teacher_profile.html', context)
 
 
 
@@ -215,15 +216,16 @@ def change_password(request):
 
 @login_required
 def admin_profile_page(request):
-    try:
-        admin = Admin.objects.get(user=request.user)  # Get the admin object associated with the user
-        context = {
-            'admin': admin,
-        }
-        return render(request, 'admin_template/admin_profile.html', context)
-    except Admin.DoesNotExist:
-        # Handle the case when the user is not an admin
-        return HttpResponse("You are not an admin.")
+    user = request.user  # Get the logged-in user
+    user_type = user.user_type  # Get the user type
+    context = {}
+
+    if user_type == 3:  # Assuming '2' represents a admin user type
+        admin = get_object_or_404(Admin, user=user)  # Get the admin object associated with the user
+        context['admin'] = admin
+
+    return render(request, 'admin_template/admin_profile.html', context)
+    
 
 def admin_update_profile_photo(request):
     if request.method == "POST":

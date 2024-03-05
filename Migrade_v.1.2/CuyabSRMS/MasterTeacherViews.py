@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render
-from CuyabSRMS.models import MT, AdvisoryClass, ApprovedMessage, ClassRecord, InboxMessage, SuperAdmin, Admin, CustomUser, ActivityLog, Teacher
+from CuyabSRMS.models import MT, AdvisoryClass,  ClassRecord, InboxMessage, SuperAdmin, Admin, CustomUser, ActivityLog, Teacher
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404, redirect
@@ -69,71 +69,7 @@ def home_mt(request):
         # Redirect or render an appropriate response
         pass
 
-def inbox_open_mt(request):
-    try:
-        user = request.user
 
-        # Check if the logged-in user is a teacher
-        if hasattr(user, 'mt'):
-            mt = user.mt.id
-            print(mt)
-            # Get inbox messages where the logged-in mt is the intended recipient
-            inbox_messages = InboxMessage.objects.all()
-            approved_messages = ApprovedMessage.objects.filter(approved_by_id=mt)
-
-            context = {
-                'inbox_messages': inbox_messages,
-                'approved_messages': approved_messages
-            }
-            return render(request, 'master_template/inbox_mt.html', context)
-
-        else:
-            # Handle the case where the logged-in user is not a mt
-            return render(request, 'master_template/inbox_mt.html', {'inbox_messages': []})
-
-    except Exception as e:
-        # Handle any exceptions
-        print(f"Error in inbox_open: {e}")
-        return render(request, 'master_template/inbox_mt.html', {'inbox_messages': []})
-
-
-
-
-@login_required
-def accept_message_mt(request):
-    if request.method == 'POST':
-        message_id = request.POST.get('message_id')
-        try:
-            # Retrieve the InboxMessage object
-            message = InboxMessage.objects.get(pk=message_id)
-            # Update the accepted field to True
-            message.approved = True
-            # Set the approved_by field to the current MT user
-            message.approved_by = MT.objects.get(user=request.user)
-            message.save()
-            
-            # Retrieve the appropriate Teacher instance for the to_teacher field
-            # This assumes you have a way to determine the correct Teacher instance based on your application logic
-            to_teacher = Teacher.objects.get(pk=message.to_teacher)
-
-            # Create an ApprovedMessage object and save approved message data
-            ApprovedMessage.objects.create(
-                message_id=message_id,
-                file_name=message.file_name,
-                json_data=message.json_data,
-                approved_by=message.approved_by,
-                to_teacher=to_teacher  # Assign the Teacher instance to the to_teacher field
-            )
-            
-            return JsonResponse({'success': True, 'message': 'Message accepted successfully.'})
-        except InboxMessage.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Message not found.'})
-        except MT.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'MT user not found.'})
-        except Teacher.DoesNotExist:  # Handle the case where the Teacher instance is not found
-            return JsonResponse({'success': False, 'error': 'Teacher not found.'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 def advisory_classes_mt(request):
     # Get the current logged-in MT user

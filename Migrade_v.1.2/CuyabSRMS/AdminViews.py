@@ -19,7 +19,7 @@ from .views import log_activity
 from .models import ExtractedData
 from .models import ProcessedDocument
 from google.cloud import documentai_v1beta3 as documentai
-
+from django.core.paginator import Paginator
 import re
 import os
 import json
@@ -1180,21 +1180,22 @@ def delete_announcement(request, announcement_id):
 
 
 def user_list(request):
-    teachers = CustomUser.objects.filter(user_type=2)  # Assuming 1 represents "Teacher" in your model
+    teachers = CustomUser.objects.filter(user_type=2)
     return render(request, 'teacher_list.html', {'teachers': teachers})
 
 def user_activities(request):
     user_id = request.GET.get('id')
     if user_id:
         activities = ActivityLog.objects.filter(user_id=user_id)
-        return render(request, 'admin_template/user_activities.html', {'activities': activities})
+        
+        # Pagination
+        paginator = Paginator(activities, 7)  # Show 10 activities per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'admin_template/user_activities.html', {'page_obj': page_obj, 'user_id': user_id})
     else:
-        # Handle case when no user ID is provided
-        return render(request, 'error.html', {'error_message': 'User ID is required'})
-
-
-
-
+        return render(request, 'admin_template/user_activities.html', {'error_message': 'User ID is required'})
 
 
    
