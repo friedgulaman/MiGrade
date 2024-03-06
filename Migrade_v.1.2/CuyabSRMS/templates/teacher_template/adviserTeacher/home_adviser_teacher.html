@@ -1,7 +1,5 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
-{% block title %}
-MiGrade - Adviser Teacher
-{% endblock %}
+{% block title %}Home{% endblock %}
 {% block main_content %}
 {% load static %}
 <style>
@@ -18,48 +16,109 @@ MiGrade - Adviser Teacher
     cursor: pointer;
   }
   section{
-    background-image: url('/static/star-admin/images/bg_home_teacher_2.png');
+    background-image: url('/static/star-admin/images/bg_home_teacher.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
   }
+  .glass{
+    border-radius: 10px;
+    border: 2px solid white;
+    background-color: transparent;
+    backdrop-filter: blur(8px);
+    max-height: 350px;
+    overflow: auto;
+  }
   
+  /* Customize scrollbar appearance */
+  .glass::-webkit-scrollbar {
+      width: 8px; /* Adjust the width of the scrollbar */ 
+  }
+
+  .glass::-webkit-scrollbar-thumb {
+      background-color: #c7c5c5; /* Color of the scrollbar thumb */
+      border-radius: 4px; /* Rounded corners of the thumb */
+  }
+
+  .glass::-webkit-scrollbar-track {
+      background-color: #F4F5F7; /* Color of the scrollbar track */
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+  .card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: 0.5s;
+    animation: fadeIn 2s;
+  }
+  .card:hover{
+    scale: 1.03;
+  }
+  .post {
+    color: #1F3BB3;
+    margin-bottom: 10px;
+  }
+  .post a {
+    color: #1F3BB3;
+    text-decoration: none;
+  }
+  .post a:hover {
+    color: #000;
+  }
+.deped p{
+  font-size: clamp(8px, 2.5vw, 10px);
+}
+.post{
+  font-size: clamp(8px, 2.5vw, 10px);
+}
+#currentDateTime{
+  font-size: clamp(12px, 2.5vw, 10px);
+  margin: 0;
+  }
 </style>
-<section class="content container ">
-  <div class="container mt-5 d-flex justify-content-end">
-    <div class="row">
-      <div class="col-sm-3">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Special title treatment</h5>
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-3">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Special title treatment</h5>
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-3">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Special title treatment</h5>
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
-        </div>
-      </div>
+<section class="content container p-2 ">
+  <div id="currentDateTime" class="d-flex justify-content-end align-items-center p-5 m-0"></div>
+  <div class="glass p-5 me-4 ms-4 mt-0">
+  <h3 class="mb-4">Recent DepEd Orders</h3>
+  {% for post in recent_posts_data %}
+    <div class="card">
+      <p class="post"><a href="{{ post.link }}" target="_blank">{{ post.title }}</a></p>
     </div>
+  {% endfor %}
+  <hr class="container">
+  <h3 class="mb-4 mt-5">Recent DepEd Memoranda</h3>
+  {% for post in recent_deped_memoranda %}
+  <div class="card">
+    <p class="post"><a href="{{ post.link }}" target="_blank">{{ post.title }}</a></p>
   </div>
-
-
+{% endfor %}
+<hr class="container">
+</div>
+<footer class="deped d-flex justify-content-end align-items-center container p-3">
+  <p>Recent posts retrieved from the official website of the <a href="https://www.deped.gov.ph/" target="_blank">Department of Education (DepEd)</a>.</p>
+</footer>
 </section>
+<script>
+  // JavaScript code to display current date and time synchronously
+  function updateTime() {
+    const currentDateTimeElement = document.getElementById('currentDateTime');
+    const currentDate = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+    currentDateTimeElement.innerHTML = currentDate.toLocaleString('en-US', options);
+  }
 
+  updateTime(); // Call the function initially to display the time
+  setInterval(updateTime, 1000); // Update the time every second
+</script>
 {% endblock main_content %}
 

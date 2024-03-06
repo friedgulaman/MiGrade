@@ -1,3 +1,95 @@
+{% extends 'admin_template/activity_base.html' %}
+
+{% block page_title %}
+Adviser Teacher
+{% endblock page_title %}
+
+{% block main_content %}
+<style>
+    .page_nav{
+    position: fixed;
+    bottom: 0;
+    }
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+    <div class="container p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>User Activity</h3>
+            <a class="back-button">&larr;</a>
+        </div>
+        {% if page_obj %}
+        <div class=" table-responsive card p-3 mb-3 mt-2">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Details</th>
+                    <th>Timestamp</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in page_obj %}
+                <tr>
+                    <td>{{ activity.details }}</td>
+                    <td>{{ activity.timestamp }}</td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="page_nav container">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?id={{ user_id }}&page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?id={{ user_id }}&page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p>No activities found for the user.</p>
+        {% endif %}
+    </div>
+    <script>
+        // JavaScript to handle the back button click event
+        document.querySelector(".back-button").addEventListener("click", function() {
+            window.location.href = 'home_admin';
+        });
+      </script>
+{% endblock main_content %}
 {% extends 'admin_template/admin_base.html' %}
 
 {% block page_title %}

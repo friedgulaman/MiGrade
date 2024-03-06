@@ -1,0 +1,23 @@
+{% extends 'master_template/master_base.html' %}
+{% block page_title %}
+    Distinct Sections
+{% endblock page_title %}
+{% block main_content %}
+<div class="container">
+    <h1>Distinct Sections for Grade {{ grade }}</h1>
+    <ul>
+        {% for section in distinct_sections %}
+            <li onclick="showSubjects('{{ section }}')">{{ section }}</li>
+        {% empty %}
+            <li>No distinct sections found.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+function showSubjects(section) {
+    // Redirect to the subjects page passing the selected section as a parameter
+    window.location.href = "{% url 'subject_subjects' %}?section=" + section;
+}
+</script>
+{% endblock main_content %}

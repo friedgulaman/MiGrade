@@ -1,6 +1,8 @@
 from django.db import IntegrityError
 from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
+from .models import MT, ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
 from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation, ArchivedClassRecord, ArchivedStudent
 from django.contrib.auth import get_user_model  # Add this import statement
@@ -19,7 +21,7 @@ from .views import log_activity
 from .models import ExtractedData
 from .models import ProcessedDocument
 from google.cloud import documentai_v1beta3 as documentai
-
+from django.core.paginator import Paginator
 import re
 import os
 import json
@@ -36,6 +38,11 @@ from datetime import datetime
 from dateutil import parser
 import pandas as pd
 from google.api_core.client_options import ClientOptions
+
+from django.db.models import Value
+from django.db.models.functions import Cast
+
+
 import io
 from openpyxl import Workbook
 from django.http import HttpResponse
@@ -50,8 +57,165 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 import os
 from dotenv import load_dotenv
+import logging
+
+# Create a logger
+logger = logging.getLogger(__name__)
 load_dotenv()
 
+@login_required
+def manage_master_teacher(request):
+        masters = MT.objects.all()
+        return render(request, 'admin_template/manage_master.html', {'masters': masters})
+
+@login_required
+def assign_master(request):
+    all_grades = Grade.objects.all()
+    assigned_grades = set()
+
+    # Collect all assigned grades from MT instances
+    for mt in MT.objects.all():
+        assigned_grades.update(mt.assigned_grades)
+
+    # Filter grades based on whether they are assigned or not
+    unassigned_grades = [grade for grade in all_grades if grade.name not in assigned_grades]
+
+    context = {
+        'grades': unassigned_grades,
+        'masters': MT.objects.all(),
+    }
+    return render(request, 'admin_template/assign_master.html', context)
+
+
+@login_required
+def save_assignment(request):
+    if request.method == 'POST':
+        master_id = request.POST.get('master')
+        grade_id = request.POST.get('grade')
+
+        if master_id and grade_id:
+            try:
+                master = get_object_or_404(MT, id=master_id)
+                grade = get_object_or_404(Grade, id=grade_id)
+                
+                assigned_grades = master.assigned_grades or []
+                assigned_grades.append(grade.name)
+                master.assigned_grades = assigned_grades
+                master.save()
+
+                messages.success(request, 'Assignment saved successfully')
+                return JsonResponse({'success': True})
+            except MT.DoesNotExist or Grade.DoesNotExist:
+                messages.error(request, 'Invalid master or grade')
+        else:
+            messages.error(request, 'Invalid data')
+    else:
+        messages.error(request, 'Invalid request method')
+
+    return JsonResponse({'success': False})
+def add_master(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid Method ")
+        return redirect('home_mt')
+    else:
+        default = os.getenv("MT")
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        middle_ini = request.POST.get('middle_ini')
+        username = request.POST.get('username')
+        email = request.POST.get('email', '')
+        password = request.POST.get('password', default)
+        user = request.user
+
+        try:
+            # Create a CustomUser
+            user = CustomUser.objects.create_user(
+                username=username,
+                password=password,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                middle_ini=middle_ini,
+                user_type=4,  # This represents an admin user
+            )
+
+            logger.debug('Admin added successfully!')
+            return JsonResponse({'success': True, 'message': 'Admin Added Successfully!'})
+        except IntegrityError as e:
+            logger.exception('Failed to add Admin: %s', e)
+            messages.error(request, "Failed to Add Admin!")
+
+            # Return a JSON response for error
+            return JsonResponse({'success': False, 'message': 'Failed to Add Admin!'})
+
+
+@require_GET
+def get_master_data(request):
+    master_id = request.GET.get('masterId')
+    master = get_object_or_404(MT, id=master_id)
+    data = {
+        'id': master.id,
+        'username': master.user.username,
+        'first_name': master.user.first_name,
+        'last_name': master.user.last_name,
+    }
+    return JsonResponse(data)
+
+@require_POST
+def update_master(request):
+    master_id = request.POST.get('masterId')
+    username = request.POST.get('userName')
+    first_name = request.POST.get('firstName')
+    last_name = request.POST.get('lastName')
+
+    master = get_object_or_404(MT, id=master_id)
+    before_master = f"{master.user.first_name} {master.user.last_name} {master.user.username}"
+    master.user.username = username
+    master.user.first_name = first_name
+    master.user.last_name = last_name
+    master.user.save()
+
+    user = request.user
+    action = f'{user} update master name "{master.user.username}, {before_master}" to {master.user.first_name} {master.user.last_name}"'
+    details = f'{user} updated master name "{before_master}" to {master.user.first_name} {master.user.last_name} {master.user.username} in the system.'
+    log_activity(user, action, details)
+
+    logs = user, action, details    
+    print(logs)
+
+    return JsonResponse({'message': 'master updated successfully'})
+
+@csrf_exempt
+@login_required
+def delete_master(request):
+    if request.method == 'POST':
+        master_id = request.POST.get('masterId')
+
+        # Check if the master exists
+        master = get_object_or_404(MT, id=master_id)
+
+        try:
+            user = request.user
+            action = f'{user} delete master "{master.user.first_name} {master.user.last_name}"'
+            details = f'{user} delete master {master.user.first_name} {master.user.last_name} in the system.'
+            log_activity(user, action, details)
+
+            logs = user, action, details    
+            print(logs)
+            # Perform the master deletion
+            user_id = master.user.id  # Get the associated user ID
+            master.delete()
+
+
+            # Delete the associated CustomUser
+            user = get_object_or_404(get_user_model(), id=user_id)
+            user.delete()
+
+            response_data = {'message': 'master and associated user deleted successfully'}
+            return JsonResponse(response_data)
+        except Exception as e:
+            response_data = {'message': f'Error deleting master and user: {str(e)}'}
+            return JsonResponse(response_data, status=500)
 
 
 @login_required
@@ -65,6 +229,7 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
+    
    
    
     context = {
@@ -76,6 +241,7 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
+        
        
 
     }
@@ -596,10 +762,10 @@ def add_teacher_save(request):
         messages.error(request, "Invalid Method ")
         return redirect('teachers')
     else:
-        default = os.getenv("DEFAULT_PASSWORD")
+        default = os.getenv("TEACHER")
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        middle_ini = request.POST.get('middle_ini')
+        middle_ini = request.POST.get('middle_ini', '')
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password', default)
@@ -653,48 +819,6 @@ def get_sections(request):
     
 
 
-def assign_teacher(request):
-    # Retrieve the grades, teachers, and sections queryset
-    grades = Grade.objects.all()
-    teachers = Teacher.objects.all()
-    sections = Section.objects.all()
-
-    # Include the grades, sections, and teachers in the context
-    context = {
-        'grades': grades,
-        'sections': sections,
-        'teachers': teachers,
-    }
-    return render(request, 'admin_template/assign_teacher.html', context)
-
-def save_assignment(request):
-    if request.method == 'POST':
-        # Retrieve the data from the form
-        teacher_id = request.POST.get('teacher')
-        grade_id = request.POST.get('grade')
-        section_id = request.POST.get('section')
-
-        # Validate the data
-        if teacher_id and grade_id and section_id:
-            try:
-                section = Section.objects.get(id=section_id)
-                teacher = Teacher.objects.get(id=teacher_id)
-                # Assign the teacher to the section
-                section.teacher = teacher
-                section.save()
-                # Store a success message
-                messages.success(request, 'Assignment saved successfully')
-                return JsonResponse({'success': True})
-            except (Section.DoesNotExist, Teacher.DoesNotExist):
-                messages.error(request, 'Invalid teacher or section')
-        else:
-            # Handle the case where data is missing
-            messages.error(request, 'Invalid data')
-    else:
-        # Handle other request methods if needed
-        messages.error(request, 'Invalid request method')
-
-    return JsonResponse({'success': False})
 
 
 def add_grade_section(request):
@@ -1064,12 +1188,22 @@ def delete_announcement(request, announcement_id):
 
 
 def user_list(request):
-    teachers = CustomUser.objects.filter(user_type=2)  # Assuming 1 represents "Teacher" in your model
+    teachers = CustomUser.objects.filter(user_type=2)
     return render(request, 'teacher_list.html', {'teachers': teachers})
 
 def user_activities(request):
     user_id = request.GET.get('id')
     if user_id:
+        activities = ActivityLog.objects.filter(user_id=user_id)
+        
+        # Pagination
+        paginator = Paginator(activities, 7)  # Show 10 activities per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'admin_template/user_activities.html', {'page_obj': page_obj, 'user_id': user_id})
+    else:
+        return render(request, 'admin_template/user_activities.html', {'error_message': 'User ID is required'})
         activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
         return render(request, 'admin_template/user_activities.html', {'activities': activities, 'user_id': user_id})
     else:

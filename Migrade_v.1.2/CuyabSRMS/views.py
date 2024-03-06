@@ -1,15 +1,15 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
-from .models import ActivityLog, Admin, Announcement, Teacher  # Import the ActivityLog and Teacher models
+from .models import ActivityLog, Admin, Announcement, Teacher
 from .utils import log_activity
 import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import SchoolInformation
+from django.core.paginator import Paginator
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,36 +17,57 @@ load_dotenv()
 def custom_404(request, exception=None):
     return render(request, 'custom_404.html', status=404) 
     
-  
+def home_superadmin(request):
+    return render(request, 'superadmin_template/home_superadmin.html') 
+
 def teachers_activity(request):
     if request.user.is_authenticated:
         user = request.user
         activity_logs = ActivityLog.objects.filter(user=user).order_by('-timestamp')
-        return render(request, 'teacher_template/teachers_activity.html', {'activity_logs': activity_logs})
+        
+        # Pagination
+        paginator = Paginator(activity_logs, 7)  # Show 7 activity logs per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'teacher_template/teachers_activity.html', {'page_obj': page_obj})
     else:
         return HttpResponse("Please log in to view your activity logs.")
 
 @login_required
 def admin_activity(request):
     try:
-        admin = Admin.objects.get(username=request.user)
-        custom_user = admin.username  # Assuming 'username' is the ForeignKey to CustomUser in Admin model
+        admin = Admin.objects.get(user=request.user)
+        custom_user = admin.user
         activity_logs = ActivityLog.objects.filter(user=custom_user).order_by('-timestamp')
-        return render(request, 'admin_template/admin_activity.html', {'activity_logs': activity_logs})
+        
+        # Pagination
+        paginator = Paginator(activity_logs, 7)  # Show 7 activity logs per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'admin_template/admin_activity.html', {'page_obj': page_obj})
     except Admin.DoesNotExist:
         return HttpResponse("User does not have associated admin information.")
     except ActivityLog.DoesNotExist:
-        return render(request, 'admin_template/admin_activity.html', {'activity_logs': []})
+        return render(request, 'admin_template/admin_activity.html', {'page_obj': []})
+    
     
 def ShowLoginPage(request):
     if request.user.is_authenticated:
-        # User is already logged in, so redirect them to the home page or the appropriate page
-        if request.user.user_type == 2:  # Assuming '2' represents a teacher user type
+        # User is already logged in, so redirect them to the appropriate page based on user type
+        if request.user.user_type == 1:  # SuperAdmin user type
+            return redirect('home_superadmin')
+        elif request.user.user_type == 2:  # Teacher user type
             return redirect('home_teacher')
-        else:
+        elif request.user.user_type == 3:  # Admin user type
             return redirect('home_admin')
-    else:
-        return render(request, 'login_page.html')
+        elif request.user.user_type == 4:  # MT user type
+            return redirect('home_mt')
+        else:
+            # Handle other user types or redirect to a generic home page
+            pass
+    return render(request, 'login_page.html')
 
 def doLogin(request):
     if request.method == "POST":
@@ -73,45 +94,49 @@ def doLogin(request):
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 
                 # Log the user login activity
-                user = request.user
                 action = f'{user} logged in'
                 details = f'{user} logged in to the system.'
                 log_activity(user, action, details)
                 
-                if user.user_type == 2:
+                if user.user_type == 1:
+                    return redirect('home_superadmin')
+                elif user.user_type == 2:
                     return redirect('home_teacher') 
-                else:
+                elif user.user_type == 3:
                     return redirect('home_admin')
+                elif user.user_type == 4:
+                    return redirect('home_mt')
+                else:
+                    # Handle other user types or redirect to a generic home page
+                    pass
             else:
                 messages.error(request, "Invalid Login Credentials!")
-                return redirect('ShowLoginPage')
         else:
             messages.error(request, "Invalid reCAPTCHA. Please try again.")
-            return redirect('ShowLoginPage')
-    else:
-        return HttpResponse("<h2>Method Not Allowed</h2>")
+    return redirect('ShowLoginPage')
 
 def get_user_details(request):
     if request.user.is_authenticated:
         return HttpResponse("User: " + request.user.email + " User Type: " + request.user.user_type)
     else:
         return HttpResponse("Please Login First")
-
+    
 def logout_user(request):
-    logout(request)
+    request.session.flush()  # or request.session.clear()
     messages.success(request, "Logout successfully!")
-    return HttpResponseRedirect('/')
+    return redirect('/')
 
 @login_required
 def profile_page(request):
     user = request.user  # Get the logged-in user
     user_type = user.user_type  # Get the user type
+    context = {}
+
     if user_type == 2:  # Assuming '2' represents a teacher user type
-        teacher = Teacher.objects.get(user=user)  # Get the teacher object associated with the user
-        context = {
-            'teacher': teacher,
-        }
-        return render(request, 'teacher_template/teacher_profile.html')
+        teacher = get_object_or_404(Teacher, user=user)  # Get the teacher object associated with the user
+        context['teacher'] = teacher
+
+    return render(request, 'teacher_template/teacher_profile.html', context)
 
 
 
@@ -205,15 +230,16 @@ def change_password(request):
 
 @login_required
 def admin_profile_page(request):
-    try:
-        admin = Admin.objects.get(username=request.user)  # Get the admin object associated with the user
-        context = {
-            'admin': admin,
-        }
-        return render(request, 'admin_template/admin_profile.html', context)
-    except Admin.DoesNotExist:
-        # Handle the case when the user is not an admin
-        return HttpResponse("You are not an admin.")
+    user = request.user  # Get the logged-in user
+    user_type = user.user_type  # Get the user type
+    context = {}
+
+    if user_type == 3:  # Assuming '2' represents a admin user type
+        admin = get_object_or_404(Admin, user=user)  # Get the admin object associated with the user
+        context['admin'] = admin
+
+    return render(request, 'admin_template/admin_profile.html', context)
+    
 
 def admin_update_profile_photo(request):
     if request.method == "POST":

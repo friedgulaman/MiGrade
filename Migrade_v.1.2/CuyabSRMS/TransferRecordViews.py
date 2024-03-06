@@ -195,32 +195,35 @@ def inbox_open(request):
         # Check if the logged-in user is a teacher
         if hasattr(user, 'teacher'):
             teacher = user.teacher.id
-            print(teacher)
             # Get inbox messages where the logged-in teacher is the intended recipient
             inbox_messages = InboxMessage.objects.filter(to_teacher=teacher)
+            accepted_messages = AcceptedMessage.objects.filter(accepted_by_id=teacher)
 
-            return render(request, 'teacher_template/adviserTeacher/inbox.html', {'inbox_messages': inbox_messages})
+            # Convert json_data to dictionary for each accepted message
+            for message in accepted_messages:
+                message.json_data = json.loads(message.json_data)
+
+            # Convert json_data to dictionary for each inbox message
+            for message in inbox_messages:
+                message.json_data = json.loads(message.json_data)
+
+            context = {
+                'inbox_messages': inbox_messages,
+                'accepted_messages': accepted_messages
+            }
+            return render(request, 'teacher_template/adviserTeacher/inbox.html', context)
 
         else:
             # Handle the case where the logged-in user is not a teacher
-            return render(request, 'teacher_template/adviserTeacher/inbox.html', {'inbox_messages': []})
+            return render(request, 'teacher_template/adviserTeacher/inbox.html', {'inbox_messages': [], 'accepted_messages': []})
 
     except Exception as e:
         # Handle any exceptions
         print(f"Error in inbox_open: {e}")
-        return render(request, 'teacher_template/adviserTeacher/inbox.html', {'inbox_messages': []})
+        return render(request, 'teacher_template/adviserTeacher/inbox.html', {'inbox_messages': [], 'accepted_messages': []})
 
 
 
-
-@login_required
-def inbox(request):
-    teacher_username = request.user.username  # Assuming the username is used for filtering
-    teacher = get_user_model().objects.get(username=teacher_username)
-    
-    messages = InboxMessage.objects.filter(teacher=teacher).order_by('-timestamp')
-
-    return render(request, 'teacher_template/adviserTeacher/inbox.html', {'messages': messages})
 
 
 
@@ -255,6 +258,16 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
 
     return render(request, "teacher_template/adviserTeacher/transfer_quarterly_grade.html", context)
 
+@require_POST
+def reject_message(request):
+    message_id = request.POST.get('message_id')
+
+    try:
+        message = InboxMessage.objects.get(pk=message_id)
+        message.delete()
+        return JsonResponse({'success': True, 'message': 'Message rejected and deleted.'})
+    except InboxMessage.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Message not found'})
 
 @require_POST
 def accept_message(request):
@@ -403,11 +416,14 @@ def save_data(message, json_data, teacher):
 
 def save_accepted_message(message):
     try:
+        accepted_by_id=message.to_teacher
+        teacher_instance = get_object_or_404(Teacher, pk=accepted_by_id)
         # Attempt to create the AcceptedMessage instance
         AcceptedMessage.objects.create(
             message_id=message.id,
             file_name=message.file_name,
-            json_data=message.json_data
+            json_data=message.json_data,
+            accepted_by=teacher_instance
         )
     except IntegrityError as e:
         # Handle duplicate primary key error

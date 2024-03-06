@@ -5,7 +5,7 @@ from .views import ShowLoginPage
 def admin_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.user_type == 1:
+        if request.user.is_authenticated and request.user.user_type == 3:
             return view_func(request, *args, **kwargs)
         else:
             # Redirect to a login page or show an access denied message

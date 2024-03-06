@@ -1,0 +1,23 @@
+{% extends 'master_template/master_base.html' %}
+{% block page_title %}
+    Quarters for Section
+{% endblock page_title %}
+{% block main_content %}
+<div class="container">
+    <h1>Subjects for Section "{{ section }}"</h1>
+    <ul>
+        {% for subject in subjects %}
+            <li onclick="showQuarters('{{ section }}', '{{ subject }}')">{{ subject }}</li>
+        {% empty %}
+            <li>No subjects found for this section.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+function showQuarters(section, subject) {
+    // Redirect to the quarters page passing the selected section and subject as parameters
+    window.location.href = "{% url 'subject_quarters' %}?section=" + section + "&subject=" + subject;
+}
+</script>
+{% endblock main_content %}

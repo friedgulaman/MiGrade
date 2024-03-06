@@ -1,0 +1,21 @@
+{% extends 'master_template/master_base.html' %}
+{% block page_title %}
+    Master Teacher
+{% endblock page_title %}
+{% block main_content %}
+<h1>Distinct Grades</h1>
+<ul>
+    {% for grade in distinct_grades %}
+        <li onclick="getDistinctSections('{{ grade }}')" id="grade_{{ forloop.counter }}">{{ grade }}</li>
+    {% empty %}
+        <li>No matching class records found.</li>
+    {% endfor %}
+</ul>
+
+<script>
+function getDistinctSections(grade) {
+    // Redirect to the new view passing the grade as parameter
+    window.location.href = "{% url 'distinct_sections' %}?grade=" + grade;
+}
+</script>
+{% endblock main_content %}

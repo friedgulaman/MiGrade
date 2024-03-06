@@ -1,0 +1,15 @@
+{% extends 'master_template/master_base.html' %}
+{% block page_title %}
+    Master Teacher
+{% endblock page_title %}
+{% block main_content %}
+<h1>Distinct Grades</h1>
+<ul>
+    {% for grade in distinct_grades %}
+        <li onclick="getDistinctSections('{{ grade }}')" id="grade_{{ forloop.counter }}">{{ grade }}</li>
+        <li>{{ grade.grades_data }}</li>
+    {% empty %}
+        <li>No matching class records found.</li>
+    {% endfor %}
+</ul>
+{% endblock main_content %}

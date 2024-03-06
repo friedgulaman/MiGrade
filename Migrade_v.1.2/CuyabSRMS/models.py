@@ -18,25 +18,72 @@ from django.db.models.functions import Cast
 
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
-        (1, "Admin"),
+        (1, "Super"),
         (2, "Teacher"), 
+        (3, "Admin"),
+        (4, "MT"),
     )
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES)
     middle_ini = models.CharField(max_length=1, blank=True, null=True)  # Add the middle_ini field here
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default_profile_img.jpg')
 
     def __str__(self):
-        return self.username  # You can choose any field that you want to display here
-    
-class Admin(models.Model):
-    username = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=225)
+        return self.username
+
+class SuperAdmin(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Admin: {self.username.username}, Email: {self.email}, Created: {self.created_at}"
+        return f"SuperAdmin: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+
+class Admin(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Admin: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+
+class MT(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    assigned_grades = models.JSONField(default=list, null=True, blank=True)  # JSONField to store assigned grades
+
+    def __str__(self):
+        return f"MT: {self.user.username}, Created: {self.created_at}"
+
+class Teacher(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    grade_section = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
+    
+@receiver(post_save, sender=CustomUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.user_type == 2:  # Check if the user is a teacher
+            Teacher.objects.create(user=instance)  # Create a Teacher object associated with the CustomUser
+        elif instance.user_type == 3:
+            Admin.objects.create(user=instance)
+        elif instance.user_type == 4:
+            MT.objects.create(user=instance)
+
+
+@receiver(post_save, sender=CustomUser)
+def save_user_profile(sender, instance, **kwargs):
+    if instance.user_type == 1:
+        super_admin, created = SuperAdmin.objects.get_or_create(user=instance)
+    elif instance.user_type == 3:
+        admin, created = Admin.objects.get_or_create(user=instance)
+    elif instance.user_type == 4:
+        mt, created = MT.objects.get_or_create(user=instance)
+
 
 class SchoolInformation(models.Model):
     region = models.CharField(max_length=100)
@@ -47,14 +94,6 @@ class SchoolInformation(models.Model):
     school_year = models.CharField(max_length=100)
     principal_name = models.CharField(max_length=100)
     
-class Teacher(models.Model):
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    grade_section = models.JSONField(null=True, blank=True)
-
-    def __str__(self):
-        return f"Teacher: {self.user.first_name} {self.user.last_name}, Email: {self.user.email}, Created: {self.created_at}"
 
 class Student(models.Model):
     
@@ -146,7 +185,6 @@ class ArchivedStudent(models.Model):
         return restored_student
     
 class Grade(models.Model):
-    
     name = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
@@ -517,17 +555,6 @@ class ArchivedQuarterlyGrades(models.Model):
         return f"Archived {self.archived_student.name}'s grades for {self.archived_quarter}"
 
 
-@receiver(post_save, sender=CustomUser)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created and instance.user_type == 2:  # Check if the user is a teacher
-        Teacher.objects.create(user=instance)  # Create a Teacher object associated with the CustomUser
-
-@receiver(post_save, sender=CustomUser)
-def save_user_profile(sender, instance, **kwargs):
-    if instance.user_type == 1:
-        instance.admin.save()
-    if instance.user_type == 2:
-        instance.teacher.save()
 
 
 class ProcessedDocument(models.Model):
@@ -631,9 +658,9 @@ class ActivityLog(models.Model):
 class InboxMessage(models.Model):
     to_teacher = models.CharField(max_length=50, null=True, blank=True)
     from_teacher = models.CharField(max_length=50, null=True, blank=True)
-    file_name = models.CharField(max_length=50, null=True, blank=True)
+    file_name = models.CharField(max_length=50, null=True, blank=True)  
     json_data = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    date_received = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Inbox message from {self.from_teacher.username} to {self.to_teacher}"
@@ -642,10 +669,13 @@ class AcceptedMessage(models.Model):
     message_id = models.IntegerField(primary_key=True)
     file_name = models.CharField(max_length=255)
     json_data = models.JSONField()
+    accepted_by = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
     accepted_at = models.DateTimeField(auto_now_add=True)
+    
 
     def __str__(self):
         return f"AcceptedMessage {self.message_id}"
+
     
 class AdvisoryClass(models.Model):
     
