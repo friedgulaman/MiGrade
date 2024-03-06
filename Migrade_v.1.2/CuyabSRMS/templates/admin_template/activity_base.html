@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{% block title %}CUYAB SRMS - MIGRADE{% endblock %}</title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/feather/feather.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/mdi/css/materialdesignicons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/ti-icons/css/themify-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/typicons/typicons.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/simple-line-icons/css/simple-line-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/css/vendor.bundle.base.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
+  <link rel="stylesheet" href="{% static 'star-admin/css/perfect-scrollbar.min.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="icon" type="image/png" href="static/star-admin/images/ces_logo.png">
+
+</head>
+<style>
+body{
+  background: #F4F5F7;;
+}
+/* Customize scrollbar appearance */
+body::-webkit-scrollbar {
+    width: 8px; /* Adjust the width of the scrollbar */ 
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #c7c5c5; /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Rounded corners of the thumb */
+}
+
+body::-webkit-scrollbar-track {
+    background-color: #F4F5F7; /* Color of the scrollbar track */
+}
+
+  .description {
+    max-width: 200px; /* Adjust the max-width as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#nav_admin, #nav_wrapper, #sidebar{
+  background: #F4F5F7;
+
+}
+
+
+
+#sidebar .nav-item .nav-link{
+  border-radius: 0%;
+}
+#sidebar .nav-item .nav-link:hover{
+  background: #bcf2b2;
+}
+.navbar-toggler .icon-menu{
+  color: #1F3BB3;
+  font-weight: bold;
+}
+
+.preview-list{
+  width: 500px;
+  max-width: 500px;
+  overflow: scroll;
+  overflow-x: hidden;
+  height: 200px;
+}
+
+/* Customize scrollbar appearance */
+.preview-list::-webkit-scrollbar {
+    width: 8px; /* Adjust the width of the scrollbar */ 
+}
+
+.preview-list::-webkit-scrollbar-thumb {
+    background-color: #c7c5c5; /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Rounded corners of the thumb */
+}
+
+.preview-list::-webkit-scrollbar-track {
+    background-color: #F4F5F7; /* Color of the scrollbar track */
+}
+</style>
+
+<body>
+   
+    {% block content %}
+
+        {% block main_content %}
+        <div class="main-panel">
+            <div class="content-wrapper">
+              <div class="row">
+                <div class="col-sm-12">
+
+                        {% block page_title %} 
+                        {% endblock page_title %}
+
+              </div>
+            </div>
+        {% endblock main_content %}
+    </div>
+      </div>
+      <!-- main-panel ends -->
+
+    
+    
+    
+    
+    {% endblock %}
+
+
+
+    <!-- plugins:js -->
+    <script src="{% static 'star-admin/vendors/js/vendor.bundle.base.js' %}"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="{% static 'star-admin/vendors/chart.js/Chart.min.js' %}"></script>
+    <script src="{% static 'star-admin/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'star-admin/vendors/progressbar.js/progressbar.min.js' %}"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="{% static 'star-admin/js/off-canvas.js' %}"></script>
+    <script src="{% static 'star-admin/js/hoverable-collapse.js' %}"></script>
+    <script src="{% static 'star-admin/js/template.js' %}"></script>
+    <script src="{% static 'star-admin/js/settings.js' %}"></script>
+    <script src="{% static 'star-admin/js/todolist.js' %}"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page-->
+    <script src="{% static 'star-admin/js/jquery.cookie.js' %}" type="text/javascript"></script>
+    <script src="{% static 'star-admin/js/dashboard.js' %}"></script>
+    <script src="{% static 'star-admin/js/Chart.roundedBarCharts.js' %}"></script>
+  
+    <!-- New Custom Js File Migrade  -->
+    <script src="{% static 'migrade_js/js/upload_button.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+    <!-- End custom js for this page-->
+  </body>
+
+</html>

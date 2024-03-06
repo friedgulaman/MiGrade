@@ -1,0 +1,372 @@
+{% extends 'admin_template/admin_base.html' %}
+{% block page_title %}Manage Master Teachers{% endblock page_title %}
+{% block main_content %}
+<style>
+    .delete-btn {
+    text-decoration: none;
+    cursor: pointer;
+    color: red;
+    border: none;
+    background: none;
+    transition: color 0.3s; /* Smooth color transition */
+
+    /* Shake animation on hover */
+    position: relative;
+}
+
+.delete-btn:hover {
+    color: darkred; /* Change color on hover */
+    animation: shake 0.5s;
+}
+
+/* Define the shake animation */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+.master-link{
+  text-decoration: none;
+}
+
+
+</style>
+<section class=" container p-4">
+  {% include 'admin_template/_green.html' %}
+ <h3 class="mb-4 ">Manage master</h3>
+ <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+     <ul class="nav nav-tabs text" role="tablist">
+         <li class="nav-ite m">
+             <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
+                 aria-controls="create" aria-selected="true">Create</a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+                 aria-selected="false">Display</a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#update" role="tab"
+                 aria-selected="false">Update</a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#delete" role="tab"
+                 aria-selected="false">Delete</a>
+         </li>
+     </ul>
+ </div>
+
+ <div class="tab-content tab-content-basic">
+     <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+         <div class="container ">
+             <div class="card">
+                 <div class="card-body">
+                    <h4 class="card-title p-3">Add master</h4>
+                    <form method="post" action="{% url 'add_master' %}" class="forms-sample" id="addmasterForm">
+            
+                      {% csrf_token %}
+            
+                      <!-- Display Messages -->
+                      {% if messages %}
+                      <div class="form-group">
+                        {% for message in messages %}
+                          {% if message.tags == "error" %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                              {{ message }}
+                              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+            
+                      <div class="form-group">
+                        <label for="exampleInputUsername1">Username</label>
+                        <input type="text" name="username" class="form-control" id="exampleInputUsername1" placeholder="Username" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" name="email" class="form-control" id="exampleInputEmail1" placeholder="Email" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputFirstName">First Name</label>
+                        <input type="text" name="first_name" class="form-control" id="exampleInputFirstName" placeholder="First Name" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputLastName">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" id="exampleInputLastName" placeholder="Last Name" required>
+                      </div>
+                      <div class="form-group">
+                        <label class="d-flex justify-content-between align-items-center" for="exampleInputMiddleInitial">Middle Initial<span class="text-muted text-small"><span class="text-danger">*</span>Optional</span></label>
+                        <input type="text" name="middle_ini" class="form-control" id="exampleInputMiddleInitial" placeholder="Middle Initial" >
+                      </div>
+                      
+                      <div class="form-group" style="display: none;">
+                        <label for="exampleInputPassword1">Password</label>
+                        <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required disabled>
+                        <small class="form-text text-muted">Default password will be set automatically. Field is disabled.</small>
+                    </div>
+                    
+                      <button type="submit" class="btn btn-primary me-2">Submit</button>
+                    </form>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+     <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+         <div class="container-fluid ">
+             <div class="card">
+                 <div class="card-body">
+                     <h4 class="card-title p-3">List of masters</h4>
+                     <div class="table-responsive">
+                         <table class="table table-hover text-center">
+                             <thead>
+                                 <tr>
+                                     <th>ID</th>
+                                     <th>Username</th>
+                                     <th>Email</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 {% for master in masters %}
+                                 <tr>
+                                     <td>
+                                         {{ master.user.id }}
+                                     </td>
+                                    <td>{{ master.user.username }}
+                                    </td>
+                                    <td>
+                                        {{ master.user.email }}
+                                    </td>
+                                 </tr>
+                                 {% endfor %}
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+         </div>
+
+     <div class="tab-pane fade show" id="update" role="tabpanel" aria-labelledby="update">
+         <div class="container-fluid  ">
+             <div class="card">
+                 <div class="card-body">
+                    <h4 class="card-title p-3">Update master</h4>
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for master in masters %}
+                                <tr>
+                               <td>{{ master.user.id }}</td>
+                                    <td>
+                                        <a href="#" class="master-link" data-toggle="modal" data-target="#updateModal" data-master-id="{{ master.id }}">
+                                            {{ master.user.username }}
+                                        </a>
+                                    </td>
+                                    <td class="text-muted">{{ master.user.email }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                 </div>
+             </div>
+         </div>
+     </div>
+
+     <div class="tab-pane fade show" id="delete" role="tabpanel" aria-labelledby="delete">
+         <div class="container-fluid ">
+             <div class="card">
+                 <div class="card-body">
+                    <h4 class="card-title p-3">Delete master</h4>
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>master</th>
+                                <th>Email</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for master in masters %}
+                                <tr class="master-row" data-master-id="{{ master.id }}">
+                                    <td>{{ master.user.id }}</td>
+                                    <td>
+                                        {{ master.user.username }}
+                                    </td>
+                                    <td>{{ master.user.email }}</td>
+                                    <td>
+                                        
+                                        <button type="button" class="delete-btn" data-master-id="{{ master.id }}">
+                                            <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+</section>
+
+ <!-- Update master Modal -->
+ <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Update master Information</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="masterId" name="masterId">
+                    <div class="form-group">
+                        <label for="userName">User Name:</label>
+                        <input type="text" class="form-control" id="userName" name="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstName">First Name:</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name:</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Add this in the head section of your HTML file -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Intercept the form submission
+    $('#addmasterForm').submit(function (e) {
+      e.preventDefault(); // Prevent the form from submitting the traditional way
+
+      // Send an AJAX request
+      $.ajax({
+        type: 'POST',
+        url: $(this).attr('action'),
+        data: new FormData(this),
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          // Display success/error message
+          if (response.success) {
+            alert(response.message); // You can replace this with a more sophisticated notification system
+            // Optionally, you can redirect the user to another page on success
+            window.location.href = '{% url "home_admin" %}';
+          } else {
+            alert(response.message);
+          }
+        },
+        error: function (error) {
+          console.error('Error:', error);
+        }
+      });
+    });
+  });
+</script>
+<script>
+    $(document).ready(function () {
+      // Handle click on master link
+      $('.master-link').click(function () {
+        var masterId = $(this).data('master-id');
+        $('#updateModal').modal('show');
+        $.ajax({
+          url: '/get-master-data/',
+          type: 'GET',
+          data: { 'masterId': masterId },
+          success: function (data) {
+            // Populate the modal with existing data
+            $('#masterId').val(data.id);
+            $('#userName').val(data.username);
+            $('#firstName').val(data.first_name);
+            $('#lastName').val(data.last_name);
+          },
+          error: function (error) {
+            console.error('Error fetching master data:', error);
+          }
+        });
+      });
+  
+      // Handle form submission for updating master
+      $('#updateForm').submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+          url: '/update-master/',
+          type: 'POST',
+          data: $(this).serialize(),
+          success: function (data) {
+            
+            // Update the master name in the table
+            var masterId = $('#masterId').val();
+            var userName = $('#userName').val();
+            var newName = $('#firstName').val() + ' ' + $('#lastName').val();
+            $(`.master-link[data-master-id="${masterId}"]`).text(newName);
+            alert('Updated successfully to ' + newName);
+           
+            // Close the modal
+            $('#updateModal').modal('hide');
+          },
+          error: function (error) {
+            console.error('Error updating master data:', error);
+          }
+        });
+      });
+    });
+  </script>
+  <script>
+    $(document).ready(function () {
+      // Handle click on delete button
+      $('.delete-btn').click(function () {
+        var masterId = $(this).data('master-id');
+        
+        // Ask for confirmation before deleting
+        var confirmDelete = confirm('Are you sure you want to delete this master?');
+        
+        if (confirmDelete) {
+          $.ajax({
+            url: '/delete-master/',
+            type: 'POST',
+            data: { 'masterId': masterId },
+            success: function (data) {
+              // Remove the deleted master row from the table
+              $(`.master-row[data-master-id="${masterId}"]`).remove();
+              alert('master deleted successfully');
+            },
+            error: function (error) {
+              console.error('Error deleting master:', error);
+            }
+          });
+        }
+      });
+    });
+</script>
+{% endblock main_content %}

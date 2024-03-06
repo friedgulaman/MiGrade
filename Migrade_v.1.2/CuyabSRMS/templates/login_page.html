@@ -110,7 +110,7 @@
     <div class="second-col d-flex justify-content-center align-items-center d-none" style="height: 100vh;">
 
       <form method="post" action="{% url 'doLogin' %}">
-        {% csrf_token %}
+          {% csrf_token %}
         <div class="form-group">
           <input type="email" class="form-control form-control-lg" id="exampleInputEmail1" name="email"
             placeholder="Email" required>

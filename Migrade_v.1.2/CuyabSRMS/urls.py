@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import URLPattern, path, include
 
 
-from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews, SuperAdminViews, MasterTeacherViews
 
 from .DashboardViews import StudentChartDataView
 from django.contrib import admin
@@ -72,21 +72,36 @@ urlpatterns = [
     path('add_teacher', admin_required(AdminViews.add_teacher), name="add_teacher"),
     path('add_teacher_save', admin_required(AdminViews.add_teacher_save), name="add_teacher_save"),
     path('get_sections/', admin_required(AdminViews.get_sections), name='get_sections'),
-    path('assign_teacher', admin_required(AdminViews.assign_teacher), name="assign_teacher"),
-    path('save_assignment/', admin_required(AdminViews.save_assignment), name='save_assignment'),
     path('search/', admin_required(AdminViews.search_students), name='search_students'),
     path('upload_documents/', admin_required(AdminViews.upload_documents_ocr), name='upload_documents'),
     path('save_edited_data/', admin_required(AdminViews.save_edited_data), name='save_edited_data'),
     path('sf10/', admin_required(AdminViews.sf10_views), name='sf10_view'),
     path('add_subject/', admin_required(AdminViews.add_subject), name='add_subject'),
     path('subject_list/', admin_required(AdminViews.subject_list), name='subject_list'),
-    # path('edit/', AdminViews.edit_extracted_data, name='edit_extracted_data'),
     path('save/', admin_required( AdminViews.save_edited_data), name='save_edited_data'),
     path('announcement', admin_required(AdminViews.announcement), name="announcement"),
     path('create/', admin_required(AdminViews.create_announcement), name='create_announcement'),
     path('announcement/delete/<int:announcement_id>/', admin_required(AdminViews.delete_announcement), name='delete_announcement'),
     path('users/', admin_required(AdminViews.user_list), name='user_list'),
     path('user_activities', admin_required(AdminViews.user_activities), name='user_activities'),
+    path('school-information/',admin_required(AdminViews.school_information_view), name='school_information'),
+    path('sf10/edit_view/<int:id>/',admin_required(AdminViews.sf10_edit_view), name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', admin_required(AdminViews.sf10_edit), name='sf10_edit'),
+    path('sf10/delete/', admin_required(AdminViews.sf10_delete), name='sf10_delete'),
+    path('download/<int:id>/', admin_required(AdminViews.download_processed_document), name='download_processed_document'),
+    path('add/', admin_required(AdminViews.add_school_view), name='add_school'),
+    path('edit/<int:school_id>/', admin_required(AdminViews.edit_school_view), name='edit_school'),
+    path('delete/<int:school_id>/', admin_required(AdminViews.delete_school_view), name='delete_school'),    
+    path('sf10/delete/', admin_required(AdminViews.sf10_delete), name='sf10_delete'),     
+    path('batch_process_documents/', admin_required(AdminViews.batch_process_documents), name='batch_process_documents'),
+    path('detect-and-convert-tables/', admin_required(AdminViews.detect_and_convert_tables), name='detect_and_convert_tables'),
+    path('manage_master_teacher', admin_required(AdminViews.manage_master_teacher), name='manage_master_teacher'),
+    path('assign_master', admin_required(AdminViews.assign_master), name='assign_master'),
+    path('save_assignment/', admin_required(AdminViews.save_assignment), name='save_assignment'),
+    path('add_master', admin_required(AdminViews.add_master), name='add_master'),    
+    path('get-master-data/', admin_required(AdminViews.get_master_data), name='get_master_data'),
+    path('update-master/', admin_required(AdminViews.update_master), name='update_master'),
+    path('delete-master/', admin_required(AdminViews.delete_master), name='delete_master'),
     path('download-activities/', admin_required(AdminViews.download_activities), name='download_activities'),
     path('school-information/', AdminViews.school_information_view, name='school_information'),
     path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
@@ -162,6 +177,18 @@ urlpatterns = [
     path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
 
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
+    path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
+    path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
+    path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
+    path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
+    path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
+    path('reject_message', teacher_required(TransferRecordViews.reject_message), name='reject_message'),
+    path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
+    
+    path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),
+    path('transfer_record', teacher_required(TransferRecordViews.transfer_record), name='transfer_record'),
+    # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
+    path('get_teacher_list/', teacher_required(TransferRecordViews.get_teacher_list), name='get_teacher_list'),
 
 
     path('home_teacher', TeacherViews.home_teacher, name="home_teacher"),
@@ -244,6 +271,16 @@ urlpatterns = [
     path('initiate-restore/<int:archived_record_id>/', ArchivedViews.initiate_restore_request, name='initiate_restore_request'),
 
 
+    # superadmin
+    path('home_superadmin', SuperAdminViews.home_superadmin, name='home_superadmin'),
+    path('manage_admin', SuperAdminViews.manage_admin, name='manage_admin'),
+    path('super_manage_master_teacher', SuperAdminViews.super_manage_master_teacher, name='super_manage_master_teacher'),
+    path('manage_teacher', SuperAdminViews.manage_teacher, name='manage_teacher'),
+    path('add_admin', SuperAdminViews.add_admin, name='add_admin'),    
+    path('get-admin-data/', SuperAdminViews.get_admin_data, name='get_admin_data'),
+    path('update-admin/', SuperAdminViews.update_admin, name='update_admin'),
+    path('delete-admin/', SuperAdminViews.delete_admin, name='delete_admin'),
+
    
 # transfer record Views
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
@@ -265,7 +302,15 @@ urlpatterns = [
     # # Student
     # path('student_list/', StudentViews.student_list, name='student_list'),
 
-   path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
+    # master teacher
+    path('home_mt', MasterTeacherViews.home_mt, name='home_mt'),
+    path('advisory_classes_mt', MasterTeacherViews.advisory_classes_mt, name='advisory_classes_mt'),
+    path('subject_classes_mt', MasterTeacherViews.subject_classes_mt, name='subject_classes_mt'),
+    path('distinct_sections', MasterTeacherViews.distinct_sections, name='distinct_sections'),
+    path('subject_quarters', MasterTeacherViews.subject_quarters, name='subject_quarters'),
+    path('subject_subjects', MasterTeacherViews.subject_subjects, name='subject_subjects'),
+
+    path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
 ]
 
 

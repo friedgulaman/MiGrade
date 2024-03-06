@@ -11,6 +11,7 @@ from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
+from .models import AdvisoryClass, Grade, GradeScores, SchoolInformation, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades, AttendanceRecord, LearnersObservation, CoreValues
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
@@ -23,7 +24,7 @@ from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
 import logging
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+
 from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages
@@ -60,6 +61,8 @@ from openpyxl import load_workbook
 from django.utils.timezone import now
 from django.core.exceptions import MultipleObjectsReturned
 import logging
+import requests
+from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -86,8 +89,37 @@ def classes(request):
 # adviser
 @login_required
 def home_adviser_teacher(request):
-    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
+    url = "https://www.deped.gov.ph/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"
+    }
 
+    response = requests.get(url, headers=headers)
+    recent_posts_data = []
+    recent_deped_memoranda = []
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Recent Posts
+        recent_posts_container = soup.find('aside', id='panel-bottom-1')
+        if recent_posts_container:
+            posts = recent_posts_container.find('ul', id='lcp_instance_listcategorypostswidget-2').find_all('li')
+            for post in posts:
+                title = post.find('a').text.strip()
+                link = post.find('a')['href']
+                recent_posts_data.append({'title': title, 'link': link})
+
+        # Recent DepEd Memoranda
+        recent_deped_memoranda_container = soup.find('aside', id='panel-bottom-2')
+        if recent_deped_memoranda_container:
+            posts = recent_deped_memoranda_container.find('ul', id='lcp_instance_listcategorypostswidget-3').find_all('li')
+            for post in posts:
+                title = post.find('a').text.strip()
+                link = post.find('a')['href']
+                recent_deped_memoranda.append({'title': title, 'link': link})
+
+    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', {'recent_posts_data': recent_posts_data, 'recent_deped_memoranda': recent_deped_memoranda})
 @login_required
 def dashboard(request):
      # Get the currently logged-in teacher

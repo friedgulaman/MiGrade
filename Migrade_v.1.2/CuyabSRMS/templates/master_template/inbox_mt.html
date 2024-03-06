@@ -1,0 +1,181 @@
+{% extends 'master_template/master_base.html' %}
+{% block page_title %}
+Inbox Messages
+{% endblock page_title %}
+{% block main_content %}
+<style>
+    .card{
+    max-height: 500px;
+    overflow: auto;
+  }
+    .message {
+        border-bottom: 1px solid #eaeaf1;
+    }
+
+    .message:hover {
+        background: #eaeaf1;
+    }
+
+    .accept-btn {
+        color: green;
+        opacity: 0.6;
+        transition: 0.3s;
+    }
+
+    .accept-btn:hover {
+        opacity: 1;
+        color: green;
+        scale: 1.3;
+    }
+
+    .reject-btn {
+        color: red;
+        opacity: 0.6;
+        transition: 0.3s;
+    }
+
+    .reject-btn:hover {
+        opacity: 1;
+        color: red;
+        scale: 1.3;
+    }
+</style>
+<section class="content container mt-2 vh-100">
+    <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+        <ul class="nav nav-tabs text" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
+                    aria-controls="overview" aria-selected="true">Inbox</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab"
+                    aria-selected="false">History</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content tab-content-basic">
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="p-1">Inbox Messages</h3>
+                </div>
+                <div>
+                    {% if inbox_messages %}
+                    <ul>
+                        {% for message in inbox_messages %}
+                        {% if not message.approved %}
+                        <li class="d-flex justify-content-between align-items-center me-3 p-3  message ">
+                            <div>
+                                {% load custom_filters %}
+
+                                <p><strong>File Name:</strong> {{ message.file_name|slice:"2:-2"|replace:"'"|replace:","}}</p>
+
+                                <p class="form-text"><strong>Subject Teacher:</strong> {{ message.from_teacher }}</p>
+                                <p class="form-text"><strong>Adviser:</strong> {{ message.to_teacher }}</p>
+                                <p class="form-text"><strong>Received at:</strong> {{ message.date_received }}</p>
+                            </div>
+                            <div>
+                                <button class="btn  accept-btn" data-message-id="{{ message.id }}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn  reject-btn" data-message-id="{{ message.id }}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+
+                            </div>
+
+                            <!-- Add a data attribute for json_data -->
+                            <p class="json-data" style="display: none;">{{ message.json_data }}</p>
+                        </li>
+                        {% endif %}
+                  {% endfor %}
+              </ul>
+              {% else %}
+              <p class="p-4">No messages were approved.</p>
+              {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="p-1">Inbox Messages</h3>
+                </div>
+                <div class="table-responsive">
+                    {% if approved_messages %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Master Teacher</th>
+                                <th>Approved at</th>
+                                <th>To Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for message in approved_messages %}
+                            <tr class="message">
+                                <td>
+                                    {% load custom_filters %}
+                                     {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
+                                </td>
+                                <td>
+                                    <p>{{ message.approved_by.user.username }}</p>
+                                </td>
+                                <td>
+                                    <p> {{ message.approved_at }}</p>
+                                </td>
+                                <td>
+                                    <p> {{ message.to_teacher_id }}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="p-3">No messages were approved.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+</div>
+
+
+</section>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        $(".accept-btn").click(function () {
+            var message_id = $(this).data("message-id");
+            // Retrieve json_data from hidden element
+            var json_data = $(this).closest('li').find('.json-data').text();
+            $.ajax({
+                url: "/accept_message_mt",
+                type: "POST",
+                data: {
+                    'message_id': message_id,
+                    'json_data': json_data,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message); // Modified alert message
+                        location.reload()
+                    } else {
+                        alert("Error: " + response.error);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("Error occurred while processing the request.");
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock main_content %}
