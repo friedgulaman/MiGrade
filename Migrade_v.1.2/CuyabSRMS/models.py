@@ -92,6 +92,7 @@ class SchoolInformation(models.Model):
     school_name = models.CharField(max_length=200)
     district = models.CharField(max_length=100)
     school_year = models.CharField(max_length=100)
+    principal_name = models.CharField(max_length=100)
     
 
 class Student(models.Model):
@@ -231,6 +232,7 @@ class ClassRecord(models.Model):
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_modified = models.DateTimeField(auto_now=True)
     school_year = models.CharField(max_length=50, null=True)
+    
 
     def archive(self):
         try:
@@ -300,6 +302,7 @@ class ArchivedClassRecord(models.Model):
     quarters = models.CharField(max_length=50, blank=True, null=True)
     date_archived = models.DateTimeField(auto_now_add=True)  # Record the date when the record was archived
     school_year = models.CharField(max_length=50, null=True)
+    # is_restore_approved = models.BooleanField(null=True)
 
     def restore(self):
         try:
@@ -517,6 +520,7 @@ class GeneralAverage(models.Model):
     grade = models.CharField(max_length=50)
     section = models.CharField(max_length=50)
     general_average = models.FloatField(null=True, blank=True)
+    remarks = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"{self.student_name} - {self.grade} - {self.section} - General Average: {self.general_average}"
@@ -556,7 +560,7 @@ class ArchivedQuarterlyGrades(models.Model):
 class ProcessedDocument(models.Model):
     document = models.FileField(upload_to='processed_documents/')
     upload_date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, null=True, blank=True, on_delete=models.CASCADE)
 
 
     def __str__(self):
@@ -736,3 +740,37 @@ class Announcement(models.Model):
 
         return self.title
     
+class AttendanceRecord(models.Model):
+
+     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+     attendance_record = models.JSONField(null=True)
+
+class CoreValues(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return self.name
+
+class BehaviorStatement(models.Model):
+    core_value = models.ForeignKey(CoreValues, on_delete=models.CASCADE)
+    statement = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.statement
+
+class LearnersObservation(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    quarter_1 = models.JSONField(null=True)
+    quarter_2 = models.JSONField(null=True)
+    quarter_3 = models.JSONField(null=True)
+    quarter_4 = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"LearnersObservation - Student: {self.student}"
+
+class RestoreRequest(models.Model):
+    archived_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE)
+    requester = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
+    date_requested = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='Pending')

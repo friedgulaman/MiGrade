@@ -20,6 +20,19 @@ def get_item(dictionary, key):
         return dictionary.get(key, None)
     return None
 
+@register.filter
+def get_value(dictionary, key):
+    """
+    Custom template filter to retrieve a value from a dictionary.
+    """
+    return dictionary.get(key, '')
+
+@register.filter
+def get_item_rank(dictionary, key):
+    if isinstance(dictionary, dict):
+        return dictionary.get(key, '')
+    else:
+        return ''
 @register.filter(name='replace')
 def replace(value, arg):
     """
@@ -30,3 +43,7 @@ def replace(value, arg):
 @register.filter
 def get_dict_keys(dictionary):
     return dictionary.keys()
+
+@register.filter(name='get_key')
+def get_key(dictionary, key):
+    return dictionary.get(key, '')

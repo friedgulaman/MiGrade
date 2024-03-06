@@ -129,17 +129,39 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 aria-controls="students" aria-selected="true">Students</a>
                         </li>
                         <li class="nav-item ">
-                            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
-                                aria-selected="false">Final Grade per Subject</a>
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#attendance_record" role="tab"
+                                aria-selected="false">Attendance Record</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#learners_observation" role="tab"
+                                aria-selected="false">Learner`s Observe Values</a>
                         </li>
                         <li class="nav-item ">
                             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly" role="tab"
                                 aria-selected="false">Summary of Quarterly Grades</a>
                         </li>
                         <li class="nav-item ">
+                            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#classrecord" role="tab"
+                                aria-selected="false">Final Grade (Subject)</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#all_final_grades" role="tab"
+                                aria-selected="false">Final Grade (All Subject)</a>
+                        </li>
+                        <li class="nav-item ">
                             <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#rankings" role="tab"
                                 aria-selected="false">Rankings</a>
                         </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#generate" role="tab"
+                                aria-selected="false">Generate</a>
+                        </li>
+                        {% if grade == "Grade 6" %}
+                        <li class="nav-item ">
+                            <a class="nav-link" id="more-tab" data-bs-toggle="tab" href="#Upload_sf_10" role="tab"
+                                aria-selected="false">SF10</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
 
@@ -189,6 +211,21 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             </div>
                         </div>
                     </div>
+
+                    <div class="tab-pane fade show" id="attendance_record" role="tabpanel" aria-labelledby="attendance_record">
+                        <div class="container mt-4">
+                            <a href="{% url 'create_attendance_view' %}?grade={{ grade }}&section={{ section }}&teacher_id={{ teacher_id }}&class_type={{ class_type }}" class="btn btn-primary btn-lg mb-2">Create Attendance</a>
+                            <a href="{% url 'attendance_records' grade=grade section=section %}" class="btn btn-primary btn-lg mb-2">Read Attendance Records</a>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade show" id="learners_observation" role="tabpanel" aria-labelledby="learners_observation">
+                        <!-- Use buttons directly instead of list items -->
+                        <a href="{% url 'students_behavior' grade=grade section=section %}" class="btn btn-primary btn-lg mb-2">Create Students Behavior</a>
+                        <a href="{% url 'display_learners_observation' grade=grade section=section %}" class="btn btn-primary btn-lg  mb-2">View Learner Observations</a>
+                    </div>
+                    
+                    
                     <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
 
                         <div class="container mt-4">
@@ -250,13 +287,17 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                         
                                             <!-- Select dropdown for the quarter -->
                                             <select name="quarter" onchange="submitFormAndRememberScroll()">
+                                                <option value="" selected disabled>Select Quarter</option>
                                                 <option value="1st Quarter" {% if quarter == '1st Quarter' %} selected {% endif %}>1st Quarter</option>
                                                 <option value="2nd Quarter" {% if quarter == '2nd Quarter' %} selected {% endif %}>2nd Quarter</option>
                                                 <option value="3rd Quarter" {% if quarter == '3rd Quarter' %} selected {% endif %}>3rd Quarter</option>
                                                 <option value="4th Quarter" {% if quarter == '4th Quarter' %} selected {% endif %}>4th Quarter</option>
                                             </select>
+                                            <button type="button" class="btn btn-link refresh-button" onclick="refreshQuarterlyTab()">
+                                                <i class="fas fa-sync-alt"></i> <!-- Refresh icon -->
+                                            </button>
                                         </form>
-                                        <h4 class="card-title mt-4">Summary of Quarterly Grades ({{quarter}})</h4>
+                                        <h4 class="card-title mt-4">Summary of Quarterly Grades ({{ quarter }})</h4>
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
@@ -290,81 +331,191 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                     
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
                         <div class="container mt-4">
-                            <!-- Dropdown menu for selecting the subject -->
-                            <div class="mb-3">
-                                <label for="subjectSelect" class="form-label">Select Subject:</label>
-                                <select class="form-select" id="subjectSelect" onchange="filterStudents(this.value)">
-                                    <option value="">Select a Subject</option>
-                                    <!-- Iterate over each subject -->
-                                    {% for subject in top_10_students_per_subject.keys %}
-                                        <option value="{{ subject }}">{{ subject }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
                             <div class="grid-margin stretch-card">
-                                <div>
+                                <div class="card">
                                     <div class="card-body">
-                                        <h4 class="card-title">Top 10 Students per Subject</h4>
-                                        <!-- Iterate over each subject -->
-                                        {% for subject, students in top_10_students_per_subject.items %}
-                                            <div class="mb-4" id="{{ subject }}">
-                                                <h5>{{ subject }}</h5>
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Rank</th>
-                                                                <th>Student Name</th>
-                                                                <th>Final Grade</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <!-- Iterate over the top 10 students for the current subject -->
-                                                            {% for student, final_grade in students %}
-                                                                <tr>
-                                                                    <td>{{ forloop.counter }}</td>
-                                                                    <td>{{ student }}</td>
-                                                                    <td>{{ final_grade }}</td>
-                                                                </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
+                                        <h1 class="card-title">Highest General Averages for {{ grade }} {{ section }}</h1>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Rank</th>
+                                                        <th>Student Name</th>
+                                                        <th>General Average</th>
+                                                        <th>Remarks</th> <!-- Added Remarks column -->
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for average in general_averages %}
+                                                    <tr>
+                                                        <td>{{forloop.counter}}</td>
+                                                        <td>{{ average.student }}</td>
+                                                        <td>{{ average.general_average|floatformat:0 }}</td>
+                                                        <td>{{ average.remarks }}</td> <!-- Added Remarks data -->
+                                                    </tr>
+                                                    {% empty %}
+                                                    <tr>
+                                                        <td colspan="4">No data available</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    
 
-            </section>
+
+                    <div class="tab-pane fade show" id="all_final_grades" role="tabpanel" aria-labelledby="all_final_grades">
+                        <div class="container mt-4">
+                            <div class="grid-margin stretch-card">
+                                <h1>All Final Grades</h1>
+                    
+                                {% if final_grades %}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Name</th>
+                                                    <th>Grade</th>
+                                                    <th>Section</th>
+                                                    <!-- Columns for subjects -->
+                                                    {% for subject_info in final_grades.0.subjects %}
+                                                    <th colspan="5">{{ subject_info.subject }}</th>
+                                                    {% endfor %}
+                                                    <th></th>
+                                                    <th>General Average</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <!-- Quarter grades and final grade -->
+                                                    {% for subject_info in final_grades.0.subjects %}
+                                                        <th>1</th>
+                                                        <th>2</th>
+                                                        <th>3</th>
+                                                        <th>4</th>
+                                                        <th>Final Grade</th>
+                                                    {% endfor %}
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for student_data in final_grades %}
+                                                    <tr>
+                                                        <td>{{ forloop.counter }}</td>
+                                                        <td>{{ student_data.name }}</td>
+                                                        <td>{{ student_data.grade }}</td>
+                                                        <td>{{ student_data.section }}</td>
+                                                        <!-- Loop through subject info -->
+                                                        {% for subject_info in student_data.subjects %}
+                                                            <!-- Loop through quarter grades and final grade -->
+                                                            {% for quarter, grade in subject_info.quarter_grades.items %}
+                                                                <td>{{ grade|floatformat:2 }}</td>
+                                                            {% endfor %}
+                                                            <td>{{ subject_info.final_grade|floatformat:2 }}</td>
+                                                        {% endfor %}
+                                                        <!-- Display general average -->
+                                                        <td>{{ student_data.general_average|floatformat:2 }}</td>
+                                                        <td>{{ student_data.general_average|floatformat:0 }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade show" id="Upload_sf_10" role="tabpanel" aria-labelledby="Upload_sf_10">
+                        <a class="btn btn-primary btn-lg mb-2 upload-button" href="{% url 'teacher_upload_documents' %}">
+                            <i class="fas fa-upload"></i> <!-- Upload icon -->
+                            Upload
+                        </a>
+                        <a class="btn btn-primary btn-lg mb-2 batch-upload-button" href="{% url 'teacher_batch_process_documents' %}">
+                            <i class="fas fa-upload"></i> <!-- Batch upload icon -->
+                            Batch Upload
+                        </a>
+                        <a class="btn btn-primary btn-lg mb-2 files-button" href="{% url 'teacher_sf10_views' %}">
+                            <i class="fas fa-file-alt"></i> <!-- Files icon -->
+                            Files
+                        </a>
+                    </div>
+                    
+                    
+                    
+                    <div class="tab-pane fade show" id="generate" role="tabpanel" aria-labelledby="generate">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title card-title-dash">Generate Final Grade and General Average</h4>
+                                <form method="post" class="w-100">
+                                    {% csrf_token %}
+                                    <div class="mt-4">
+                                        <div class="row">
+                                            {% for record in class_records %}   
+                                                <div class="col-lg-4 mb-3">
+                                                    <div class="card border-0">
+                                                        <div class="card-body">
+                                                            <!-- <button type="button" class="btn btn-secondary btn-lg btn-block" onclick="showStudentList('{{ record.grade }}', '{{ record.section }}')"> -->
+                                                                <button type="button" class="btn btn-secondary btn-lg btn-block">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>{{ record.grade }} {{ record.section }}</span>
+                                                                    <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                                                        <g>
+                                                                            <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
+                                                                            <path d="M0 0h24v24H0z" fill="none"></path>
+                                                                        </g>
+                                                                    </svg>
+                                                                </div>
+                                                            </button>
+                                                            <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}" class="btn btn-primary btn-sm btn-block mt-3">Generate Final Grade and General Average</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
         </div>
     </div>
 </section>
-<!-- jQuery CDN -->
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
-    function filterStudents(subject) {
-        // Hide all subject tables
-        document.querySelectorAll('.mb-4').forEach(function(table) {
-            table.style.display = 'none';
-        });
+    var showStudentList = function(grade, section) {
+        var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
+        window.location.href = url;
+    };
 
+    var uploadPageURL = "{% url 'generate_grade_section_list' %}";
 
-        // Show the selected subject table
-        if (subject) {
-            document.getElementById(subject).style.display = 'block';
-        }
-    }
+    document.getElementById("uploadButton").addEventListener("click", function () {
+        // Redirect to the upload page
+        window.location.href = uploadPageURL;
+    });
 </script>
-
 <script>
-    function submitFormAndRememberScroll() {
+    function submitFormAndRememberScroll(selectedQuarter) {
         // Store the current scroll position in session storage
         sessionStorage.setItem('scrollPosition', window.scrollY);
 
-        // Submit the form
+        // Update the quarter parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('quarter', selectedQuarter);
+        const newUrl = window.location.pathname + '?' + urlParams.toString();
+
+        // Submit the form with the updated URL
+        document.getElementById('quarterForm').action = newUrl;
         document.getElementById('quarterForm').submit();
     }
 
@@ -385,6 +536,28 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         }
     };
 </script>
+
+<script>
+    function refreshQuarterlyTab() {
+        // Store the current scroll position in session storage
+        sessionStorage.setItem('scrollPosition', window.scrollY);
+        // Store the current tab information in sessionStorage
+        sessionStorage.setItem('currentTab', 'quarterly');
+
+        // Reload the page
+        location.reload();
+    }
+
+    // Ensure jQuery is loaded before using it
+    $(document).ready(function() {
+        var currentTab = sessionStorage.getItem('currentTab');
+        if (currentTab === 'quarterly') {
+            // Activate the #quarterly tab
+            $('a[href="#quarterly"]').tab('show');
+        }
+    });
+</script>
+
 <script>
     var showQuarters = function(grade, section, key, from_teacher_id){
 
@@ -422,5 +595,21 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         });
     });
 </script>
+
+<!-- <script>
+    function filterStudents(subject) {
+        // Hide all subject tables
+        document.querySelectorAll('.mb-4').forEach(function(table) {
+            table.style.display = 'none';
+        });
+
+
+        // Show the selected subject table
+        if (subject) {
+            document.getElementById(subject).style.display = 'block';
+        }
+    }
+</script> -->
+
 
 {% endblock main_content %}

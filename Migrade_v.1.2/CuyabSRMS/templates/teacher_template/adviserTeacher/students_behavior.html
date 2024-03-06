@@ -1,0 +1,137 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block title %}
+    New Class Record
+{% endblock title %}
+{% block main_content %}
+<style>
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    </style>
+    <div class="container mt-4">
+        <div class=" me-4">
+            <a class="back-button">&larr;</a>
+        </div>
+        <h1>{{ grade }} {{ section }}</h1>
+        <h2>Create Learners Observation</h2>
+        <p><strong>Marking - Non-Numerical Rating:</strong></p>
+        <ul class="list-unstyled">
+            <li><strong>AO</strong> - Always Observed</li>
+            <li><strong>SO</strong> - Sometimes Observed</li>
+            <li><strong>RO</strong> - Rarely Observed</li>
+            <li><strong>NO</strong> - Not Observed</li>
+        </ul>
+        <form id="observation-form">
+            {% csrf_token %}
+            <label for="quarter-select">Select Quarter:</label>
+            <select id="quarter-select" class="form-control">
+                <option value="1st Quarter">Quarter 1</option>
+                <option value="2nd Quarter">Quarter 2</option>
+                <option value="3rd Quarter">Quarter 3</option>
+                <option value="4th Quarter">Quarter 4</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <table class="table table-bordered mt-4">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>No.</th>
+                        <th>Student</th>
+                        <th>Learner's Observe Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Core Value</th>
+                                        <th>Behavior Statements</th>
+                                        <th colspan="4">Markings
+                                        
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for core_value in core_values %}
+                                <tr>
+                                    <td rowspan="{{ core_value.behaviorstatement_set.count }}">{{ core_value.name }}</td>
+                                    {% for behavior_statement in core_value.behaviorstatement_set.all %}
+                                    <td>{{ behavior_statement.statement }}</td>
+                                    <td contenteditable="true" class="marking-cell" data-student-id="{{ student.id }}" data-quarter="{{ quarter }}" data-core-value="{{ core_value.name }}" data-behavior-statement="{{ behavior_statement.statement }}"></td>
+                                    </tr><tr>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.querySelector(".back-button").addEventListener("click", function () {
+            window.history.back();
+        });
+        $(document).ready(function() {
+            $('#observation-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent the default form submission
+                
+                var observations = [];
+                var selectedQuarter = $('#quarter-select').val(); // Array to store observation data
+
+                // Loop through each marking cell
+                $('.marking-cell').each(function() {
+                    var studentId = $(this).data('student-id');
+                    var coreValueId = $(this).data('core-value');
+                    var behaviorStatementId = $(this).data('behavior-statement');
+                    var marking = $(this).text().trim(); // Get the text content of the cell
+                    
+                    // Create an observation object
+                    var observation = {
+                        student_id: studentId,
+                        quarter: selectedQuarter,
+                        core_value: coreValueId,
+                        behavior_statement: behaviorStatementId,
+                        marking: marking
+                    };
+
+                    // Add the observation to the observations array
+                    observations.push(observation);
+                });
+
+                // Send the data to the server using AJAX
+                $.ajax({
+                    url: '{% url "save_observations" %}', // Replace with your endpoint URL
+                    method: 'POST',
+                    data: {
+                        observations: JSON.stringify(observations), // Convert observations array to JSON string
+                        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val() // Get CSRF token
+                    },
+                    success: function(response) {
+                        // Handle success response
+                        alert("Learner's Observation Value for " + selectedQuarter + " successfully created");
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            alert(xhr.responseJSON.error);
+                        }  else {
+                            console.error(xhr.responseText);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock main_content %}

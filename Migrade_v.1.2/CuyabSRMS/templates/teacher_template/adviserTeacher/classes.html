@@ -30,7 +30,7 @@ New Class List
                             </button>
                         </div>
                     </div>
-                    <section class="content container mt-2 vh-100">
+                    <section class="content container mt-2 vh-100">                 
                         <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                             <ul class="nav nav-tabs text" role="tablist">
                                 <li class="nav-item">
@@ -42,7 +42,24 @@ New Class List
                                         role="tab" aria-selected="false">Subject Class</a>
                                 </li>
                             </ul>
+                            <div class="dropdown mt-1 ml-1">
+                                <div class="row align-items-center"> <!-- Use a row to contain the label and select -->
+                                    <div class="col-auto">
+                                        <label for="schoolYearDropdown" class="form-label">School Year:</label>
+                                    </div>
+                                    <div class="col"> <!-- Use a column to contain the select -->
+                                        <select class="form-select" id="schoolYearDropdown" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+                                            <option placeholder="Select School Year"></option>
+                                            <!-- Iterate through unique school years and populate the dropdown -->
+                                            {% for year in unique_school_years %}
+                                            <option value="?school_year={{ year }}" {% if year == selected_school_year %} selected {% endif %}>{{ year }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
 
                         <div class="tab-content tab-content-basic ">
                             <div class="tab-pane fade show active " id="overview" role="tabpanel"
@@ -100,9 +117,9 @@ New Class List
                                                             <a class="dropdown-item text-danger"
                                                                 href="{% url 'delete_class' grade_section.grade grade_section.section %}"
                                                                 onclick="return confirm('Are you sure you want to delete this class? This action cannot be undone.');">Delete</a>
-                                                            <a class="dropdown-item text-warning"
+                                                            {% comment %} <a class="dropdown-item text-warning"
                                                                 href="{% url 'archive_students_with_grade_and_section' grade_section.grade grade_section.section  %}"
-                                                                onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</a>
+                                                                onclick="return confirm('Are you sure you want to archive this class? This action cannot be undone.');">Archive</a> {% endcomment %}
                                                             {% comment %} <form id="archiveForm" method="post"
                                                                 action="{% url 'archive_students_with_grade_and_section' grade=grade_section.grade section=grade_section.section %}">
                                                                 {% csrf_token %}
@@ -217,8 +234,20 @@ New Class List
     </div>
 </section>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<!-- Dropdown menu for selecting school years -->
 
+<script>
+    function handleSchoolYearChange() {
+        var dropdown = document.getElementById("schoolYearDropdown");
+        var selectedYear = dropdown.options[dropdown.selectedIndex].text;
+        var currentYear = "{{ selected_school_year }}";  // Get the currently selected year
+
+        // Check if the selected year is different from the current year
+        if (selectedYear !== currentYear) {
+            window.location = dropdown.value;  // Reload the page with the selected school year
+        }
+    }
+</script>
 <script>
    var showStudentListSubject = function (grade, section, class_type) {
         var url = "{% url 'student_list_for_subject' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&class_type=" + encodeURIComponent(class_type);

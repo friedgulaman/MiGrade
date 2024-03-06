@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Restore Request</title>
+</head>
+<body>
+    <h1>Restore Request Details</h1>
+    <p>Details of the restore request:</p>
+    <ul>
+        <li><strong>User:</strong> {{ restore_request.requester.user.first_name }} {{ restore_request.requester.user.last_name }}</li>
+        <li><strong>Date Requested:</strong> {{ restore_request.date_requested }}</li>
+        <!-- Add other fields as needed -->
+    </ul>
+    <!-- Add any additional information or actions related to the restore request -->
+</body>
+</html>

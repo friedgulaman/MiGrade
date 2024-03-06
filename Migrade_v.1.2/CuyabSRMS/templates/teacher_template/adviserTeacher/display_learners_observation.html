@@ -1,0 +1,236 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+
+{% block title %}
+    New Class Record
+{% endblock title %}
+
+{% block main_content %}
+<style>
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    </style>
+    <div class="container mt-4">
+        <div class=" me-4">
+            <a class="back-button">&larr;</a>
+        </div>
+        <div>
+            <h1 class="mb-4">{{ grade }} {{ section }}</h1>
+            <h2>Learners Observation Values</h2>
+            <p><strong>Marking - Non-Numerical Rating:</strong></p>
+            <ul class="list-unstyled">
+                <li><strong>AO</strong> - Always Observed</li>
+                <li><strong>SO</strong> - Sometimes Observed</li>
+                <li><strong>RO</strong> - Rarely Observed</li>
+                <li><strong>NO</strong> - Not Observed</li>
+            </ul>
+        </div>
+        <label> Select Quarter: </label>
+        <select id="quarter-select" class="form-control">
+            <option value="1st Quarter" {% if selected_quarter == '1st Quarter' %} selected {% endif %}>Quarter 1</option>
+            <option value="2nd Quarter" {% if selected_quarter == '2nd Quarter' %} selected {% endif %}>Quarter 2</option>
+            <option value="3rd Quarter" {% if selected_quarter == '3rd Quarter' %} selected {% endif %}>Quarter 3</option>
+            <option value="4th Quarter" {% if selected_quarter == '4th Quarter' %} selected {% endif %}>Quarter 4</option>
+        </select>
+        <br>
+
+        <div class="table-responsive">
+            <form id="markingForm">
+                {% csrf_token %}
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No.</th>
+                            <th>Student</th>
+                            <th id="quarter-header">{{ selected_quarter }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for observation in learners_observation %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ observation.student }}</td>
+                            <td data-quarter-table="1st Quarter">
+                                {% if observation.quarter_1 %}
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Core Value</th>
+                                            <th>Behavior Statements</th>
+                                            <th>Markings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for core_value, behaviors in observation.quarter_1.items %}
+                                            {% for behavior in behaviors %}
+                                                <tr>
+                                                    {% if forloop.first %}
+                                                    <td rowspan="{{ behaviors|length }}"><strong>{{ core_value }}</strong></td>
+                                                    {% endif %}
+                                                    <td>{{ behavior.behavior_statement }}</td>
+                                                    <td contenteditable="true" class="marking-cell" data-observation-id="{{ observation.id }}" data-quarter="quarter_1" data-core-value="{{ core_value }}" data-behavior="{{ behavior.behavior_statement }}">{{ behavior.marking }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                    No data available
+                                {% endif %}
+                            </td>
+                            <td data-quarter-table="2nd Quarter">
+                                {% if observation.quarter_2 %}
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Core Value</th>
+                                            <th>Behavior Statements</th>
+                                            <th>Markings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for core_value, behaviors in observation.quarter_2.items %}
+                                            {% for behavior in behaviors %}
+                                                <tr>
+                                                    {% if forloop.first %}
+                                                    <td rowspan="{{ behaviors|length }}"><strong>{{ core_value }}</strong></td>
+                                                    {% endif %}
+                                                    <td>{{ behavior.behavior_statement }}</td>
+                                                    <td contenteditable="true" class="marking-cell" data-observation-id="{{ observation.id }}" data-quarter="quarter_2" data-core-value="{{ core_value }}" data-behavior="{{ behavior.behavior_statement }}">{{ behavior.marking }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                    No data available
+                                {% endif %}
+                            </td>
+                            <td data-quarter-table="3rd Quarter">
+                                {% if observation.quarter_3 %}
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Core Value</th>
+                                            <th>Behavior Statements</th>
+                                            <th>Markings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for core_value, behaviors in observation.quarter_3.items %}
+                                            {% for behavior in behaviors %}
+                                                <tr>
+                                                    {% if forloop.first %}
+                                                    <td rowspan="{{ behaviors|length }}"><strong>{{ core_value }}</strong></td>
+                                                    {% endif %}
+                                                    <td>{{ behavior.behavior_statement }}</td>
+                                                    <td contenteditable="true" class="marking-cell" data-observation-id="{{ observation.id }}" data-quarter="quarter_3" data-core-value="{{ core_value }}" data-behavior="{{ behavior.behavior_statement }}">{{ behavior.marking }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                    No data available
+                                {% endif %}
+                            </td>
+                            <td data-quarter-table="4th Quarter">
+                                {% if observation.quarter_4 %}
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Core Value</th>
+                                            <th>Behavior Statements</th>
+                                            <th>Markings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for core_value, behaviors in observation.quarter_4.items %}
+                                            {% for behavior in behaviors %}
+                                                <tr>
+                                                    {% if forloop.first %}
+                                                    <td rowspan="{{ behaviors|length }}"><strong>{{ core_value }}</strong></td>
+                                                    {% endif %}
+                                                    <td>{{ behavior.behavior_statement }}</td>
+                                                    <td contenteditable="true" class="marking-cell" data-observation-id="{{ observation.id }}" data-quarter="quarter_4" data-core-value="{{ core_value }}" data-behavior="{{ behavior.behavior_statement }}">{{ behavior.marking }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                    No data available
+                                {% endif %}
+                            </td>
+                            <!-- Repeat the same for Quarter 2, 3, and 4 -->
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form> 
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.querySelector(".back-button").addEventListener("click", function () {
+            window.history.back();
+        });
+        $(document).ready(function() {     
+            $('#quarter-select').change(function() {
+                // Get the selected quarter value
+                var selectedQuarter = $(this).val();
+    
+                // Hide all quarter tables
+                $('[data-quarter-table]').hide();
+    
+                // Show the selected quarter table
+                $('[data-quarter-table="' + selectedQuarter + '"]').show(); 
+
+                $('#quarter-header').text(selectedQuarter);
+            });
+
+            $('.marking-cell').blur(function() {
+                var observation_id = $(this).data('observation-id');
+                var quarter = $(this).data('quarter');
+                var core_value = $(this).data('core-value');
+                var behavior = $(this).data('behavior');
+                var marking = $(this).text().toUpperCase();
+
+                // Validate the new marking
+                if (!isValidMarking(marking)) {
+                    alert('Invalid marking: ' + marking);
+                    // Reset the marking if it's invalid
+                    this.innerText = '';
+                    return;
+                }
+
+                $.ajax({
+                    url: '/update-markings/',
+                    method: 'POST',
+                    data: {
+                        'observation_id': observation_id,
+                        'quarter': quarter,
+                        'core_value': core_value,
+                        'behavior': behavior,
+                        'marking': marking,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function(response) {
+
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+
+                function isValidMarking(newMarking) {
+                    const validMarkings = ['AO', 'SO', 'RO', 'NO', ''];
+                    return validMarkings.includes(newMarking);
+                }
+            });
+        });
+    </script>
+{% endblock main_content %}

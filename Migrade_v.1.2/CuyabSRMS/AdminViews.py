@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from .models import MT, ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
 from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
+from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation, ArchivedClassRecord, ArchivedStudent
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -41,6 +43,11 @@ from django.db.models import Value
 from django.db.models.functions import Cast
 
 
+import io
+from openpyxl import Workbook
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.utils.encoding import escape_uri_path
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 import base64
@@ -316,7 +323,8 @@ def edit_school_view(request, school_id):
             'division': school.division,
             'school_id': school.school_id,
             'district': school.district,
-            'school_year': school.school_year
+            'school_year': school.school_year,
+            'principal_name': school.principal_name
         }
 
         # Handle form submission and update the database with the edited information
@@ -1126,7 +1134,7 @@ def sf10_views(request):
     # If a search query is present, filter the ExtractedData model
     if search_query:
         # You can customize the fields you want to search on
-        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average']
+        search_fields = ['last_name', 'first_name', 'middle_name', 'lrn', 'name_of_school', 'sex', 'birthdate', 'school_year', 'classified_as_grade', 'general_average', 'processed_document__teacher__user__first_name', 'processed_document__teacher__user__last_name', 'processed_document__upload_date']
         
         # Use Q objects to create a complex OR query
         query = Q()
@@ -1196,7 +1204,44 @@ def user_activities(request):
         return render(request, 'admin_template/user_activities.html', {'page_obj': page_obj, 'user_id': user_id})
     else:
         return render(request, 'admin_template/user_activities.html', {'error_message': 'User ID is required'})
+        activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
+        return render(request, 'admin_template/user_activities.html', {'activities': activities, 'user_id': user_id})
+    else:
+        # Handle case when no user ID is provided
+        return render(request, 'error.html', {'error_message': 'User ID is required', 'user_id': None})
+    
+def download_activities(request):
+    user_id = request.GET.get('id')
+    if user_id:
+        activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
 
+        # Create the file path
+        filename = f"user_{user_id}_activities.xlsx"
+        filepath = os.path.join(settings.MEDIA_ROOT, filename)
+
+        # Create a workbook and add a worksheet
+        workbook = Workbook()
+        worksheet = workbook.active
+
+        # Write the column headers
+        headers = ['Timestamp', 'Action', 'Details']
+        worksheet.append(headers)
+
+        # Write activity log data
+        for activity in activities:
+            worksheet.append([activity.timestamp.strftime('%Y-%m-%d %H:%M:%S'), activity.action, activity.details])
+
+        # Save the workbook
+        workbook.save(filepath)
+
+        # Return the file as an attachment
+        with open(filepath, 'rb') as file:
+            response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    else:
+        # Return an HttpResponse with an error message
+        return HttpResponse('User ID is required', status=400)
 
    
 def sf10_edit_view(request, id):
@@ -1561,4 +1606,5 @@ def layout_to_text(layout, document_text):
         end_index = text_segment.end_index
         text_content += document_text[start_index:end_index]
     return text_content
-    
+
+
