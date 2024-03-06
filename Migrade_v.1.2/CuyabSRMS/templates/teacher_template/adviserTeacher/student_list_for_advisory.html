@@ -214,21 +214,17 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
 
                     <div class="tab-pane fade show" id="attendance_record" role="tabpanel" aria-labelledby="attendance_record">
                         <div class="container mt-4">
-                            <a href="{% url 'create_attendance_view' %}?grade={{ grade }}&section={{ section }}&teacher_id={{ teacher_id }}&class_type={{ class_type }}">Create Attendance</a>
-                            <br>
-                            <a href="{% url 'attendance_records' grade=grade section=section %}">Read Attendance Records</a>
+                            <a href="{% url 'create_attendance_view' %}?grade={{ grade }}&section={{ section }}&teacher_id={{ teacher_id }}&class_type={{ class_type }}" class="btn btn-primary btn-lg mb-2">Create Attendance</a>
+                            <a href="{% url 'attendance_records' grade=grade section=section %}" class="btn btn-primary btn-lg mb-2">Read Attendance Records</a>
                         </div>
                     </div>
 
                     <div class="tab-pane fade show" id="learners_observation" role="tabpanel" aria-labelledby="learners_observation">
-                        <h2>Links to Create Observations</h2>
-                        <ul>
-                            <li><a href="{% url 'create_core_values' %}">Create Core Values</a></li>
-                            <li><a href="{% url 'create_behavior_statements' %}">Create Behavior Statements</a></li>
-                            <li><a href="{% url 'create_learners_observation' grade=grade section=section %}">Create Learners Observation</a></li>
-                            <a href="{% url 'students_behavior' grade=grade section=section %}">View Students Behavior</a>
-                        </ul>
+                        <!-- Use buttons directly instead of list items -->
+                        <a href="{% url 'students_behavior' grade=grade section=section %}" class="btn btn-primary btn-lg mb-2">Create Students Behavior</a>
+                        <a href="{% url 'display_learners_observation' grade=grade section=section %}" class="btn btn-primary btn-lg  mb-2">View Learner Observations</a>
                     </div>
+                    
                     
                     <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
 
@@ -440,27 +436,21 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                     </div>
 
                     <div class="tab-pane fade show" id="Upload_sf_10" role="tabpanel" aria-labelledby="Upload_sf_10">
-                        <div class="nav flex-column sub-menu">
-                            <div class="nav-item">
-                                <a class="nav-link upload-button" href="{% url 'teacher_upload_documents' %}">
-                                    <i class="fas fa-upload"></i> <!-- Upload icon -->
-                                    <span>Upload</span>
-                                </a>
-                            </div>
-                            <div class="nav-item">
-                                <a class="nav-link batch-upload-button" href="{% url 'teacher_batch_process_documents' %}">
-                                    <i class="fas fa-upload"></i> <!-- Batch upload icon -->
-                                    <span>Batch Upload</span>
-                                </a>
-                            </div>
-                            <div class="nav-item">
-                                <a class="nav-link files-button" href="{% url 'teacher_sf10_views' %}">
-                                    <i class="fas fa-file-alt"></i> <!-- Files icon -->
-                                    <span>Files</span>
-                                </a>
-                            </div>
-                        </div>
+                        <a class="btn btn-primary btn-lg mb-2 upload-button" href="{% url 'teacher_upload_documents' %}">
+                            <i class="fas fa-upload"></i> <!-- Upload icon -->
+                            Upload
+                        </a>
+                        <a class="btn btn-primary btn-lg mb-2 batch-upload-button" href="{% url 'teacher_batch_process_documents' %}">
+                            <i class="fas fa-upload"></i> <!-- Batch upload icon -->
+                            Batch Upload
+                        </a>
+                        <a class="btn btn-primary btn-lg mb-2 files-button" href="{% url 'teacher_sf10_views' %}">
+                            <i class="fas fa-file-alt"></i> <!-- Files icon -->
+                            Files
+                        </a>
                     </div>
+                    
+                    
                     
                     <div class="tab-pane fade show" id="generate" role="tabpanel" aria-labelledby="generate">
                         <div class="card">

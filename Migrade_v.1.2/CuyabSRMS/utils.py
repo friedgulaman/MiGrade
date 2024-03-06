@@ -850,9 +850,17 @@ def write_sf9_data(front_sheet, student):
     front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
     # sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
-    print(student.name)
+    # print(student.name)
 
 
+def write_sf9_school_info(front_sheet, school_info_queryset):
+    row = 40
+    column = 16
+
+    # Assuming there's only one principal for a single school information record
+    for school_info in school_info_queryset:
+        principal = school_info.principal_name
+        front_sheet.cell(row=row, column=column, value=principal)
 
 
 def write_sf9_grades(back_sheet, advisory_class, general_average):
@@ -892,8 +900,112 @@ def write_sf9_grades(back_sheet, advisory_class, general_average):
         # Write general average
         back_sheet.cell(row=22, column=18, value=general_average.general_average)
 
+def write_sf9_total_attendance(front_sheet, attendance_record):
+    attendance_data = attendance_record.attendance_record
+    row_total_school_days = 7
+    row_total_days_present = 9
+    row_total_days_absent = 12 
+
+    column_coordinates = 13
+
+    for month, record in attendance_data.items():
+        total_days_present = record.get('Total School Days', '')
+        total_school_days = record.get('Total Days Present', '')
+        total_days_absent = record.get('Total Days Absent', '')
 
 
+
+        front_sheet.cell(row=row_total_school_days, column=column_coordinates, value=total_school_days)
+        front_sheet.cell(row=row_total_days_present, column=column_coordinates, value=total_days_present)
+        front_sheet.cell(row=row_total_days_absent, column=column_coordinates, value=total_days_absent)
+
+def write_sf9_attendance(front_sheet, attendance_record):
+    attendance_data = attendance_record.attendance_record
+    row_school_days = 7 
+    row_days_present = 9
+    row_days_absent =  12
+    row_total_school_days = 7
+    row_total_days_present = 9
+    row_total_days_absent = 12 # Starting row for school days
+    column_coordinates = {
+        "JUNE": 2,
+        "JULY": 3,
+        "AUGUST": 4,
+        "SEPTEMBER": 5,
+        "OCTOBER": 6,
+        "NOVEMBER": 7,
+        "DECEMBER": 8,
+        "JANUARY": 9,
+        "FEBRUARY": 10,
+        "MARCH": 11,
+        "APRIL": 12,
+        "TOTAL": 13,
+        # Add more months as needed
+    }
+
+    # Iterate over the months and their attendance records
+    for month, record in attendance_data.items():
+        print(f"month {month}")
+        # Access the number of school days for the current month
+        school_days = record.get('No. of School Days', '')
+        days_present = record.get('No. of Days Present', '')
+        days_absent = record.get('No. of Days Absent', '')
+
+        # print(f"school days:{school_days}")
+        # print(f"days present:{days_present}")
+        # print(f"days absent:{days_absent}")
+        
+        # Get the column index based on the month
+        column_index = column_coordinates.get(month, -1)
+        # print(f"month: {column_index}")
+            # Write the school days to the respective column for the current month
+            # Adjust row and column indices here
+        front_sheet.cell(row=row_school_days, column=column_index, value=school_days)
+        front_sheet.cell(row=row_days_present, column=column_index, value=days_present)
+        front_sheet.cell(row=row_days_absent, column=column_index, value=days_absent)
+
+
+def get_behavior_rows():
+    # Define behavior rows
+    behavior_rows = {
+        "Expresses one’s spiritual beliefs while respecting the spiritual beliefs of others": 7,
+        "Show adherence to ethical principles by upholding truth": 10,
+        "Is sensitive to individual, social and cultural differences": 13,
+        "Demonstrates contributions toward solidarity": 16,
+        "Cares for the environment and utilizes resources wisely, judiciously, and economically.": 18,
+        "Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen": 20,
+        "Demonstrates appropriate behavior in carrying out activities in the school, community, and country": 22
+    }
+    return behavior_rows
+
+def write_sf9_learners_observation(back_sheet, learners_observation, quarter, column_index):
+    # Retrieve the observations for the specified quarter
+    observation_data = getattr(learners_observation, quarter, None)
+    if observation_data:
+        behavior_rows = get_behavior_rows()
+        print(f"observation: {observation_data}")
+
+        for domain, behaviors in observation_data.items():
+            for behavior in behaviors:
+                behavior_statement = behavior['behavior_statement']
+                marking = behavior['marking']
+
+                print(f"behavior_statement: {behavior_statement}")
+                print(f"marking: {marking}")
+
+                # Check if the behavior statement exists in the behavior_rows dictionary
+                if behavior_statement in behavior_rows:
+                    row_index = behavior_rows[behavior_statement]
+                    back_sheet.cell(row=row_index, column=column_index, value=marking)
+    #             # Iterate through the behavior_rows dictionary to print each marking
+    # for row, row_index in behavior_rows.items():
+    #             print(f"marking: {marking}")
+    #             print(f"row {row_index}")
+    #             back_sheet.cell(row=row_index, column=column_index, value=marking)
+                
+                
+
+  
 
 #SUMMARRY OF QUARTERLY GRADES
         

@@ -1487,16 +1487,18 @@ def student_list_for_advisory(request):
 
 def create_attendance_view(request):
     if request.method == 'GET':
-        # Assuming you pass students_filtered to the template context
         grade = request.GET.get('grade')
         section = request.GET.get('section')
         teacher = request.user.teacher
         teacher_id = teacher.id 
         class_type = request.GET.get('class_type')
+        month = request.GET.get('month', '')  # Assuming month is passed via GET request
+
         print(grade)
         print(section)
-        print(teacher_id)
-        print(class_type)
+        print(month)
+
+        # Check if the month already exists for the class
         students = Student.objects.filter(grade=grade, section=section)
         students_filtered = []
         for student in students:
@@ -1504,7 +1506,6 @@ def create_attendance_view(request):
             if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
                 students_filtered.append(student)
 
-        print(students_filtered)
         context = {
             'students': students_filtered,
         }
@@ -1513,15 +1514,30 @@ def create_attendance_view(request):
 def save_attendance_record(request):
     if request.method == 'POST':
         month = request.POST.get('month')
-        school_days = request.POST.get('school_days')
+        school_days = int(request.POST.get('school_days', 0))
         students = request.POST.getlist('student_id')
         response_data = {'message': 'Attendance records saved successfully'}
+        error_response_data = {'error': f'Attendance records for {month} already exist'}
+
+        if AttendanceRecord.objects.filter(attendance_record__has_key=month).exists():
+            return JsonResponse(error_response_data, status=400)
+
+        # Initialize totals
+        total_school_days = 0
+        total_days_present = 0
+        total_days_absent = 0
 
         # Loop through the students and process their attendance data
         for student_id in students:
             # Retrieve days_present and days_absent data
-            days_present = request.POST.get(f'days_present_{student_id}')
-            days_absent = request.POST.get(f'days_absent_{student_id}')
+            days_present_str = request.POST.get(f'days_present_{student_id}')
+            days_present = int(days_present_str) if days_present_str else 0
+            days_absent_str = request.POST.get(f'days_absent_{student_id}')
+            days_absent = int(days_absent_str) if days_absent_str else 0
+
+            total_school_days += school_days
+            total_days_present += days_present
+            total_days_absent += days_absent
 
             try:
                 student = Student.objects.get(id=student_id)
@@ -1543,7 +1559,6 @@ def save_attendance_record(request):
                 existing_data['No. of Days Absent'] = days_absent
                 attendance_record.attendance_record[month] = existing_data
                 attendance_record.save()
-
 
             except AttendanceRecord.DoesNotExist:
                 # If the AttendanceRecord does not exist for the student and month,
@@ -1571,6 +1586,41 @@ def save_attendance_record(request):
                             'No. of Days Absent': days_absent
                         }
                         record.save()
+
+            total_attendance_record, created = AttendanceRecord.objects.get_or_create(
+                student=student,  # For total attendance record
+                defaults={
+                    'attendance_record': {
+                        'Total': {
+                            'Total School Days': school_days,
+                            'Total Days Present': days_present,
+                            'Total Days Absent': days_absent
+                        }
+                    }
+                }
+            )
+
+            if not created:
+                # If the record already exists, update the existing data
+                total_record_data = total_attendance_record.attendance_record.get('TOTAL', {})
+                # Ensure that the 'Total' key exists and initialize it with default values if not
+                if not total_record_data:
+                    total_record_data = {
+                        'Total School Days': 0,
+                        'Total Days Present': 0,
+                        'Total Days Absent': 0
+                    }
+                total_record_data['Total School Days'] += school_days
+                total_record_data['Total Days Present'] += days_present
+                total_record_data['Total Days Absent'] += days_absent
+                total_attendance_record.attendance_record['TOTAL'] = total_record_data
+
+                total_attendance_record.attendance_record = {
+                    k: total_attendance_record.attendance_record[k] for k in sorted(total_attendance_record.attendance_record.keys()) if k != 'TOTAL'
+                }
+                total_attendance_record.attendance_record['TOTAL'] = total_record_data
+                total_attendance_record.save()
+
 
         return JsonResponse(response_data, status=200)
     else:
@@ -1644,8 +1694,15 @@ def update_attendance_record(request):
         month = request.POST.get('month')  # Month for which data is updated
         field_name = request.POST.get('key')  # Field to update: "No. of School Days", "No. of Days Present", "No. of Days Absent"
         new_value = request.POST.get('new_value')  # New value to update
+        absent_days = request.POST.get('absent_days', '')
+        total_present = request.POST.get('total_present')
+        total_absent = request.POST.get('total_absent')  # New value for 'No. of Days Absent'
 
- 
+        print(month)
+        print(field_name)
+        print(new_value)
+        print(absent_days)  # Print the value of 'No. of Days Absent'
+
         try:
             # Fetch the AttendanceRecord object
             record = AttendanceRecord.objects.get(student=record_id)
@@ -1653,19 +1710,40 @@ def update_attendance_record(request):
             # Parse the JSON field
             attendance_record = record.attendance_record
 
-            
-            
             # Update the value based on the month and field name
             if month in attendance_record and field_name in attendance_record[month]:
                 attendance_record[month][field_name] = new_value
+                
+                # Update the 'No. of Days Absent' if available
+                if 'No. of Days Absent' in attendance_record[month]:
+                    attendance_record[month]['No. of Days Absent'] = absent_days
+                
+                total_days_present = 0
+                print(total_days_present)
+                for month, data in attendance_record.items():
+                    if 'No. of Days Present' in data:
+                        total_days_present += int(data['No. of Days Present'])
+
+                total_days_absent = 0
+                print(total_days_absent)
+                for month, data in attendance_record.items():
+                    if 'No. of Days Absent' in data:
+                        total_days_absent += int(data['No. of Days Absent'])
+                # Assign the calculated total days present to the record
+                if 'Total Days Present' in attendance_record[month]:
+                    attendance_record[month]['Total Days Present'] = total_days_present
+
+                if 'Total Days Absent' in attendance_record[month]:
+                    attendance_record[month]['Total Days Absent'] = total_days_absent
+                
+                # Save the updated JSON field back to the object
+                record.attendance_record = attendance_record
+                record.save()
+
+                # Respond with a success message
+                return JsonResponse({'status': 'success'})
             else:
                 return JsonResponse({'status': 'error', 'message': 'Month or field name not found'})
-
-            # Save the updated JSON field back to the object
-            record.save()
-
-            # Respond with a success message
-            return JsonResponse({'status': 'success'})
         
         except AttendanceRecord.DoesNotExist:
             # Respond with an error message if the record does not exist
@@ -3529,41 +3607,41 @@ def create_behavior_statements(request):
     return render(request, 'teacher_template/adviserTeacher/create_behavior_statements.html', {'form': form})
 
 
-def create_learners_observation(request, grade, section):
-    behavior_statements = BehaviorStatement.objects.all()
-    students = Student.objects.filter(grade=grade, section=section)
-    core_values = CoreValues.objects.all()
-    quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'] 
+# def create_learners_observation(request, grade, section):
+#     behavior_statements = BehaviorStatement.objects.all()
+#     students = Student.objects.filter(grade=grade, section=section)
+#     core_values = CoreValues.objects.all()
+#     quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'] 
 
-    if request.method == 'POST':
-        for student in students:
-            for quarter in range(1, 5):
-                for behavior_statement in behavior_statements:
-                    field_name = f'student_{student.id}_quarter_{quarter}_behavior_{behavior_statement.id}'
-                    marking = request.POST.get(field_name)
-                    # Process the marking data and save to the database as needed
+#     if request.method == 'POST':
+#         for student in students:
+#             for quarter in range(1, 5):
+#                 for behavior_statement in behavior_statements:
+#                     field_name = f'student_{student.id}_quarter_{quarter}_behavior_{behavior_statement.id}'
+#                     marking = request.POST.get(field_name)
+#                     # Process the marking data and save to the database as needed
 
-    # Create a dictionary to hold marking data for each student for each quarter
-    student_markings = {}
-    for student in students:
-        student_markings[student] = {}
-        for quarter in quarters:
-            student_markings[student][quarter] = {}
-            for behavior_statement in behavior_statements:
-                # Initialize marking to None
-                student_markings[student][quarter][behavior_statement] = None
+#     # Create a dictionary to hold marking data for each student for each quarter
+#     student_markings = {}
+#     for student in students:
+#         student_markings[student] = {}
+#         for quarter in quarters:
+#             student_markings[student][quarter] = {}
+#             for behavior_statement in behavior_statements:
+#                 # Initialize marking to None
+#                 student_markings[student][quarter][behavior_statement] = None
 
-    print(behavior_statements)
-    # print(student_markings)
-    context = {
-        'students': students,
-        'behavior_statements': behavior_statements,
-        'quarters': quarters,
-        'student_markings': student_markings,
-        'core_values': core_values  # Pass the student markings to the template
-    }
-    # Render the form template with the behavior statements and students
-    return render(request, 'teacher_template/adviserTeacher/create_learners_observation.html', context)
+#     print(behavior_statements)
+#     # print(student_markings)
+#     context = {
+#         'students': students,
+#         'behavior_statements': behavior_statements,
+#         'quarters': quarters,
+#         'student_markings': student_markings,
+#         'core_values': core_values  # Pass the student markings to the template
+#     }
+#     # Render the form template with the behavior statements and students
+#     return render(request, 'teacher_template/adviserTeacher/create_learners_observation.html', context)
 
 
 def students_behavior_view(request, grade, section):
@@ -3577,6 +3655,8 @@ def students_behavior_view(request, grade, section):
     rowspan = core_values_length * behavior_statements_length
 
     context = {
+        'grade': grade,
+        'section': section,
         'students': students, 
         'behavior_statements': behavior_statements,
         'core_values' : core_values,
@@ -3587,8 +3667,33 @@ def students_behavior_view(request, grade, section):
 
 def save_observations(request):
     if request.method == 'POST':
-        # try:
+        try:
             observations = json.loads(request.POST.get('observations'))
+
+            # Collect existing observations for each quarter
+            existing_quarters = {}
+
+            for observation in observations:
+                student_id = observation.get('student_id')
+                quarter_data = observation.get('quarter')
+
+                quarter_field_map = {
+                    '1st Quarter': 'quarter_1',
+                    '2nd Quarter': 'quarter_2',
+                    '3rd Quarter': 'quarter_3',
+                    '4th Quarter': 'quarter_4'
+                }
+
+                quarter_field = quarter_field_map.get(quarter_data)
+
+                if not quarter_field:
+                    raise ValueError('Invalid quarter data')
+
+                learner_observation, _ = LearnersObservation.objects.get_or_create(student_id=student_id)
+                current_observations = getattr(learner_observation, quarter_field)
+
+                if current_observations:
+                    existing_quarters[(student_id, quarter_field)] = quarter_data
 
             for observation in observations:
                 student_id = observation.get('student_id')
@@ -3597,7 +3702,6 @@ def save_observations(request):
                 behavior_statement = observation.get('behavior_statement')
                 marking = observation.get('marking')
 
-                # Map quarter names to field names
                 quarter_field_map = {
                     '1st Quarter': 'quarter_1',
                     '2nd Quarter': 'quarter_2',
@@ -3605,38 +3709,76 @@ def save_observations(request):
                     '4th Quarter': 'quarter_4'
                 }
 
-                # Get the corresponding field name for the quarter
                 quarter_field = quarter_field_map.get(quarter_data)
 
                 if not quarter_field:
                     raise ValueError('Invalid quarter data')
 
-                # Retrieve or create LearnersObservation instance for the student
-                learner_observation, created = LearnersObservation.objects.get_or_create(student_id=student_id)
+                # Check if the quarter field already has data
+                if (student_id, quarter_field) in existing_quarters:
+                    raise ValueError(f'Observations for {quarter_data} already exist')
 
-                # Get the current observations for the quarter
+                learner_observation, _ = LearnersObservation.objects.get_or_create(student_id=student_id)
+
                 current_observations = getattr(learner_observation, quarter_field)
                 if current_observations is None:
                     current_observations = {}
 
-                # Ensure core_value exists in current_observations
                 if core_value not in current_observations:
                     current_observations[core_value] = []
 
-                # Append the observation to the list of observations for the core value
                 current_observations[core_value].append({
                     'behavior_statement': behavior_statement,
                     'marking': marking
                 })
 
-                # Save the updated observations to the corresponding quarter field
                 setattr(learner_observation, quarter_field, current_observations)
                 learner_observation.save()
 
-
-
             return JsonResponse({'message': 'Observations saved successfully.'})
-        # except Exception as e:
-        #     return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
+    
+def display_learners_observation(request, grade, section):
+    learners_observation = LearnersObservation.objects.filter(student__grade=grade, student__section=section)
+    quarters = ['quarter_1', 'quarter_2', 'quarter_3', 'quarter_4']
+    context = {
+        'learners_observation': learners_observation,
+        'quarters': quarters,
+         'grade': grade,
+        'section': section,
+        
+    }
+    return render(request, 'teacher_template/adviserTeacher/display_learners_observation.html', context)
+
+
+def update_markings(request):
+    if request.method == 'POST':
+        observation_id = request.POST.get('observation_id')
+        quarter = request.POST.get('quarter')
+        core_value = request.POST.get('core_value')
+        behavior = request.POST.get('behavior')
+        marking = request.POST.get('marking')
+
+        # Update marking for the observation
+        # Example:
+        observation = LearnersObservation.objects.get(pk=observation_id)
+        quarter_data = getattr(observation, quarter)
+        for core_val, behaviors in quarter_data.items():
+            if core_val == core_value:
+                for item in behaviors:
+                    if item['behavior_statement'] == behavior:
+                        item['marking'] = marking
+                        break
+
+        # Save the updated data
+        setattr(observation, quarter, quarter_data)
+        observation.save()
+
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error'}, status=400)

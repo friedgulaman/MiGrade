@@ -110,12 +110,12 @@ urlpatterns = [
 
 
 
-    path('school-information/', AdminViews.school_information_view, name='school_information'),
-    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
-    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
-    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
-    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
-    path('school-information/', AdminViews.school_information_view, name='school_information'),
+    # path('school-information/', AdminViews.school_information_view, name='school_information'),
+    # path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
+    # path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
+    # path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
+    # path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
+    # path('school-information/', AdminViews.school_information_view, name='school_information'),
     path('add/', AdminViews.add_school_view, name='add_school'),
     path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
     path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
@@ -209,11 +209,11 @@ urlpatterns = [
     path('teacher_sf10/edit/<int:id>/', TeacherViews.teacher_sf10_edit, name='teacher_sf10_edit'),
     path('create/core_values/', TeacherViews.create_core_values, name='create_core_values'),
     path('create/behavior_statements/', TeacherViews.create_behavior_statements, name='create_behavior_statements'),
-    path('create_learners_observation/<str:grade>/<str:section>/', TeacherViews.create_learners_observation, name='create_learners_observation'),
+    # path('create_learners_observation/<str:grade>/<str:section>/', TeacherViews.create_learners_observation, name='create_learners_observation'),
     path('students_behavior/<str:grade>/<str:section>/', TeacherViews.students_behavior_view, name='students_behavior'),
     path('save-observations/', TeacherViews.save_observations, name='save_observations'),
-
-
+    path('display-observation/<str:grade>/<str:section>/', TeacherViews.display_learners_observation, name='display_learners_observation'),
+    path('update-markings/', TeacherViews.update_markings, name='update_markings'),
 
    # urls.py
     # Generation

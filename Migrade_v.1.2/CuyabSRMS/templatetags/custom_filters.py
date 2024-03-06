@@ -43,3 +43,7 @@ def replace(value, arg):
 @register.filter
 def get_dict_keys(dictionary):
     return dictionary.keys()
+
+@register.filter(name='get_key')
+def get_key(dictionary, key):
+    return dictionary.get(key, '')

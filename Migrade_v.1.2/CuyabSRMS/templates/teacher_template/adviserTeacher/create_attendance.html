@@ -11,11 +11,62 @@
     text-decoration: none;
     cursor: pointer;
 }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    #save-attendance {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    select, input[type="number"] {
+        padding: 5px;
+        font-size: 16px;
+    }
+
+    .editable {
+        cursor: pointer;
+    }
+
+
 </style>
 <div class="container">
     <div class=" me-4">
         <a class="back-button">&larr;</a>
     </div>
+    <h1>Add Attendance Records</h1>
     <form id="attendance-form">
         {% csrf_token %}
         <table class="table" id="attendance-table">
@@ -68,6 +119,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('attendance-form').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent default form submission
+            var schoolDaysInput = document.getElementById('school-days-input');
+            var schoolDaysValue = schoolDaysInput.value.trim();
+    
+            if (schoolDaysValue === '') {
+                alert('Please enter the number of school days.');
+                return; // Stop form submission if "School Days" field is empty
+            }
             
             var formData = new FormData(this); // Create form data object
             
@@ -93,7 +151,16 @@
                     alert('Attendance records saved successfully');
                     // You can add further logic here if needed
                 } else {
-                    alert('Failed to save attendance records');
+                    // Check if the response status is 400 (Bad Request)
+                    if (response.status === 400) {
+                        // Parse the error response JSON
+                        response.json().then(data => {
+                            // Display the error message to the user
+                            alert(data.error);
+                        });
+                    } else {
+                        alert('Failed to save attendance records or Data ');
+                    }
                 }
             })
             .catch(error => {

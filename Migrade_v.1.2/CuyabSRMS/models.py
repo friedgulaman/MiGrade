@@ -45,6 +45,7 @@ class SchoolInformation(models.Model):
     school_name = models.CharField(max_length=200)
     district = models.CharField(max_length=100)
     school_year = models.CharField(max_length=100)
+    principal_name = models.CharField(max_length=100)
     
 class Teacher(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)

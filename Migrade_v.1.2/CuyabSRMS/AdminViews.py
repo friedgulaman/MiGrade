@@ -157,7 +157,8 @@ def edit_school_view(request, school_id):
             'division': school.division,
             'school_id': school.school_id,
             'district': school.district,
-            'school_year': school.school_year
+            'school_year': school.school_year,
+            'principal_name': school.principal_name
         }
 
         # Handle form submission and update the database with the edited information
