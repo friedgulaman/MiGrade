@@ -9,6 +9,7 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from django.core.paginator import Paginator
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,7 +24,13 @@ def teachers_activity(request):
     if request.user.is_authenticated:
         user = request.user
         activity_logs = ActivityLog.objects.filter(user=user).order_by('-timestamp')
-        return render(request, 'teacher_template/teachers_activity.html', {'activity_logs': activity_logs})
+        
+        # Pagination
+        paginator = Paginator(activity_logs, 7)  # Show 7 activity logs per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'teacher_template/teachers_activity.html', {'page_obj': page_obj})
     else:
         return HttpResponse("Please log in to view your activity logs.")
 
@@ -31,13 +38,20 @@ def teachers_activity(request):
 def admin_activity(request):
     try:
         admin = Admin.objects.get(user=request.user)
-        custom_user = admin.user  # Assuming 'username' is the ForeignKey to CustomUser in Admin model
+        custom_user = admin.user
         activity_logs = ActivityLog.objects.filter(user=custom_user).order_by('-timestamp')
-        return render(request, 'admin_template/admin_activity.html', {'activity_logs': activity_logs})
+        
+        # Pagination
+        paginator = Paginator(activity_logs, 7)  # Show 7 activity logs per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'admin_template/admin_activity.html', {'page_obj': page_obj})
     except Admin.DoesNotExist:
         return HttpResponse("User does not have associated admin information.")
     except ActivityLog.DoesNotExist:
-        return render(request, 'admin_template/admin_activity.html', {'activity_logs': []})
+        return render(request, 'admin_template/admin_activity.html', {'page_obj': []})
+    
     
 def ShowLoginPage(request):
     if request.user.is_authenticated:

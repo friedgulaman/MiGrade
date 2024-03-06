@@ -229,6 +229,16 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
 
     return render(request, "teacher_template/adviserTeacher/transfer_quarterly_grade.html", context)
 
+@require_POST
+def reject_message(request):
+    message_id = request.POST.get('message_id')
+
+    try:
+        message = InboxMessage.objects.get(pk=message_id)
+        message.delete()
+        return JsonResponse({'success': True, 'message': 'Message rejected and deleted.'})
+    except InboxMessage.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Message not found'})
 
 @require_POST
 def accept_message(request):

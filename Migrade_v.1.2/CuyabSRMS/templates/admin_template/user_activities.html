@@ -8,12 +8,20 @@ Adviser Teacher
 <style>
     .page_nav{
     position: fixed;
-    bottom: 10px;
-    
+    bottom: 0;
+    }
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
     }
 </style>
     <div class="container p-3">
-        <h3>User Activities</h3>
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>User Activity</h3>
+            <a class="back-button">&larr;</a>
+        </div>
         {% if page_obj %}
         <div class=" table-responsive card p-3 mb-3 mt-2">
         <table class="table table-striped">
@@ -75,4 +83,10 @@ Adviser Teacher
         <p>No activities found for the user.</p>
         {% endif %}
     </div>
+    <script>
+        // JavaScript to handle the back button click event
+        document.querySelector(".back-button").addEventListener("click", function() {
+            window.location.href = 'home_admin';
+        });
+      </script>
 {% endblock main_content %}
