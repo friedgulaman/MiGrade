@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Learners Observation</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            border: 1px solid black;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Create Learners Observation</h2>
+    <form method="post">
+        {% csrf_token %}
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Student</th>
+              {% for quarter in quarters %}
+                <th>{{ quarter }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students %}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{ student.name }}</td>
+                {% for quarter in quarters %}
+                  <td>
+                    <table border="1">
+                      <thead>
+                          <tr>
+                              <th>Core Value</th>
+                              <th>Behavior Statements</th>
+                              <th colspan="4">Markings
+                              
+                              </th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for core_value in core_values %}
+                              {% for behavior_statement in core_value.behaviorstatement_set.all %}
+                                  <tr>
+                                      {% if forloop.first %}
+                                          <td rowspan="{{ core_value.behaviorstatement_set.count }}">{{ core_value.name }}</td>
+                                      {% endif %}
+                                      <td>{{ behavior_statement.statement }}</td>
+                                      <td contenteditable="True"><!-- Add your marking input field for marking 1 here --></td>
+                                      <td contenteditable="True"><!-- Add your marking input field for marking 2 here --></td>
+                                      <td contenteditable="True"> <!-- Add your marking input field for marking 3 here --></td>
+                                      <td contenteditable="True"><!-- Add your marking input field for marking 4 here --></td>
+                                  </tr>
+                              {% endfor %}
+                          {% endfor %}
+                      </tbody>
+                  </table>
+                  
+                  
+                  </td>
+                  {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <button type="submit">Submit</button>
+      </form>
+</body>
+</html>
+<script>
+  document.addEventListener('keydown', function(event) {
+      const key = event.key;
+      const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+      if (arrowKeys.includes(key)) {
+          event.preventDefault();
+          const focusedElement = document.activeElement;
+          const cell = focusedElement.closest('td');
+          const row = cell.parentElement;
+          const rowIndex = row.rowIndex;
+          const cellIndex = cell.cellIndex;
+          switch (key) {
+              case 'ArrowUp':
+                  if (rowIndex > 1) {
+                      row.previousElementSibling.cells[cellIndex].focus();
+                  }
+                  break;
+              case 'ArrowDown':
+                  if (rowIndex < row.parentElement.rows.length + 1) {
+                      row.nextElementSibling.cells[cellIndex].focus();
+                  }
+                  break;
+              case 'ArrowLeft':
+                  if (cellIndex > 0) {
+                      row.cells[cellIndex - 1].focus();
+                  }
+                  break;
+              case 'ArrowRight':
+                  if (cellIndex < row.cells.length - 1) {
+                      row.cells[cellIndex + 1].focus();
+                  }
+                  break;
+              default:
+                  break;
+          }
+      }
+  });
+</script>

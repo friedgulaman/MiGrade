@@ -28,6 +28,7 @@ Confirm Subject Deletion
                                     <th>School Name</th>
                                     <th>District</th>
                                     <th>School Year</th>
+                                    <th>Principal</th>
                                     <th></th> <!-- New column for actions -->
                                 </tr>
                             </thead>
@@ -40,6 +41,7 @@ Confirm Subject Deletion
                                     <td>{{ school.school_name }}</td>
                                     <td>{{ school.district }}</td>
                                     <td>{{ school.school_year }}</td>
+                                    <td>{{school.principal_name}}</td>
                                     <td>
                                         <a class="btn btn-primary" href="{% url 'edit_school' school.id %}">Edit</a>
                                         <a  class="btn btn-danger" href="{% url 'delete_school' school.id %}">Delete</a>

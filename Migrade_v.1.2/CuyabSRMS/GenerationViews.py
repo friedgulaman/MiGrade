@@ -1,7 +1,8 @@
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Student, FinalGrade, GeneralAverage, ClassRecord, Subject, SchoolInformation, QuarterlyGrades
+from django.http import HttpResponseNotFound
+from .models import Student, FinalGrade, GeneralAverage, ClassRecord, Subject, SchoolInformation, QuarterlyGrades, AdvisoryClass, AttendanceRecord, LearnersObservation,BehaviorStatement,  SchoolInformation
 from .views import log_activity
 import os
 import openpyxl
@@ -23,6 +24,10 @@ from .utils import (
     write_sf9_data,
     write_sf9_grades,
     write_school_info,
+    write_sf9_attendance,
+    write_sf9_total_attendance,
+    write_sf9_learners_observation,
+    write_sf9_school_info,
 
     #SUMMARY OF QUARTERLY
     write_school_info_quarterly,
@@ -33,7 +38,7 @@ from .utils import (
     #FINAL GRADE AND GENERAL AVERAGE
     write_school_info_general_average,
     write_student_name_general_average,
-    write_final_grade_ENGLISH,
+    write_final_grade_subject
 )
 from .models import GradeScores
 
@@ -130,8 +135,9 @@ def generate_final_and_general_grades(request, grade, section):
         student__grade=grade, student__section=section,
     )
 
-    final_grades_query = FinalGrade.objects.filter(
-        student__grade=grade, student__section=section,
+    advisory_class_query = AdvisoryClass.objects.filter(
+        grade=grade,
+        section=section
     )
 
     school_info = SchoolInformation.objects.all()
@@ -154,7 +160,7 @@ def generate_final_and_general_grades(request, grade, section):
 
      # Original file path for SF9 template
         # Original file path
-    excel_file_name = "FINAL GRADE.xlsx"
+    excel_file_name = "GRADE 4-6_SUMMARY FINAL GRADES.xlsx"
 
     # Get the current working directory
     # current_directory = os.getcwd()
@@ -192,7 +198,15 @@ def generate_final_and_general_grades(request, grade, section):
         
         write_school_info_general_average(sheet, school_info, general_grades_query)
         write_student_name_general_average(sheet, general_grades_query)
-        write_final_grade_ENGLISH(sheet, final_grades_query, general_grades_query)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
+
         # write_quarterly_grade_AP(sheet, quarterly_grades_query)
         # write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query)
 
@@ -387,10 +401,34 @@ def generate_excel_for_sf9(request, student_id):
     # Retrieve the student object
     student = get_object_or_404(Student, id=student_id)
 
-    final_grade = FinalGrade.objects.filter(student=student).first()
-
+    # Query for other related objects
+    advisory_class = AdvisoryClass.objects.filter(student=student).first()
     general_average = GeneralAverage.objects.filter(student=student).first()
+    attendance_record = AttendanceRecord.objects.filter(student=student).first()
+    learners_observation = LearnersObservation.objects.filter(student=student).first()
 
+    school_info =  SchoolInformation.objects.all()
+
+    print(school_info)
+    # Check which specific records are missing
+    missing_records = []
+    if advisory_class is None:
+        missing_records.append("Advisory Class")
+    if general_average is None:
+        missing_records.append("General Average")
+    if attendance_record is None:
+        missing_records.append("Attendance Record")
+    if learners_observation is None:
+        missing_records.append("Learners Observation")
+
+    # If any required record is missing, return a 404 response with a message
+    if missing_records:
+        missing_records_str = ', '.join(missing_records)
+        return HttpResponseNotFound(f"One or more required records not found for this student: {missing_records_str}")
+
+    # Proceed with generating the Excel file
+    print(f"learners_observation: {learners_observation}")
+    
     student_name = student.name
     grade_name = student.grade
     section_name = student.section
@@ -402,7 +440,7 @@ def generate_excel_for_sf9(request, student_id):
 
 
 
-    print(student_name)
+    # print(student_name)
 
     # Original file path for SF9 template
         # Original file path
@@ -430,39 +468,47 @@ def generate_excel_for_sf9(request, student_id):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
+    # try:
         # Open the copied SF9 Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    workbook = openpyxl.load_workbook(copied_file_path)
 
             # Select the desired sheet (use the correct sheet name from the output)
-        front_sheet_name = 'FRONT'
-        front_sheet = workbook[front_sheet_name]
+    front_sheet_name = 'FRONT'
+    front_sheet = workbook[front_sheet_name]
 
-        back_sheet_name = 'BACK'
-        back_sheet = workbook[back_sheet_name]
+    back_sheet_name = 'BACK'
+    back_sheet = workbook[back_sheet_name]
 
             # Write SF9-specific data using a utility function (update this function based on your needs)
-        write_sf9_data(front_sheet, student)
+    write_sf9_data(front_sheet, student)
+    write_sf9_school_info(front_sheet, school_info)
+    write_sf9_grades(back_sheet, advisory_class, general_average)
 
-        write_sf9_grades(back_sheet, final_grade, general_average)
+    write_sf9_attendance(front_sheet, attendance_record)
+    write_sf9_total_attendance(front_sheet, attendance_record)
+
+    write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_1', 25)
+    write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_2', 26)
+    write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_3', 27)
+    write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_4', 28)
 
             # Save the changes to the SF9 workbook
-        workbook.save(copied_file_path)
+    workbook.save(copied_file_path)
 
             # Create an HTTP response with the updated SF9 Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = f'SF9_{student_name}_{grade_name}_{section_name}_{timestamp}.xlsx'
-        encoded_filename = urllib.parse.quote(filename)
-        response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'SF9_{student_name}_{grade_name}_{section_name}_{timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
 
-        with open(copied_file_path, 'rb') as excel_file:
+    with open(copied_file_path, 'rb') as excel_file:
                 response.write(excel_file.read())
 
-        return response
+    return response
 
-    except Exception as e:
-        # Handle exceptions, such as a corrupted file
-        return HttpResponse(f"An error occurred: {e}")
+    # except Exception as e:
+    #     # Handle exceptions, such as a corrupted file
+    #     return HttpResponse(f"An error occurred: {e}")
 
 
 

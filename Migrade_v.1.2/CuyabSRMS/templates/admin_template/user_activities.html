@@ -1,18 +1,51 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>User Activities</title>
-</head>
-<body>
-    <h1>User Activities</h1>
-    {% if activities %}
-    <ul>
-        {% for activity in activities %}
-        <li>{{ activity.timestamp }} - {{ activity.action }}: {{ activity.details }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No activities found for the user.</p>
-    {% endif %}
-</body>
-</html>
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+Edit School Information
+{% endblock page_title %}
+
+{% block main_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">User Activities</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{% url 'download_activities' %}" method="GET" class="mb-3">
+                        <input type="hidden" name="id" value="{{ user_id }}">
+                        <button type="submit" class="btn btn-success">Download Activities</button>
+                    </form>
+                    {% if activities %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in activities %}
+                                <tr>
+                                    <td>{{ activity.timestamp }}</td>
+                                    <td>{{ activity.action }}</td>
+                                    <td>{{ activity.details }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info" role="alert">
+                        No activities found for the user.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

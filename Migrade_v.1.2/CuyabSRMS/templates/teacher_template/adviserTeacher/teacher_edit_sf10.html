@@ -1,0 +1,110 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% block page_title %}
+UPLOAD SF10
+{% endblock page_title %}
+{% block main_content %}
+<div class="container">
+    <h1>Edit SF10 Data</h1>
+    <form id="sf10-edit-form" method="post" action="{% url 'teacher_sf10_edit' id=extracted_data.id %}">
+        {% csrf_token %}
+        <!-- Last Name -->
+        <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" class="form-control" id="last_name" name="Last_Name" value="{{ extracted_data.last_name }}" required>
+        </div>
+
+        <!-- First Name -->
+        <div class="form-group">
+            <label for="first_name">First Name:</label>
+            <input type="text" class="form-control" id="first_name" name="First_Name" value="{{ extracted_data.first_name }}" required>
+        </div>
+
+        <!-- Middle Name -->
+        <div class="form-group">
+            <label for="middle_name">Middle Name:</label>
+            <input type="text" class="form-control" id="middle_name" name="Middle_Name" value="{{ extracted_data.middle_name }}">
+        </div>
+
+        <!-- Sex -->
+        <div class="form-group">
+            <label for="sex">Sex:</label>
+            <input type="text" class="form-control" id="sex" name="SEX" value="{{ extracted_data.sex }}">
+        </div>
+
+        <!-- Classified as Grade -->
+        <div class="form-group">
+            <label for="classified_as_grade">Classified as Grade:</label>
+            <input type="text" class="form-control" id="classified_as_grade" name="Classified_as_Grade" value="{{ extracted_data.classified_as_grade }}">
+        </div>
+
+        <!-- LRN -->
+        <div class="form-group">
+            <label for="lrn">LRN:</label>
+            <input type="text" class="form-control" id="lrn" name="LRN" value="{{ extracted_data.lrn }}">
+        </div>
+
+        <!-- Name of School -->
+        <div class="form-group">
+            <label for="name_of_school">Name of School:</label>
+            <input type="text" class="form-control" id="name_of_school" name="Name_of_School" value="{{ extracted_data.name_of_school }}">
+        </div>
+
+        <!-- School Year -->
+        <div class="form-group">
+            <label for="school_year">School Year:</label>
+            <input type="text" class="form-control" id="school_year" name="School_Year" value="{{ extracted_data.school_year }}">
+        </div>
+
+        <!-- General Average -->
+        <div class="form-group">
+            <label for="general_average">General Average:</label>
+            <input type="text" class="form-control" id="general_average" name="General_Average" value="{{ extracted_data.general_average }}">
+        </div>
+
+        <!-- Birthdate -->
+        <div class="form-group">
+            <label for="birthdate">Birthdate:</label>
+            <input type="text" class="form-control" id="birthdate" name="Birthdate" value="{{ extracted_data.birthdate }}">
+        </div>
+
+        <!-- Processed Document ID -->
+        <input type="hidden" id="processed_document_id" name="processed_document_id" value="{{ extracted_data.processed_document_id }}">
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+<div class="col-md-6">
+    <div class="container w-100">
+        <!-- PDF Container -->
+        <div class="pdf-container">
+            <embed src="data:application/pdf;base64,{{ pdf_content_base64 }}" type="application/pdf" width="100%" height="600px">
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('toggle-btn').addEventListener('click', function () {
+            var pdfContainer = document.querySelector('.pdf-container');
+            if (pdfContainer.style.display === 'none') {
+                pdfContainer.style.display = 'block';
+                this.innerText = 'Hide PDF';
+            } else {
+                pdfContainer.style.display = 'none';
+                this.innerText = 'Show PDF';
+            }
+        });
+    });
+</script>
+<script>
+    // Check if the URL contains a success parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const successParam = urlParams.get('success');
+
+    // If success parameter is present, show an alert
+    if (successParam === 'true') {
+        alert('SF10 information updated successfully.');
+    }
+</script>
+
+{% endblock main_content %}

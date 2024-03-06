@@ -1,0 +1,149 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% load static %}
+{% block title %}
+Student List for {{ grade }} {{ section }} {{ class_type}}
+{% endblock title %}
+
+{% block main_content %}
+<style>
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .search-form {
+        margin-bottom: 10px;
+    }
+
+    .search-input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 200px;
+    }
+
+    .search-icon {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 8px;
+        cursor: pointer;
+    }
+
+    .search-icon:hover {
+        background-color: #0056b3;
+    }
+
+    .edit-btn {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 12px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .edit-btn:hover {
+        background-color: #218838;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #999;
+    }
+</style>
+<div class="container-fluid p-3 ">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4 p-1">
+                <div class="d-flex align-items-center">
+                    <h3>School Form 10</h3>
+                    <div class="ml-3">
+                        <div class="nav-link">
+                            <a class="btn btn-primary" href="{% url 'teacher_upload_documents' %}">Upload</a>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <div class="nav-link">
+                            <a class="btn btn-success" href="{% url 'teacher_batch_process_documents' %}">Batch Upload</a>
+                        </div>
+                    </div>
+                </div>
+                <form class="search-form" method="GET">
+                    <div class="form-row align-items-center">
+                        <div class="col-auto">
+                            <input class="form-control search-input" type="search" name="search" placeholder="Search..." value="{{ search_query }}">
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-primary search-icon fa fa-search" type="submit"></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Last Name</th>
+                            <th>First Name</th>
+                            <th>Middle Name</th>
+                            <th>Sex</th>
+                            <th>BirthDate</th>
+                            <th>LRN</th>
+                            <th>School Year</th>
+                            <th>Grade</th>
+                            <th>School</th>
+                            <th>General Average</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for extracted_data in all_extracted_data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ extracted_data.last_name }}</td>
+                            <td>{{ extracted_data.first_name }}</td>
+                            <td>{{ extracted_data.middle_name }}</td>
+                            <td>{{ extracted_data.sex }}</td>
+                            <td>{{ extracted_data.birthdate }}</td>
+                            <td>{{ extracted_data.lrn }}</td>
+                            <td>{{ extracted_data.school_year }}</td>
+                            <td>{{ extracted_data.classified_as_grade }}</td>
+                            <td>{{ extracted_data.name_of_school }}</td>
+                            <td>{{ extracted_data.general_average }}</td>
+                            <td>
+                                <a href="{% url 'teacher_sf10_edit_view' extracted_data.id %}" class="edit-btn">Edit</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="12" class="no-data">No extracted data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

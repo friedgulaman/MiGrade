@@ -1,7 +1,7 @@
 from django import forms
 from .models import ProcessedDocument
 from .models import Subject
-from .models import GradeScores, SchoolInformation
+from .models import GradeScores, SchoolInformation, CoreValues, BehaviorStatement, LearnersObservation
 from multiupload.fields import MultiFileField
 
 
@@ -36,3 +36,39 @@ class SchoolInformationForm(forms.ModelForm):
 
 class DocumentBatchUploadForm(forms.Form):
     documents = MultiFileField(min_num=1, max_num=None, max_file_size=1024*1024*5)
+
+class CoreValuesForm(forms.ModelForm):
+    class Meta:
+        model = CoreValues
+        fields = ['name', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),  # Adjust widget as needed
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CoreValuesForm, self).__init__(*args, **kwargs)
+        self.fields['description'].required = False
+
+class BehaviorStatementForm(forms.ModelForm):
+    class Meta:
+        model = BehaviorStatement
+        fields = ['core_value', 'statement']
+
+class LearnersObservationForm(forms.Form):
+    def __init__(self, students, behavior_statements, *args, **kwargs):
+        super(LearnersObservationForm, self).__init__(*args, **kwargs)
+        
+        for student in students:
+            for quarter in range(1, 5):  # Four quarters
+                for behavior_statement in behavior_statements:
+                    field_name = f'student_{student.id}_quarter_{quarter}_behavior_{behavior_statement.id}'
+                    self.fields[field_name] = forms.ChoiceField(
+                        label=behavior_statement.statement,
+                        choices=[
+                            ('AO', 'Always Observed'),
+                            ('SO', 'Sometimes Observed'),
+                            ('RO', 'Rarely Observed'),
+                            ('NO', 'Not Observed'),
+                        ],
+                        widget=forms.RadioSelect
+                    )
