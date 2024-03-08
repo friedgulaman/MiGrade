@@ -368,13 +368,13 @@ class ArchivedClassRecord(models.Model):
 class ArchivedGradeScores(models.Model):
     archived_class_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE, related_name='archived_gradescores')
     student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
-    scores_hps_written = models.JSONField()
-    scores_hps_performance = models.JSONField()
+    scores_hps_written = models.JSONField(null=True)
+    scores_hps_performance = models.JSONField(null=True)
     total_ww_hps = models.FloatField(null=True, blank=True)
     total_pt_hps = models.FloatField(null=True, blank=True)
     total_qa_hps = models.FloatField(null=True, blank=True)
-    written_works_scores = models.JSONField()
-    performance_task_scores = models.JSONField()
+    written_works_scores = models.JSONField(null=True)
+    performance_task_scores = models.JSONField(null=True)
     initial_grades = models.FloatField(null=True, blank=True)
     transmuted_grades = models.FloatField(null=True, blank=True)
     total_score_written = models.FloatField(null=True, blank=True)
@@ -398,13 +398,13 @@ class ArchivedGradeScores(models.Model):
 class GradeScores(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
-    scores_hps_written = models.JSONField()  # Adjust with your actual field type
-    scores_hps_performance = models.JSONField()  # Adjust with your actual field type
+    scores_hps_written = models.JSONField(null=True)  # Adjust with your actual field type
+    scores_hps_performance = models.JSONField(null=True)  # Adjust with your actual field type
     total_ww_hps = models.FloatField(null=True, blank=True)
     total_pt_hps = models.FloatField(null=True, blank=True)
     total_qa_hps = models.FloatField(null=True, blank=True)
-    written_works_scores = models.JSONField()
-    performance_task_scores = models.JSONField()
+    written_works_scores = models.JSONField(null=True)
+    performance_task_scores = models.JSONField(null=True)
     initial_grades = models.FloatField(null=True, blank=True)
     transmuted_grades = models.FloatField(null=True, blank=True)
     total_score_written = models.FloatField(null=True, blank=True)

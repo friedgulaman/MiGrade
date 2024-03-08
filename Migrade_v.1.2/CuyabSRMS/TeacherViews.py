@@ -70,6 +70,8 @@ from json import loads as json_loads
 from django.db.models import Q
 import datetime
 from datetime import datetime
+from google.cloud import documentai_v1beta3 as documentai
+from google.api_core.client_options import ClientOptions
 
 @login_required
 def home_teacher(request):
@@ -2839,6 +2841,7 @@ def class_record_details(excel_file, sheet_name):
 
     for row in sheet.iter_rows():
         row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
+        print("Row values:", row_values)
         
         if "TEACHER:" in row_values:
             grade_section = row_values[2].split('-')
@@ -2873,6 +2876,7 @@ def class_record_details(excel_file, sheet_name):
 
         if teacher_row and school_row and region_row:
             break
+
 
     return teacher_row, school_row, region_row
 
@@ -3131,6 +3135,7 @@ def class_record_upload(request):
 
             # Process each row in class_record_data
         class_record_data_scores = [process_row(row) for row in class_record_data]
+
       
             # Create a dictionary where student's name is the key and the rest of the row values are stored as a list
         class_record_data_scores_with_names = {}
@@ -3149,9 +3154,11 @@ def class_record_upload(request):
                     cleaned_row = row[index:] if index < len(row) else []
 
                     # Update the dictionary with the cleaned row values
-                    student_info.update(divide_scores(cleaned_row))
+                    # student_info.update(divide_scores(cleaned_row))
                     class_record_data_scores_with_names[student_name] = student_info
-
+        # print(f"class_record_data {class_record_data}")
+        # print(f"classdatascores: {class_record_data_scores}")
+        # print(f"class_with_names {class_record_data_scores_with_names}")
 
             # Remove the first student from the dictionary
         if class_record_data_scores_with_names:
@@ -3161,6 +3168,8 @@ def class_record_upload(request):
         students_scores = class_record_data_scores_with_names
 
         teacher_info, school_info, region_info = class_record_details(excel_file, sheet_name)
+
+        # print(teacher_info, school_info)
             
         highest_possible_scores = find_highest_possible_scores(excel_file, sheet_name)
         highest_possible_scores_with_label = {}
@@ -3814,3 +3823,697 @@ def update_markings(request):
         return JsonResponse({'status': 'success'})
     else:
         return JsonResponse({'status': 'error'}, status=400)
+
+
+
+
+
+@login_required
+@require_POST
+def sf2_upload(request):
+    if request.method == 'POST' and 'pdf_file' in request.FILES:
+        pdf_file = request.FILES['pdf_file']
+        content = pdf_file.read()
+
+
+        # Set up Google Cloud Document AI client
+        project_id = "1083879771832"
+        location = "us"  # Format is "us" or "eu"
+        processor_id = "827ebb48ef18ecd"  # Create processor before running sample
+        processor_version = "pretrained-form-parser-v2.0-2022-11-10"  # Refer to https://cloud.google.com/document-ai/docs/manage-processor-versions for more information
+
+
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+            # Process the document and extract tables using Document AI
+        document = process_document_form_sample(project_id, location, processor_id, processor_version, content, "application/pdf")
+
+
+            # Extract table data
+        table_data = []
+
+
+        for page in document.pages:
+                for table in page.tables:
+                    # Extract text content of header and body rows
+                    for row in table.header_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        row_hps = "HIGHEST POSSIBLE SCORE"
+                        table_data.append(row_content)
+
+
+                    for row in table.body_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        table_data.append(row_content)
+        # print(table_data)
+        sf2_data_scores = [sf2_process_row(row) for row in table_data]
+        # print(f"sf2_Data_scores {sf2_data_scores}")
+
+
+        sf2_names = {}
+
+
+        for row in sf2_data_scores:
+            if len(row) >= 2 and isinstance(row[1], str):  # Check if the row has at least two elements and the element at index 1 is a string
+                student_name = row[1]
+                student_info = {'student_name': student_name}
+               
+                index = 1
+                while index < len(row) and (row[index] == 0 or row[index] is None):
+                    index += 1
+                # You can add additional processing of the row here if needed
+                cleaned_row = row[index:] if index < len(row) else []
+                sf2_names[student_name] = student_info
+                student_info.update(sf2_scores_pdf(cleaned_row))
+
+
+        school_info = {}
+        grade_info = None
+
+
+        for row in table_data:
+            # print("Row values:", row)
+
+
+            for element in row:
+                # Check if the element starts with the desired string
+                if element.startswith("Report for the Month of"):
+                    month_row = element.strip().split("\n")[-1]
+                    month = month_row.split()[-1]
+                    school_info['month'] = month
+                    print("Month:", month)
+
+
+                    break  # Exit t
+
+
+                if element.startswith("Month"):
+                    month_part = element.split(':')[1].strip()
+                    month = month_part.split()[0]  # Extract the first word, which should be the month name
+                    school_info['month'] = month
+                    # print("Month:", month)  # Print "Month:" along with the month value
+
+
+                    break
+
+
+            if "Name of School" in row:
+                grade_info = {
+                    "school_name": row[1],
+                    "grade": row[3],
+                    "section": row[5]
+                }
+            if school_info and grade_info:
+                break
+
+
+        # print(school_info)
+
+
+        # print(table_data)
+        # print(f"sf2_name {sf2_names}")
+
+
+        if sf2_names:
+            keys_to_remove = list(sf2_names.keys())[1:3]  # Get keys for the next two items
+            for key in keys_to_remove:
+                del sf2_names[key]
+
+
+        students_scores = sf2_names
+
+        print(f"students_score: {students_scores}")
+
+
+        extracted_sf2 = {
+                "details": {
+                    "school_info": school_info,
+                },
+                "students_scores": students_scores,
+        }
+
+
+        json_filename = 'result_sf3.json'
+        json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+
+
+            # Ensure the directory exists, if not create it
+        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
+
+        with open(json_path, 'w') as json_file:
+                json.dump(extracted_sf2, json_file, indent=4)  
+           
+            # Map the loaded JSON data to the model
+        success = sf2_map_data_to_model_pdf(extracted_sf2, request.user.teacher.id, request)  # Passing request object
+        # print(success)
+        # form_fields_data = []
+
+
+        # for page in document.pages:
+        #         for field in page.form_fields:
+        #             name = layout_to_text(field.field_name, document.text).strip()
+        #             value = layout_to_text(field.field_value, document.text).strip()
+        #             form_field_data = {'name': name, 'value': value}
+        #             form_fields_data.append(form_field_data)
+
+
+        # json_data = {'table_data': table_data, 'form_fields_data': form_fields_data}
+        json_data = {'table_data': table_data}
+        json_file_path = 'document_data.json'
+        with open(json_file_path, 'w') as json_file:
+                json.dump(json_data, json_file)
+
+
+        print(f'Table data saved to {json_file_path}')
+
+
+        return render(request, 'admin_template/table_data.html', {'table_data': table_data})
+# return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data})
+
+    elif request.method == 'POST':
+        excel_file = request.FILES['excel_file']
+        sheet_name = request.POST.get('sheet_name')
+
+
+        sf2_data = sf2_read_excel_values(excel_file, sheet_name)
+
+        sf2_data_scores = [sf2_process_row(row) for row in sf2_data]
+
+        sf2_names = {}
+
+        # print(sf2_data_scores)
+
+        for row in sf2_data_scores:
+            if isinstance(row[1], str):  # Check if the element at index 1 is a string
+                student_name = row[1]
+                student_info = {'student_name': student_name}
+                
+                index = 1
+                while index < len(row) and (row[index] == 0 or row[index] is None):
+                        index += 1
+                # You can add additional processing of the row here if needed
+                cleaned_row = row[index:] if index < len(row) else []
+                sf2_names[student_name] = student_info
+                student_info.update(sf2_scores(cleaned_row))
+
+        if sf2_names:
+            keys_to_remove = list(sf2_names.keys())[1:3]  # Get keys for the next two items
+            for key in keys_to_remove:
+                del sf2_names[key]
+
+        students_scores = sf2_names
+
+        school_info, grade_info = sf2_class_record_details(excel_file, sheet_name)
+        
+        # print(f"sf2_Data: {sf2_data}")
+        # print(f"sf2_data_scores {sf2_data_scores}")
+        # print(sf2_names)
+        
+        # print(school_info, grade_info)
+
+        extracted_sf2 = {
+                "details": {
+                    "grade_info": grade_info,
+                    "school_info": school_info,
+                },
+                "students_scores": students_scores,
+        }
+
+        print(extracted_sf2)
+        json_filename = 'result_sf2.json'
+        json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+
+            # Ensure the directory exists, if not create it
+        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
+        with open(json_path, 'w') as json_file:
+                json.dump(extracted_sf2, json_file, indent=4)  
+            
+            # Map the loaded JSON data to the model
+        success = sf2_map_data_to_model(extracted_sf2, request.user.teacher.id, request)  # Passing request object
+
+        if success:
+                return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
+        else:
+                # If there's an error, return the same template with an error flag
+                return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html', {'error': True})
+        # except Exception as e:
+        #     # Add error message
+        #     messages.error(request, f'Error processing file: {e}')
+
+        return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
+    else:
+        # Return a response in case of non-POST requests
+        return HttpResponse("Only POST requests are allowed.")
+
+def process_document_form_sample(
+    project_id: str,
+    location: str,
+    processor_id: str,
+    processor_version: str,
+    content: bytes,
+    mime_type: str,
+) -> documentai.Document:
+    # Set up Google Cloud Document AI client
+    client_options = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    client = documentai.DocumentProcessorServiceClient(client_options=client_options)
+
+    # The full resource name of the processor version
+    name = client.processor_version_path(project_id, location, processor_id, processor_version)
+
+    # Configure the process request
+    request = documentai.ProcessRequest(
+        name=name,
+        raw_document=documentai.RawDocument(content=content, mime_type=mime_type),
+    )
+
+    # Process the document and extract tables using Document AI
+    result = client.process_document(request=request)
+
+    # Return the processed document
+    return result.document
+
+def layout_to_text(layout, document_text):
+    """
+    Extracts text content from the layout of a Document AI element.
+    """
+    text_content = ""
+    for text_segment in layout.text_anchor.text_segments:
+        start_index = text_segment.start_index
+        end_index = text_segment.end_index
+        text_content += document_text[start_index:end_index]
+    return text_content
+
+def sf2_read_excel_values(excel_file, sheet_name):
+    # Loading the workbook
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    data = []
+    start_reading = False
+
+    for row in sheet.iter_rows():
+        row_values = []
+        for cell in row[1:]:
+            cell_value = cell.value
+            row_values.append(cell_value)
+        
+        if any(cell_value is not None and cell_value != 0 for cell_value in row_values):
+            start_reading = True
+            
+            if start_reading:
+                data.append(row_values)
+
+    return data
+
+def sf2_process_row(row):
+    # Find the index of the first non-None element after index 0
+    index = 1
+    while index < len(row) and row[index] is None:
+        index += 1
+
+    # # Remove the three None values next to index 0
+    # row = [row[0]] + row[index:]
+
+    # Find the index of the last non-None element
+    last_index = len(row) - 1
+    while last_index >= 0 and row[last_index] is None:
+        last_index -= 1
+
+    # Remove all None values from the end of the list until reaching a non-None value
+    row = row[:last_index + 1]
+
+    return row
+
+def sf2_scores(score_list):
+    # Check if there are enough elements in the score_list for Absent
+    if len(score_list) >= 37:
+        absent = {"absent": score_list[36]}
+    else:
+        absent = None
+    
+    # Check if there are enough elements in the score_list for Present
+    if len(score_list) >= 39:
+        present = {"present": score_list[38]}
+    else:
+        present = None
+    
+    return {
+        "ABSENT": absent,
+        "PRESENT": present
+    }
+
+def sf2_scores_pdf(score_list):
+    student_absent = None
+    student_present = None
+
+
+        # Check if there are enough elements in the student_info list for Absent
+    if len(score_list) >= 3:  # Adjust the index as per your data structure
+        if score_list[-1] == '':
+            student_absent = {"absent": score_list[-3]}
+        else:
+            student_absent = {"absent": score_list[-2]} # Adjust the index as per your data structure
+
+
+        # Check if there are enough elements in the student_info list for Present
+    if len(score_list) >= 2:
+            if score_list[-1] == "":
+                student_present = {"present": score_list[-2]}
+            else:  # Adjust the index as per your data structure
+                student_present = {"present": score_list[-1]}  # Adjust the index as per your data structure
+
+
+    return {
+            # Assuming student name is at index 1
+            "ABSENT": student_absent,
+            "PRESENT": student_present
+        }
+
+
+def sf2_class_record_details(excel_file, sheet_name):
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    school_info = None
+    grade_info = None
+
+    for row in sheet.iter_rows():
+        row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
+        print("Row values:", row_values)  # Debug print statement
+
+        if "Report for the Month of" in row_values:
+            school_info = {
+                    "school_id": row_values[1],
+                    "school_year": row_values[3],
+                    "month": row_values[5],
+                }
+        
+        if "Name of School" in row_values:
+            grade_info = {
+                "school_name": row_values[1],
+                "grade": row_values[3],
+                "section": row_values[5]
+            }
+
+        if school_info and grade_info:
+            break
+
+    return school_info, grade_info
+
+
+
+@transaction.atomic
+def sf2_map_data_to_model(json_data, teacher_id, request):
+    # Initialize messages list
+    messages_list = []
+    success = True
+
+    # Extract details from JSON
+    details = json_data['details']
+    students_scores = json_data['students_scores']
+
+
+        # Extract grade and school info
+    grade_info = details['grade_info']
+    school_info = details['school_info']
+
+        # Extract month from school info
+    month = school_info.get('month', 'UNKNOWN')
+    response_data = {'message': 'Attendance records saved successfully'}
+    error_response_data = {'error': f'Attendance records for {month} already exist'}
+    total_school_days = 0
+    total_days_present = 0
+    total_days_absent = 0
+
+   
+
+    if AttendanceRecord.objects.filter(attendance_record__has_key=month).exists():
+            return JsonResponse(error_response_data, status=400)
+    
+        # Iterate over student names in JSON data
+    for student_name, student_data in students_scores.items():
+            school_days = student_data.get('ABSENT', {}).get('absent', 0) + student_data.get('PRESENT', {}).get('present', 0)
+            days_present = student_data.get('PRESENT', {}).get('present', 0)
+            days_absent = student_data.get('ABSENT', {}).get('absent', 0)
+
+            total_school_days += school_days
+            total_days_present += days_present
+            total_days_absent += days_absent
+            # Find the student with the same name
+            try:
+                student = Student.objects.get(name=student_name)
+            except Student.DoesNotExist:
+                messages_list.append(('error', f"Student '{student_name}' does not exist in the database."))
+                continue  # Skip this student if not found
+
+            # Prepare attendance record data
+            # attendance_record = {
+            #     month: {
+            #         "No. of School Days": student_data.get('ABSENT', {}).get('absent', 0) + student_data.get('PRESENT', {}).get('present', 0),
+            #         "No. of Days Present": student_data.get('PRESENT', {}).get('present', 0),
+            #         "No. of Days Absent": student_data.get('ABSENT', {}).get('absent', 0)
+            #     }
+            # }
+
+            # # Update or create AttendanceRecord for the student
+            # record, created = AttendanceRecord.objects.update_or_create(
+            #     student=student,
+            #     defaults={'attendance_record': attendance_record}
+            # )
+
+            # Check if an attendance record exists for the student and month
+            try:
+                attendance_record = AttendanceRecord.objects.get(
+                    student=student,
+                    attendance_record__has_key=month  # Filter records based on the key
+                )
+
+                # Update the existing attendance record with new data
+                existing_data = attendance_record.attendance_record.get(month, {})
+                existing_data['No. of School Days'] = school_days
+                existing_data['No. of Days Present'] = days_present
+                existing_data['No. of Days Absent'] = days_absent
+                attendance_record.attendance_record[month] = existing_data
+                attendance_record.save()
+
+            except AttendanceRecord.DoesNotExist:
+                # If the AttendanceRecord does not exist for the student and month,
+                # create a new record with the given data and month
+                # Check if the student has any existing records, if not, create a new one
+                if not AttendanceRecord.objects.filter(student=student).exists():
+                    AttendanceRecord.objects.create(
+                        student=student,
+                        attendance_record={
+                            month: {
+                                'No. of School Days': school_days,
+                                'No. of Days Present': days_present,
+                                'No. of Days Absent': days_absent
+                            }
+                        }
+                    )
+                else:
+                    # Retrieve all existing records for the student
+                    existing_records = AttendanceRecord.objects.filter(student=student)
+                    # Update all existing records by adding the new month and its data
+                    for record in existing_records:
+                        record.attendance_record[month] = {
+                            'No. of School Days': school_days,
+                            'No. of Days Present': days_present,
+                            'No. of Days Absent': days_absent
+                        }
+                        record.save()
+
+            total_attendance_record, created = AttendanceRecord.objects.get_or_create(
+                student=student,  # For total attendance record
+                defaults={
+                    'attendance_record': {
+                        'Total': {
+                            'Total School Days': school_days,
+                            'Total Days Present': days_present,
+                            'Total Days Absent': days_absent
+                        }
+                    }
+                }
+            )
+
+            if not created:
+                # If the record already exists, update the existing data
+                total_record_data = total_attendance_record.attendance_record.get('TOTAL', {})
+                # Ensure that the 'Total' key exists and initialize it with default values if not
+                if not total_record_data:
+                    total_record_data = {
+                        'Total School Days': 0,
+                        'Total Days Present': 0,
+                        'Total Days Absent': 0
+                    }
+                total_record_data['Total School Days'] += school_days
+                total_record_data['Total Days Present'] += days_present
+                total_record_data['Total Days Absent'] += days_absent
+                total_attendance_record.attendance_record['TOTAL'] = total_record_data
+
+                total_attendance_record.attendance_record = {
+                    k: total_attendance_record.attendance_record[k] for k in sorted(total_attendance_record.attendance_record.keys()) if k != 'TOTAL'
+                }
+                total_attendance_record.attendance_record['TOTAL'] = total_record_data
+                total_attendance_record.save()
+
+            # Check if the record was created or updated
+
+    if created:
+            messages_list.append(('success', f"Total attendance record created successfully."))
+    else:
+            messages_list.append(('success', f"Total attendance record updated successfully."))
+
+    for message_type, message_text in messages_list:
+        if message_type == 'success':
+            messages.success(request, message_text)
+        elif message_type == 'error':
+            messages.error(request, message_text)
+
+   
+
+    return success
+
+
+@transaction.atomic
+def sf2_map_data_to_model_pdf(json_data, teacher_id, request):
+    # Initialize messages list
+    messages_list = []
+    success = True
+
+    # Extract details from JSON
+    details = json_data['details']
+    students_scores = json_data['students_scores']
+    school_info = details['school_info']
+    # Extract month from school info
+    month = school_info.get('month', 'UNKNOWN')
+    response_data = {'message': 'Attendance records saved successfully'}
+    error_response_data = {'error': f'Attendance records for {month} already exist'}
+    total_school_days = 0
+    total_days_present = 0
+    total_days_absent = 0
+
+    # print(details)
+    # print(students_scores)
+    # print(school_info)
+
+    created = False
+
+    # if AttendanceRecord.objects.filter(attendance_record__has_key=month).exists():
+    #     return JsonResponse(error_response_data, status=400)
+    # Iterate over student names in JSON data
+    for student_name, student_data in students_scores.items():
+        absent_count = student_data.get('ABSENT', {}).get('absent', 0)
+        present_count = student_data.get('PRESENT', {}).get('present', 0)
+
+        absent_count = int(absent_count) if isinstance(absent_count, str) and absent_count.isdigit() else absent_count
+        present_count = int(present_count) if isinstance(present_count, str) and present_count.isdigit() else present_count
+
+        school_days = absent_count + present_count
+        days_present = present_count
+        days_absent = absent_count
+
+        total_school_days += school_days
+        total_days_present += days_present
+        total_days_absent += days_absent
+
+
+        try:
+            student = Student.objects.get(name=student_name)
+        except Student.DoesNotExist:
+            messages_list.append(('error', f"Student '{student_name}' does not exist in the database."))
+            print(f"student does not exist {student_name}")
+            continue  # Skip this student if not found
+
+       
+
+        try:
+            attendance_record = AttendanceRecord.objects.get(
+                student=student,
+                attendance_record__has_key=month  # Filter records based on the key
+            )
+            print(attendance_record)
+
+            # Update the existing attendance record with new data
+            existing_data = attendance_record.attendance_record.get(month, {})
+            existing_data['No. of School Days'] = school_days
+            existing_data['No. of Days Present'] = days_present
+            existing_data['No. of Days Absent'] = days_absent
+            attendance_record.attendance_record[month] = existing_data
+            attendance_record.save()
+
+        except AttendanceRecord.DoesNotExist:
+            # If the AttendanceRecord does not exist for the student and month,
+            # create a new record with the given data and month
+            # Check if the student has any existing records, if not, create a new one
+            if not AttendanceRecord.objects.filter(student=student).exists():
+                AttendanceRecord.objects.create(
+                    student=student,
+                    attendance_record={
+                        month: {
+                            'No. of School Days': school_days,
+                            'No. of Days Present': days_present,
+                            'No. of Days Absent': days_absent
+                        }
+                    }
+                )
+            else:
+                # Retrieve all existing records for the student
+                existing_records = AttendanceRecord.objects.filter(student=student)
+                # Update all existing records by adding the new month and its data
+                for record in existing_records:
+                    record.attendance_record[month] = {
+                        'No. of School Days': school_days,
+                        'No. of Days Present': days_present,
+                        'No. of Days Absent': days_absent
+                    }
+                    record.save()
+
+        total_attendance_record, created = AttendanceRecord.objects.get_or_create(
+            student=student,  # For total attendance record
+            defaults={
+                'attendance_record': {
+                    'Total': {
+                        'Total School Days': school_days,
+                        'Total Days Present': days_present,
+                        'Total Days Absent': days_absent
+                    }
+                }
+            }
+        )
+
+        if not created:
+            # If the record already exists, update the existing data
+            total_record_data = total_attendance_record.attendance_record.get('TOTAL', {})
+            # Ensure that the 'Total' key exists and initialize it with default values if not
+            if not total_record_data:
+                total_record_data = {
+                    'Total School Days': 0,
+                    'Total Days Present': 0,
+                    'Total Days Absent': 0
+                }
+            total_record_data['Total School Days'] += school_days
+            total_record_data['Total Days Present'] += days_present
+            total_record_data['Total Days Absent'] += days_absent
+            total_attendance_record.attendance_record['TOTAL'] = total_record_data
+
+            total_attendance_record.attendance_record = {
+                k: total_attendance_record.attendance_record[k] for k in sorted(total_attendance_record.attendance_record.keys()) if k != 'TOTAL'
+            }
+            total_attendance_record.attendance_record['TOTAL'] = total_record_data
+            total_attendance_record.save()
+
+        # Check if the record was created or updated
+        if created:
+            messages_list.append(('success', f"Total attendance record created successfully."))
+        else:
+            messages_list.append(('success', f"Total attendance record updated successfully."))
+
+    for message_type, message_text in messages_list:
+        if message_type == 'success':
+            messages.success(request, message_text)
+        elif message_type == 'error':
+            messages.error(request, message_text)
+
+    return success

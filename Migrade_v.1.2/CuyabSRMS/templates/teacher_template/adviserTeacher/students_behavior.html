@@ -121,6 +121,7 @@
                     success: function(response) {
                         // Handle success response
                         alert("Learner's Observation Value for " + selectedQuarter + " successfully created");
+                        location.reload();
                     },
                     error: function(xhr, status, error) {
                         // Handle error

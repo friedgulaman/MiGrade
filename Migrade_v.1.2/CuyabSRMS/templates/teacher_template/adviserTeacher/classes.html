@@ -49,7 +49,7 @@ New Class List
                                     </div>
                                     <div class="col"> <!-- Use a column to contain the select -->
                                         <select class="form-select" id="schoolYearDropdown" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                                            <option placeholder="Select School Year"></option>
+                                             <option value="" disabled selected>Select School Year</option>
                                             <!-- Iterate through unique school years and populate the dropdown -->
                                             {% for year in unique_school_years %}
                                             <option value="?school_year={{ year }}" {% if year == selected_school_year %} selected {% endif %}>{{ year }}</option>
@@ -242,6 +242,8 @@ New Class List
         var selectedYear = dropdown.options[dropdown.selectedIndex].text;
         var currentYear = "{{ selected_school_year }}";  // Get the currently selected year
 
+        console.log(selectedYear)
+        coonsole.log(currentYear)
         // Check if the selected year is different from the current year
         if (selectedYear !== currentYear) {
             window.location = dropdown.value;  // Reload the page with the selected school year

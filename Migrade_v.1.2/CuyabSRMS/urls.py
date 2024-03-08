@@ -173,7 +173,8 @@ urlpatterns = [
     path('display_student_transmuted_grades/', teacher_required(TeacherViews.display_student_transmuted_grades), name='display_student_transmuted_grades'),
 
     path('class_record_upload', teacher_required(TeacherViews.class_record_upload), name='class_record_upload'),
-
+    path('upload_sf2/', teacher_required(TeacherViews.sf2_upload), name='upload_sf2'),
+    
     path('update_final_grade/', teacher_required(TeacherViews.update_final_grade), name='update_final_grade'),
 
     path('tempo_newupload', teacher_required(TeacherViews.tempo_newupload), name='tempo_newupload'),
@@ -291,7 +292,7 @@ urlpatterns = [
     path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
     
 
-    path('inbox/', teacher_required(TransferRecordViews.inbox), name='inbox'),
+        
     path('transfer_details', teacher_required(TransferRecordViews.transfer_details), name='transfer_details'),
     path('transfer_record', teacher_required(TransferRecordViews.transfer_record), name='transfer_record'),
     # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
