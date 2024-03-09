@@ -694,7 +694,7 @@ def get_students_by_grade_and_section(request):
             teacher = get_object_or_404(Teacher, user=user)
 
             # Use a more unique identifier for the class record name
-            classrecord_name = f'{grade_name} {section_name} {subject_name} {quarter_name}'
+            classrecord_name = f'{grade_name} - {section_name} - {subject_name} - {quarter_name}'
 
             classrecord = ClassRecord(
                 name=classrecord_name,
@@ -713,11 +713,15 @@ def get_students_by_grade_and_section(request):
             students = Student.objects.filter(grade=grade_name, section=section_name)
 
             subject = Subject.objects.get(name=subject_name)
+            print(subject)
+            assessments = subject.assessment
+            print(assessments)
 
+# Extract the keys from the dictionary
+            assessment_types = list(assessments.keys())
 
-            weighted_written_works_percentage = subject.written_works_percentage
-            weighted_performance_task_percentage = subject.performance_task_percentage
-            weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
+            # print(f"assessment_types {assessment_types}")
+
 
 
             # Create a dictionary to store scores for each student
@@ -742,9 +746,9 @@ def get_students_by_grade_and_section(request):
                 'grade_name': grade_name,
                 'section_name': section_name,
                 'student_scores': student_scores,
-                'written_works_percentage': weighted_written_works_percentage,
-                'performance_task_percentage': weighted_performance_task_percentage,
-                'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
+                'assessment': assessments,
+                 'assessment_types': assessment_types,
+                 'assessment_values': list(assessments.values()),
             }
 
             return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
@@ -759,6 +763,8 @@ def get_students_by_grade_and_section(request):
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
 
 
+
+
 def calculate_grades(request):
     if request.method == "POST":
         # print(request.POST)
@@ -771,22 +777,39 @@ def calculate_grades(request):
         print(section_name)
         print(subject_name)
         print(quarters_name)
+        
+        subject = Subject.objects.get(name=subject_name)
+        # print(subject)
+        assessments = subject.assessment
+        # print(assessments)
+
+        sanitized_assessment_types = list(assessments.keys())
+
+        assessmentTypes = [assessmentType.replace(' ', '-').lower() for assessmentType in sanitized_assessment_types]
+
+        # print(assessmentTypes)
+
+        scores_hps = {}  # Store scores for each assessment type
+
+        for assessmentType in assessmentTypes:
+            # Extract scores for each assessment type
+            scores_hps[assessmentType] = [request.POST.get(f"max_{assessmentType}_{i}") for i in range(1, 11)]
+
+        # Extract total scores for each assessment type
+        total_hps = {
+            assessmentType: request.POST.get(f"total_max_{assessmentType}")
+            for assessmentType in assessmentTypes
+        }
+
+        # print(f"scores_hps: {scores_hps}")
+        # print(total_hps)
+
+        weights = {}
+        for assessmentType in assessmentTypes:
+                weights[assessmentType] = request.POST.get(f"weight_{assessmentType}")
 
 
-        scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
-        scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
-        total_ww_hps = request.POST.get("total_max_written_works")
-        total_pt_hps = request.POST.get("total_max_performance_task")
-        total_qa_hps = request.POST.get("total_max_quarterly") or 0
-        weight_written= request.POST.get("written_works_weight")
-        weight_performance= request.POST.get("performance_task_weight")
-        weight_quarterly= request.POST.get("quarterly_assessment_weight")
-
-        print(scores_pt_hps)
-        print(scores_ww_hps)
-        print(total_ww_hps)
-        print(total_pt_hps)
-        print(total_qa_hps)
+        # print(weights)
 
         
 
@@ -804,128 +827,111 @@ def calculate_grades(request):
         print(logs)
 
         students = Student.objects.filter(grade=grade_name, section=section_name)
-        
+
         for student in students:
-            scores_written_works = []
-            scores_performance_task = []
-
-            total_score_written = 0
-            total_max_score_written = 0
-            total_score_performance = 0
-            total_max_score_performance = 0
-            total_score_quarterly = 0
-            total_max_score_quarterly = 0
-
-            weight_input_written = 0
-            weight_input_performance = 0
-            weight_input_quarterly = 0
-
-            for i in range(1, 11):
+            total_weighted_score = 0
+            total_weight = 0
+            scores_assessment = {}
+            
+            # Loop through each assessment type for the current student
+            for assessmentType in assessmentTypes:
+            
+                total_score = 0
+                total_max_score = 0
+                scores_assessment[assessmentType] = {
+                    'scores': [],
+                    'total_score': total_score,
+                    'percentage_score': None,
+                    'total_weighted_score': None
+                }
+                
                 # Retrieve scores and maximum scores for each component
-                written_works = request.POST.get(f"scores_written_{student.id}_{i}")
-                max_written_works = request.POST.get(f"max_written_works_{i}" )  # Change this to the actual maximum score
-                performance_task = request.POST.get(f"scores_performance_task_{student.id}_{i}" )
-                max_performance_task = request.POST.get(f"max_performance_task_{i}")  # Change this to the actual maximum score
-                # quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
-                # max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
+                for i in range(1, 11):
+                    score = request.POST.get(f"scores_{assessmentType}_{student.id}_{i}")
+                    max_score = request.POST.get(f"max_{assessmentType}_{i}")
+                    
+                    # Check if score is None before converting to float and appending to scores list
+                    if score is not None:
+                        if score != '':
+                            scores_assessment[assessmentType]['scores'].append(float(score))
+                        else:
+                            scores_assessment[assessmentType]['scores'].append(score)
+                    else:
+                        scores_assessment[assessmentType]['scores'].append(0)
+                        
+                    total_score += float(score) if score is not None and score.isnumeric() else 0
+                    total_max_score += float(max_score) if max_score is not None and max_score.isnumeric() else 0
+                    scores_assessment[assessmentType]['total_score'] = total_score
                 
-                # Retrieve weights for each component
-                weight_input_written = float(request.POST.get(f"written_works_weight", ))  # Change this to the actual weight for written works
-                weight_input_performance = float(request.POST.get(f"performance_task_weight" ))  # Change this to the actual weight for performance tasks
-                # weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
-                
-                scores_written_works.append(float(written_works) if written_works.isnumeric() else "")
-                scores_performance_task.append(float(performance_task) if performance_task.isnumeric() else "")
-                # scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
-                total_score_written += float(written_works) if written_works.isnumeric() else 0
-                total_max_score_written += float(max_written_works) if max_written_works.isnumeric() else 0
-                total_score_performance += float(performance_task) if performance_task.isnumeric() else 0
-                total_max_score_performance += float(max_performance_task) if max_performance_task.isnumeric() else 0
+                # Extract weight for the current assessment type
+                    weight_input = request.POST.get(f"weight_{assessmentType}")
+                    if weight_input is not None:
+                        weight_input = float(weight_input)
+                    else:
+                        weight_input = 0 
+                    
+                    # Perform calculations based on the assessment type
+                    if total_max_score > 0:
+                        percentage_score = round((total_score / total_max_score) * 100, 2)
+                    else:
+                        percentage_score = None if total_max_score == 0 else 0
 
-                # total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-                # total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
+                    weighted_score = (percentage_score / 100) * weight_input if percentage_score is not None else None
+                    rounded_weighted_score = round(weighted_score, 2) if weighted_score is not None else None
+                    
 
-            # Perform your calculations (as in your original code)
+                    # Accumulate total weighted score and total weight for all assessment types
+                    if weighted_score is not None:
+                        total_weighted_score += weighted_score
+                        total_weight += weight_input
 
-            quarterly_assessment = request.POST.get(f"qa_total_{student.id}")
-            max_quarterly_assessment = request.POST.get(f"total_max_quarterly")  # Change this to the actual maximum score
-                
-            weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
-            total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-            total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
-
-            if total_max_score_written > 0:
-                percentage_score_written = round((total_score_written / total_max_score_written) * 100, 2)
+                    scores_assessment[assessmentType]['percentage_score'] = percentage_score
+                    scores_assessment[assessmentType]['total_weighted_score'] = rounded_weighted_score
+            
+                # print(f"Assessment Type: {assessmentType}")
+                # print(f"Total Score: {total_score}")
+                # print(f"Total Max Score: {total_max_score}")
+                # print(f"Percentage Score: {percentage_score}")
+                # print(f"Weighted Score: {weighted_score}")
+                # print(f"Rounded Weighted Score: {rounded_weighted_score}")
+                # print(f"Scores: {scores}")
+            
+            # Calculate initial grades for the current student after processing all assessment types
+            if total_weight > 0:
+                initial_grades = total_weighted_score 
             else:
-                 percentage_score_written = None if total_max_score_written == 0 else 0
+                initial_grades = None  # Handle the case where total weight is 0 or not provided
+            
+            # Round off initial grades
+            rounded_initial_grades = round(initial_grades, 2) if initial_grades is not None else None
+            
+            # Calculate the transmuted grades (if needed) based on the initial grades
+            transmuted_grades = transmuted_grade(initial_grades) 
+            
+            # Round off transmuted grades
+            rounded_transmuted_grades = round(transmuted_grades, 2) if transmuted_grades is not None else None
 
-            if total_max_score_performance > 0:
-               percentage_score_performance = round((total_score_performance / total_max_score_performance) * 100, 2)
-            else:
-                 percentage_score_performance = None if total_max_score_performance == 0 else 0
+            # print(f"Student: {student.id}")
+            # print(f"Initial Grades: {rounded_initial_grades}")
+            # print(f"Transmuted Grades: {rounded_transmuted_grades}")
 
-            if total_max_score_quarterly > 0:
-               percentage_score_quarterly = round((total_score_quarterly / total_max_score_quarterly) * 100, 2)
-            else:
-                percentage_score_quarterly = None if total_max_score_quarterly == 0 else 0
+            grade_scores_data = {
+                    'scores_hps': scores_hps,
+                    'total_hps': total_hps,
+                    'weight_input': weights,
+                    'scores_per_assesment' : scores_assessment,
+                }
+            
+            # grade_scores_json = json.dumps(grade_scores_data)
 
-            weight_written = float(weight_input_written)
-            weight_performance = float(weight_input_performance)
-            weight_quarterly = float(weight_input_quarterly)
-
-            weighted_score_written = (percentage_score_written / 100) * weight_written if percentage_score_written is not None else None
-            weighted_score_performance = (percentage_score_performance / 100) * weight_performance if percentage_score_performance is not None else None
-            weighted_score_quarterly = (percentage_score_quarterly / 100) * weight_quarterly if percentage_score_quarterly is not None else None
-
-            rounded_weighted_score_written = round(weighted_score_written, 2) if weighted_score_written is not None else None
-            rounded_weighted_score_performance = round(weighted_score_performance, 2) if weighted_score_performance is not None else None
-            rounded_weighted_score_quarterly = round(weighted_score_quarterly, 2) if weighted_score_quarterly is not None else None
-
-            if weighted_score_written is not None and weighted_score_performance is not None and weighted_score_quarterly is not None:
-                initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
-            else:
-                initial_grades = None
-            transmuted_grades = transmuted_grade(initial_grades)
-
-            if total_max_score_written > 0 or total_max_score_performance > 0 or total_max_score_quarterly > 0:
-                initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
-                transmuted_grades = transmuted_grade(initial_grades)
-
-                # Rounding only if the value is not empty
-                rounded_initial_grades = round(initial_grades, 2) if initial_grades != "" else ""
-                rounded_transmuted_grades = round(transmuted_grades, 2) if transmuted_grades != "" else ""
-            else:
-                rounded_initial_grades = None
-                rounded_transmuted_grades = None
 
             # Create a new GradeScores object and populate its fields
             grade_scores = GradeScores(
                 student=student,
                 class_record=class_record,
-                scores_hps_written=scores_ww_hps,
-                scores_hps_performance=scores_pt_hps,
-                total_ww_hps=total_ww_hps,
-                total_qa_hps=total_qa_hps,
-                total_pt_hps=total_pt_hps,
-                written_works_scores=scores_written_works,
-                performance_task_scores=scores_performance_task,
                 initial_grades= rounded_initial_grades,
                 transmuted_grades= rounded_transmuted_grades,
-                total_score_written=total_score_written,
-                total_max_score_written=total_max_score_written,
-                total_score_performance=total_score_performance,
-                total_max_score_performance=total_max_score_performance,
-                total_score_quarterly=total_score_quarterly,
-                total_max_score_quarterly=total_max_score_quarterly,
-                percentage_score_written=percentage_score_written,
-                percentage_score_performance=percentage_score_performance,
-                percentage_score_quarterly=percentage_score_quarterly,
-                weighted_score_written=rounded_weighted_score_written,
-                weighted_score_performance=rounded_weighted_score_performance,
-                weighted_score_quarterly=rounded_weighted_score_quarterly,
-                weight_input_written=weight_input_written,
-                weight_input_performance=weight_input_performance,
-                weight_input_quarterly=weight_input_quarterly
+                grade_scores=grade_scores_data 
             )
 
             # Save the GradeScores object to the database
@@ -1676,6 +1682,21 @@ def delete_month(request):
                 try:
                     record = AttendanceRecord.objects.get(student=student)
                     if month in record.attendance_record:
+                        # Extract the attendance data for the month being deleted
+                        attendance_data = record.attendance_record[month]
+
+                        # Update total school days, days present, and days absent if 'Total' exists
+                        if 'TOTAL' in record.attendance_record:
+                            total_school_days = attendance_data.get('No. of School Days', 0)
+                            total_days_present = attendance_data.get('No. of Days Present', 0)
+                            total_days_absent = attendance_data.get('No. of Days Absent', 0)
+
+                            # Subtract the attendance data for the deleted month from the total records
+                            record.attendance_record['TOTAL']['Total School Days'] -= total_school_days
+                            record.attendance_record['TOTAL']['Total Days Present'] -= total_days_present
+                            record.attendance_record['TOTAL']['Total Days Absent'] -= total_days_absent
+
+                        # Delete the attendance record for the month
                         del record.attendance_record[month]
                         record.save()
                 except AttendanceRecord.DoesNotExist:
@@ -3826,171 +3847,10 @@ def update_markings(request):
 
 
 
-
-
 @login_required
 @require_POST
 def sf2_upload(request):
-    if request.method == 'POST' and 'pdf_file' in request.FILES:
-        pdf_file = request.FILES['pdf_file']
-        content = pdf_file.read()
-
-
-        # Set up Google Cloud Document AI client
-        project_id = "1083879771832"
-        location = "us"  # Format is "us" or "eu"
-        processor_id = "827ebb48ef18ecd"  # Create processor before running sample
-        processor_version = "pretrained-form-parser-v2.0-2022-11-10"  # Refer to https://cloud.google.com/document-ai/docs/manage-processor-versions for more information
-
-
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
-            # Process the document and extract tables using Document AI
-        document = process_document_form_sample(project_id, location, processor_id, processor_version, content, "application/pdf")
-
-
-            # Extract table data
-        table_data = []
-
-
-        for page in document.pages:
-                for table in page.tables:
-                    # Extract text content of header and body rows
-                    for row in table.header_rows:
-                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
-                        row_hps = "HIGHEST POSSIBLE SCORE"
-                        table_data.append(row_content)
-
-
-                    for row in table.body_rows:
-                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
-                        table_data.append(row_content)
-        # print(table_data)
-        sf2_data_scores = [sf2_process_row(row) for row in table_data]
-        # print(f"sf2_Data_scores {sf2_data_scores}")
-
-
-        sf2_names = {}
-
-
-        for row in sf2_data_scores:
-            if len(row) >= 2 and isinstance(row[1], str):  # Check if the row has at least two elements and the element at index 1 is a string
-                student_name = row[1]
-                student_info = {'student_name': student_name}
-               
-                index = 1
-                while index < len(row) and (row[index] == 0 or row[index] is None):
-                    index += 1
-                # You can add additional processing of the row here if needed
-                cleaned_row = row[index:] if index < len(row) else []
-                sf2_names[student_name] = student_info
-                student_info.update(sf2_scores_pdf(cleaned_row))
-
-
-        school_info = {}
-        grade_info = None
-
-
-        for row in table_data:
-            # print("Row values:", row)
-
-
-            for element in row:
-                # Check if the element starts with the desired string
-                if element.startswith("Report for the Month of"):
-                    month_row = element.strip().split("\n")[-1]
-                    month = month_row.split()[-1]
-                    school_info['month'] = month
-                    print("Month:", month)
-
-
-                    break  # Exit t
-
-
-                if element.startswith("Month"):
-                    month_part = element.split(':')[1].strip()
-                    month = month_part.split()[0]  # Extract the first word, which should be the month name
-                    school_info['month'] = month
-                    # print("Month:", month)  # Print "Month:" along with the month value
-
-
-                    break
-
-
-            if "Name of School" in row:
-                grade_info = {
-                    "school_name": row[1],
-                    "grade": row[3],
-                    "section": row[5]
-                }
-            if school_info and grade_info:
-                break
-
-
-        # print(school_info)
-
-
-        # print(table_data)
-        # print(f"sf2_name {sf2_names}")
-
-
-        if sf2_names:
-            keys_to_remove = list(sf2_names.keys())[1:3]  # Get keys for the next two items
-            for key in keys_to_remove:
-                del sf2_names[key]
-
-
-        students_scores = sf2_names
-
-        print(f"students_score: {students_scores}")
-
-
-        extracted_sf2 = {
-                "details": {
-                    "school_info": school_info,
-                },
-                "students_scores": students_scores,
-        }
-
-
-        json_filename = 'result_sf3.json'
-        json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
-
-
-            # Ensure the directory exists, if not create it
-        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
-
-
-        with open(json_path, 'w') as json_file:
-                json.dump(extracted_sf2, json_file, indent=4)  
-           
-            # Map the loaded JSON data to the model
-        success = sf2_map_data_to_model_pdf(extracted_sf2, request.user.teacher.id, request)  # Passing request object
-        # print(success)
-        # form_fields_data = []
-
-
-        # for page in document.pages:
-        #         for field in page.form_fields:
-        #             name = layout_to_text(field.field_name, document.text).strip()
-        #             value = layout_to_text(field.field_value, document.text).strip()
-        #             form_field_data = {'name': name, 'value': value}
-        #             form_fields_data.append(form_field_data)
-
-
-        # json_data = {'table_data': table_data, 'form_fields_data': form_fields_data}
-        json_data = {'table_data': table_data}
-        json_file_path = 'document_data.json'
-        with open(json_file_path, 'w') as json_file:
-                json.dump(json_data, json_file)
-
-
-        print(f'Table data saved to {json_file_path}')
-
-
-        return render(request, 'admin_template/table_data.html', {'table_data': table_data})
-# return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data})
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
         excel_file = request.FILES['excel_file']
         sheet_name = request.POST.get('sheet_name')
 
@@ -4017,9 +3877,7 @@ def sf2_upload(request):
                 student_info.update(sf2_scores(cleaned_row))
 
         if sf2_names:
-            keys_to_remove = list(sf2_names.keys())[1:3]  # Get keys for the next two items
-            for key in keys_to_remove:
-                del sf2_names[key]
+            del sf2_names[next(iter(sf2_names))]
 
         students_scores = sf2_names
 
@@ -4066,43 +3924,6 @@ def sf2_upload(request):
         # Return a response in case of non-POST requests
         return HttpResponse("Only POST requests are allowed.")
 
-def process_document_form_sample(
-    project_id: str,
-    location: str,
-    processor_id: str,
-    processor_version: str,
-    content: bytes,
-    mime_type: str,
-) -> documentai.Document:
-    # Set up Google Cloud Document AI client
-    client_options = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
-    client = documentai.DocumentProcessorServiceClient(client_options=client_options)
-
-    # The full resource name of the processor version
-    name = client.processor_version_path(project_id, location, processor_id, processor_version)
-
-    # Configure the process request
-    request = documentai.ProcessRequest(
-        name=name,
-        raw_document=documentai.RawDocument(content=content, mime_type=mime_type),
-    )
-
-    # Process the document and extract tables using Document AI
-    result = client.process_document(request=request)
-
-    # Return the processed document
-    return result.document
-
-def layout_to_text(layout, document_text):
-    """
-    Extracts text content from the layout of a Document AI element.
-    """
-    text_content = ""
-    for text_segment in layout.text_anchor.text_segments:
-        start_index = text_segment.start_index
-        end_index = text_segment.end_index
-        text_content += document_text[start_index:end_index]
-    return text_content
 
 def sf2_read_excel_values(excel_file, sheet_name):
     # Loading the workbook
@@ -4163,32 +3984,6 @@ def sf2_scores(score_list):
         "PRESENT": present
     }
 
-def sf2_scores_pdf(score_list):
-    student_absent = None
-    student_present = None
-
-
-        # Check if there are enough elements in the student_info list for Absent
-    if len(score_list) >= 3:  # Adjust the index as per your data structure
-        if score_list[-1] == '':
-            student_absent = {"absent": score_list[-3]}
-        else:
-            student_absent = {"absent": score_list[-2]} # Adjust the index as per your data structure
-
-
-        # Check if there are enough elements in the student_info list for Present
-    if len(score_list) >= 2:
-            if score_list[-1] == "":
-                student_present = {"present": score_list[-2]}
-            else:  # Adjust the index as per your data structure
-                student_present = {"present": score_list[-1]}  # Adjust the index as per your data structure
-
-
-    return {
-            # Assuming student name is at index 1
-            "ABSENT": student_absent,
-            "PRESENT": student_present
-        }
 
 
 def sf2_class_record_details(excel_file, sheet_name):
@@ -4264,7 +4059,7 @@ def sf2_map_data_to_model(json_data, teacher_id, request):
             try:
                 student = Student.objects.get(name=student_name)
             except Student.DoesNotExist:
-                messages_list.append(('error', f"Student '{student_name}' does not exist in the database."))
+                # messages_list.append(('error', f"Student '{student_name}' does not exist in the database."))
                 continue  # Skip this student if not found
 
             # Prepare attendance record data
@@ -4375,145 +4170,3 @@ def sf2_map_data_to_model(json_data, teacher_id, request):
 
     return success
 
-
-@transaction.atomic
-def sf2_map_data_to_model_pdf(json_data, teacher_id, request):
-    # Initialize messages list
-    messages_list = []
-    success = True
-
-    # Extract details from JSON
-    details = json_data['details']
-    students_scores = json_data['students_scores']
-    school_info = details['school_info']
-    # Extract month from school info
-    month = school_info.get('month', 'UNKNOWN')
-    response_data = {'message': 'Attendance records saved successfully'}
-    error_response_data = {'error': f'Attendance records for {month} already exist'}
-    total_school_days = 0
-    total_days_present = 0
-    total_days_absent = 0
-
-    # print(details)
-    # print(students_scores)
-    # print(school_info)
-
-    created = False
-
-    # if AttendanceRecord.objects.filter(attendance_record__has_key=month).exists():
-    #     return JsonResponse(error_response_data, status=400)
-    # Iterate over student names in JSON data
-    for student_name, student_data in students_scores.items():
-        absent_count = student_data.get('ABSENT', {}).get('absent', 0)
-        present_count = student_data.get('PRESENT', {}).get('present', 0)
-
-        absent_count = int(absent_count) if isinstance(absent_count, str) and absent_count.isdigit() else absent_count
-        present_count = int(present_count) if isinstance(present_count, str) and present_count.isdigit() else present_count
-
-        school_days = absent_count + present_count
-        days_present = present_count
-        days_absent = absent_count
-
-        total_school_days += school_days
-        total_days_present += days_present
-        total_days_absent += days_absent
-
-
-        try:
-            student = Student.objects.get(name=student_name)
-        except Student.DoesNotExist:
-            messages_list.append(('error', f"Student '{student_name}' does not exist in the database."))
-            print(f"student does not exist {student_name}")
-            continue  # Skip this student if not found
-
-       
-
-        try:
-            attendance_record = AttendanceRecord.objects.get(
-                student=student,
-                attendance_record__has_key=month  # Filter records based on the key
-            )
-            print(attendance_record)
-
-            # Update the existing attendance record with new data
-            existing_data = attendance_record.attendance_record.get(month, {})
-            existing_data['No. of School Days'] = school_days
-            existing_data['No. of Days Present'] = days_present
-            existing_data['No. of Days Absent'] = days_absent
-            attendance_record.attendance_record[month] = existing_data
-            attendance_record.save()
-
-        except AttendanceRecord.DoesNotExist:
-            # If the AttendanceRecord does not exist for the student and month,
-            # create a new record with the given data and month
-            # Check if the student has any existing records, if not, create a new one
-            if not AttendanceRecord.objects.filter(student=student).exists():
-                AttendanceRecord.objects.create(
-                    student=student,
-                    attendance_record={
-                        month: {
-                            'No. of School Days': school_days,
-                            'No. of Days Present': days_present,
-                            'No. of Days Absent': days_absent
-                        }
-                    }
-                )
-            else:
-                # Retrieve all existing records for the student
-                existing_records = AttendanceRecord.objects.filter(student=student)
-                # Update all existing records by adding the new month and its data
-                for record in existing_records:
-                    record.attendance_record[month] = {
-                        'No. of School Days': school_days,
-                        'No. of Days Present': days_present,
-                        'No. of Days Absent': days_absent
-                    }
-                    record.save()
-
-        total_attendance_record, created = AttendanceRecord.objects.get_or_create(
-            student=student,  # For total attendance record
-            defaults={
-                'attendance_record': {
-                    'Total': {
-                        'Total School Days': school_days,
-                        'Total Days Present': days_present,
-                        'Total Days Absent': days_absent
-                    }
-                }
-            }
-        )
-
-        if not created:
-            # If the record already exists, update the existing data
-            total_record_data = total_attendance_record.attendance_record.get('TOTAL', {})
-            # Ensure that the 'Total' key exists and initialize it with default values if not
-            if not total_record_data:
-                total_record_data = {
-                    'Total School Days': 0,
-                    'Total Days Present': 0,
-                    'Total Days Absent': 0
-                }
-            total_record_data['Total School Days'] += school_days
-            total_record_data['Total Days Present'] += days_present
-            total_record_data['Total Days Absent'] += days_absent
-            total_attendance_record.attendance_record['TOTAL'] = total_record_data
-
-            total_attendance_record.attendance_record = {
-                k: total_attendance_record.attendance_record[k] for k in sorted(total_attendance_record.attendance_record.keys()) if k != 'TOTAL'
-            }
-            total_attendance_record.attendance_record['TOTAL'] = total_record_data
-            total_attendance_record.save()
-
-        # Check if the record was created or updated
-        if created:
-            messages_list.append(('success', f"Total attendance record created successfully."))
-        else:
-            messages_list.append(('success', f"Total attendance record updated successfully."))
-
-    for message_type, message_text in messages_list:
-        if message_type == 'success':
-            messages.success(request, message_text)
-        elif message_type == 'error':
-            messages.error(request, message_text)
-
-    return success

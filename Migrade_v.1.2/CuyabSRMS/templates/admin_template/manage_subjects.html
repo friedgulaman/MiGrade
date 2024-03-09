@@ -84,34 +84,17 @@ Manage Subjects
                     <div class="card-body">
                         <h4 class="card-title">ADD SUBJECT</h4>
                         <form method="post" id="addSubjectForm">
-
-                            {% csrf_token %}
-
+                          {% csrf_token %}
                             <div class="form-group">
                                 <label for="name">Subject Name:</label>
-                                <input type="text" name="name" class="form-control" id="name" placeholder="Subject Name"
+                                <input type="text" name="name" class="form-control" id="name" placeholder="SUBJECT NAME" style="text-transform: uppercase;" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assessment">Assessment (Ex.{"written_works_percentage": 40, "performance_task_percentage": 40, "quarterly_assessment_percentage": 20})</label>
+                                <input type="text" name="assessment" class="form-control"
+                                    id="assessment" placeholder='{"written_works_percentage": 40, "performance_task_percentage": 40, "quarterly_assessment_percentage": 20}'
                                     required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="written_works_percentage">Written Works Percentage:</label>
-                                <input type="number" name="written_works_percentage" class="form-control"
-                                    id="written_works_percentage" min="0" max="100"
-                                    placeholder="Written Works Percentage" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="performance_task_percentage">Performance Task Percentage:</label>
-                                <input type="number" name="performance_task_percentage" class="form-control"
-                                    id="performance_task_percentage" min="0" max="100"
-                                    placeholder="Performance Task Percentage" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="quarterly_assessment_percentage">Quarterly Assessment Percentage:</label>
-                                <input type="number" name="quarterly_assessment_percentage" class="form-control"
-                                    id="quarterly_assessment_percentage" min="0" max="100"
-                                    placeholder="Quarterly Assessment Percentage" required>
                             </div>
 
                             <button type="submit" class="btn btn-primary me-2">Add Subject</button>
@@ -135,9 +118,7 @@ Manage Subjects
                                 <tr>
                                     <th>ID</th>
                                     <th>Subject Name</th>
-                                    <th>Written Works Percentage</th>
-                                    <th>Performance Task Percentage</th>
-                                    <th>Quarterly Assessment Percentage</th>
+                                    <th>Assessment</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -145,9 +126,7 @@ Manage Subjects
                                 <tr class="text-muted">
                                     <td>{{ subject.id }}</td>
                                     <td>{{ subject.name }}</td>
-                                    <td>{{ subject.written_works_percentage }}%</td>
-                                    <td>{{ subject.performance_task_percentage }}%</td>
-                                    <td>{{ subject.quarterly_assessment_percentage }}%</td>
+                                    <td>{{ subject.assessment }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -167,9 +146,7 @@ Manage Subjects
                       <tr>
                         <th>No.</th>
                         <th>Subject Name</th>
-                        <th>Written Works Percentage</th>
-                        <th>Performance Task Percentage</th>
-                        <th>Quarterly Assessment Percentage</th>
+                        <th>Assessment</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -181,9 +158,7 @@ Manage Subjects
                               {{ subject.name }}
                             </a>
                           </td>
-                          <td>{{ subject.written_works_percentage }}%</td>
-                          <td>{{ subject.performance_task_percentage }}%</td>
-                          <td>{{ subject.quarterly_assessment_percentage }}%</td>
+                          <td>{{ subject.assessment }}</td>
 
                         </tr>
                       {% endfor %}
@@ -213,16 +188,8 @@ Manage Subjects
                       <input type="text" class="form-control" id="subjectName" name="subjectName" required>
                     </div>
                     <div class="form-group">
-                      <label for="writtenWorksPercentage">Written Works Percentage:</label>
-                      <input type="number" class="form-control" id="writtenWorksPercentage" name="writtenWorksPercentage" min="0" max="100" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="performanceTaskPercentage">Performance Task Percentage:</label>
-                      <input type="number" class="form-control" id="performanceTaskPercentage" name="performanceTaskPercentage" min="0" max="100" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="quarterlyAssessmentPercentage">Quarterly Assessment Percentage:</label>
-                      <input type="number" class="form-control" id="quarterlyAssessmentPercentage" name="quarterlyAssessmentPercentage" min="0" max="100" required>
+                      <label for="assessment">Assessment (JSON format):</label>
+                      <input type="text" class="form-control" id="assessment_update" name="assessment_update" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Update</button>
                   </form>
@@ -244,9 +211,7 @@ Manage Subjects
                                 <tr>
                                     <th>No.</th>
                                     <th>Subject Name</th>
-                                    <th>Written Works Percentage</th>
-                                    <th>Performance Task Percentage</th>
-                                    <th>Quarterly Assessment Percentage</th>
+                                    <th>Assessment</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -255,9 +220,7 @@ Manage Subjects
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ subject.name }}</td>
-                                    <td>{{ subject.written_works_percentage }}%</td>
-                                    <td>{{ subject.performance_task_percentage }}%</td>
-                                    <td>{{ subject.quarterly_assessment_percentage }}%</td>
+                                    <td>{{ subject.assessment }}</td>
                                     <td>
 
                                         <button type="button" class="delete-btn" data-subject-id="{{ subject.id }}" data-subject-name="{{ subject.name }}">
@@ -275,32 +238,27 @@ Manage Subjects
 
 
 </section>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#addSubjectForm').submit(function (event) {
-            event.preventDefault();
-
-            $.ajax({
-                type: 'POST',
-                url: '{% url "add_subject" %}',
-                data: $(this).serialize(),
-                dataType: 'json',
-                success: function (response) {
-                    if (response.success) {
-                        alert('Subject added successfully with ID: ' + response.subject_id);
-                        window.location.href = '{% url "subjects" %}';
-                    } else {
-                        alert('Failed to add subject. Error: ' + response.error_message);
-                    }
-                },
-                error: function () {
-                    alert('An error occurred while processing the request.');
-                }
-            });
+$(document).ready(function(){
+    $('#addSubjectForm').submit(function(e){
+        e.preventDefault(); // Prevent form submission
+        var formData = $(this).serialize(); // Serialize form data
+        $.ajax({
+            type: 'POST',
+            url: '{% url "add_subject" %}',
+            data: formData,
+            success: function(response){
+                // Handle success response here
+                console.log(response);
+            },
+            error: function(xhr, errmsg, err){
+                // Handle error response here
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
         });
     });
+});
 </script>
 <script>
     $(document).ready(function () {
@@ -316,21 +274,21 @@ Manage Subjects
             // Populate the modal with existing data
             $('#subjectId').val(data.id);
             $('#subjectName').val(data.name);
-            $('#writtenWorksPercentage').val(data.written_works_percentage);
-            $('#performanceTaskPercentage').val(data.performance_task_percentage);
-            $('#quarterlyAssessmentPercentage').val(data.quarterly_assessment_percentage);
+            $('#assessment_update').val(JSON.stringify(data.assessment));
+            console.log(data.assessment)
+            console.log(data.name)
+            console.log(data.id)
           },
           error: function (error) {
             console.error('Error fetching subject data:', error);
           }
         });
       });
-  
       // Handle form submission for updating subject
       $('#updateForm').submit(function (e) {
         e.preventDefault();
         $.ajax({
-          url: '/update_subject',  // Replace with the actual URL for updating subject
+          url: 'update_subject',  // Replace with the actual URL for updating subject
           type: 'POST',
           data: $(this).serialize(),
           success: function (data) {
