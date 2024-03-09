@@ -1204,11 +1204,7 @@ def user_activities(request):
         return render(request, 'admin_template/user_activities.html', {'page_obj': page_obj, 'user_id': user_id})
     else:
         return render(request, 'admin_template/user_activities.html', {'error_message': 'User ID is required'})
-        activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
-        return render(request, 'admin_template/user_activities.html', {'activities': activities, 'user_id': user_id})
-    else:
-        # Handle case when no user ID is provided
-        return render(request, 'error.html', {'error_message': 'User ID is required', 'user_id': None})
+
     
 def download_activities(request):
     user_id = request.GET.get('id')

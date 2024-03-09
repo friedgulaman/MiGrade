@@ -272,12 +272,12 @@ Inbox Messages
 <script>
   $(document).ready(function () {
 
-    $(".reject-btn").click(function () {
+    $(".reject-btn-btn").click(function () {
       var message_id = $(this).data("message-id");
       // Retrieve json_data from hidden element
       var json_data = $(this).closest('li').find('.json-data').text();
       $.ajax({
-        url: "/reject_message",
+        url: "/reject-btn_message",
         type: "POST",
         data: {
           'message_id': message_id,
