@@ -94,7 +94,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'CuyabSRMS.AdminViews.admin_base',
-
+                'CuyabSRMS.TransferRecordViews.inbox_count',
             ],
         },
     },

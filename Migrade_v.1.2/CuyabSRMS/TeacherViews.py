@@ -70,6 +70,8 @@ from json import loads as json_loads
 from django.db.models import Q
 import datetime
 from datetime import datetime
+import calendar
+from calendar import month_name
 
 @login_required
 def home_teacher(request):
@@ -1536,6 +1538,7 @@ def create_attendance_view(request):
             class_type_json = student.class_type
             if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
                 students_filtered.append(student)
+                
 
         context = {
             'students': students_filtered,
@@ -1700,19 +1703,24 @@ def attendance_record_view(request, grade, section):
         # Extend the attendance_records list with the records_for_student QuerySet
         attendance_records.append(records_for_student)
 
-
-    months = set()
+    months_set = set()
     for records in attendance_records:
         for record in records:
             if record.attendance_record:
-                months.update(record.attendance_record.keys())
+                months_set.update(record.attendance_record.keys())
 
-    # Pass the attendance records to the template for rendering
+    # Get the list of month names in the correct order
+    month_name = list(calendar.month_name)[1:]
+
+    # Convert the set of months to a list and sort it based on the calendar order
+    months_list = sorted(months_set, key=lambda m: month_name.index(m) if m in month_name else float('inf'))
+
+    # Pass the attendance records and sorted list of months to the template for rendering
     context = {
         'grade': grade,
         'section': section,
         'attendance_records': attendance_records,
-        'months': months
+        'months': months_list
     }
 
     # Render the template with the attendance record data

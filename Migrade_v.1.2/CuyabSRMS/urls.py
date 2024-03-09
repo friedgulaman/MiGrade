@@ -285,6 +285,7 @@ urlpatterns = [
 # transfer record Views
     path('submit-json', teacher_required(TransferRecordViews.submit_json), name='submit_json'),
     path('inbox_open', teacher_required(TransferRecordViews.inbox_open), name='inbox_open'),
+    path('inbox_count', teacher_required(TransferRecordViews.inbox_count), name='inbox_count'),
     path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
     path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
     path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),

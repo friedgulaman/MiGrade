@@ -224,7 +224,21 @@ def inbox_open(request):
 
 
 
-
+def inbox_count(request):
+    try:
+        user = request.user
+        # Check if the logged-in user is a teacher
+        if hasattr(user, 'teacher'):
+            teacher = user.teacher.id
+            count = InboxMessage.objects.filter(to_teacher=teacher).count()
+            return {'count': count}
+        else:
+            # Handle the case where the logged-in user is not a teacher
+            count = 0
+            return{'count': count}
+    except Exception as e:
+        # Handle any exceptions
+        return JsonResponse({'success': False, 'message': str(e)})
 
 
 def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
@@ -238,9 +252,7 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]) )
 )
     
-    
-
-
+  
     # Check if there is more than one Section returned
     if sections.count() != 1:
         raise Http404("Section not found or multiple sections found for the provided parameters.")
@@ -287,7 +299,7 @@ def accept_message(request):
             save_data(message, json_data, teacher)  # Call save_data only once
             save_accepted_message(message)  # Call save_accepted_message to save the accepted message
             message.delete()
-            return JsonResponse({'success': True, 'message': 'Message accepted and saved to AdvisoryClass model.'})
+            return JsonResponse({'success': True, 'message': '✓ Successfully Saved Records.'})
     except InboxMessage.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Message not found'})
 

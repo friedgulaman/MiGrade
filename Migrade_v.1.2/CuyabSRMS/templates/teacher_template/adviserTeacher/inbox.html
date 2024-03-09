@@ -84,7 +84,7 @@ Inbox Messages
                         {% load custom_filters %}
                         <p><strong> * {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}</strong></p> 
                         <p class="form-text"><strong>From Teacher:</strong> {{ message.from_teacher }}</p>
-                        <p class="form-text"><strong>Approved at: </strong> {{ message.date_approved }}</p>
+                        <p class="form-text"><strong>Date: </strong> {{ message.date_received }}</p>
                     </div>
                     <div> 
                       <p class="m-4 open text-muted">Open</p>                 

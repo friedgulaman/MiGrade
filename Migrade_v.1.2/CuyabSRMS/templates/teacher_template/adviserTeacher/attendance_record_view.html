@@ -1,306 +1,295 @@
-    {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
-    {% block title %}
-        New Class Record
-    {% endblock title %}
-    {% block main_content %}
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Attendance Records</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-            }
+{% extends 'teacher_template/adviserTeacher/_blank_base.html' %}
+{% block title %}
+View Attendance Records
+{% endblock title %}
+{% block main_content %}
+<style>
+    .attendance-controls {
+        margin-bottom: 20px;
+    }
 
-            {% comment %} .main-content {
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-            } {% endcomment %}
+    #delete-month-dropdown {
+        padding: 5px;
+        font-size: 16px;
+    }
 
-            .back-button {
-                color: #1027ac;
-                font-size: 30px;
-                text-decoration: none;
-                cursor: pointer;
-            }
 
-            h1 {
-                margin-top: 20px;
-                color: #333;
-            }
+    .attendance-table {
+        margin-top: 20px;
+    }
 
-            .attendance-controls {
-                margin-bottom: 20px;
-            }
 
-            #delete-month-dropdown {
-                padding: 5px;
-                font-size: 16px;
-            }
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
 
-            #delete-month-button {
-                padding: 5px 10px;
-                font-size: 16px;
-                background-color: #007bff;
-                color: #fff;
-                border: none;
-                cursor: pointer;
-            }
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
 
-            .attendance-table {
-                margin-top: 20px;
-            }
+    .thead {
+        background-color: #f2f2f2;
+    }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
+    .tbody tr {
+        background-color: #ffffff;
+    }
 
-            th, td {
-                border: 1px solid #ccc;
-                padding: 8px;
-                text-align: left;
-            }
+    td[data-record][data-field="No. of Days Absent"] {
+        font-weight: bold;
+        color: red;
+    }
 
-            th {
-                background-color: #f2f2f2;
-                font-weight: bold;
-            }
-
-            td[data-record] {
-                min-width: 120px;
-            }
-
-            td[data-record][data-field="No. of Days Absent"] {
-                font-weight: bold;
-                color: red;
-            }
-
-            td[data-record][data-field="No. of School Days"],
-            td[data-record][data-field="No. of Days Present"] {
-                font-weight: bold;
-                color: green;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="main-content">
-            <div class=" me-4">
-                <a class="back-button">&larr;</a>
-            </div>
-            <h1>Attendance Records of {{ grade }} {{ section }}</h1>
-            <div class="attendance-controls">
-                <select id="delete-month-dropdown">
-                    {% for month in months %}
-                    {% if month != 'TOTAL' %}
-                        <option value="{{ month }}">{{ month }}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-                <button id="delete-month-button" onclick"Are you sure you want to Delete this Month?">Delete Month</button>
-            </div>
-            {% load custom_filters %}
-            {% if attendance_records %}
-                <div class="attendance-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No.</th>
-                                <th>Student Name</th>
-                                <th>Attendance Record</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student_attendance_records in attendance_records %}
-                                <tr>
-                                    <td>{{forloop.counter}}</td>
-                                    <td>{{ student_attendance_records.0.student.name }}</td>
-                                    <td>
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Month</th>
-                                                    <th>No. of School Days</th>
-                                                    <th>No. of Days Present</th>
-                                                    <th>No. of Days Absent</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                    {% for month, record in student_attendance_records.0.attendance_record.items %}
-                                                        <tr>
-                                                            <td>{{ month }}</td>
-                                                            <input type="hidden" name="student_id" value="{{ student_attendance_records.0.student.id }}">
-                                                            <input type="hidden" name="grade" value="{{ student_attendance_records.0.student.grade }}">
-                                                            <input type="hidden" name="section" value="{{ student_attendance_records.0.student.section }}">
-                                                            <input type="hidden" name="month" value="{{ month }}">
-                                                            {% for key, value in record.items %}
-                                                            {% if key == 'No. of Days Absent' %}
-                                                                <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ key }}" data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
-                                                            {% elif key == 'No. of School Days' %}
-                                                                <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ key }}" data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
-                                                            {% elif key == 'Total School Days' %}
-                                                                <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ key }}" data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
-                                                            {% elif key == 'Total Days Present' %}
-                                                                <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ key }}" data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
-                                                            {% elif key == 'Total Days Absent' %}
-                                                                <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ key }}" data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
-                                                            {% else %}
-                                                                <td contenteditable="true" data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}" data-field="{{ key }}">{{ value }}</td>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        </tr>
-                                                    {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
+    td[data-record][data-field="No. of School Days"],
+    td[data-record][data-field="No. of Days Present"] {
+        font-weight: bold;
+        color: green;
+    }
+</style>
+<div class="main-content container p-3 mb-3">
+    <div class="mt-3">
+        <span class="text-muted fs-4">Attendance Records of </span> <span class="fw-bold fs-4"> 
+            {{ grade }} {{ section}}</span>
+        <hr>
+    </div>
+    <div class="attendance-controls container d-flex justify-content-end align-items-center">
+        <button type="button" class="btn btn-dark btn-sm d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#monthsModal">
+            <span class="me-2">&#9998;</span class="me-2" ><span>Months</span>
+        </button>
+        <!-- Modal -->
+        <div class="modal fade" id="monthsModal" tabindex="-1" aria-labelledby="monthsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="monthsModalLabel">Months</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <select id="delete-month-dropdown" class="form-select">
+                            {% for month in months %}
+                            {% if month != 'TOTAL' %}
+                            <option value="{{ month }}">{{ month }}</option>
+                            {% endif %}
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="delete-month-button">Delete Month</button>
+                    </div>
                 </div>
-            {% else %}
-                <p>No attendance records found.</p>
-            {% endif %}
+            </div>
         </div>
-    </body>
-    </html>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        // Wait for the DOM to be fully loaded
-        document.addEventListener("DOMContentLoaded", function () {
-            // Get all the rows in the table body
-            var rows = document.querySelectorAll("tbody tr");
-    
-            // Iterate over each row
-            rows.forEach(function (row) {
-                var totalDaysPresent = 0; // Initialize total days present counter
-    
-                // Get all the cells in the current row
-                var cells = row.querySelectorAll("td[data-field='No. of Days Present']");
-    
-                // Iterate over each cell containing the number of days present for each month
-                cells.forEach(function (cell) {
-                    // Get the number of days present from the cell and add it to the total
-                    var daysPresent = parseInt(cell.textContent);
-                    totalDaysPresent += daysPresent;
-                });
-    
-                // Find the cell containing the total days present and update its content
-                var totalDaysPresentCell = row.querySelector("td[data-field='Total Days Present']");
-                totalDaysPresentCell.textContent = totalDaysPresent;
+    </div>
+    {% load custom_filters %}
+    {% if attendance_records %}
+    <div class=" card attendance-table table-responsive p-5">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Student Name</th>
+                    <th>Attendance Record</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_attendance_records in attendance_records %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{ student_attendance_records.0.student.name }}</td>
+                    <td>
+                        <table class="table table-bordered">
+                            <thead class="thead">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>No. of School Days</th>
+                                    <th>No. of Days Present</th>
+                                    <th>No. of Days Absent</th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbody">
+                                {% for month, record in student_attendance_records.0.attendance_record.items %}
+                                <tr>
+                                    <td>{{ month }}</td>
+                                    <input type="hidden" name="student_id"
+                                        value="{{ student_attendance_records.0.student.id }}">
+                                    <input type="hidden" name="grade"
+                                        value="{{ student_attendance_records.0.student.grade }}">
+                                    <input type="hidden" name="section"
+                                        value="{{ student_attendance_records.0.student.section }}">
+                                    <input type="hidden" name="month" value="{{ month }}">
+                                    {% for key, value in record.items %}
+                                    {% if key == 'No. of Days Absent' %}
+                                    <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}"
+                                        data-field="{{ key }}"
+                                        data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
+                                    {% elif key == 'No. of School Days' %}
+                                    <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}"
+                                        data-field="{{ key }}"
+                                        data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
+                                    {% elif key == 'Total School Days' %}
+                                    <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}"
+                                        data-field="{{ key }}"
+                                        data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
+                                    {% elif key == 'Total Days Present' %}
+                                    <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}"
+                                        data-field="{{ key }}"
+                                        data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
+                                    {% elif key == 'Total Days Absent' %}
+                                    <td data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}"
+                                        data-field="{{ key }}"
+                                        data-student-id="{{ student_attendance_records.0.student.id }}">{{ value }}</td>
+                                    {% else %}
+                                    <td contenteditable="true"
+                                        data-record="{{ student_attendance_records.0.id }}-{{ month }}-{{ key }}"
+                                        data-field="{{ key }}">{{ value }}</td>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No attendance records found.</p>
+    {% endif %}
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Wait for the DOM to be fully loaded
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get all the rows in the table body
+        var rows = document.querySelectorAll("tbody tr");
+
+        // Iterate over each row
+        rows.forEach(function (row) {
+            var totalDaysPresent = 0; // Initialize total days present counter
+
+            // Get all the cells in the current row
+            var cells = row.querySelectorAll("td[data-field='No. of Days Present']");
+
+            // Iterate over each cell containing the number of days present for each month
+            cells.forEach(function (cell) {
+                // Get the number of days present from the cell and add it to the total
+                var daysPresent = parseInt(cell.textContent);
+                totalDaysPresent += daysPresent;
             });
+
+            // Find the cell containing the total days present and update its content
+            var totalDaysPresentCell = row.querySelector("td[data-field='Total Days Present']");
+            totalDaysPresentCell.textContent = totalDaysPresent;
         });
-    </script>
-    <script>
-        $(document).ready(function() {
-            // Your jQuery code here
-            document.querySelector(".back-button").addEventListener("click", function () {
-                window.history.back();
-            });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#delete-month-button').on('click', function () {
+            var selectedMonth = $('#delete-month-dropdown').val();
+            var grade = "{{ grade }}";  // Access grade from template context
+            var section = "{{ section }}";  // Access section from template context
 
-            $('#delete-month-button').on('click', function() {
-                var selectedMonth = $('#delete-month-dropdown').val();
-                var grade = "{{ grade }}";  // Access grade from template context
-                var section = "{{ section }}";  // Access section from template context
-                
-                var confirmDelete = confirm("Are you sure you want to delete the month?");
-                if (!confirmDelete) {
-                    return; // If the user cancels, do nothing
-                }
-                // AJAX request to delete the month from the backend
-                $.ajax({
-                    url: '/delete-month/',
-                    method: 'POST',
-                    data: {
-                        student_id: null,  // You need to provide the correct student ID
-                        month: selectedMonth,
-                        grade: grade,
-                        section: section,
-                    },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            alert('Month deleted successfully');
-                            location.reload();
-                        } else {
-                            console.error('Failed to delete month:', response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error deleting month:', error);
-                    }
-                });
-            });
-            // Call the function initially to compute the total days present
-           
-            // Call the function initially to compute the total days present
+            var confirmDelete = confirm("Are you sure you want to delete the month?");
+            if (!confirmDelete) {
+                return; // If the user cancels, do nothing
+            }
 
-            $('td[data-record]').on('blur', function() {
-                var cell = $(this);
-                var newValue = cell.text().trim();
-                var recordId = cell.data('record');
-                var field = cell.data('field');
-
-                // Read the hidden input fields
-                var studentId = cell.closest('tr').find('input[name="student_id"]').val();
-                var month = cell.closest('tr').find('input[name="month"]').val();
-
-                var schoolDaysCell = cell.closest('tr').find('td[data-field="No. of School Days"]');
-                var presentDaysCell = cell.closest('tr').find('td[data-field="No. of Days Present"]');
-
-                var schoolDays = parseInt(schoolDaysCell.text().trim());
-                var presentDays = parseInt(presentDaysCell.text().trim());
-                var absentDays = 0;
-
-    
-                if (!isNaN(schoolDays) && !isNaN(presentDays)) {
-                    absentDays = schoolDays - presentDays;
-                    if (!isNaN(absentDays)) {
-                        cell.closest('tr').find('td[data-field="No. of Days Absent"]').text(absentDays);
-                        
+            // AJAX request to delete the month from the backend
+            $.ajax({
+                url: '/delete-month/',
+                method: 'POST',
+                data: {
+                    student_id: null,  // You need to provide the correct student ID
+                    month: selectedMonth,
+                    grade: grade,
+                    section: section,
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Month deleted successfully');
+                        location.reload();
                     } else {
-                        console.error('Absent days calculation resulted in NaN.');
+                        console.error('Failed to delete month:', response.message);
                     }
-                } else {
-                    console.error('Invalid input values for school days or present days.');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error deleting month:', error);
                 }
-                
-
-
-                console.log(month)
-                console.log(field)
-                console.log(newValue)
-                console.log(studentId)
-                
-
-                // AJAX request to update the attendance record
-                $.ajax({
-                    url: '/update-attendance-record/',
-                    method: 'POST',
-                    data: {
-                        student_id: studentId,
-                        month: month,
-                        key: field,
-                        new_value: newValue,
-                        absent_days: absentDays,
-                    },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            location.reload();
-                        } else {
-                            console.error('Failed to update record:', response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error updating record:', error);
-                    }
-                });
-
             });
         });
-    </script>
-    {% endblock main_content %}
+        //nction initially to compute the total days present
+
+        // Call the function initially to compute the total days present
+
+        $('td[data-record]').on('blur', function () {
+            var cell = $(this);
+            var newValue = cell.text().trim();
+            var recordId = cell.data('record');
+            var field = cell.data('field');
+
+            // Read the hidden input fields
+            var studentId = cell.closest('tr').find('input[name="student_id"]').val();
+            var month = cell.closest('tr').find('input[name="month"]').val();
+
+            var schoolDaysCell = cell.closest('tr').find('td[data-field="No. of School Days"]');
+            var presentDaysCell = cell.closest('tr').find('td[data-field="No. of Days Present"]');
+
+            var schoolDays = parseInt(schoolDaysCell.text().trim());
+            var presentDays = parseInt(presentDaysCell.text().trim());
+            var absentDays = 0;
+
+
+            if (!isNaN(schoolDays) && !isNaN(presentDays)) {
+                absentDays = schoolDays - presentDays;
+                if (!isNaN(absentDays)) {
+                    cell.closest('tr').find('td[data-field="No. of Days Absent"]').text(absentDays);
+
+                } else {
+                    console.error('Absent days calculation resulted in NaN.');
+                }
+            } else {
+                console.error('Invalid input values for school days or present days.');
+            }
+
+
+
+            console.log(month)
+            console.log(field)
+            console.log(newValue)
+            console.log(studentId)
+
+
+            // AJAX request to update the attendance record
+            $.ajax({
+                url: '/update-attendance-record/',
+                method: 'POST',
+                data: {
+                    student_id: studentId,
+                    month: month,
+                    key: field,
+                    new_value: newValue,
+                    absent_days: absentDays,
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        location.reload();
+                    } else {
+                        console.error('Failed to update record:', response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error updating record:', error);
+                }
+            });
+
+        });
+    });
+</script>
+{% endblock main_content %}

@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="{% static 'star-admin/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-  <link rel="icon" type="image/png" href="static/star-admin/images/ces_logo.png">
+  <link rel="icon" type="image/png" href="{% static 'star-admin/images/ces_logo.png' %}">
 </head>
 <style>
   *{
@@ -78,10 +78,10 @@ body::-webkit-scrollbar-track {
           </div>
           <div>
             <a class="navbar-brand brand-logo" href="{% url 'home_teacher' %}">
-              <img class="img-fluid fs-1" src="static/star-admin/images/logo_migrade_text.png" alt="logo" />
+              <img class="img-fluid fs-1" src="{% static 'star-admin/images/logo_migrade_text.png' %}" alt="logo" />
             </a>
             <a class="navbar-brand brand-logo-mini" href="{% url 'home_teacher' %}">
-              <img class="img-fluid" src="static/star-admin/images/logo_migrade_mini.png" alt="logo" />
+              <img class="img-fluid" src="{% static 'star-admin/images/logo_migrade_mini.png' %}" alt="logo" />
             </a>
           </div>
         </div>

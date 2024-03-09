@@ -186,8 +186,7 @@ View Class Record
         data: JSON.stringify(jsonData), // Send the stringified JSON data
         success: function(response) {
           // Handle success response
-          console.log("Transfer successful:", response);
-          alert("Transfer successful");
+          alert(" ✓ Class Record Sent.");
           history.back();
         },
         error: function(xhr, status, error) {

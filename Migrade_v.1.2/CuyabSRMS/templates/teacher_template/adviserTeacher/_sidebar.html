@@ -14,10 +14,20 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'inbox_open' %}">
-              <i class="mdi mdi mdi-archive menu-icon"></i>
-              <span class="menu-title">Inbox</span>
+                <i class="mdi mdi mdi-archive menu-icon"></i>
+                <span class="menu-title">Inbox</span>
+                {% if count > 0 %}
+                    {% if count > 99 %}
+                        <span class="badge badge-primary text-small">99+</span>
+                    {% else %}
+                        <span class="badge badge-primary text-small">{{ count }}</span>
+                    {% endif %}
+                {% endif %}
             </a>
-          </li>
+        </li>
+        
+        
+        
           <!-- <li class="nav-item">
             <a class="nav-link" href="{% url 'transfer_record' %}">
               <i class="mdi mdi-account-multiple-plus menu-icon"></i>
