@@ -1278,10 +1278,6 @@ def student_list_for_subject(request):
             # Sort the students for this subject by highest initial grade
             subject_grades[subject_name].sort(key=lambda x: x['transmuted_grade'] if x['transmuted_grade'] is not None else 0, reverse=True)
 
-
-        # Filter students based on class type
-        # students_filtered = [student for student in students if student.class_type.get(str(teacher_id)) == "Subject Class" or "Advisory Class, Subject Class" in student.class_type]
-
     context = {
         'grade': grade,
         'section': section,
@@ -1293,7 +1289,7 @@ def student_list_for_subject(request):
     }
 
     return render(request, 'teacher_template/adviserTeacher/student_list_for_subject.html', context)
-    return render(request, 'teacher_template/adviserTeacher/quarter_records.html', context)
+
 
 def student_list_for_advisory(request):
     # Assuming the user is logged in
@@ -1517,6 +1513,8 @@ def student_list_for_advisory(request):
         }
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+    
+    
 
 def create_attendance_view(request):
     if request.method == 'GET':

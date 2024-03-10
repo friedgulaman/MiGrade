@@ -77,31 +77,41 @@ def transfer_details(request):
     return render(request, 'teacher_template/adviserTeacher/transfer_details.html', {'class_records': class_records})
 
 @csrf_exempt
+@login_required
 def get_teacher_list(request):
     if request.method == 'GET':
-        teachers = Teacher.objects.all()
+        # Get the currently logged-in teacher
+        current_teacher = request.user.teacher
+        current_subject_classes = []
+
+        # Retrieve all subject classes of the current teacher
+        for grade_section, class_type in current_teacher.grade_section.items():
+            if class_type == 'Subject Class' or class_type == 'Advisory Class, Subject Class':
+                current_subject_classes.append(grade_section)
+
         teacher_list = []
 
-        # Iterate through each teacher
-        for teacher in teachers:
-            # Check if grade_section exists and is not None
-            if teacher.grade_section:
-                # Filter the grade_section dictionary to include only keys with the desired values
-                filtered_grade_section = {key: value for key, value in teacher.grade_section.items() if
-                                          value in ['Advisory Class', 'Advisory Class, Subject Class']}
-
-                # If there are keys remaining after filtering, append them to the teacher_list
-                if filtered_grade_section:
-                    # Convert dict_keys object to list
-                    grade_sections = list(filtered_grade_section.keys())
-                    # Create a dictionary to store teacher information
-                    teacher_info = {
-                        'id': teacher.id,
-                        'name': f"{teacher.user.first_name} {teacher.user.last_name}",
-                        'grade_section': grade_sections  # Include only the keys
-                    }
-                    teacher_list.append(teacher_info)
-                print(grade_sections)
+        # If the current teacher has any subject classes
+        if current_subject_classes:
+            # Iterate through each teacher
+            for teacher in Teacher.objects.all():
+                # Check if grade_section exists and is not None
+                if teacher.grade_section:
+                    # Iterate through each grade_section of the current teacher
+                    for current_subject_class in current_subject_classes:
+                        # Check if the teacher has the same grade_section as the current teacher
+                        if current_subject_class in teacher.grade_section.keys():
+                            # Check if the value of the grade_section contains 'Advisory Class'
+                            # or 'Advisory Class, Subject Class'
+                            if 'Advisory Class' in teacher.grade_section[current_subject_class] or 'Advisory Class, Subject Class' in teacher.grade_section[current_subject_class]:
+                                # Create a dictionary to store teacher information
+                                teacher_info = {
+                                    'id': teacher.id,
+                                    'name': f"{teacher.user.first_name} {teacher.user.last_name}",
+                                    'grade_section': current_subject_class
+                                }
+                                teacher_list.append(teacher_info)
+                                break  # Break after finding a match to avoid duplicate entries
 
         return JsonResponse({'teachers': teacher_list})
 
@@ -120,6 +130,7 @@ def get_teacher_list(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
 
 @require_POST
 @login_required
@@ -267,7 +278,7 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
         'class_record': class_record,
         'grade_scores': grade_scores,
     }
-
+    
     return render(request, "teacher_template/adviserTeacher/transfer_quarterly_grade.html", context)
 
 @require_POST
