@@ -772,7 +772,7 @@ def calculate_grades(request):
         section_name = request.POST.get("hidden_section")
         subject_name = request.POST.get("hidden_subject")
         quarters_name = request.POST.get("hidden_quarter")
-        print(request.POST)
+        # print(request.POST)
         print(grade_name)
         print(section_name)
         print(subject_name)
@@ -847,6 +847,7 @@ def calculate_grades(request):
                 
                 # Retrieve scores and maximum scores for each component
                 for i in range(1, 11):
+            
                     score = request.POST.get(f"scores_{assessmentType}_{student.id}_{i}")
                     max_score = request.POST.get(f"max_{assessmentType}_{i}")
                     
@@ -885,8 +886,9 @@ def calculate_grades(request):
                         total_weighted_score += weighted_score
                         total_weight += weight_input
 
+
                     scores_assessment[assessmentType]['percentage_score'] = percentage_score
-                    scores_assessment[assessmentType]['total_weighted_score'] = rounded_weighted_score
+                    scores_assessment[assessmentType]['total_weighted_score'] = weighted_score
             
                 # print(f"Assessment Type: {assessmentType}")
                 # print(f"Total Score: {total_score}")
@@ -895,10 +897,10 @@ def calculate_grades(request):
                 # print(f"Weighted Score: {weighted_score}")
                 # print(f"Rounded Weighted Score: {rounded_weighted_score}")
                 # print(f"Scores: {scores}")
-            
+            # print(f"total_weighted_score: {total_weighted_score}")
             # Calculate initial grades for the current student after processing all assessment types
             if total_weight > 0:
-                initial_grades = total_weighted_score 
+                initial_grades = total_weighted_score / 10
             else:
                 initial_grades = None  # Handle the case where total weight is 0 or not provided
             
@@ -912,6 +914,8 @@ def calculate_grades(request):
             rounded_transmuted_grades = round(transmuted_grades, 2) if transmuted_grades is not None else None
 
             # print(f"Student: {student.id}")
+            # print(f"Initial Grades: {initial_grades}")
+            # print(f"Transmuted Grades: {transmuted_grades}")
             # print(f"Initial Grades: {rounded_initial_grades}")
             # print(f"Transmuted Grades: {rounded_transmuted_grades}")
 
@@ -954,31 +958,85 @@ def calculate_grades(request):
     return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
 def display_classrecord(request, class_record_id=None):
-    # If class_record_id is provided, retrieve the ClassRecord object
+     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
-
+    subject_name = class_record.subject
     teacher = request.user.teacher
-    # print(request.user)
+        # print(request.user)
     teacher_id = teacher.id
-
     if teacher_id != class_record.teacher_id:
         return HttpResponseForbidden("You don't have permission to access this class record.")
-    # If class_record_id is not provided, you may want to handle this case differently
-    # For example, you can provide a list of available ClassRecord objects for the user to choose from
 
-    # Filter the GradeScores based on the retrieved ClassRecord object
+    keys = []  
     grade_scores = GradeScores.objects.filter(class_record=class_record)
+    for grade_score in grade_scores:
+        scores_hps = grade_score.grade_scores.get('scores_hps', {})  # Access scores_hps dictionary
+        for k in scores_hps.keys():  # Iterate over the keys of scores_hps
+            keys.append(k)  # Append each key to the list
+        break # Exit the loop after printing the first set of key-value pairs
+
+    # print(keys)
+
+            # print(grade)
+
+    subject = Subject.objects.get(name=subject_name)
+    # print(subject)
+    assessments = subject.assessment
+    # print(assessments)
+
+    assessment_types = list(assessments.keys())
+    processed_types = []
+    for assessment_type in assessment_types:
+        processed_type = assessment_type.replace(' ', '-').lower()
+        processed_types.append(processed_type)
+
+    # print(processed_types
+    assessment_type_processed = None
+
+    if request.method == 'POST':
+        assessment_type_processed = request.POST.get('assessmentTypeProcessed')
+        print(f"process: {assessment_type_processed}")
+
+        # Check if the session already has a value for assessment_type_processed
+        if 'assessment_type_processed' not in request.session:
+            # If not, store the received value in the session
+            request.session['assessment_type_processed'] = assessment_type_processed
+
+        # Retrieve the assessment_type_processed value from the session
+        assessment_type_processed = request.session['assessment_type_processed']
+        print(f"assess: {assessment_type_processed}")
+
+    print(f"new: {assessment_type_processed}")
 
     context = {
-        'class_record': class_record,
-        'grade_scores': grade_scores,
-    }
+            'keys': keys,
+            'class_record': class_record,
+            'gradescores': grade_scores,
+            'assessment_types': assessment_types,
+            'assessment_values': list(assessments.values()),
+            #  'assessment_type_processed': assessment_type_processed,
+            #  'processed_types': processed_types
+        }
 
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
     
+def process_assessment_Type(request):
+    if request.method == 'POST':
+        assessment_type_processed = request.POST.get('assessmentTypeProcessed')
+        # Process the assessment type
+
+        # Redirect to the next view with the assessment type as a URL parameter
+        return redirect('get_assessment_type', assessment_type_processed=assessment_type_processed)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    
+def get_assessment_type(request, assessment_type_processed):
+    print(f"assessdaw: {assessment_type_processed}")
+
+    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'assessment_type_processed': assessment_type_processed})
 
 
-
+    
 def view_classrecord(request):
     
     # Assuming the user is logged in
