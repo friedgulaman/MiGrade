@@ -97,16 +97,6 @@ Adviser Teacher
             });
         }
 
-        // Submit form data when Save button is clicked
-        $('#submitButton').on('click', function (event) {
-            event.preventDefault();
-
-            // Get data from all tabs and serialize it
-            var formData = $('form').serialize();
-            
-            // Submit form data via AJAX
-            submitForm(formData);
-        });
     });
 </script>
 <script>
@@ -208,12 +198,12 @@ Adviser Teacher
         $('#assessmentTabs li:first-child a').tab('show');
     });
 </script>
-<!-- <script>
+<script>
     $(document).ready(function () {
         // Your existing JavaScript code...
 
         // Trigger a click event on the submit button once the document is ready
         $('#submitButton').click();
     });
-</script> -->
+</script>
 {% endblock main_content %}
