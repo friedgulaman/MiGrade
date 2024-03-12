@@ -8,25 +8,16 @@
         "NAME\n(Last Name, First Name, Middle Name)\n": {
             "student_name": "NAME\n(Last Name, First Name, Middle Name)\n",
             "ABSENT": {
-                "absent": "for the\nMonth\nPRESENT\n"
+                "absent": "for the\n"
             },
             "PRESENT": {
-                "present": "legend "
-            }
-        },
-        "ASILO, RAIN JUSTINE, MERCADO\n": {
-            "student_name": "ASILO, RAIN JUSTINE, MERCADO\n",
-            "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
+                "present": "REMARKS (If DROPPED OUT, state reason, please refer to\nlegend number 2. If TRANSFERRED IN/OUT, write the name of\n"
             }
         },
         "CAMBE,SEAN DAVE, ARAGON\n": {
             "student_name": "CAMBE,SEAN DAVE, ARAGON\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
                 "present": "21\n"
@@ -35,7 +26,7 @@
         "CARANAY,JHAYCEE CARL, CORDERO\n": {
             "student_name": "CARANAY,JHAYCEE CARL, CORDERO\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
                 "present": "21\n"
@@ -44,73 +35,46 @@
         "CASTRO,ICHIRO, MENDOZA\n": {
             "student_name": "CASTRO,ICHIRO, MENDOZA\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
         "CAYLAO,DAYNE, VI\u00d1A\n": {
             "student_name": "CAYLAO,DAYNE, VI\u00d1A\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
         "CHAN,JHON RHAYNE, REPELAR\n": {
             "student_name": "CHAN,JHON RHAYNE, REPELAR\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "9\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "12\n"
             }
         },
-        "GETALADO, EARL SAMUEL, CLAVE\n": {
-            "student_name": "GETALADO, EARL SAMUEL, CLAVE\n",
+        "GETALADO,EARL SAMUEL, CLAVE\nGLOBIO, MARCKY, GALVAN\nMIRANDA,ANDREI, BIANES\nNAVAREZ, ANDREI, MONTA\u00d1EZ\n": {
+            "student_name": "GETALADO,EARL SAMUEL, CLAVE\nGLOBIO, MARCKY, GALVAN\nMIRANDA,ANDREI, BIANES\nNAVAREZ, ANDREI, MONTA\u00d1EZ\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n0\n0\n0\n"
             },
             "PRESENT": {
-                "present": ""
-            }
-        },
-        "GLOBIO,MARCKY, GALVAN\n": {
-            "student_name": "GLOBIO,MARCKY, GALVAN\n",
-            "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
-            }
-        },
-        "MIRANDA,ANDREI, BIANES\n": {
-            "student_name": "MIRANDA,ANDREI, BIANES\n",
-            "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
-            }
-        },
-        "NAVAREZ,ANDREI, MONTA\u00d1EZ\n": {
-            "student_name": "NAVAREZ,ANDREI, MONTA\u00d1EZ\n",
-            "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
+                "present": "21\n21\n21\n21\n"
             }
         },
         "SALAYSAY,JOHN LOUIE, FLORES\n": {
             "student_name": "SALAYSAY,JOHN LOUIE, FLORES\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
         "SAMANIEGO, MATTHEW ANDREI, ANGULO\n": {
@@ -122,28 +86,19 @@
                 "present": ""
             }
         },
-        "SAN JUAN JR.,ARLY, PLATINO\n": {
-            "student_name": "SAN JUAN JR.,ARLY, PLATINO\n",
+        "SAN JUAN JR.,ARLY, PLATINO\nSANTOS,MARK, BELANO\n": {
+            "student_name": "SAN JUAN JR.,ARLY, PLATINO\nSANTOS,MARK, BELANO\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n0\n"
             },
             "PRESENT": {
-                "present": ""
-            }
-        },
-        "SANTOS,MARK, BELANO\n": {
-            "student_name": "SANTOS,MARK, BELANO\n",
-            "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
+                "present": "21\n21\n"
             }
         },
         "VILLANUEVA,JOSH CYREL, CLASA\n": {
             "student_name": "VILLANUEVA,JOSH CYREL, CLASA\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
                 "present": ""
@@ -152,64 +107,64 @@
         "MACALINAO,AIZEN, OAMIL\n": {
             "student_name": "MACALINAO,AIZEN, OAMIL\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
         "MADRIGAL, YOHAN CEKEND, PANANGUI\n": {
             "student_name": "MADRIGAL, YOHAN CEKEND, PANANGUI\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
         "ORTEGA, KYLE MICO, TORAYNO\n": {
             "student_name": "ORTEGA, KYLE MICO, TORAYNO\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
-        "ORTEGA, XERXES BENCH, ALON-ALON\n": {
-            "student_name": "ORTEGA, XERXES BENCH, ALON-ALON\n",
+        "ORTEGA,XERXES BENCH, ALON-ALON\n": {
+            "student_name": "ORTEGA,XERXES BENCH, ALON-ALON\n",
             "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
-            }
-        },
-        "PENOBLAR,GRAEME STEPHEN, TESORO\n": {
-            "student_name": "PENOBLAR,GRAEME STEPHEN, TESORO\n",
-            "ABSENT": {
-                "absent": ""
-            },
-            "PRESENT": {
-                "present": ""
-            }
-        },
-        "RICALDE,REY IAN, TABINAS\n": {
-            "student_name": "RICALDE,REY IAN, TABINAS\n",
-            "ABSENT": {
-                "absent": ""
+                "absent": "1\n"
             },
             "PRESENT": {
                 "present": "20\n"
             }
         },
-        "RODIO, CARLOS ENRIQUE, ISABEDRA\n": {
-            "student_name": "RODIO, CARLOS ENRIQUE, ISABEDRA\n",
+        "PENOBLAR, GRAEME STEPHEN, TESORO\n": {
+            "student_name": "PENOBLAR, GRAEME STEPHEN, TESORO\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
+            }
+        },
+        "RICALDE,REY IAN, TABINAS\n": {
+            "student_name": "RICALDE,REY IAN, TABINAS\n",
+            "ABSENT": {
+                "absent": "1\n"
+            },
+            "PRESENT": {
+                "present": "20\n"
+            }
+        },
+        "RODIO,CARLOS ENRIQUE, ISABEDRA\n": {
+            "student_name": "RODIO,CARLOS ENRIQUE, ISABEDRA\n",
+            "ABSENT": {
+                "absent": "0\n"
+            },
+            "PRESENT": {
+                "present": "21\n"
             }
         },
         "TARRAYO,PAUL ZEDRICK, MANLAPAZ\n": {
@@ -218,276 +173,108 @@
                 "absent": ""
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
         "VEGA, FRANCIS, VARIAS\n": {
             "student_name": "VEGA, FRANCIS, VARIAS\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
+                "present": "21\n"
             }
         },
-        "VIVAR, JAYCEE, BELOCORA\n": {
-            "student_name": "VIVAR, JAYCEE, BELOCORA\n",
+        "VIVAR,JAYCEE, BELOCORA\n": {
+            "student_name": "VIVAR,JAYCEE, BELOCORA\n",
             "ABSENT": {
-                "absent": ""
+                "absent": "0\n"
             },
             "PRESENT": {
-                "present": ""
-            }
-        },
-        "Summ\n": {
-            "student_name": "Summ\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "Summ\n"
-            }
-        },
-        "": {
-            "student_name": "",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "TOTAL\n"
-            }
-        },
-        "24\n": {
-            "student_name": "24\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "6\n49\n"
-            }
-        },
-        "10\n": {
-            "student_name": "10\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "1\n"
-            }
-        },
-        "100\n620\n": {
-            "student_name": "100\n620\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "100\n"
+                "present": "21\n"
             }
         },
         "<=== MALE | TOTAL Per Day ===>\n": {
             "student_name": "<=== MALE | TOTAL Per Day ===>\n",
-            "ABSENT": null,
+            "ABSENT": {
+                "absent": "13\n"
+            },
             "PRESENT": {
                 "present": "533\n"
             }
         },
         "ARRESGADO,LEANNE ROSE, CARLOS\n": {
             "student_name": "ARRESGADO,LEANNE ROSE, CARLOS\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "ARRESGADO,LEANNE ROSE, CARLOS\n"
-            }
-        },
-        "BORCELANGO,DONA LYNN, DAPRINAL\n": {
-            "student_name": "BORCELANGO,DONA LYNN, DAPRINAL\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "BORCELANGO,DONA LYNN, DAPRINAL\n"
-            }
-        },
-        "CAONES,JUSEA MICAH, LACANIN\n": {
-            "student_name": "CAONES,JUSEA MICAH, LACANIN\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "CAONES,JUSEA MICAH, LACANIN\n"
-            }
-        },
-        "CLEMENTE,MARTHA ASHLEE, COLIS\n": {
-            "student_name": "CLEMENTE,MARTHA ASHLEE, COLIS\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "CLEMENTE,MARTHA ASHLEE, COLIS\n"
-            }
-        },
-        "DEL MUNDO,CATHLYN, SALDINO\n": {
-            "student_name": "DEL MUNDO,CATHLYN, SALDINO\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "DEL MUNDO,CATHLYN, SALDINO\n"
-            }
-        },
-        "DICDICAN, TRISHA ELLAINE, REALON\n": {
-            "student_name": "DICDICAN, TRISHA ELLAINE, REALON\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "DICDICAN, TRISHA ELLAINE, REALON\n"
-            }
-        },
-        "ESPINAR,ANGIELYN, MARCE\n": {
-            "student_name": "ESPINAR,ANGIELYN, MARCE\n",
-            "ABSENT": null,
+            "ABSENT": {
+                "absent": "0\n"
+            },
             "PRESENT": {
                 "present": "21\n"
             }
         },
-        "GABATIN, LADY TRISHA, AMORTIZADO\n": {
-            "student_name": "GABATIN, LADY TRISHA, AMORTIZADO\n",
-            "ABSENT": null,
+        "BORCELANGO,DONA LYNN, DAPRINAL\nCAONES,JUSEA MICAH, LACANIN\nCLEMENTE,MARTHA ASHLEE, COLIS\nDEL MUNDO,CATHLYN, SALDINO\nDICDICAN, TRISHA ELLAINE, REALON\n": {
+            "student_name": "BORCELANGO,DONA LYNN, DAPRINAL\nCAONES,JUSEA MICAH, LACANIN\nCLEMENTE,MARTHA ASHLEE, COLIS\nDEL MUNDO,CATHLYN, SALDINO\nDICDICAN, TRISHA ELLAINE, REALON\n",
+            "ABSENT": {
+                "absent": "0\n\u2022\u00b7\u00b7\u00b7\u2022\u00b7\n0\n4\n"
+            },
             "PRESENT": {
-                "present": "GABATIN, LADY TRISHA, AMORTIZADO\n"
+                "present": "21\n21\n21\n21\n17\n"
             }
         },
-        "JOVEN,JENALEN, MASIKAT\n": {
-            "student_name": "JOVEN,JENALEN, MASIKAT\n",
+        "Summary\nF\n24\n": {
+            "student_name": "Summary\nF\n24\n",
             "ABSENT": null,
             "PRESENT": {
-                "present": "JOVEN,JENALEN, MASIKAT\n"
+                "present": "TOTAL\n49\n"
             }
         },
-        "MALABAG,ANGELICA, MIRANDA\n": {
-            "student_name": "MALABAG,ANGELICA, MIRANDA\n",
+        "0\n": {
+            "student_name": "0\n",
             "ABSENT": null,
             "PRESENT": {
-                "present": "MALABAG,ANGELICA, MIRANDA\n"
+                "present": "0\n"
             }
         },
-        "MAMANSAG,JEIAH EUNICE, SERRANO\n": {
-            "student_name": "MAMANSAG,JEIAH EUNICE, SERRANO\n",
+        "24\n": {
+            "student_name": "24\n",
             "ABSENT": null,
             "PRESENT": {
-                "present": "MAMANSAG,JEIAH EUNICE, SERRANO\n"
+                "present": "66780\n49\n"
             }
         },
-        "MANALILI,JAMAICA AMOR, ROSALES\n": {
-            "student_name": "MANALILI,JAMAICA AMOR, ROSALES\n",
+        "100\n284 ": {
+            "student_name": "100\n284 ",
             "ABSENT": null,
             "PRESENT": {
-                "present": "MANALILI,JAMAICA AMOR, ROSALES\n"
+                "present": "100\n"
             }
         },
-        "MARTINEZ, ASHLEE NICHOLE, SABANAL\n": {
-            "student_name": "MARTINEZ, ASHLEE NICHOLE, SABANAL\n",
+        "180\n100% ": {
+            "student_name": "180\n100% ",
             "ABSENT": null,
             "PRESENT": {
-                "present": "MARTINEZ, ASHLEE NICHOLE, SABANAL\n"
+                "present": "98%\n"
             }
         },
-        "NAVAL,GEARLY SHANE, OCAMPO\n": {
-            "student_name": "NAVAL,GEARLY SHANE, OCAMPO\n",
+        "": {
+            "student_name": "",
             "ABSENT": null,
             "PRESENT": {
-                "present": "NAVAL,GEARLY SHANE, OCAMPO\n"
+                "present": ""
             }
         },
-        "OLAVARIO,ALLIYAH LORRAINE, GUILLERMO\n": {
-            "student_name": "OLAVARIO,ALLIYAH LORRAINE, GUILLERMO\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "OLAVARIO,ALLIYAH LORRAINE, GUILLERMO\n"
-            }
-        },
-        "PUNZALAN,CHANELLE, POSO\n": {
-            "student_name": "PUNZALAN,CHANELLE, POSO\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "PUNZALAN,CHANELLE, POSO\n"
-            }
-        },
-        "ROTUBIO,ALLIANA JALYN, BERONDO\n": {
-            "student_name": "ROTUBIO,ALLIANA JALYN, BERONDO\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "ROTUBIO,ALLIANA JALYN, BERONDO\n"
-            }
-        },
-        "SUZON, RYGIN LOVE, GIMENTIZA\n": {
-            "student_name": "SUZON, RYGIN LOVE, GIMENTIZA\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "SUZON, RYGIN LOVE, GIMENTIZA\n"
-            }
-        },
-        "TAVU,RENY DENIEZE, RAMOS\n": {
-            "student_name": "TAVU,RENY DENIEZE, RAMOS\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "TAVU,RENY DENIEZE, RAMOS\n"
-            }
-        },
-        "VARGAS,REIGN BEYONCE, GUILLERMO\n": {
-            "student_name": "VARGAS,REIGN BEYONCE, GUILLERMO\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "VARGAS,REIGN BEYONCE, GUILLERMO\n"
-            }
-        },
-        "MORALES, CHANELL, PABON\n": {
-            "student_name": "MORALES, CHANELL, PABON\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "MORALES, CHANELL, PABON\n"
-            }
-        },
-        "RAMILLA, CHRISZELLE JAYE, ANACLETO\n": {
-            "student_name": "RAMILLA, CHRISZELLE JAYE, ANACLETO\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "21\n"
-            }
-        },
-        "REYES, AIRHYNE NHOREY, BAUTISTA\n": {
-            "student_name": "REYES, AIRHYNE NHOREY, BAUTISTA\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "REYES, AIRHYNE NHOREY, BAUTISTA\n"
-            }
-        },
-        "RILLERA, PRINCESS MHAE, ESPARAGOZA\n": {
-            "student_name": "RILLERA, PRINCESS MHAE, ESPARAGOZA\n",
-            "ABSENT": null,
-            "PRESENT": {
-                "present": "RILLERA, PRINCESS MHAE, ESPARAGOZA\n"
-            }
-        },
-        "<=== FEMALE | TOTAL Per Day ===>\n": {
-            "student_name": "<=== FEMALE | TOTAL Per Day ===>\n",
+        "4\n": {
+            "student_name": "4\n",
             "ABSENT": null,
             "PRESENT": {
                 "present": "500\n"
             }
         },
-        "Combined TOTAL Per Day\n": {
-            "student_name": "Combined TOTAL Per Day\n",
+        "17\n": {
+            "student_name": "17\n",
             "ABSENT": null,
             "PRESENT": {
                 "present": "1033\n"
-            }
-        },
-        "96% ": {
-            "student_name": "96% ",
-            "ABSENT": {
-                "absent": "100%\n"
-            },
-            "PRESENT": {
-                "present": "98%\n"
-            }
-        },
-        "0\n": {
-            "student_name": "0\n",
-            "ABSENT": {
-                "absent": "0\n"
-            },
-            "PRESENT": {
-                "present": "0\n"
-            }
-        },
-        "1\n": {
-            "student_name": "1\n",
-            "ABSENT": {
-                "absent": "0\n"
-            },
-            "PRESENT": {
-                "present": "1\n"
             }
         }
     }

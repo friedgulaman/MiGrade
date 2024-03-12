@@ -185,49 +185,46 @@ def generate_final_and_general_grades(request, grade, section):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
+    
         # Open the copied SF9 Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    workbook = openpyxl.load_workbook(copied_file_path)
 
             # Select the desired sheet (use the correct sheet name from the output)
         # input_sheet_name = 'INPUT DATA'
         # input_sheet = workbook[input_sheet_name]
 
-        sheet_name = 'SUMMARY - FINAL GRADES'
-        sheet = workbook[sheet_name]
+    sheet_name = 'SUMMARY - FINAL GRADES'
+    sheet = workbook[sheet_name]
         
-        write_school_info_general_average(sheet, school_info, general_grades_query)
-        write_student_name_general_average(sheet, general_grades_query)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
+    write_school_info_general_average(sheet, school_info, general_grades_query)
+    write_student_name_general_average(sheet, general_grades_query)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
 
         # write_quarterly_grade_AP(sheet, quarterly_grades_query)
         # write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query)
 
             # Save the changes to the SF9 workbook
-        workbook.save(copied_file_path)
+    workbook.save(copied_file_path)
 
             # Create an HTTP response with the updated SF9 Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = f'Final and General Average {grade} {section} {timestamp}.xlsx'
-        encoded_filename = urllib.parse.quote(filename)
-        response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'Final and General Average {grade} {section} {timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
 
-        with open(copied_file_path, 'rb') as excel_file:
+    with open(copied_file_path, 'rb') as excel_file:
                 response.write(excel_file.read())
 
-        return response
+    return response
 
-    except Exception as e:
-        # Handle exceptions, such as a corrupted file
-        return HttpResponse(f"An error occurred: {e}")
-
+    
 def generate_excel_for_grades(request, grade, section, subject, quarter):
     # Get GradeScores for the specified grade, section, and subject
     grade_scores_queryset = GradeScores.objects.filter(class_record__grade=grade,

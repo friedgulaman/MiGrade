@@ -235,6 +235,21 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 </button>
                             </form>
                         </div>
+
+                        <div class="modal-body">
+                            <div class="text-center mb-4">
+                                <h5>Upload School Form 2 PDF File</h5>
+                            </div>
+                            <form method="post" id="form2" action="{% url 'upload_sf2' %}" class="container text-center d-flex flex-column" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="file" class="form-control-sm" name="pdf_file" id="pdf_file" required accept=".pdf">
+                                <button type="submit" id="upload_btn_2" class="btn btn-primary mt-3 container d-flex justify-content-center align-center">
+                                    <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator2" style="display: none;" role="status" aria-hidden="true"></span>
+                                    <span id="upload_btn_2_text">Upload PDF</span>
+                                </button>
+                            </form>
+                        </div>
+     
                     
                     </div>
 

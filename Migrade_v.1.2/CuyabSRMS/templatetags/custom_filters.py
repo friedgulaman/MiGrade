@@ -49,4 +49,7 @@ def get_dict_keys(dictionary):
 @register.filter(name='get_key')
 def get_key(dictionary, key):
     return dictionary.get(key, '')
-    
+
+@register.filter
+def key_exists(dictionary, key):
+    return key in dictionary

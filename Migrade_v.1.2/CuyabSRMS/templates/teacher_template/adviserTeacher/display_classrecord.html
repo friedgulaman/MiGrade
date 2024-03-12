@@ -70,248 +70,137 @@
         </div>
     </div>
     
-    <div class="tab-content tab-content-basic" id="assessmentTabContent">
-            <!-- Add the default tab for Initial Grade -->
-        <!-- Initial Grades -->
-        <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
-            <div class="mb-3">
-                {% if gradescores %}
-                <div class="table-responsive">
-                    <div id="components">INITIAL GRADE</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Name</th>
-                                <th>Initial Grade</th>
-                                <th>Quarterly Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr></tr>
-                            <tr>
-                                <th></th>
-                                <th>MALE</th>
-                                <th></th>
-                                <th></th>
-                                
-                            </tr>
-                            {% for record in gradescores %}
-                                {% if record.student.sex == 'M' %}
-                                    <tr class="male-row">
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ record.student.name }}</td>
-                                        <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
-                                        <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                            <tr></tr>
-                            <tr>
-                                <th></th>
-                                <th>FEMALE</th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                            {% for record in gradescores %}
-                                {% if record.student.sex == 'F' %}
-                                    <tr class="female-row">
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ record.student.name }}</td>
-                                        <td id="total_initial_grade" name="total_initial_grade"> {% if record.initial_grades is not None %}{{ record.initial_grades }}{% else %}{{ "" }}{% endif %}</td>
-                                        <td> {% if record.transmuted_grades is not None %}{{ record.transmuted_grades }}{% else %}{{ "" }}{% endif %}</td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <!-- Loop through the AssessmentType -->
+                    {% for assessment_type in assessment_types %}
+                    <th colspan="13">{{ assessment_type|title }}</th>
+                    {% endfor %}
+                    <th>Initial Grade</th>
+                    <th>Transmuted Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td>Name</td>
+                    {% for _ in assessment_types %}
+                        {% for i in "123456789" %}
+                            <td>{{ i }}</td>
+                        {% endfor %}
+                        <td>10</td>
+                        <td>Total</td>
+                        <td>PS</td>
+                        <td>WS</td>
+                    {% endfor %}
+                    <td></td>
+                    <td></td>
+
+                </tr>
+                
+                {% load custom_filters %}
+               
+                <tr>
+                    <td></td>  
+                    <td> HIGHEST POSSIBLE SCORE</td>
+                    {% for record in gradescores %}
+                    {% if forloop.first %}
+                    {% for assessment_type, score_data in record.grade_scores.scores_hps.items %}
+                    {% if assessment_type == assessment_type %}
+                    {% for score in score_data.SCORES %}
+                    <input type="hidden" id="assessmentType" data-type="{{ assessment_type }}">
+                    <td class="highest-possible-scores_{{assessment_type}}" contenteditable="true">{{ score }}</td>
+                    {% endfor %}
+                    <td id="total_max_{{assessment_type}}" >{{ score_data.TOTAL_HPS|default_if_none:"N/A" }}</td>
+                    <td>100</td>
+                    <td>{{ score_data.WEIGHT|default_if_none:"N/A" }}</td>
+                    {% endif %} 
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>MALE</th>
+                    {% load custom_filters %}
+                    {% for _ in assessment_types %}
+                    {% for i in 1|th %}
+                    <th></th>
+                    {% endfor %}
+                    {% endfor %}
+                    <th></th>
+
+
+                </tr>
+                {% for record in gradescores %}
+                {% if record.student.sex == 'M' %}  
+                <tr>
+                    <td>{{ forloop.counter }}</td>  
+                    <td>{{ record.student.name}}</td>
+                    {% for key, value in record.grade_scores.scores_per_assesment.items %}
+                    {% if key == key %}
+                    {% for score in value.scores %} 
+                    <td class="score-cell" contenteditable= "true">{{ score }}</td>
+                    {% endfor %}
+                    <td>{{ value.total_score|default_if_none:"" }}</td>
+                    <td>{{ value.percentage_score|default_if_none:"" }}</td>
+                    <td>{{ value.total_weighted_score|default_if_none:"" }}</td>
+                    {% endif %}
+                    {% endfor %}
+                    <td>{{record.initial_grades}}</td>
+                    <td>{{record.transmuted_grades}}</td>
+                </tr>
                 {% endif %}
-            </div>
-        </div>
-    </div> 
+                {% endfor %}
+
+                <tr>
+                    <th></th>
+                    <th>FEMALE</th>
+                    {% load custom_filters %}
+                    {% for _ in assessment_types %}
+                    {% for i in 1|th %}
+                    <th></th>
+                    {% endfor %}
+                    {% endfor %}
+                    <th></th>
+
+
+                </tr>
+                {% for record in gradescores %}
+                {% if record.student.sex == 'F' %}  
+                <tr>
+                    <td>{{ forloop.counter }}</td>  
+                    <td>{{ record.student.name}}</td>
+                    {% for key, value in record.grade_scores.scores_per_assesment.items %}
+                    {% if key == key %}
+                    {% for score in value.scores %} 
+                    <td class="score-cell" contenteditable= "true">{{ score }}</td>
+                    {% endfor %}
+                    <td>{{ value.total_score|default_if_none:"" }}</td>
+                    <td>{{ value.percentage_score|default_if_none:"" }}</td>
+                    <td>{{ value.total_weighted_score|default_if_none:"" }}</td>
+                    {% endif %}
+                    {% endfor %}
+                    <td>{{record.initial_grades}}</td>
+                    <td>{{record.transmuted_grades}}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 </section>
 
 
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    $(document).ready(function () {
-        // Get the assessment types from the backend or any other source
-        var assessmentTypes = "{{ assessment_types|safe }}".replace(/[\[\]"']/g, "").split(',').map(function(item) {
-            return item.trim();
-        });
-       
-
-        // console.log(assessmentTypeProcessed)
-
-        var assessmentValues = "{{ assessment_values|safe }}".replace(/[\[\]"]/g, "").split(',').map(function(item) {
-            return item.trim();
-        });
-
-        // var keys = "{{processed_types|safe}}".replace(/[\[\]'""]/g, "").split(',').map(function(item) {
-        //     return item.trim();
-        // });
-
-        // console.log(keys)
-
-        var classRecordIdValue = $('input[name="class_record_id"]').val();
-        // Loop through each assessment type
-        assessmentTypes.forEach(function (assessmentType, index) {
-            
-            var value = assessmentValues[index]; 
-            // console.log("value:" + value)
-            var assessmentTypeProcessed = assessmentType.replace(/\s+/g, '-').toLowerCase();
-            console.log(assessmentTypeProcessed)
-
-            
-             $.ajax({
-                url: '/process_assessment_type/',
-                type: 'POST',
-                data: {
-                    assessmentTypeProcessed: assessmentTypeProcessed,
-                    class_record_id: classRecordIdValue,
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    // Handle success response from the server if needed
-                    console.log("Assessment type processed sent successfully. " + assessmentTypeProcessed);
-                    
-                    // Update HTML content based on received date
-                },
-                error: function(xhr, status, error) {
-                    // Handle error response if needed
-                    console.error('Error sending assessment type processed:', error);
-                    // Call any function or perform any action you need upon error
-                    // For example:
-                    // handleErrorResponse(xhr, status, error);
-                }
-            });
-
-            // var key = keys[index].replace(/\s+/g, '-').toLowerCase();
-            // console.log("key:" + key)
-
-                
-            // Create a new list item for the assessment tab
-            var listItem = $('<li class="nav-item"></li>');
-            // Create a new anchor tag for the assessment tab
-            var anchorTag = $('<a class="nav-link" role="tab" aria-selected="false"></a>')
-                .attr('id', 'assessment-tab-' + index)
-                .attr('data-bs-toggle', 'tab')
-                .attr('href', '#assessment-' + index)
-                .text(assessmentType);
-
-            // Append the anchor tag to the list item
-            listItem.append(anchorTag);
-
-            // Append the list item to the navigation tabs
-            $('#assessmentTabs').append(listItem);
-
-            // Create a new tab-pane for the assessment content
-            var tabPane = $('<div class="tab-pane fade show"></div>')
-                .attr('id', 'assessment-' + index)
-                .attr('role', 'tabpanel')
-                .append('<div class="mb-3">' +
-                            '<div class="table-responsive">' +
-                                '<div id="components">' + assessmentType + '</div>' +
-                                '<table class="table">' +
-                                    '<thead>' +
-                                        '<tr>' +
-                                            '<th></th>' +
-                                            '<th>Name</th>' +
-                                            '<th>{{assessment_type_processed}}</th>' +
-                                            '<th>2</th>' +
-                                            '<th>3</th>' +
-                                            '<th>4</th>' +
-                                            '<th>5</th>' +
-                                            '<th>6</th>' +
-                                            '<th>7</th>' +
-                                            '<th>8</th>' +
-                                            '<th>9</th>' +
-                                            '<th>10</th>' +
-                                            '<th>Total</th>' +
-                                            '<th>PS</th>' +
-                                            '<th>WS</th>' +
-                                        '</tr>' +
-                                       
-                                        '<tr>' +
-                                            '<td></td>' +      
-                                            '<th>Highest possible scores</th>' +
-                                            '{% for key, value in gradescores.0.grade_scores.scores_hps.items %}'+
-                                            '{% if key == assessment_type_processed.0 %}' +
-                                            '{% for score in value %}'+
-                                            '<td class="highest-possible-scores" contenteditable="true">{{ score }}</td>' +
-                                            '{% endfor %}'+
-                                            '{% endif %}' +
-                                            '{% endfor %}'+
-
-                                            '<td id="total_max_' +assessmentTypeProcessed + '" name="total_max_' + assessmentTypeProcessed+ '">Total</td>' +
-                                            '<td>100.00</td>' +
-                                            '<td id="weight_' + assessmentTypeProcessed + '" name="weight_' + assessmentTypeProcessed + '" value="' + value + '">' + value + '</td>' +
-                                        '</tr>' +
-                                       
-                                    '</thead>' +
-                                    '<tbody>' +
-                                        '<tr></tr>' +
-                                        '<tr>' +
-                                            '<th></th>' +
-                                            '<th>MALE</th>' +
-                                            '{% load custom_filters %}' +
-                                            '{% for i in 1|th %}' +
-                                                '<th></th>' +
-                                            '{% endfor %}' +
-                                        '</tr>' +
-                                        '{% for record in gradescores %}' +
-                                            '{% if record.student.sex == "M" %}' +
-                                                '<tr class="male-row">' +
-                                                    '<td>{{ forloop.counter }}</td>' +
-                                                    '<td>{{ record.student.name }}</td>' +
-                                                    '{% for score in record.grade_scores %}' +
-                                                    '<td class="score-cell" contenteditable="true">{{ score }}</td>' +
-                                                    '{% endfor %}' +
-                                                   
-                                                '</tr>' +
-                                            '{% endif %}' +
-                                        '{% endfor %}' +
-                                        '<tr></tr>' +
-                                        '<tr>' +
-                                            '<th></th>' +
-                                            '<th>FEMALE</th>' +
-                                            '{% load custom_filters %}' +
-                                            '{% for i in 1|th %}' +
-                                                '<th></th>' +
-                                            '{% endfor %}' +
-                                        '</tr>' +
-                                        '{% for record in gradescores %}' +
-                                            '{% if record.student.sex == "F" %}' +
-                                                '<tr class="female-row">' +
-                                                    '<td>{{ forloop.counter }}</td>' +
-                                                    '<td>{{ record.student.name }}</td>' +
-                                                    '{% for score in record.grade_scores %}' +
-                                                    '<td class="score-cell" contenteditable="true">{{ score }}</td>' +
-                                                    '{% endfor %}' +
-                                                   
-                                            '</tr>' +
-                                            '{% endif %}' +
-                                        '{% endfor %}' +
-                                    '</tbody>' +
-                                '</table>' +
-                            '</div>' +
-                        '</div>');
-
-            // Append the tab-pane to the tab-content
-            $('.tab-content.tab-content-basic').append(tabPane);
-
-        });
-       
-        $('#assessmentTabs').append('<li class="nav-item"><a class="nav-link" id="initial-grade-tab" data-bs-toggle="tab" href="#initial_grade" role="tab" aria-selected="false">INITIAL GRADES</a></li>');
-
-        // Simulate a click on the first assessment tab
-        $('#assessmentTabs li:first-child a').tab('show');
-
-    });
-</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Check if the page was reloaded after clicking the "Initial Grade" tab
@@ -511,17 +400,17 @@ $(document).ready(function () {
 
     function updateTotalMaxWrittenWorks() {
             var totalMaxWrittenWorks = 0;
-            $('#written_works .highest-possible-scores[contenteditable="true"]').each(function () {
+            $('.highest-possible-scores[contenteditable="true"]').each(function () {
                 var score = parseFloat($(this).text()) || 0;
                 totalMaxWrittenWorks += score;
             });
     
     
-            $('#total_max_written_works').text(totalMaxWrittenWorks.toFixed(2));
+            $('#total_max_{{assessment_type}}').text(totalMaxWrittenWorks.toFixed(2));
         }
     
     
-        function updateTotalMaxPerformance() {
+        {% comment %} function updateTotalMaxPerformance() {
             var totalMaxPerformance = 0;
             $('#performance_task .highest-possible-scores[contenteditable="true"]').each(function () {
                 var score = parseFloat($(this).text()) || 0;
@@ -530,7 +419,7 @@ $(document).ready(function () {
     
     
             $('#total_max_performance_task').text(totalMaxPerformance.toFixed(2));
-        }
+        } {% endcomment %}
     
     
         // function updateTotalQuarterly() {
@@ -701,7 +590,7 @@ $(document).ready(function () {
                     
                 console.log('Update Score Success:', data);
                 console.log('Initial Grade:', totalWeightedScore);  // Logging
-            }}},
+            },
             error: function (xhr, status, error) {
                 console.error('Error updating score:', error);  // Logging
                 alert("Error updating score. See console for details.");
@@ -833,7 +722,7 @@ $(document).ready(function () {
     
     
                         // Update the total max values on the client side
-                        $('#total_max_written_works').text(data.total_ww_hps.toFixed(2));
+                        $('#total_max_{{assessment_type}}').text(data.total_ww_hps.toFixed(2));
                         $('#total_max_performance_task').text(data.total_pt_hps.toFixed(2));
                         // $('#total_max_quarterly').text(data.total_qa_hps.toFixed(2));
                     }

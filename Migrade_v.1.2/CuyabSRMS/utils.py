@@ -1246,10 +1246,14 @@ def write_final_grade_subject(sheet, advisory_class_query, general_grades_query,
 
 def convert_to_int(grade):
     try:
-        # Try converting to float first
-        grade_float = float(grade)
-        # Then convert to int
-        return int(grade_float)
+        if grade is not None:
+            # Try converting to float first
+            grade_float = float(grade)
+            # Then convert to int
+            return int(grade_float)
+        else:
+            # Return 0 if grade is None
+            return ""
     except ValueError:
         # Return 0 if conversion fails
         return ""

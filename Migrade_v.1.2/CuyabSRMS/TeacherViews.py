@@ -792,8 +792,13 @@ def calculate_grades(request):
         scores_hps = {}  # Store scores for each assessment type
 
         for assessmentType in assessmentTypes:
+            scores_hps[assessmentType] = {}
             # Extract scores for each assessment type
-            scores_hps[assessmentType] = [request.POST.get(f"max_{assessmentType}_{i}") for i in range(1, 11)]
+            scores_hps[assessmentType]['SCORES'] = [request.POST.get(f"max_{assessmentType}_{i}") for i in range(1, 11)]
+
+            scores_hps[assessmentType]['TOTAL_HPS'] = request.POST.get(f"total_max_{assessmentType}")
+            scores_hps[assessmentType]['WEIGHT'] = request.POST.get(f"weight_{assessmentType}")
+
 
         # Extract total scores for each assessment type
         total_hps = {
@@ -921,8 +926,6 @@ def calculate_grades(request):
 
             grade_scores_data = {
                     'scores_hps': scores_hps,
-                    'total_hps': total_hps,
-                    'weight_input': weights,
                     'scores_per_assesment' : scores_assessment,
                 }
             
@@ -967,13 +970,8 @@ def display_classrecord(request, class_record_id=None):
     if teacher_id != class_record.teacher_id:
         return HttpResponseForbidden("You don't have permission to access this class record.")
 
-    keys = []  
+
     grade_scores = GradeScores.objects.filter(class_record=class_record)
-    for grade_score in grade_scores:
-        scores_hps = grade_score.grade_scores.get('scores_hps', {})  # Access scores_hps dictionary
-        for k in scores_hps.keys():  # Iterate over the keys of scores_hps
-            keys.append(k)  # Append each key to the list
-        break # Exit the loop after printing the first set of key-value pairs
 
     # print(keys)
 
@@ -993,47 +991,29 @@ def display_classrecord(request, class_record_id=None):
     # print(processed_types
     assessment_type_processed = None
 
-    if request.method == 'POST':
-        assessment_type_processed = request.POST.get('assessmentTypeProcessed')
-        print(f"process: {assessment_type_processed}")
-
-        # Check if the session already has a value for assessment_type_processed
-        if 'assessment_type_processed' not in request.session:
-            # If not, store the received value in the session
-            request.session['assessment_type_processed'] = assessment_type_processed
-
-        # Retrieve the assessment_type_processed value from the session
-        assessment_type_processed = request.session['assessment_type_processed']
-        print(f"assess: {assessment_type_processed}")
-
-    print(f"new: {assessment_type_processed}")
-
     context = {
-            'keys': keys,
             'class_record': class_record,
             'gradescores': grade_scores,
             'assessment_types': assessment_types,
             'assessment_values': list(assessments.values()),
-            #  'assessment_type_processed': assessment_type_processed,
-            #  'processed_types': processed_types
         }
 
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
     
-def process_assessment_Type(request):
-    if request.method == 'POST':
-        assessment_type_processed = request.POST.get('assessmentTypeProcessed')
-        # Process the assessment type
+# def process_assessment_Type(request):
+#     if request.method == 'POST':
+#         assessment_type_processed = request.POST.get('assessmentTypeProcessed')
+#         # Process the assessment type
 
-        # Redirect to the next view with the assessment type as a URL parameter
-        return redirect('get_assessment_type', assessment_type_processed=assessment_type_processed)
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+#         # Redirect to the next view with the assessment type as a URL parameter
+#         return redirect('get_assessment_type', assessment_type_processed=assessment_type_processed)
+#     else:
+#         return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
     
-def get_assessment_type(request, assessment_type_processed):
-    print(f"assessdaw: {assessment_type_processed}")
+# def get_assessment_type(request, assessment_type_processed):
+#     print(f"assessdaw: {assessment_type_processed}")
 
-    return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'assessment_type_processed': assessment_type_processed})
+#     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'assessment_type_processed': assessment_type_processed})
 
 
     
@@ -3904,11 +3884,170 @@ def update_markings(request):
         return JsonResponse({'status': 'error'}, status=400)
 
 
-
 @login_required
 @require_POST
 def sf2_upload(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and 'pdf_file' in request.FILES:
+        pdf_file = request.FILES['pdf_file']
+        content = pdf_file.read()
+
+
+
+        # Set up Google Cloud Document AI client
+        project_id = "1083879771832"
+        location = "us"  # Format is "us" or "eu"
+        processor_id = "827ebb48ef18ecd"  # Create processor before running sample
+        processor_version = "pretrained-form-parser-v2.0-2022-11-10"  # Refer to https://cloud.google.com/document-ai/docs/manage-processor-versions for more information
+
+
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+            # Process the document and extract tables using Document AI
+        document = process_document_form_sample(project_id, location, processor_id, processor_version, content, "application/pdf")
+
+
+            # Extract table data
+        table_data = []
+
+
+        for page in document.pages:
+                for table in page.tables:
+                    # Extract text content of header and body rows
+                    for row in table.header_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        row_hps = "HIGHEST POSSIBLE SCORE"
+                        table_data.append(row_content)
+
+
+                    for row in table.body_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        table_data.append(row_content)
+        # # print(table_data)
+        # sf2_data_scores = [sf2_process_row(row) for row in table_data]
+        # # print(f"sf2_Data_scores {sf2_data_scores}")
+
+
+        # sf2_names = {}
+
+
+        # for row in sf2_data_scores:
+        #     if len(row) >= 2 and isinstance(row[1], str):  # Check if the row has at least two elements and the element at index 1 is a string
+        #         student_name = row[1]
+        #         student_info = {'student_name': student_name}
+               
+        #         index = 1
+        #         while index < len(row) and (row[index] == 0 or row[index] is None):
+        #             index += 1
+        #         # You can add additional processing of the row here if needed
+        #         cleaned_row = row[index:] if index < len(row) else []
+        #         sf2_names[student_name] = student_info
+        #         student_info.update(sf2_scores_pdf(cleaned_row))
+
+
+        # school_info = {}
+        # grade_info = None
+
+
+        # for row in table_data:
+        #     # print("Row values:", row)
+
+
+        #     for element in row:
+        #         # Check if the element starts with the desired string
+        #         if element.startswith("Report for the Month of"):
+        #             month_row = element.strip().split("\n")[-1]
+        #             month = month_row.split()[-1]
+        #             school_info['month'] = month
+        #             # print("Month:", month)
+
+
+        #             break  # Exit t
+
+
+        #         # if element.startswith("Month"):
+        #         #     month_part = element.split(':')[1].strip()
+        #         #     month = month_part.split()[0]  # Extract the first word, which should be the month name
+        #         #     school_info['month'] = month
+        #         #     # print("Month:", month)  # Print "Month:" along with the month value
+
+
+        #             break
+
+
+        #     if "Name of School" in row:
+        #         grade_info = {
+        #             "school_name": row[1],
+        #             "grade": row[3],
+        #             "section": row[5]
+        #         }
+        #     if school_info and grade_info:
+        #         break
+
+
+        # # print(school_info)
+
+
+        # # print(table_data)
+        # # print(f"sf2_name {sf2_names}")
+
+
+        # if sf2_names:
+        #     keys_to_remove = list(sf2_names.keys())[1:3]  # Get keys for the next two items
+        #     for key in keys_to_remove:
+        #         del sf2_names[key]
+
+
+        # students_scores = sf2_names
+
+        # # print(f"students_score: {students_scores}")
+
+
+        # extracted_sf2 = {
+        #         "details": {
+        #             "school_info": school_info,
+        #         },
+        #         "students_scores": students_scores,
+        # }
+
+
+        # json_filename = 'result_sf3.json'
+        # json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+
+
+        #     # Ensure the directory exists, if not create it
+        # os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
+
+        # with open(json_path, 'w') as json_file:
+        #         json.dump(extracted_sf2, json_file, indent=4)  
+           
+        #     # Map the loaded JSON data to the model
+        # success = sf2_map_data_to_model_pdf(extracted_sf2, request.user.teacher.id, request)  # Passing request object
+        # print(success)
+        # form_fields_data = []
+
+
+        # for page in document.pages:
+        #         for field in page.form_fields:
+        #             name = layout_to_text(field.field_name, document.text).strip()
+        #             value = layout_to_text(field.field_value, document.text).strip()
+        #             form_field_data = {'name': name, 'value': value}
+        #             form_fields_data.append(form_field_data)
+
+
+        # json_data = {'table_data': table_data, 'form_fields_data': form_fields_data}
+        json_data = {'table_data': table_data}
+        json_file_path = 'document_data.json'
+        with open(json_file_path, 'w') as json_file:
+                json.dump(json_data, json_file)
+
+
+        print(f'Table data saved to {json_file_path}')
+
+
+        return render(request, 'admin_template/table_data.html', {'table_data': table_data})
+# return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data})
+
+    elif request.method == 'POST':
         excel_file = request.FILES['excel_file']
         sheet_name = request.POST.get('sheet_name')
 
@@ -3982,6 +4121,43 @@ def sf2_upload(request):
         # Return a response in case of non-POST requests
         return HttpResponse("Only POST requests are allowed.")
 
+def process_document_form_sample(
+    project_id: str,
+    location: str,
+    processor_id: str,
+    processor_version: str,
+    content: bytes,
+    mime_type: str,
+) -> documentai.Document:
+    # Set up Google Cloud Document AI client
+    client_options = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    client = documentai.DocumentProcessorServiceClient(client_options=client_options)
+
+    # The full resource name of the processor version
+    name = client.processor_version_path(project_id, location, processor_id, processor_version)
+
+    # Configure the process request
+    request = documentai.ProcessRequest(
+        name=name,
+        raw_document=documentai.RawDocument(content=content, mime_type=mime_type),
+    )
+
+    # Process the document and extract tables using Document AI
+    result = client.process_document(request=request)
+
+    # Return the processed document
+    return result.document
+
+def layout_to_text(layout, document_text):
+    """
+    Extracts text content from the layout of a Document AI element.
+    """
+    text_content = ""
+    for text_segment in layout.text_anchor.text_segments:
+        start_index = text_segment.start_index
+        end_index = text_segment.end_index
+        text_content += document_text[start_index:end_index]
+    return text_content
 
 def sf2_read_excel_values(excel_file, sheet_name):
     # Loading the workbook
@@ -4042,6 +4218,32 @@ def sf2_scores(score_list):
         "PRESENT": present
     }
 
+def sf2_scores_pdf(score_list):
+    student_absent = None
+    student_present = None
+
+
+        # Check if there are enough elements in the student_info list for Absent
+    if len(score_list) >= 3:  # Adjust the index as per your data structure
+        if score_list[-1] == '':
+            student_absent = {"absent": score_list[-3]}
+        else:
+            student_absent = {"absent": score_list[-2]} # Adjust the index as per your data structure
+
+
+        # Check if there are enough elements in the student_info list for Present
+    if len(score_list) >= 2:
+            if score_list[-1] == "":
+                student_present = {"present": score_list[-2]}
+            else:  # Adjust the index as per your data structure
+                student_present = {"present": score_list[-1]}  # Adjust the index as per your data structure
+
+
+    return {
+            # Assuming student name is at index 1
+            "ABSENT": student_absent,
+            "PRESENT": student_present
+        }
 
 
 def sf2_class_record_details(excel_file, sheet_name):
@@ -4227,4 +4429,3 @@ def sf2_map_data_to_model(json_data, teacher_id, request):
    
 
     return success
-

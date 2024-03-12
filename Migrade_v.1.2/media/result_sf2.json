@@ -8,7 +8,7 @@
         "school_info": {
             "school_id": 108420,
             "school_year": "2023 - 2024",
-            "month": "OCTOBER"
+            "month": "SEPTEMBER"
         }
     },
     "students_scores": {
@@ -69,10 +69,10 @@
         "CHAN,JHON RHAYNE, REPELAR": {
             "student_name": "CHAN,JHON RHAYNE, REPELAR",
             "ABSENT": {
-                "absent": 6
+                "absent": 9
             },
             "PRESENT": {
-                "present": 15
+                "present": 12
             }
         },
         "GETALADO,EARL SAMUEL, CLAVE": {
@@ -123,10 +123,10 @@
         "SAMANIEGO,MATTHEW ANDREI, ANGULO": {
             "student_name": "SAMANIEGO,MATTHEW ANDREI, ANGULO",
             "ABSENT": {
-                "absent": 3
+                "absent": 2
             },
             "PRESENT": {
-                "present": 18
+                "present": 19
             }
         },
         "SAN JUAN JR.,ARLY, PLATINO": {
@@ -177,10 +177,10 @@
         "ORTEGA,KYLE MICO, TORAYNO": {
             "student_name": "ORTEGA,KYLE MICO, TORAYNO",
             "ABSENT": {
-                "absent": 1
+                "absent": 0
             },
             "PRESENT": {
-                "present": 20
+                "present": 21
             }
         },
         "ORTEGA,XERXES BENCH, ALON-ALON": {
@@ -249,10 +249,10 @@
         "<=== MALE | TOTAL Per Day ===>": {
             "student_name": "<=== MALE | TOTAL Per Day ===>",
             "ABSENT": {
-                "absent": 12
+                "absent": 13
             },
             "PRESENT": {
-                "present": 534
+                "present": 533
             }
         },
         "ARRESGADO,LEANNE ROSE, CARLOS": {
@@ -303,10 +303,10 @@
         "DICDICAN,TRISHA ELLAINE, REALON": {
             "student_name": "DICDICAN,TRISHA ELLAINE, REALON",
             "ABSENT": {
-                "absent": 0
+                "absent": 4
             },
             "PRESENT": {
-                "present": 21
+                "present": 17
             }
         },
         "ESPINAR,ANGIELYN, MARCE": {
@@ -474,19 +474,19 @@
         "<=== FEMALE | TOTAL Per Day ===>": {
             "student_name": "<=== FEMALE | TOTAL Per Day ===>",
             "ABSENT": {
-                "absent": 0
+                "absent": 4
             },
             "PRESENT": {
-                "present": 504
+                "present": 500
             }
         },
         "Combined TOTAL Per Day": {
             "student_name": "Combined TOTAL Per Day",
             "ABSENT": {
-                "absent": 12
+                "absent": 17
             },
             "PRESENT": {
-                "present": 1038
+                "present": 1033
             }
         }
     }
