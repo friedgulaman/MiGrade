@@ -227,6 +227,15 @@ $(document).ready(function () {
 
         updateTotalHpsScores();
 
+    function calculateTotalScore(studentName, assessmentType) {
+            var totalScore = 0;
+            $('tr:has(td[id^="student_name_' + studentName + '"]) .score-cell_' + assessmentType + '[contenteditable="true"]').each(function() {
+                var score = parseFloat($(this).text()) || 0;
+                totalScore += score;
+            });
+            return totalScore;
+        }
+
     function updateTotalScores() {
             $('[id^="total_score_"]').each(function() {
                 var assessmentType = $(this).attr('id').replace('total_score_', '');
@@ -251,9 +260,15 @@ $(document).ready(function () {
                 var totalMaxId = 'total_max_' + assessmentType;
                 var totalScoreId = 'total_score_' + assessmentType;
                 var totalMaxScore = parseFloat($('#' + totalMaxId).text()) || 0;
-                var totalScore = parseFloat($('#' + totalScoreId).text()) || 0;
+                var totalScore = 0; // Initialize total score
+                var total_Score = 0; // Initialize total score for each student
+                $(`tr:has(td[id^="student_name_${studentName}"]) .score-cell_${assessmentType}[contenteditable="true"]`).each(function() {
+                    var score = parseFloat($(this).text()) || 0;
+                    total_Score += score;
+                });
+                totalScore += total_Score; // Accumulate scores for all students
                 var percentageScore = (totalScore / totalMaxScore) * 100;
-                $(this).closest('tr').find('#total_percentage_score_' + assessmentType).text(percentageScore.toFixed(2));
+                $(this).text(percentageScore.toFixed(2));
             });
         }
 
@@ -265,11 +280,21 @@ $(document).ready(function () {
             $('[id^="total_weighted_score_"]').each(function() {
                 var assessmentType = $(this).attr('id').replace('total_weighted_score_', '');
                 var studentName = $(this).closest('tr').find('[id^="student_name_"]').attr('id').replace('student_name_', '');
-                var totalPercentageId = 'total_percentage_score_' + assessmentType;
                 var weightInputId = 'weigh_input_' + assessmentType;
-                var totalPercentage = parseFloat($('#' + totalPercentageId).text()) || 0;
                 var weight = parseFloat($('#' + weightInputId).text()) || 0;
-                var totalWeightedScore = (totalPercentage / 100) * weight;
+                var totalMaxId = 'total_max_' + assessmentType;
+                var totalScoreId = 'total_score_' + assessmentType;
+                var totalMaxScore = parseFloat($('#' + totalMaxId).text()) || 0;
+                var totalScore = 0; // Initialize total score
+                var total_Score = 0; // Initialize total score for each student
+                $(`tr:has(td[id^="student_name_${studentName}"]) .score-cell_${assessmentType}[contenteditable="true"]`).each(function() {
+                    var score = parseFloat($(this).text()) || 0;
+                    total_Score += score;
+                });
+                totalScore += total_Score; // Accumulate scores for all students
+                var percentageScore = (totalScore / totalMaxScore) * 100;
+
+                var totalWeightedScore = (percentageScore / 100) * weight;
                 $(this).text(totalWeightedScore.toFixed(2));
             });
         }
