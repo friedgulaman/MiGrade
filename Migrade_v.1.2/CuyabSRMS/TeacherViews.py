@@ -926,7 +926,7 @@ def calculate_grades(request):
 
             grade_scores_data = {
                     'scores_hps': scores_hps,
-                    'scores_per_assesment' : scores_assessment,
+                    'scores_per_assessment' : scores_assessment
                 }
             
             # grade_scores_json = json.dumps(grade_scores_data)
@@ -2376,26 +2376,27 @@ def update_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         student_name = request.POST.get('student_name')
         new_score = request.POST.get('new_score')
-        # column_index = int(request.POST.get('column_index'))
-        section_id = request.POST.get('section_id')  # Added section_id for differentiation
         class_record_id = request.POST.get('class_record_id')
-        scores_hps = request.POST.get('scores_hps')
+        score_data = request.POST.getlist('scoreData[]')  # Changed to match AJAX data key
+        assessment_type = request.POST.get('assessment_type')
+        
 
         print(f"new_score {new_score}")
-        # print(f"column_index: {column_index}")
         print(f"classrecordid: {class_record_id}")
+        print(score_data)
+        print(assessment_type)
 
 
          # Assuming you want to filter students by both name and teacher
         students = Student.objects.filter(name=student_name)
-
+        scores_per_assessment = "scores_per_assessment"
         # Ensure there is exactly one matching student
         if students.count() == 1:
             student = students.first()
         else:
             # Handle the case where there are zero or multiple matching students
-            print(f"Error: Found {students.count()} students with the name '{student_name}' for the logged-in teacher.")
-            # Add your error handling logic here, e.g., returning an error response.
+            # print(f"Error: Found {students.count()} students with the name '{student_name}' for the logged-in teacher.")
+            # # Add your error handling logic here, e.g., returning an error response.
             return JsonResponse({'success': False, 'error': 'Error in finding the student'})
 
         try:
@@ -2405,219 +2406,95 @@ def update_score(request):
                 class_record__id=class_record_id
             )
 
-            print("Grade Score Found:", grade_score)  # Add this line for debugging
-
         except GradeScores.DoesNotExist:
             print(f"Not Found: /update_score/")
             return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
+        
+        scores_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['SCORES']
 
-
-        if section_id == 'written_works':
-            scores_field = 'written_works_scores'
-            hps_field = 'scores_hps_written'  # Adjust with your actual field name for HPS
-            total_field = 'total_score_written'
-            percentage_field = 'percentage_score_written'
-            weighted_field = 'weighted_score_written'
-            max_field = 'total_ww_hps'  # Adjust with your actual field name for max score
-            weight_field = 'weight_input_written'  # Adjust with your actual field name for weight
-        elif section_id == 'performance_task':
-            scores_field = 'performance_task_scores'
-            hps_field = 'scores_hps_performance'  # Adjust with your actual field name for HPS
-            total_field = 'total_score_performance'
-            percentage_field = 'percentage_score_performance'
-            weighted_field = 'weighted_score_performance'
-            max_field = 'total_pt_hps'  # Adjust with your actual field name for max score
-            weight_field = 'weight_input_performance'  # Adjust with your actual field name for weight
-        elif section_id == 'quarterly_assessment':
-            scores_field = 'quarterly_assessment_scores'
-            hps_field = 'scores_hps_quarterly'  # Adjust with your actual field name for HPS
-            total_field = 'total_score_quarterly'
-            percentage_field = 'percentage_score_quarterly'
-            weighted_field = 'weighted_score_quarterly'
-            max_field = 'total_qa_hps'  # Adjust with your actual field name for max score
-            weight_field = 'weight_input_quarterly'  # Adjust with your actual field name for weight
-        else:
-            return JsonResponse({'error': 'Invalid section_id'})
-
-
-    #    # Ensure scores_list has enough elements, initialize with zeros if necessary
-    #     scores_list = getattr(grade_score, scores_field, [0] * (column_index + 1))
-
-    #     # Update the specific value in the scores list
-    #     if section_id == 'written_works':
-    #         hps_scores_list = getattr(grade_score, hps_field, [0] * (column_index + 1))
-    #         hps_written = hps_scores_list[column_index]
-
-    #         if new_score and new_score.strip():
-    #             try:
-    #                 new_score_numeric = int(float(new_score))
-    #             except ValueError:
-    #                 # Set the score to an empty string if it's not a valid numeric value
-    #                 setattr(grade_score, scores_field, [0] * (column_index + 1))
-    #                 return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the written score.'})
-
-    #             # Check if hps_written is a valid numeric value
-    #             try:
-    #                 hps_written_numeric = int(float(hps_written))
-    #             except ValueError:
-    #                 # Handle the case where hps_written is not a valid numeric value
-    #                 return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score. Please provide a valid numeric value.'})
-
-    #             if new_score_numeric > hps_written_numeric:
-    #                 # Set the score to an empty string if the condition is met
-    #                 setattr(grade_score, scores_field, [0] * (column_index + 1))
-    #                 return JsonResponse({'success': False, 'error': 'Invalid score. Written score cannot exceed HPS score.'})
-    #     # Add similar logic for performance_task
-
-    #     elif section_id == 'performance_task':
-    #         hps_scores_list = getattr(grade_score, 'scores_hps_performance', [0] * (column_index + 1))
-    #         hps_performance = hps_scores_list[column_index]
-
-    #         if new_score and new_score.strip():
-    #             try:
-    #                 new_score_numeric = int(float(new_score))
-    #             except ValueError:
-    #                 # Set the score to an empty string if it's not a valid numeric value
-    #                 setattr(grade_score, scores_field, [0] * (column_index + 1))
-    #                 return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the performance task score.'})
-
-    #             # Check if hps_performance is a valid numeric value
-    #             try:
-    #                 hps_performance_numeric = int(float(hps_performance))
-    #             except ValueError:
-    #                 # Handle the case where hps_performance is not a valid numeric value
-    #                 return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score score. Please provide a valid numeric value.'})
-
-    #             if new_score_numeric > hps_performance_numeric:
-    #                 # Set the score to an empty string if the condition is met
-    #                 setattr(grade_score, scores_field, [0] * (column_index + 1))
-    #                 return JsonResponse({'success': False, 'error': 'Invalid score. Performance task score cannot exceed HPS score.'})
-
-    #             # Add similar logic for quarterly_assessment
-    #     elif section_id == 'quarterly_assessment':
-    #         hps_quarterly = getattr(grade_score, max_field)
-
-    #         if new_score and new_score.strip():
-    #             try:
-    #                 total_quarterly_numeric = int(float(new_score))
-    #             except ValueError:
-    #                 # Set the score to an empty string if it's not a valid numeric value
-    #                 setattr(grade_score, total_field, 0)
-    #                 return JsonResponse({'success': False, 'error': 'Invalid total score. Please enter a numeric value for the quarterly assessment score.'})
-
-    #             if total_quarterly_numeric > hps_quarterly:
-    #                 print('Debug: new_score:', new_score)
-    #                 print('Debug: total_quarterly_numeric:', total_quarterly_numeric)
-    #                 print('Debug: hps_quarterly:', hps_quarterly)
-    #                 # Set the score to an empty string if the condition is met
-    #                 setattr(grade_score, total_field, 0)
-    #                 return JsonResponse({'success': False, 'error': 'Invalid total score. Quarterly assessment score cannot exceed HPS score.'})
-                              
-                              
-    #                             # Update the specific value in the scores list
-    #     if new_score != '' and new_score.strip():  # Check if new_score is not an empty string or contains only whitespace
-    #         scores_list[column_index] = int(float(new_score))
-    #     else:
-    #         scores_list[column_index] = ''  # Or any default value you prefer
-    #     # Or any default value you prefer
-
-    #     # Save the updated scores list to the model
-    #     setattr(grade_score, scores_field, scores_list)
-
-
-    #     scores_list = [int(score) if score and score != '' else 0 for score in scores_list]
-
-    #     if section_id == 'quarterly_assessment':
-    #         # For quarterly assessment, total_score is directly updated
-    #         total_score = int(float(new_score))
-    #         max_value = getattr(grade_score, max_field)
-    #         percentage_score = (total_score / max_value) * 100 if max_value is not None and max_value != 0 else 0
-    #         weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
-    #     else:
-    # # For other sections, calculate total_score from scores_list
-    #         total_score = sum(scores_list)
-    #         max_field_value = getattr(grade_score, max_field)
-
-    #         # Check if max_field_value is None before performing division
-    #         if max_field_value is not None and max_field_value != 0:
-    #             percentage_score = (total_score / max_field_value) * 100
-    #             weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
-    #         else:
-    #             # Handle the case where max_field_value is None (set a default value or handle it as needed)
-    #             percentage_score = 0
-    #             weighted_score = 0
+        # Check if any score exceeds the corresponding scores_hps value
+        for idx, score in enumerate(score_data):
+            current_score = grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx]
+            if not (current_score.isdigit() or current_score == ''):  # Check if score is not a numerical value at the current index
+                grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx] = ''
+                grade_score.save()
+                return JsonResponse({'success': False, 'error': 'Invalid score: Please enter a numerical value'})
             
+            if score.isdigit() and scores_hps_data[idx].isdigit():  # Only check if both are numeric
+                if int(score) > int(scores_hps_data[idx]):
+                    grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx] = ''
+                    grade_score.save()
+                    return JsonResponse({'success': False, 'error': 'Invalid score: Exceeds highest possible score'})
+            elif scores_hps_data[idx] == '' and score_data[idx] != '':   # Check if the corresponding scores_hps_data entry is an empty string
+                print("hps", scores_hps_data)
+                print("Debug: scores_hps_data at index", idx, "is empty string.")
+                grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx] = ''
+                grade_score.save()
+                return JsonResponse({'success': False, 'error': 'Invalid score: HPS score is empty'})
+  
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'] = score_data
+        total_score_data = sum(int(score) for score in score_data if score.isdigit())
+        total_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['TOTAL_HPS']
+        weight_input = float(grade_score.grade_scores['scores_hps'][assessment_type]['WEIGHT'])
 
-    #     # Log the calculated values
-    #     print("Total Score:", total_score)
-    #     print("Percentage Score:", percentage_score)
-    #     print("Weighted Score:", weighted_score)
-    #     print(scores_hps)
+        print(total_hps_data)
+        print(weight_input)
+        # Calculate percentage score
+        if total_hps_data != 0:
+            percentage_score_data = round((total_score_data / total_hps_data) * 100, 2)
+        else:
+            percentage_score_data = None
 
-    #     # Set the calculated values to the model fields
-    #     setattr(grade_score, total_field, int(float(total_score)))
-    #     setattr(grade_score, percentage_field, round(percentage_score, 2))
-    #     setattr(grade_score, weighted_field, round(weighted_score,2))
+        print(percentage_score_data)
 
-        
-    #     print(scores_list)
-    #     print(total_field)
-    #     grade_score.save()
-    #     # Return updated data as JSON response
-    #     initial_grade = (
-    #         (getattr(grade_score, 'weighted_score_written', 0) or 0) +
-    #         (getattr(grade_score, 'weighted_score_performance', 0) or 0) +
-    #         (getattr(grade_score, 'weighted_score_quarterly', 0) or 0)
-    #     )
-    #     initial_grade = round(initial_grade, 2)
+        if percentage_score_data is not None:
+            total_weighted_score = round((percentage_score_data / 100) * weight_input, 2)
+        else:
+            total_weighted_score = None
 
-    #     transmuted_grades = transmuted_grade(initial_grade)
+        print(total_weighted_score)
+        # Store the total score in grade_score
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['total_score'] = total_score_data
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['percentage_score'] = percentage_score_data
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['total_weighted_score'] = total_weighted_score
 
-    #     # Log the initial grade
-    #     print("Initial Grade:", initial_grade)
-    #     print("transmuted_grade:", transmuted_grades)
+        assessments = grade_score.grade_scores[scores_per_assessment].keys()
 
-    #     if section_id == 'quarterly_assessment':
-    #         scores_hps_value = None  # or any other default value for quarterly assessment
-    #     else:
-    #         scores_hps_value = getattr(grade_score, hps_field)
-
-    #     # Set the calculated initial grade to the model field
-    #     setattr(grade_score, 'initial_grades', initial_grade)
-    #     setattr(grade_score, 'transmuted_grades', transmuted_grades)
-    #     grade_score.save()
-
-    #     class_record = grade_score.class_record
-
-    #     # Save the changes to ClassRecord
-    #     class_record.save()
-
-    #     # Return updated data as JSON response
-    #     response_data = {
-    #         'success': True,
-    #         'total_score': getattr(grade_score, total_field),
-    #         'percentage_score': getattr(grade_score, percentage_field),
-    #         'weighted_score': getattr(grade_score, weighted_field),
-    #         'initial_grade': initial_grade,  # Add initial grade to the response
-    #         'scores_hps': scores_hps_value,
-    #     }
-        
-        
-    #     return JsonResponse(response_data)
+        # Compute initial grades by summing total_weighted_score of each assessment
+        initial_grades = sum(
+            grade_score.grade_scores[scores_per_assessment][assmt_type]['total_weighted_score'] or 0
+            for assmt_type in assessments
+        )
 
 
-    return JsonResponse({'error': 'Invalid request'})
+        print(initial_grades)
+        transmuted_grades = transmuted_grade(initial_grades)
+
+        grade_score.initial_grades = initial_grades
+        grade_score.transmuted_grades = transmuted_grades
+
+        try:
+            grade_score.save()
+            print("Grade score saved successfully!")
+        except Exception as e:
+            print("Error saving grade score:", e)
+
+        response_data = {'success': True}
+
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'error': 'Invalid request'})
 
 
 def update_highest_possible_scores(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         class_record_id = request.POST.get('class_record_id')
-        section_id = request.POST.get('section_id')
         new_hps_data = request.POST.getlist('new_hps_data[]')
+        assessment_type = request.POST.get('assessment_type')
 
-        print("Request POST Data:", request.POST)
         print("Class Record ID:", class_record_id)
-        print(section_id)
+        print(new_hps_data)
+        print(assessment_type)
 
         try:
             # Retrieve GradeScores objects based on the given class record id
@@ -2625,37 +2502,26 @@ def update_highest_possible_scores(request):
         except GradeScores.DoesNotExist:
             return JsonResponse({'error': 'GradeScores not found for the given class record ID.'}, status=404)
 
-        # Determine the field to update based on the section_id
-        if section_id == 'written_works':
-            hps_field = 'scores_hps_written'
-            total_hps_field = 'total_ww_hps'
-        elif section_id == 'performance_task':
-            hps_field = 'scores_hps_performance'
-            total_hps_field = 'total_pt_hps'
-        elif section_id == 'quarterly_assessment':
-            hps_field = 'scores_hps_quarterly'
-            total_hps_field = 'total_qa_hps'
-        else:
-            return JsonResponse({'error': 'Invalid section_id'})
-
         # Update the highest possible scores data for each GradeScores object
         for grade_score in grade_scores:
-            # Convert the new_hps_data to a list of integers, handling empty strings
-            new_hps_list = [int(value) if value.strip() != '' else '' for value in new_hps_data]
+            # Update scores_hps field with new_hps_data
 
-            # Update the scores_hps field with the new list
-            setattr(grade_score, hps_field, new_hps_list)
+            if not all(value.isdigit() or value == '' for value in new_hps_data):
+                print("Debug: Values in new_hps_data:", new_hps_data)
+                return JsonResponse({'success': False, 'error': 'Invalid highest possible scores data. Please provide valid numeric values.'})
+
+            grade_score.grade_scores['scores_hps'][assessment_type]['SCORES'] = new_hps_data
+            total_hps = sum(int(value) for value in new_hps_data if value.isdigit())
+
+
+            grade_score.grade_scores['scores_hps'][assessment_type]['TOTAL_HPS'] = total_hps
             grade_score.save()
 
-            # Update the total_hps_field
-            total_hps_value = sum([int(value) for value in new_hps_list if isinstance(value, int) or (isinstance(value, str) and value.isdigit())])
-            setattr(grade_score, total_hps_field, total_hps_value)
-            grade_score.save()
+            response_data = {'success': True}
 
-        return JsonResponse({'success': True})
+        return JsonResponse(response_data)
 
-    return JsonResponse({'error': 'Invalid request'})
-
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def update_total_max_quarterly(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
