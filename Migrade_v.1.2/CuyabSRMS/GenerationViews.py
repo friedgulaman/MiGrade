@@ -441,7 +441,7 @@ def generate_excel_for_sf9(request, student_id):
 
     # Original file path for SF9 template
         # Original file path
-    excel_file_name = "ELEM SF9 (Learner's Progress Report Card).xlsx"
+    excel_file_name = "SF9.xlsx"
 
     # Get the current working directory
     # current_directory = os.getcwd()

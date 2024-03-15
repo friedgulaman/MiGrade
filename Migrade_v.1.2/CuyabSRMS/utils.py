@@ -819,19 +819,20 @@ def write_transmuted_grade(sheet, grade_scores_queryset):
             print(f"Unknown sex for student: {scores.student.name}")
             continue
 
+
 def write_sf9_data(front_sheet, student):
     # Assuming Y16 is the cell where you want to write the student's name
     column_coordinates_student_name = 17  # Column Y
-    row_coordinates_student_name = 22
+    row_coordinates_student_name = 14
     column_coordinates_lrn = 19
-    row_coordinates_lrn = 24
-    row_coordinates_sex = 26
+    row_coordinates_lrn = 15
+    row_coordinates_sex = 16
     column_coordinates_sex = 20
-    row_coordinates_grade = 28
+    row_coordinates_grade = 17
     column_coordinates_grade = 17
-    row_coordinates_section = 28
+    row_coordinates_section = 17
     column_coordinates_section = 20
-    row_coordinates_age = 26
+    row_coordinates_age = 16
     column_coordinates_age = 17
     # birthdate = student.birthday
 
@@ -849,18 +850,22 @@ def write_sf9_data(front_sheet, student):
     front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
-    # sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
+    # front_sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
     # print(student.name)
 
 
 def write_sf9_school_info(front_sheet, school_info_queryset):
-    row = 40
+    row = 27
     column = 16
+    row_sy = 18
+    column_sy = 18
 
     # Assuming there's only one principal for a single school information record
     for school_info in school_info_queryset:
         principal = school_info.principal_name
+        school_year = school_info.school_year
         front_sheet.cell(row=row, column=column, value=principal)
+        front_sheet.cell(row=row_sy, column=column_sy, value=school_year)
 
 
 def write_sf9_grades(back_sheet, advisory_class, general_average):
@@ -902,11 +907,11 @@ def write_sf9_grades(back_sheet, advisory_class, general_average):
 
 def write_sf9_total_attendance(front_sheet, attendance_record):
     attendance_data = attendance_record.attendance_record
-    row_total_school_days = 7
-    row_total_days_present = 9
-    row_total_days_absent = 12 
+    row_total_school_days = 12
+    row_total_days_present = 16
+    row_total_days_absent = 20 
 
-    column_coordinates = 13
+    column_coordinates = 14
 
     for month, record in attendance_data.items():
         total_school_days = record.get('Total School Days', '')
@@ -921,25 +926,26 @@ def write_sf9_total_attendance(front_sheet, attendance_record):
 
 def write_sf9_attendance(front_sheet, attendance_record):
     attendance_data = attendance_record.attendance_record
-    row_school_days = 7 
-    row_days_present = 9
-    row_days_absent =  12
-    row_total_school_days = 7
-    row_total_days_present = 9
-    row_total_days_absent = 12 # Starting row for school days
+    row_school_days = 12
+    row_days_present = 16
+    row_days_absent =  20
+    row_total_school_days = 12
+    row_total_days_present = 16
+    row_total_days_absent = 20 # Starting row for school days
     column_coordinates = {
-        "JUNE": 2,
-        "JULY": 3,
-        "AUGUST": 4,
-        "SEPTEMBER": 5,
-        "OCTOBER": 6,
-        "NOVEMBER": 7,
-        "DECEMBER": 8,
-        "JANUARY": 9,
-        "FEBRUARY": 10,
-        "MARCH": 11,
-        "APRIL": 12,
-        "TOTAL": 13,
+        "JUNE": 12,
+        "JULY": 13,
+        "AUGUST": 2,
+        "SEPTEMBER": 3,
+        "OCTOBER": 4,
+        "NOVEMBER": 5,
+        "DECEMBER": 6,
+        "JANUARY": 7,
+        "FEBRUARY": 8,
+        "MARCH": 9,
+        "APRIL": 10,
+        "MAY": 11,
+        "TOTAL": 14,
         # Add more months as needed
     }
 

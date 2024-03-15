@@ -2413,6 +2413,9 @@ def update_score(request):
         scores_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['SCORES']
 
         # Check if any score exceeds the corresponding scores_hps value
+
+        previous_scores = grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][:]
+
         for idx, score in enumerate(score_data):
             current_score = grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx]
             if not (current_score.isdigit() or current_score == ''):  # Check if score is not a numerical value at the current index
@@ -2440,6 +2443,8 @@ def update_score(request):
 
         print(total_hps_data)
         print(weight_input)
+
+        total_hps_data = float(total_hps_data)
         # Calculate percentage score
         if total_hps_data != 0:
             percentage_score_data = round((total_score_data / total_hps_data) * 100, 2)
@@ -2463,10 +2468,9 @@ def update_score(request):
 
         # Compute initial grades by summing total_weighted_score of each assessment
         initial_grades = sum(
-            grade_score.grade_scores[scores_per_assessment][assmt_type]['total_weighted_score'] or 0
+            float(grade_score.grade_scores[scores_per_assessment][assmt_type]['total_weighted_score'] or 0)
             for assmt_type in assessments
         )
-
 
         print(initial_grades)
         transmuted_grades = transmuted_grade(initial_grades)
@@ -2689,6 +2693,9 @@ def process_row(row):
     return row
 
 def divide_scores(score_list):
+    # Convert all values to string
+    score_list = [str(value) if value is not None else '' for value in score_list]
+
     written_works_scores = score_list[:10]
     
     # Check if there are enough elements in the score_list for written works
@@ -2698,9 +2705,9 @@ def divide_scores(score_list):
         weighted_score_written = score_list[12]
     else:
         # Set default values if there are not enough elements for written works
-        total_scores_written = None
-        percentage_score_written = None
-        weighted_score_written = None
+        total_scores_written = ''
+        percentage_score_written = ''
+        weighted_score_written = ''
     
     written_works_dict = {
         "written_works_scores": written_works_scores,
@@ -2720,9 +2727,9 @@ def divide_scores(score_list):
         weighted_score_performance = score_list[25]
     else:
         # Set default values if there are not enough elements for performance task
-        total_score_performance = None
-        percentage_score_performance = None
-        weighted_score_performance = None
+        total_score_performance = ''
+        percentage_score_performance = ''
+        weighted_score_performance = ''
     
     performance_task_dict = {
         "performance_task_scores": performance_task_scores,
@@ -2731,9 +2738,15 @@ def divide_scores(score_list):
         "weighted_score_performance": weighted_score_performance
     }
 
+    if len(score_list) >= 27:
+        quarterly_assessment_scores = [score_list[26]] + [''] * 9
+    else:
+        quarterly_assessment_scores = [''] * 10
+
     # Check if there are enough elements in the score_list for Quarterly Assessment
     if len(score_list) >= 29:
         quarterly_assessment = {
+            "quarterly_assessment_scores": quarterly_assessment_scores,
             "total_score_quarterly": score_list[26],
             "percentage_score_quarterly": score_list[27],
             "weighted_score_quarterly": score_list[28]
@@ -2744,7 +2757,6 @@ def divide_scores(score_list):
     print(written_works_dict)
     print(performance_task_dict)
     print(quarterly_assessment)
-
     
     # Check if there are enough elements in the score_list for Initial Grade
     if len(score_list) >= 30:
@@ -2824,40 +2836,49 @@ def divide_hps(row):
         hps_performance = row[13:26]
         hps_quarterly = row[26:]
 
+        hps_written_works = [str(value) if value is not None else '' for value in hps_written_works]
+        hps_performance = [str(value) if value is not None else '' for value in hps_performance]
+        hps_quarterly = [str(value) if value is not None else '' for value in hps_quarterly]
+
         # Extract values for hps_written_works
         scores_hps_written = hps_written_works[:10]
-        total_ww_hps = hps_written_works[10] if len(hps_written_works) > 10 else None
-        percentage_hps_written = hps_written_works[11] if len(hps_written_works) > 11 else None
-        weight_input_written = hps_written_works[12] if len(hps_written_works) > 12 else None
+        total_ww_hps = hps_written_works[10] if len(hps_written_works) > 10 else ''
+        percentage_hps_written = hps_written_works[11] if len(hps_written_works) > 11 else ''
+        weight_input_written = hps_written_works[12] if len(hps_written_works) > 12 else ''
 
         # Extract values for hps_performance
         scores_hps_performance = hps_performance[:10]
-        total_pt_hps = hps_performance[10] if len(hps_performance) > 10 else None
-        percentage_hps_performance = hps_performance[11] if len(hps_performance) > 11 else None
-        weight_input_performance = hps_performance[12] if len(hps_performance) > 12 else None
+        total_pt_hps = hps_performance[10] if len(hps_performance) > 10 else ''
+        percentage_hps_performance = hps_performance[11] if len(hps_performance) > 11 else ''
+        weight_input_performance = hps_performance[12] if len(hps_performance) > 12 else ''
 
         # Extract values for hps_quarterly
-        total_qa_hps = hps_quarterly[0] if len(hps_quarterly) > 0 else None
-        percentage_hps_quarterly = hps_quarterly[1] if len(hps_quarterly) > 1 else None
-        weight_input_quarterly = hps_quarterly[2] if len(hps_quarterly) > 2 else None
+        scores_hps_quarterly = [hps_quarterly[0]] + [''] * 9
+        total_qa_hps = hps_quarterly[0] if len(hps_quarterly) > 0 else ''
+        percentage_hps_quarterly = hps_quarterly[1] if len(hps_quarterly) > 1 else ''
+        weight_input_quarterly = hps_quarterly[2] if len(hps_quarterly) > 2 else ''
+
+        print(float(weight_input_written) * 100)
+        print(weight_input_performance)
 
         return {
             "written-works": {
                 "SCORES": scores_hps_written,
                 "TOTAL_HPS": total_ww_hps,
                 "percentage_hps_written": percentage_hps_written,
-                "WEIGHT": weight_input_written
+                "WEIGHT": int(float(weight_input_written) * 100)
             },
             "performance-task": {
                "SCORES": scores_hps_performance,
                 "TOTAL_HPS": total_pt_hps,
-                "percentage_hps_performance": percentage_hps_performance,
-                "WEIGHT": weight_input_performance
+                # "percentage_hps_performance": percentage_hps_performance,
+                "WEIGHT": int(float(weight_input_performance) * 100)
             },
             "quarterly-assessment": {
-                "SCORES": total_qa_hps,
-                "percentage_hps_quarterly": percentage_hps_quarterly,
-                "WEIGHT": weight_input_quarterly
+                "SCORES": scores_hps_quarterly,
+                 "TOTAL_HPS": total_qa_hps,
+                # "percentage_hps_quarterly": percentage_hps_quarterly,
+                "WEIGHT": (int(float(weight_input_quarterly) * 100))
             }
         }
 
@@ -2955,9 +2976,6 @@ def map_data_to_model(json_data, teacher_id, request):
     students_scores = json_data['students_scores']
     hps_class_record = json_data['hps_class_record']['HIGHEST POSSIBLE SCORE']
 
-    # print("hps_class_record", hps_class_record)
-    print("hps_class_record", hps_class_record)
-
     # Create ClassRecord instance
     class_record_instance = ClassRecord.objects.create(
         name=f"{teacher_info['grade']} - {teacher_info['section']} - {teacher_info['subject']} - {teacher_info['quarters']}",
@@ -2976,28 +2994,34 @@ def map_data_to_model(json_data, teacher_id, request):
         except Student.DoesNotExist:
             messages_list.append(('error', f"Student '{student_name}' does not exist in the database for the provided criteria."))
             continue  # Skip this student if not found
-
+        
+        total_weighted_score_written = student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
+        if total_weighted_score_written and isinstance(total_weighted_score_written, (int, float)):
+            total_weighted_score_written *= 100
         # Prepare grade_scores data
         grade_scores_data = {
             "scores_hps": hps_class_record,
 
-            "scores_per_assessment": {
+            "scores_per_assessment": {  
                 "written-works": {
-                    "SCORES": student_data.get('WRITTEN WORKS', {}).get('written_works_scores', []),
-                    "TOTAL_HPS": student_data.get('WRITTEN WORKS', {}).get('total_scores_written', None),
-                    "WEIGHT": student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
+                    "scores": student_data.get('WRITTEN WORKS', {}).get('written_works_scores', []),
+                    "total_score": student_data.get('WRITTEN WORKS', {}).get('total_scores_written', ""),
+                    "total_percentage_score": student_data.get('WRITTEN WORKS', {}).get('percentage_score_written', "None"),
+                    "total_weighted_score": student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
                 },
                 "performance-task": {
-                    "SCORES": student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', []),
-                    "TOTAL_HPS": student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', None),
-                    "WEIGHT": student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', "")
+                     "scores": student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', []),
+                    "total_score": student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', "None"),
+                    "total_percentage_score": student_data.get('PERFORMANCE TASK', {}).get('percentage_score_performance', ""),
+                    "total_weighted_score": student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', "")
+
                 },
                 "quarterly-assessment": {
-                    "SCORES": student_data.get('QUARTERLY ASSESSMENT', {}).get('quarterly_assessment_scores', []),
-                    "TOTAL_HPS": student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', None),
-                    "WEIGHT": student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
+                     "scores": student_data.get('QUARTERLY ASSESSMENT', {}).get('quarterly_assessment_scores', []),
+                    "total_score": student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', ""),
+                     "total_percentage_score": student_data.get('QUARTERLY ASSESSMENT', {}).get('percentage_score_quarterly', ""),
+                    "total_weighted_score": student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
                 }
-                # Add more sections if needed
             },
         }
 
@@ -3054,10 +3078,6 @@ def class_record_upload(request):
                     # Update the dictionary with the cleaned row values
                     student_info.update(divide_scores(cleaned_row))
                     class_record_data_scores_with_names[student_name] = student_info
-
-        # print(f"class_record_data {class_record_data}")
-        # print(f"classdatascores: {class_record_data_scores}")
-        # print(f"class_with_names {class_record_data_scores_with_names}")
 
             # Remove the first student from the dictionary
         if class_record_data_scores_with_names:
