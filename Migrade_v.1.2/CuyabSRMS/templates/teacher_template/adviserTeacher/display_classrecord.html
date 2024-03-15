@@ -424,15 +424,14 @@ $(document).ready(function () {
                 updateTotalScores();
                 updateTotalPercentageScores();
                 updateTotalWeightedScores();
-                computeInitialGrades();
                 if (data.success === false) {
                     alert(data.error);
                     location.reload(true);
                 }
             },
             error: function (xhr, status, error) {
-                console.error('Error updating score:', error);  // Logging
-                alert("Error updating score. See console for details.");
+                {% comment %} console.error('Error updating score:', error);  // Logging
+                alert("Error updating score. See console for details."); {% endcomment %}
             }
         });
     });

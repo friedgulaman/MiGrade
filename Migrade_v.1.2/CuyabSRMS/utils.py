@@ -909,8 +909,8 @@ def write_sf9_total_attendance(front_sheet, attendance_record):
     column_coordinates = 13
 
     for month, record in attendance_data.items():
-        total_days_present = record.get('Total School Days', '')
-        total_school_days = record.get('Total Days Present', '')
+        total_school_days = record.get('Total School Days', '')
+        total_days_present = record.get('Total Days Present', '')
         total_days_absent = record.get('Total Days Absent', '')
 
 
