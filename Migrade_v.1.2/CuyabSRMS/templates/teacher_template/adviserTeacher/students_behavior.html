@@ -1,4 +1,4 @@
-{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% extends 'teacher_template/adviserTeacher/_blank_base.html' %}
 {% block title %}
     New Class Record
 {% endblock title %}
@@ -10,31 +10,54 @@
         text-decoration: none;
         cursor: pointer;
     }
+    mark{
+        font-style: italic;
+        margin-left: 6px;
+    }
     </style>
-    <div class="container mt-4">
-        <div class=" me-4">
-            <a class="back-button">&larr;</a>
-        </div>
-        <h1>{{ grade }} {{ section }}</h1>
-        <h2>Create Learners Observation</h2>
-        <p><strong>Marking - Non-Numerical Rating:</strong></p>
-        <ul class="list-unstyled">
-            <li><strong>AO</strong> - Always Observed</li>
-            <li><strong>SO</strong> - Sometimes Observed</li>
-            <li><strong>RO</strong> - Rarely Observed</li>
-            <li><strong>NO</strong> - Not Observed</li>
-        </ul>
+    <div class="container mt-4 p-5">
+     
         <form id="observation-form">
             {% csrf_token %}
-            <label for="quarter-select">Select Quarter:</label>
-            <select id="quarter-select" class="form-control">
-                <option value="1st Quarter">Quarter 1</option>
-                <option value="2nd Quarter">Quarter 2</option>
-                <option value="3rd Quarter">Quarter 3</option>
-                <option value="4th Quarter">Quarter 4</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <table class="table table-bordered mt-4">
+            <div class="container mt-4">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-md-6">
+                        <span class="text-muted fs-4">Create Learners Observation </span>
+                        <span class="fw-bold fs-4">{{ grade }} {{ section }}</span>
+                        <div class="p-2 m-3">
+                            <p class="fw-bold">Marking - Non-Numerical Rating:</p>
+                            <ul class="list-unstyled text-muted">
+                                <li><strong>AO</strong> - Always Observed -<mark>Press 1</mark></li>
+                                <li><strong>SO</strong> - Sometimes Observed -<mark>Press 2</mark></li>
+                                <li><strong>RO</strong> - Rarely Observed -<mark>Press 3</mark></li>
+                                <li><strong>NO</strong> - Not Observed -<mark>Press 4</mark></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4 card p-5">
+                        <div>
+                            <label for="quarter-select" class="mb-2">Select Quarter:</label>
+                            <select id="quarter-select" class="form-control" required>
+                                <option value="" selected disabled>Select Quarter</option>
+                                <option value="1st Quarter">Quarter 1</option>
+                                <option value="2nd Quarter">Quarter 2</option>
+                                <option value="3rd Quarter">Quarter 3</option>
+                                <option value="4th Quarter">Quarter 4</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-end align-items-center mt-2">
+                            <button type="button" class="btn btn-primary" id="openTable" disabled>Create</button>
+                            <button type="submit" class="btn btn-success d-none container d-flex justify-content-center align-center" id="saveBtn">          
+                            <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator1" style="display: none;" role="status"
+                              aria-hidden="true"></span>
+                              <span id="save_btn_1_text">Save</span>
+                          </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="table table-bordered mt-4 d-none">
                 <thead class="thead-dark">
                     <tr>
                         <th>No.</th>
@@ -61,6 +84,8 @@
                                 <tbody>
                                 {% for core_value in core_values %}
                                 <tr>
+                                    <input type="hidden" name="grade" value="{{ student.grade }}">
+                                    <input type="hidden" name="section" value="{{ student.section }}">
                                     <td rowspan="{{ core_value.behaviorstatement_set.count }}">{{ core_value.name }}</td>
                                     {% for behavior_statement in core_value.behaviorstatement_set.all %}
                                     <td>{{ behavior_statement.statement }}</td>
@@ -80,23 +105,55 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.querySelector(".back-button").addEventListener("click", function () {
-            window.history.back();
+       $(document).ready(function() {
+        // Set default value "AO" for each marking cell
+        $('.marking-cell').text('AO');
+
+        // Handle keypress event for marking cells
+        $('.marking-cell').keypress(function(e) {
+            // Get the pressed key code
+            var keyCode = e.which;
+
+            // Define the mapping of key codes to observation values
+            var mapping = {
+                49: 'AO', // 1 for AO
+                50: 'SO', // 2 for SO
+                51: 'RO', // 3 for RO
+                52: 'NO'  // 4 for NO
+            };
+
+            // Check if the pressed key corresponds to a mapping
+            if (mapping.hasOwnProperty(keyCode)) {
+                // Prevent the default behavior (e.g., typing the number into the cell)
+                e.preventDefault();
+
+                // Set the observation value based on the mapping
+                $(this).text(mapping[keyCode]);
+
+                // Enable the input
+                $(this).prop('contenteditable', true);
+            } else {
+                e.preventDefault();
+            }
         });
-        $(document).ready(function() {
+    
             $('#observation-form').on('submit', function(e) {
                 e.preventDefault(); // Prevent the default form submission
-                
+                document.getElementById('loadingIndicator1').style.display = 'block';
+                // Change the text to "Loading, please wait..."
+                document.getElementById('save_btn_1_text').innerText = 'Creating Learners Observation...';
+                // Optionally, you can disable the submit button to prevent multiple submissions
+                document.getElementById('saveBtn').setAttribute('disabled', 'true');
                 var observations = [];
                 var selectedQuarter = $('#quarter-select').val(); // Array to store observation data
-
+    
                 // Loop through each marking cell
                 $('.marking-cell').each(function() {
                     var studentId = $(this).data('student-id');
                     var coreValueId = $(this).data('core-value');
                     var behaviorStatementId = $(this).data('behavior-statement');
                     var marking = $(this).text().trim(); // Get the text content of the cell
-                    
+    
                     // Create an observation object
                     var observation = {
                         student_id: studentId,
@@ -105,11 +162,18 @@
                         behavior_statement: behaviorStatementId,
                         marking: marking
                     };
-
+    
                     // Add the observation to the observations array
                     observations.push(observation);
                 });
-
+                     // Get the values of the hidden input fields
+                var grade = document.querySelector('input[name="grade"]').value;
+                var section = document.querySelector('input[name="section"]').value;
+                // Append values to the URL
+                // Construct the URL with query parameters
+                var url = "{% url 'display_learners_observation' 'GRADE_VALUE' 'SECTION_VALUE' %}"
+                    .replace('GRADE_VALUE', encodeURIComponent(grade))
+                    .replace('SECTION_VALUE', encodeURIComponent(section));
                 // Send the data to the server using AJAX
                 $.ajax({
                     url: '{% url "save_observations" %}', // Replace with your endpoint URL
@@ -119,11 +183,26 @@
                         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val() // Get CSRF token
                     },
                     success: function(response) {
+                        // Hide the loading indicator
+                        document.getElementById('loadingIndicator1').style.display = 'none';
+                        // Reset the button text
+                        document.getElementById('save_btn_1_text').innerText = 'Save';
+                        // Enable the submit button
+                        document.getElementById('saveBtn').removeAttribute('disabled');
                         // Handle success response
-                        alert("Learner's Observation Value for " + selectedQuarter + " successfully created");
-                        location.reload();
+                        setTimeout(function() {
+                            alert("Learner's Observation Value for " + selectedQuarter + " successfully created");
+                            window.location.href = url;
+                        }, 100); // Adjust the delay as needed
                     },
+
                     error: function(xhr, status, error) {
+                        // Hide the loading indicator
+                        document.getElementById('loadingIndicator1').style.display = 'none';
+                        // Reset the button text
+                        document.getElementById('save_btn_1_text').innerText = 'Save';
+                        // Enable the submit button
+                        document.getElementById('saveBtn').removeAttribute('disabled');
                         // Handle error
                         if (xhr.responseJSON && xhr.responseJSON.error) {
                             alert(xhr.responseJSON.error);
@@ -135,4 +214,28 @@
             });
         });
     </script>
+    
+    
+    <script>
+        $(document).ready(function() {
+            $('#openTable').on('click', function() {
+                // Toggle visibility of the button and table
+                $('#openTable').addClass('d-none');
+                $('table').removeClass('d-none');
+                $('#saveBtn').removeClass('d-none');
+            });
+        });
+    </script>
+<script>
+    $(document).ready(function() {
+        $('#quarter-select').change(function() {
+            // Check if the selected option is not the disabled one
+            if ($(this).val() !== '') {
+                $('#openTable').removeAttr('disabled'); // Enable the button
+            } else {
+                $('#openTable').attr('disabled', 'disabled'); // Disable the button
+            }
+        });
+    });
+</script>
 {% endblock main_content %}

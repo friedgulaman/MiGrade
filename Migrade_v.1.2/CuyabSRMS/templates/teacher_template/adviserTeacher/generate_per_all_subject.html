@@ -1,7 +1,9 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+
 {% block title %}
 New Class List
 {% endblock title %}
+
 {% block main_content %}
 <style>
     .folder {
@@ -10,7 +12,15 @@ New Class List
     .delete-dropdown {
         font-size: 12px;
     }
+
+    .gen_dropdown a {
+        font-size: 14px;
+        text-decoration: none;        
+    }
+
+    
 </style>
+
 <section class="content container mt-2">
     <div class="card">
         <div class="card-body">
@@ -66,6 +76,25 @@ New Class List
     });
 </script>
 <script>
+     $(document).ready(function () {
+        // Ensure Bootstrap dropdown is initialized properly
+        $('.btn-dropdown-toggle').dropdown();
+
+        // Handle click outside dropdown to close
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.dropdown-menu').length) {
+                $('.btn-dropdown-toggle').dropdown('hide');
+            }
+        });
+
+        // Handle click on dropdown toggle button
+        $('.btn-dropdown-toggle').on('click', function (e) {
+            e.stopPropagation(); // Prevent click event from propagating to document
+        });
+    });
+</script>
+<script>
+   
     var showStudentList = function(grade, section) {
         var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
         window.location.href = url;
@@ -77,5 +106,7 @@ New Class List
         // Redirect to the upload page
         window.location.href = uploadPageURL;
     });
+
+    
 </script>
 {% endblock main_content %}

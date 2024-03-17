@@ -55,6 +55,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'view_breadcrumbs',
     'captcha',
     'CuyabSRMS',
     'django.contrib.admin',
@@ -94,7 +95,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'CuyabSRMS.AdminViews.admin_base',
-
+                'CuyabSRMS.TransferRecordViews.inbox_count',
             ],
         },
     },

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
-from .models import ActivityLog, Admin, Announcement, Teacher
+from .models import MT, ActivityLog, Admin, Announcement, Teacher
 from .utils import log_activity
 import requests
 from django.contrib.auth.decorators import login_required
@@ -20,7 +20,7 @@ def custom_404(request, exception=None):
 def home_superadmin(request):
     return render(request, 'superadmin_template/home_superadmin.html') 
 
-def teachers_activity(request):
+def activity(request):
     if request.user.is_authenticated:
         user = request.user
         activity_logs = ActivityLog.objects.filter(user=user).order_by('-timestamp')
@@ -34,25 +34,8 @@ def teachers_activity(request):
     else:
         return HttpResponse("Please log in to view your activity logs.")
 
-@login_required
-def admin_activity(request):
-    try:
-        admin = Admin.objects.get(user=request.user)
-        custom_user = admin.user
-        activity_logs = ActivityLog.objects.filter(user=custom_user).order_by('-timestamp')
-        
-        # Pagination
-        paginator = Paginator(activity_logs, 7)  # Show 7 activity logs per page
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        
-        return render(request, 'admin_template/admin_activity.html', {'page_obj': page_obj})
-    except Admin.DoesNotExist:
-        return HttpResponse("User does not have associated admin information.")
-    except ActivityLog.DoesNotExist:
-        return render(request, 'admin_template/admin_activity.html', {'page_obj': []})
-    
-    
+
+
 def ShowLoginPage(request):
     if request.user.is_authenticated:
         # User is already logged in, so redirect them to the appropriate page based on user type
@@ -317,3 +300,94 @@ def admin_change_password(request):
             messages.error(request, 'Invalid old password')
 
     return redirect('admin_profile_page')  # Replace 'profile' with the name of the view you want to redirect to
+
+
+@login_required
+def mt_profile_page(request):
+    user = request.user  # Get the logged-in user
+    user_type = user.user_type  # Get the user type
+    context = {}
+
+    if user_type == 4:  # Assuming '2' represents a mt user type
+        mt = get_object_or_404(MT, user=user)  # Get the mt object associated with the user
+        context['mt'] = mt
+
+    return render(request, 'master_template/master_profile.html', context)
+    
+
+def mt_update_profile_photo(request):
+    if request.method == "POST":
+        profile_photo = request.FILES.get("profile_photo")
+        if profile_photo:
+            # Save the new profile photo
+            request.user.profile_image = profile_photo
+            request.user.save()
+            
+            # Log the activity of updating the profile photo
+            user = request.user
+            action = 'Profile photo updated'
+            details = 'User updated their profile photo.'
+            log_activity(user, action, details)
+            
+            # Redirect to the user's profile page or a success page
+            return redirect('mt_profile_page')
+
+    return render(request, 'mt_profile_page')
+
+def mt_update_profile(request):
+    if request.method == "POST":
+        user = request.user
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.save()
+
+        # Log the activity of updating the teacher's profile
+        action = 'mt profile updated'
+        details = 'mt updated their profile information.'
+        log_activity(user, action, details)
+
+        messages.success(request, 'Profile updated successfully.')  # Display a success message
+        return redirect('mt_profile_page')  # Redirect to the updated profile page
+
+    return render(request, 'mt_profile_page')
+
+
+@login_required
+def mt_change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST['old_password']
+        new_password = request.POST['new_password']
+        confirm_password = request.POST['confirm_password']
+
+        user = request.user
+
+        if user.check_password(old_password):
+            if new_password == confirm_password:
+                if not user.check_password(new_password):
+                    # Ensure the new password is different from the old one
+                    user.set_password(new_password)
+                    user.save()
+                    update_session_auth_hash(request, user)  # To maintain the user's session
+
+                    # Log the activity of changing the password
+                    action = 'Password changed'
+                    details = 'User changed their password.'
+                    log_activity(user, action, details)
+
+                    # Add a success message
+                    messages.success(request, 'Password changed successfully.')
+                    return redirect('mt_profile_page')  # Replace 'profile' with the name of the view you want to redirect to
+
+                else:
+                    # Add an error message
+                    messages.error(request, 'New password must be different from the old password.')
+
+            else:
+                # Add an error message
+                messages.error(request, 'New password and confirm password do not match.')
+
+        else:
+            # Add an error message
+            messages.error(request, 'Invalid old password')
+
+    return redirect('mt_profile_page')  # Replace 'profile' with the name of the view you want to redirect to

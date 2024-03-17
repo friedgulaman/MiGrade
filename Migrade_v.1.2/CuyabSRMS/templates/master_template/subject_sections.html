@@ -1,23 +1,67 @@
 {% extends 'master_template/master_base.html' %}
+
 {% block page_title %}
     Distinct Sections
 {% endblock page_title %}
+
 {% block main_content %}
-<div class="container">
-    <h1>Distinct Sections for Grade {{ grade }}</h1>
-    <ul>
+<style>
+    .folder {
+      list-style: none;
+      width: 100%;
+      display: flex;
+    flex-wrap: wrap;
+    margin: auto;
+    justify-content: center;
+      cursor: pointer;
+    }
+  </style>
+<section class="container p-3 m-3">
+    <div class="card p-5">
+    <h5>
+        <span onclick="home()">Subject Classes</span> > 
+        <span onclick="gradeUrl()">{{ grade }}</span>
+    </h5>
+    <div class="mt-3">
+    <ul class="d-flex justify-content-start align-items-center folder">
         {% for section in distinct_sections %}
-            <li onclick="showSubjects('{{ section }}')">{{ section }}</li>
+            <li onclick="showSubjects('{{ section }}')" class="m-3 d-flex flex-column justify-content-start align-items-center">
+                <i class="fas fa-folder fa-6x"></i>
+                <p class="text-center">{{ section }}</p>
+            </li>
         {% empty %}
             <li>No distinct sections found.</li>
         {% endfor %}
     </ul>
+    </div>
 </div>
+</section>
 
 <script>
-function showSubjects(section) {
-    // Redirect to the subjects page passing the selected section as a parameter
-    window.location.href = "{% url 'subject_subjects' %}?section=" + section;
-}
+    function showSubjects(section) {
+        var grade = '{{ grade }}';
+        // Redirect to the subjects page passing the selected section as a parameter
+        window.location.href = "{% url 'subject_subjects' %}?grade=" + grade + "&section=" + section;
+    }
+
+    function subjectUrl(grade, section) {
+        // Redirect to the subjects page passing the selected section and subject as parameters
+        window.location.href = "{% url 'subject_subjects' %}?grade=" + grade + "&section=" + section;
+    }
+
+    function sectionUrl(grade) {
+        // Redirect to the quarters page passing the selected section and subject as parameters
+        window.location.href = "{% url 'distinct_sections' %}?grade=" + grade;
+    }
+
+    function gradeUrl() {
+        // Redirect to the quarters page passing the selected section and subject as parameters
+        window.location.href = "{% url 'subject_classes_mt' %}";
+    }
+
+    function home() {
+        // Redirect to the quarters page passing the selected section and subject as parameters
+        window.location.href = "{% url 'subject_classes_mt' %}";
+    }
 </script>
 {% endblock main_content %}

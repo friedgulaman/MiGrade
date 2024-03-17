@@ -176,6 +176,7 @@ def distinct_sections(request):
 
 def subject_subjects(request):
     # Get the section from the GET parameters
+    grade = request.GET.get('grade')
     section = request.GET.get('section')
 
     # Get the current logged-in MT user
@@ -205,6 +206,7 @@ def subject_subjects(request):
         pass
 
     context = {
+        'grade': grade,
         'section': section,
         'subjects': subjects,
     }
@@ -212,6 +214,7 @@ def subject_subjects(request):
     return render(request, 'master_template/subject_subjects.html', context)
 
 def subject_quarters(request):
+    grade = request.GET.get('grade')
     # Get the section from the GET parameters
     section = request.GET.get('section')
     subject = request.GET.get('subject')
@@ -243,6 +246,7 @@ def subject_quarters(request):
         pass
 
     context = {
+        'grade': grade,
         'section': section,
         'subject': subject,
         'quarters': quarters,

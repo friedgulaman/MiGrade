@@ -1,43 +1,40 @@
-{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
-
-{% block title %}
-    New Class Record
+{% extends 'teacher_template/adviserTeacher/_blank_base.html' %}
+{% block title %} Learners Observation
 {% endblock title %}
-
 {% block main_content %}
-<style>
-    .back-button {
-        color: #1027ac;
-        font-size: 30px;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    </style>
-    <div class="container mt-4">
-        <div class=" me-4">
-            <a class="back-button">&larr;</a>
-        </div>
-        <div>
-            <h1 class="mb-4">{{ grade }} {{ section }}</h1>
-            <h2>Learners Observation Values</h2>
-            <p><strong>Marking - Non-Numerical Rating:</strong></p>
-            <ul class="list-unstyled">
-                <li><strong>AO</strong> - Always Observed</li>
-                <li><strong>SO</strong> - Sometimes Observed</li>
-                <li><strong>RO</strong> - Rarely Observed</li>
-                <li><strong>NO</strong> - Not Observed</li>
-            </ul>
-        </div>
-        <label> Select Quarter: </label>
-        <select id="quarter-select" class="form-control">
-            <option value="1st Quarter" {% if selected_quarter == '1st Quarter' %} selected {% endif %}>Quarter 1</option>
-            <option value="2nd Quarter" {% if selected_quarter == '2nd Quarter' %} selected {% endif %}>Quarter 2</option>
-            <option value="3rd Quarter" {% if selected_quarter == '3rd Quarter' %} selected {% endif %}>Quarter 3</option>
-            <option value="4th Quarter" {% if selected_quarter == '4th Quarter' %} selected {% endif %}>Quarter 4</option>
-        </select>
-        <br>
 
-        <div class="table-responsive">
+    <div class="container mt-4">
+        <div class="container mt-4">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-md-6">
+                    <span class="text-muted fs-4">Learners Observation Values </span>
+                    <span class="fw-bold fs-4">{{ grade }} {{ section }}</span>
+                    <div class="p-2 m-3">
+                        <p class="fw-bold">Marking - Non-Numerical Rating:</p>
+                        <ul class="list-unstyled text-muted">
+                            <li><strong>AO</strong> - Always Observed -<mark>Press 1</mark></li>
+                            <li><strong>SO</strong> - Sometimes Observed -<mark>Press 2</mark></li>
+                            <li><strong>RO</strong> - Rarely Observed -<mark>Press 3</mark></li>
+                            <li><strong>NO</strong> - Not Observed -<mark>Press 4</mark></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4 card p-5">
+                    <div>
+                        <label for="quarter-select" class="mb-2">Select Quarter to Display:</label>
+                        <select id="quarter-select" class="form-control">
+                            <option value="" disabled {% if not selected_quarter %} selected {% endif %}>Select Quarter</option>
+                            <option value="1st Quarter" {% if selected_quarter == '1st Quarter' %} selected {% endif %}>Quarter 1</option>
+                            <option value="2nd Quarter" {% if selected_quarter == '2nd Quarter' %} selected {% endif %}>Quarter 2</option>
+                            <option value="3rd Quarter" {% if selected_quarter == '3rd Quarter' %} selected {% endif %}>Quarter 3</option>
+                            <option value="4th Quarter" {% if selected_quarter == '4th Quarter' %} selected {% endif %}>Quarter 4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive d-none" id="observation-table">
             <form id="markingForm">
                 {% csrf_token %}
                 <table class="table table-bordered">
@@ -175,14 +172,21 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.querySelector(".back-button").addEventListener("click", function () {
-            window.history.back();
-        });
-        $(document).ready(function() {     
+        $(document).ready(function() { 
+
             $('#quarter-select').change(function() {
                 // Get the selected quarter value
                 var selectedQuarter = $(this).val();
-    
+                // Show or hide the table based on the selected quarter
+          // Show or hide the table based on the selected quarter
+          if (selectedQuarter) {
+                $('#observation-table').removeClass('d-none');
+            } else {
+                $('#observation-table').addClass('d-none');
+            }
+
+
+
                 // Hide all quarter tables
                 $('[data-quarter-table]').hide();
     
