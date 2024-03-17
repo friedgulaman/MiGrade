@@ -5,6 +5,12 @@ Add master
 {% block main_content %}
 <section class="content container mt-2 vh-100">
   {% include 'admin_template/_green.html' %}
+  {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
   <h3 class="mb-4 ">Assign Master Teacher</h3>
   <div class="d-sm-flex align-items-center justify-content-between border-bottom">
     <ul class="nav nav-tabs text" role="tablist">
@@ -53,44 +59,80 @@ Add master
         </div>
     </div>
     </div>
-    <div class="tab-pane fade show " id="audiences" role="tabpanel" aria-labelledby="audiences">
-      <div class="container-fluid ">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title p-3">List of masters</h4>
-                <div class="table-responsive">
-                    <table class="table text-muted text-center">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Designation</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for master in masters %}
-                            <tr>
-                                <td>
-                                    {{ master.user.id }}
-                                </td>
-                               <td>{{ master.user.username }}
-                               </td>
-                               <td>
-                                {% if master.assigned_grades %}
-                                    {{ master.assigned_grades }}
-                                {% else %}
-                                    None
-                                {% endif %}
-                            </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    <div class="tab-pane fade show" id="audiences" role="tabpanel" aria-labelledby="audiences">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title p-3">List of masters</h4>
+                    <div class="table-responsive">
+                        <table class="table text-muted text-center">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Designation</th>
+                                    <th>Actions</th> <!-- Add Actions column -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for master in masters %}
+                                <tr>
+                                    <td>{{ master.user.id }}</td>
+                                    <td>{{ master.user.username }}</td>
+                                    <td>
+                                        {% if master.assigned_grades %}
+                                        {{ master.assigned_grades }}
+                                        {% else %}
+                                        None
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeGradeModal{{ master.user.id }}">
+                                            Remove Grade
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Remove Grade Modal for each master -->
+                                <div class="modal fade" id="removeGradeModal{{ master.user.id }}" tabindex="-1" role="dialog" aria-labelledby="removeGradeModalLabel{{ master.user.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="removeGradeModalLabel{{ master.user.id }}">Remove Grade</h5>
+                                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="removeGradeForm{{ master.user.id }}" method="POST" action="{% url 'remove_grade' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="master_id" value="{{ master.id }}">
+                                                    <div class="form-group">
+                                                        <label for="grade">Select Grade to Remove:</label>
+                                                        <select class="form-control" name="grade" id="grade">
+                                                            {% for grade in master.assigned_grades %}
+                                                            <option value="{{ grade }}">{{ grade }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                <button type="submit" form="removeGradeForm{{ master.user.id }}" class="btn btn-danger">Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+    
+    
   </div>
 
 
@@ -123,13 +165,10 @@ Add master
       })
       .then(response => {
           if (response.ok) {
-              // Handle success, e.g., show a success message or redirect to a success page
-              alert('Assignment saved successfully');
               location.reload(); // Reload the page
           } else {
               // Handle errors, e.g., show an error message
               response.text().then(errorMessage => {
-                  alert('Failed to save assignment: ' + errorMessage);
               });
           }
       })

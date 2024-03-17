@@ -55,6 +55,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'view_breadcrumbs',
     'captcha',
     'CuyabSRMS',
     'django.contrib.admin',
@@ -94,7 +95,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'CuyabSRMS.AdminViews.admin_base',
-
+                'CuyabSRMS.TransferRecordViews.inbox_count',
             ],
         },
     },
@@ -105,7 +106,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.1.9',
+        'NAME': 'migrade_v.2.0',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   

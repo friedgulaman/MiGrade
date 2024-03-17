@@ -70,6 +70,8 @@ from json import loads as json_loads
 from django.db.models import Q
 import datetime
 from datetime import datetime
+import calendar
+from calendar import month_name
 
 @login_required
 def home_teacher(request):
@@ -159,36 +161,26 @@ def process_google_sheet(spreadsheet_id, sheet_name):
     # Read environment variables
     project_id = os.getenv("SHEET_PROJECT_ID")
     private_key_id = os.getenv("SHEET_PRIVATE_KEY_ID")
-    private_key = os.getenv("SHEET_PRIVATE_KEY")
+    private_key = os.getenv("SHEET_PRIVATE_KEY").replace('\\n', '\n')  # Replace escaped newlines
     client_email = os.getenv("SHEET_CLIENT_EMAIL")
     client_id = os.getenv("SHEET_CLIENT_ID")
+    token_uri = "https://oauth2.googleapis.com/token"  # Provide the token_uri
 
-    # Construct JSON data using environment variables
-    data = {
+    # Construct credentials from environment variables
+    credentials = service_account.Credentials.from_service_account_info({
         "type": "service_account",
         "project_id": project_id,
         "private_key_id": private_key_id,
         "private_key": private_key,
         "client_email": client_email,
         "client_id": client_id,
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}",
-        "universe_domain": "googleapis.com"
-    }
+        "token_uri": token_uri  # Include the token_uri field
+    })
 
-    # Convert dictionary to JSON string
-    service_account = json.dumps(data, indent=4)
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-    SERVICE_ACCOUNT_FILE = 'service_account'
-
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    # Build the service
+    service = build('sheets', 'v4', credentials=credentials)
 
     try:
-        service = build('sheets', 'v4', credentials=creds)
-
         def get_sheet_values(spreadsheet_id, start_range, end_range):
             result = service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
@@ -597,7 +589,7 @@ def save_json_data(request):
                 grade.save()
                 student.save()
 
-            response_data = {'message': 'JSON data saved successfully'}
+            response_data = {'message': 'Created a class successfully'}
             return JsonResponse(response_data)
         
         except json.JSONDecodeError:
@@ -995,7 +987,6 @@ def view_classrecord(request):
         # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
     
-
 @login_required
 def display_students(request):
     user = request.user
@@ -1004,20 +995,33 @@ def display_students(request):
         teacher = get_object_or_404(Teacher, user=user)
         teacher_id = str(teacher.id)  # Convert teacher id to string for comparison
 
-        # Fetch the school year from the SchoolInformation model
+        # Fetch distinct school years from the Student model
+        unique_school_years = Student.objects.values_list('school_year', flat=True).distinct()
+
+        # Reverse the order of unique_school_years
+        unique_school_years = list(unique_school_years)
+        unique_school_years.reverse()
+        
+        # Find the latest school year
+        latest_school_year = max(unique_school_years, default=None)
+
+        # Fetch the school year from the SchoolInformation model if available
         try:
             school_info = SchoolInformation.objects.latest('id')
             default_school_year = school_info.school_year
         except SchoolInformation.DoesNotExist:
-            default_school_year = '2023-2024'  # Set a default value if no school year is found
+            default_school_year = 'None'  # Set a default value if no school year is found
+
+        # Use the latest school year if available, otherwise fallback to default
+        default_school_year = latest_school_year or default_school_year
 
         # Get the school year from the request parameters or use the default value
         school_year = request.GET.get('school_year', default_school_year)
-
-        # Fetch unique school years from the Student model
-        unique_school_years = Student.objects.values_list('school_year', flat=True).distinct()
-        print(unique_school_years)
-
+        
+        # If the 'display_students' view is accessed without a specific school year, redirect to the same view with the latest school year
+        if not request.GET.get('school_year'):
+            return redirect(reverse('display_students') + f'?school_year={default_school_year}')
+        
         # Filter students based on the teacher_id and school_year in class_type
         students = Student.objects.filter(class_type__has_key=teacher_id, school_year=school_year)
         unique_combinations = students.values('grade', 'section', 'class_type').distinct()
@@ -1032,20 +1036,17 @@ def display_students(request):
                     combination['class_type'] = class_type_value
                     class_type_list.append(combination)
 
-        print(f"Class type: {class_type_list}")
-
         context = {
             'teacher': teacher,
             'unique_grades_sections': class_type_list,
-            'unique_school_years': unique_school_years,  # Pass the unique school years to the template
+            'latest_school_year': latest_school_year,
             'default_school_year': default_school_year,
-            'selected_school_year': school_year,  # Pass the default school year to the template
+            'selected_school_year': school_year,  # Pass the selected school year to the template
+            'unique_school_years': unique_school_years,  # Pass distinct school years to the template
         }
         return render(request, 'teacher_template/adviserTeacher/classes.html', context)
 
     return render(request, 'teacher_template/adviserTeacher/classes.html')
-
-
 def toggle_class_type_function(student):
     # Toggle the class type for the given student
     if student.class_type == 'Advisory':
@@ -1277,10 +1278,6 @@ def student_list_for_subject(request):
             # Sort the students for this subject by highest initial grade
             subject_grades[subject_name].sort(key=lambda x: x['transmuted_grade'] if x['transmuted_grade'] is not None else 0, reverse=True)
 
-
-        # Filter students based on class type
-        # students_filtered = [student for student in students if student.class_type.get(str(teacher_id)) == "Subject Class" or "Advisory Class, Subject Class" in student.class_type]
-
     context = {
         'grade': grade,
         'section': section,
@@ -1292,7 +1289,7 @@ def student_list_for_subject(request):
     }
 
     return render(request, 'teacher_template/adviserTeacher/student_list_for_subject.html', context)
-    return render(request, 'teacher_template/adviserTeacher/quarter_records.html', context)
+
 
 def student_list_for_advisory(request):
     # Assuming the user is logged in
@@ -1516,6 +1513,8 @@ def student_list_for_advisory(request):
         }
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
+    
+    
 
 def create_attendance_view(request):
     if request.method == 'GET':
@@ -1537,6 +1536,7 @@ def create_attendance_view(request):
             class_type_json = student.class_type
             if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
                 students_filtered.append(student)
+                
 
         context = {
             'students': students_filtered,
@@ -1701,19 +1701,24 @@ def attendance_record_view(request, grade, section):
         # Extend the attendance_records list with the records_for_student QuerySet
         attendance_records.append(records_for_student)
 
-
-    months = set()
+    months_set = set()
     for records in attendance_records:
         for record in records:
             if record.attendance_record:
-                months.update(record.attendance_record.keys())
+                months_set.update(record.attendance_record.keys())
 
-    # Pass the attendance records to the template for rendering
+    # Get the list of month names in the correct order
+    month_name = list(calendar.month_name)[1:]
+
+    # Convert the set of months to a list and sort it based on the calendar order
+    months_list = sorted(months_set, key=lambda m: month_name.index(m) if m in month_name else float('inf'))
+
+    # Pass the attendance records and sorted list of months to the template for rendering
     context = {
         'grade': grade,
         'section': section,
         'attendance_records': attendance_records,
-        'months': months
+        'months': months_list
     }
 
     # Render the template with the attendance record data

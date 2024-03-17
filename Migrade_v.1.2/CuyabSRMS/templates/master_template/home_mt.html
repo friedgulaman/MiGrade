@@ -41,7 +41,11 @@
             </table>
         </div>
     </div>
-    
+    {% load view_breadcrumbs %}
+
+    <div class="breadcrumbs">
+        {% render_breadcrumbs %}
+    </div>
 
 </div>
 {% endblock main_content %}

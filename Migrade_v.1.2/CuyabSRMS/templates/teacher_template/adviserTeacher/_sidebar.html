@@ -1,193 +1,82 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar" style="background-color: white;">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'home_adviser_teacher' %}">
+  <ul class="nav">
+      <li class="nav-item">
+          <a class="nav-link" href="{% url 'home_adviser_teacher' %}">
               <i class="mdi mdi-apps menu-icon"></i>
               <span class="menu-title">Home</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'upload_adviser_teacher' %}">
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="{% url 'upload_adviser_teacher' %}">
               <i class="mdi mdi-account-multiple-plus menu-icon"></i>
               <span class="menu-title">Create Class</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'inbox_open' %}">
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="{% url 'inbox_open' %}">
               <i class="mdi mdi mdi-archive menu-icon"></i>
               <span class="menu-title">Inbox</span>
-            </a>
-          </li>
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{% url 'transfer_record' %}">
-              <i class="mdi mdi-account-multiple-plus menu-icon"></i>
-              <span class="menu-title">transfer</span>
-            </a>
-          </li> -->
-          <!-- Manage Class -->
-          <li class="nav-item nav-category">Manage</li>
-          <!-- Teacher -->
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'display_students' %}">
+              {% if count > 0 %}
+                  {% if count > 99 %}
+                      <span class="badge badge-primary text-small">99+</span>
+                  {% else %}
+                      <span class="badge badge-primary text-small">{{ count }}</span>
+                  {% endif %}
+              {% endif %}
+          </a>
+      </li>
+
+      <!-- Manage Class -->
+      <li class="nav-item nav-category">Manage</li>
+      <!-- Teacher -->
+      <li class="nav-item">
+          <a class="nav-link" href="{% url 'display_students' %}">
               <i class="menu-icon mdi mdi-account-multiple-outline"></i>
               <span class="menu-title">Classes</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'get_grade_details' %}">
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="{% url 'get_grade_details' %}">
               <i class="menu-icon mdi mdi-application"></i>
               <span class="menu-title">Create Class Record</span>
-            </a>
-          </li>
+          </a>
+      </li>
+      <!-- OCR -->
 
-
-          <!-- OCR -->
-
-          <!-- Generate School Forms -->
-          <li class="nav-item nav-category">Generate School Forms</li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
+      <!-- Generate School Forms -->
+      <li class="nav-item nav-category">Generate School Forms</li>
+      <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
               <i class="menu-icon mdi mdi-card-text-outline"></i>
               <span class="menu-title">School Forms</span>
               <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="form-elements">
+          </a>
+          <div class="collapse" id="form-elements">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="pages/forms/basic_elements.html">School Form 10</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'sf9' %}" target="_blank">School Form 9</a></li>
               </ul>
-            </div>
-            <div class="collapse" id="form-elements">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'sf9' %}">School Form 9</a></li>
-              </ul>
-            </div>
-          </li>
-          <!-- <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-              <i class="menu-icon mdi mdi-chart-line"></i>
-              <span class="menu-title">Grade Levels</span>
-              <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 1</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 2</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 3</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 4</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 5</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="charts">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Grade 6</a></li>
-              </ul>
-            </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
+          </div>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#classrecords" aria-expanded="false" aria-controls="classrecords">
               <i class="menu-icon mdi mdi-table"></i>
-              <span class="menu-title">Subjects</span>
+              <span class="menu-title">Generate Class Record</span>
               <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="tables">
+          </a>
+          <div class="collapse" id="classrecords">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Filipino</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">English</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Mathematics</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Araling Panlipunan</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">MAPEH</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Music</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Arts</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">PE</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Health</a></li>
-              </ul>
-            </div>
-            <div class="collapse" id="tables">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">ESP</a></li>
-              </ul>
-            </div> -->
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#classrecords" aria-expanded="false" aria-controls="classrecords">
-                <i class="menu-icon mdi mdi-table"></i>
-                <span class="menu-title">Generate Class Record</span>
-                <i class="menu-arrow"></i>
-              </a>
-              <div class="collapse" id="classrecords">
-                <ul class="nav flex-column sub-menu">
                   <li class="nav-item"> <a class="nav-link" href="{% url 'generate_per_subject' %}">Generate per Subject</a></li>
-                </ul>
-              </div>
-              <div class="collapse" id="classrecords">
-                <ul class="nav flex-column sub-menu">
                   <li class="nav-item"> <a class="nav-link" href="{% url 'generate_per_all_subject' %}">Generate all Subject</a></li>
-                </ul>
-              </div>
-            
-          </li>
-          <li class="nav-item nav-category">Archive</li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'archived_records' %}">
+              </ul>
+          </div>
+      </li>
+      <li class="nav-item nav-category">Archive</li>
+      <li class="nav-item">
+          <a class="nav-link" href="{% url 'archived_records' %}">
               <i class="menu-icon mdi mdi-archive"></i>
               <span class="menu-title">Archived</span>
-            </a>
-          </li>
-                  
-          <!-- <li class="nav-item nav-category">Settings</li>
-          <li class="nav-item">
-            <a class="nav-link" href="http://bootstrapdash.com/demo/star-admin2-free/docs/documentation.html">
-              <i class="menu-icon mdi mdi-file-document"></i>
-              <span class="menu-title">Documentation</span>
-            </a>
-          </li> -->
-        </ul>
-      </nav>
-      
+          </a>
+      </li>
+
+  </ul>
+</nav>

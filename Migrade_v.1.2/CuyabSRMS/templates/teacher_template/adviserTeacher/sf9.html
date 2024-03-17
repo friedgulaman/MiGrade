@@ -1,72 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'teacher_template/adviserTeacher/_blank_base.html' %}
+{% load static %}
+{% block title %}
+All Students
+{% endblock title %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Students</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        td {
-            background-color: #ffffff;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>All Students</h1>
+{% block main_content %}
+<section class="container">
+    <h2 class="p-3">All Students</h2>
 
     {% if all_students %}
         {% regroup all_students by grade as students_by_grade %}
         {% for grade_group in students_by_grade %}
-            <h2>Grade: {{ grade_group.grouper }}</h2>
+        <div class="card p-3 m-3"> 
+            <div class="d-flex justify-content-start align-items-center m-2">
+            <h2 class="me-3"><strong>Grade:</strong> <em>{{ grade_group.grouper }}</em></h2>
 
             {% regroup grade_group.list by section as students_by_section %}
             {% for section_group in students_by_section %}
-                <h3>Section: {{ section_group.grouper }}</h3>
+            <h3><strong>Section:</strong> <em>{{ section_group.grouper }}</em></h3>
+        </div>
 
-                <table>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>LRN</th>
-                        <th>Sex</th>
-                        <th>Teacher</th>
-                        <th>Generation</th>
-                    </tr>
-                    {% for student in section_group.list %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td> 
-                            <td>{{ student.name }}</td>
-                            <td>{{ student.lrn }}</td>
-                            <td>{{ student.get_sex_display }}</td>
-                            <td>{{ student.teacher.user.first_name }} {{ student.teacher.user.last_name }}</td>
-                            <td>
-                                <a href="{% url 'generate_excel_for_sf9' student.id %}">Generate SF9</a>
-                                <!-- Or you can use a button and add JavaScript to handle the generation -->
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>LRN</th>
+                                <th>Sex</th>
+                                <th>Teacher</th>
+                                <th>Generation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in section_group.list %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.lrn }}</td>
+                                    <td>{{ student.get_sex_display }}</td>
+                                    <td>{{ student.teacher.user.first_name }} {{ student.teacher.user.last_name }}</td>
+                                    <td>
+                                        <a href="{% url 'generate_excel_for_sf9' student.id %}">Generate SF9</a>
+                                        <!-- Or you can use a button and add JavaScript to handle the generation -->
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                </div>
             {% endfor %}
         {% endfor %}
     {% else %}
         <p>No students available</p>
     {% endif %}
-</body>
-
-</html>
+</section>
+{% endblock main_content %}

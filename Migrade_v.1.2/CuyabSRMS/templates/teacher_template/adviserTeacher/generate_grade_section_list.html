@@ -29,33 +29,48 @@ Student List for {{ grade }} {{ section }}
                 <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                     <ul class="nav nav-tabs text" role="tablist">
                         {% for subject in subjects %}
-                        <li class="nav-item">
-                            <a class="nav-link" id="{{ subject }}-tab" data-bs-toggle="tab" href="#{{ subject }}" role="tab" aria-controls="{{ subject }}" aria-selected="false">{{ subject }}</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="{{ subject }}-tab" data-bs-toggle="tab" href="#{{ subject }}" role="tab" aria-controls="{{ subject }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ subject }}</a>
+                            </li>
                         {% endfor %}
                     </ul>
+                    
                 </div>
             
                 <div class="tab-content tab-content-basic students-tab">
                     {% for subject in subjects %}
-                        <div class="tab-pane fade" id="{{ subject }}" role="tabpanel" aria-labelledby="{{ subject }}-tab">
-                            <h3 style="color: blue; margin-bottom: 10px;">{{ subject }}</h3>
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="{{ subject }}" role="tabpanel" aria-labelledby="{{ subject }}-tab">
+                          
                             <div class="class-record-container">
-                                <ul>
-                                    {% for class_record in class_records %}
-                                        {% if class_record.subject == subject %}
-                                            <li>
-                                                <div class="class-record-item">
-                                                    <h4>{{ class_record.quarters }}</h4>
-                                                    <form action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-primary">Generate Class Record</button>
-                                                    </form>
-                                                </div>
-                                            </li>
-                                        {% endif %}
-                                    {% endfor %}
-                                </ul>
+                                <div class="table-responsive ">
+                                    <table class="table table-hover ">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Quarter</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                           
+                                            {% for class_record in class_records %}
+                                                {% if class_record.subject == subject %}
+                                                    <tr>
+                                                        <td>{{ subject }}</td>
+                                                        <td>{{ class_record.quarters }}</td>
+                                                        <td>
+                                                            <form action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-primary">Generate Class Record</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
                             </div>
                         </div>
                     {% endfor %}
