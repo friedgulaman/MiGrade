@@ -1,11 +1,22 @@
 {% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
 {% block title %}
     New Class Record
+
 {% endblock title %}
 {% block main_content %}
-
+<style>
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
 
 <section class="container p-5">
+    <div class=" me-4">
+        <a class="back-button">&larr;</a>
+    </div>
     <div>
         <div class="card p-5 text-center">        
             {% if messages %}
@@ -25,10 +36,21 @@
         </div>
     </div>
 </section>
+<!-- jQuery CDN -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $(".back-button").click(function() {
+            window.history.back();
+        });
+    });
+</script>
 <script>
     var tryAgain = function () {
         var url = "{% url 'get_grade_details' %}";
         window.location.href = url;
     };
+    
     </script>
 {% endblock main_content %}

@@ -210,11 +210,9 @@ class Quarters(models.Model):
         return self.name
     
 class Subject(models.Model):
-    id = models.AutoField(primary_key=True)  # Adding an 'id' field
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
-    written_works_percentage = models.PositiveIntegerField(default=40)
-    performance_task_percentage = models.PositiveIntegerField(default=40)
-    quarterly_assessment_percentage = models.PositiveIntegerField(default=20)
+    assessment = models.JSONField(null=True, blank=True)  # JSONField for assessment
 
     def __str__(self):
         return self.name
@@ -368,60 +366,18 @@ class ArchivedClassRecord(models.Model):
 class ArchivedGradeScores(models.Model):
     archived_class_record = models.ForeignKey(ArchivedClassRecord, on_delete=models.CASCADE, related_name='archived_gradescores')
     student = models.ForeignKey(ArchivedStudent, on_delete=models.CASCADE)
-    scores_hps_written = models.JSONField()
-    scores_hps_performance = models.JSONField()
-    total_ww_hps = models.FloatField(null=True, blank=True)
-    total_pt_hps = models.FloatField(null=True, blank=True)
-    total_qa_hps = models.FloatField(null=True, blank=True)
-    written_works_scores = models.JSONField()
-    performance_task_scores = models.JSONField()
     initial_grades = models.FloatField(null=True, blank=True)
     transmuted_grades = models.FloatField(null=True, blank=True)
-    total_score_written = models.FloatField(null=True, blank=True)
-    total_max_score_written = models.FloatField(null=True, blank=True)
-    total_score_performance = models.FloatField(null=True, blank=True)
-    total_max_score_performance = models.FloatField(null=True, blank=True)
-    total_score_quarterly = models.FloatField(null=True, blank=True) 
-    total_max_score_quarterly = models.FloatField(null=True, blank=True)
-    percentage_score_written = models.FloatField(null=True, blank=True)
-    percentage_score_performance = models.FloatField(null=True, blank=True)
-    percentage_score_quarterly = models.FloatField(null=True, blank=True)
-    weight_input_written = models.FloatField(null=True, blank=True)
-    weight_input_performance = models.FloatField(null=True, blank=True)
-    weight_input_quarterly = models.FloatField(null=True, blank=True)
-    weighted_score_written = models.FloatField(null=True, blank=True)
-    weighted_score_performance = models.FloatField(null=True, blank=True)
-    weighted_score_quarterly = models.FloatField(null=True, blank=True)
+    grade_scores = models.JSONField(null=True, blank=True)
 
 
 
 class GradeScores(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_record = models.ForeignKey(ClassRecord, on_delete=models.CASCADE, related_name='GradeScores')
-    scores_hps_written = models.JSONField()  # Adjust with your actual field type
-    scores_hps_performance = models.JSONField()  # Adjust with your actual field type
-    total_ww_hps = models.FloatField(null=True, blank=True)
-    total_pt_hps = models.FloatField(null=True, blank=True)
-    total_qa_hps = models.FloatField(null=True, blank=True)
-    written_works_scores = models.JSONField()
-    performance_task_scores = models.JSONField()
     initial_grades = models.FloatField(null=True, blank=True)
     transmuted_grades = models.FloatField(null=True, blank=True)
-    total_score_written = models.FloatField(null=True, blank=True)
-    total_max_score_written = models.FloatField(null=True, blank=True)
-    total_score_performance = models.FloatField(null=True, blank=True)
-    total_max_score_performance = models.FloatField(null=True, blank=True)
-    total_score_quarterly = models.FloatField(null=True, blank=True) 
-    total_max_score_quarterly = models.FloatField(null=True, blank=True)
-    percentage_score_written = models.FloatField(null=True, blank=True)
-    percentage_score_performance = models.FloatField(null=True, blank=True)
-    percentage_score_quarterly = models.FloatField(null=True, blank=True)
-    weight_input_written = models.FloatField(null=True, blank=True)
-    weight_input_performance = models.FloatField(null=True, blank=True)
-    weight_input_quarterly = models.FloatField(null=True, blank=True)
-    weighted_score_written = models.FloatField(null=True, blank=True)
-    weighted_score_performance = models.FloatField(null=True, blank=True)
-    weighted_score_quarterly = models.FloatField(null=True, blank=True)
+    grade_scores = models.JSONField(null=True, blank=True)
 
 
     def __str__(self):

@@ -22,16 +22,17 @@ Student List for {{ grade }} {{ section }}
                     </div>
                 </div>
                 <div class=" me-4">
-                    <a class="back-button">&larr;</a>
+                    <a class="back-button">&larr; Back</a>
                 </div>
             </div>
             <section class="content container mt-2 vh-100">
                 <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                     <ul class="nav nav-tabs text" role="tablist">
+                        {% load custom_filters %}
                         {% for subject in subjects %}
-                            <li class="nav-item">
-                                <a class="nav-link" id="{{ subject }}-tab" data-bs-toggle="tab" href="#{{ subject }}" role="tab" aria-controls="{{ subject }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ subject }}</a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="{{ subject|replace_spaces }}-tab" data-bs-toggle="tab" href="#{{ subject|replace_spaces }}" role="tab" aria-controls="{{ subject|replace_spaces }}" aria-selected="false">{{ subject }}</a>
+                        </li>
                         {% endfor %}
                     </ul>
                     
@@ -39,38 +40,35 @@ Student List for {{ grade }} {{ section }}
             
                 <div class="tab-content tab-content-basic students-tab">
                     {% for subject in subjects %}
-                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="{{ subject }}" role="tabpanel" aria-labelledby="{{ subject }}-tab">
-                          
+                        <div class="tab-pane fade" id="{{ subject|replace_spaces }}" role="tabpanel" aria-labelledby="{{ subject|replace_spaces }}-tab">
+                            <h4 style="color: blue;">{{ subject }}</h4>
                             <div class="class-record-container">
-                                <div class="table-responsive ">
-                                    <table class="table table-hover ">
-                                        <thead>
-                                            <tr>
-                                                <th>Subject</th>
-                                                <th>Quarter</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                           
-                                            {% for class_record in class_records %}
-                                                {% if class_record.subject == subject %}
-                                                    <tr>
-                                                        <td>{{ subject }}</td>
-                                                        <td>{{ class_record.quarters }}</td>
-                                                        <td>
+                                {% for class_record in class_records %}
+                                    {% if class_record.subject == subject %}
+                                        <div class="class-record-item">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h5>Quarter: {{ class_record.quarters }}</h5>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="generate-record-form">  
+                                                        {% if class_record.grade == 'Grade 4' or class_record.grade == 'Grade 5' or class_record.grade == 'Grade 6'%}
+                                                        <form action="{% url 'generate_summary_for_grades_4_to_6' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-primary">Generate Class Record</button>
+                                                        {% else %}
                                                             <form action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
                                                                 {% csrf_token %}
                                                                 <button type="submit" class="btn btn-primary">Generate Class Record</button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                
+                                                        {% endif %}  
+                                                             
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
                     {% endfor %}

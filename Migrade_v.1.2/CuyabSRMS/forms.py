@@ -20,13 +20,13 @@ class ExtractedDataForm(forms.Form):
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['name', 'written_works_percentage', 'performance_task_percentage', 'quarterly_assessment_percentage']
+        fields = ['name', 'assessment']
 
 
 class GradeScoresForm(forms.ModelForm):
     class Meta:
         model = GradeScores
-        fields = ['written_works_scores', 'performance_task_scores', 'initial_grades', 'transmuted_grades']
+        fields = ['initial_grades', 'transmuted_grades']
 
 
 class SchoolInformationForm(forms.ModelForm):

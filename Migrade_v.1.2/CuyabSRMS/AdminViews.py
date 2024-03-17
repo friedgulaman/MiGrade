@@ -552,7 +552,7 @@ def add_student(request):
 
 def subjects(request):
     subjects = Subject.objects.all()
-
+    print(subjects)
     context = {
         'subjects': subjects,
     }
@@ -561,76 +561,79 @@ def subjects(request):
 def get_subject_data(request):
     subject_id = request.GET.get('subjectId')
     subject = get_object_or_404(Subject, id=subject_id)
+    print(subject.assessment)
 
     # Return subject data as JSON
     data = {
         'id': subject.id,
         'name': subject.name,
-        'written_works_percentage': subject.written_works_percentage,
-        'performance_task_percentage': subject.performance_task_percentage,
-        'quarterly_assessment_percentage': subject.quarterly_assessment_percentage,
+        'assessment': subject.assessment,
+
     }
 
     return JsonResponse(data)
+
+
 def add_subject(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        written_works_percentage = request.POST.get('written_works_percentage')
-        performance_task_percentage = request.POST.get('performance_task_percentage')
-        quarterly_assessment_percentage = request.POST.get('quarterly_assessment_percentage')
+        name = request.POST.get('name').upper()
+        assessment = request.POST.get('assessment')
 
-        user = request.user
-        action = f'{user} add "{name}" subject'
-        details = f'{user} added "{name}" subject in the system.'
-        log_activity(user, action, details)
+        if name and assessment:
+            try:
+                # Assuming assessment data is provided in JSON format, so we'll parse it
+                assessment_data = json.loads(assessment)
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error_message': 'Invalid JSON format for assessment'})
 
-        logs = user, action, details    
-        print(logs)
-
-        if name and written_works_percentage is not None and performance_task_percentage is not None and quarterly_assessment_percentage is not None:
             subject = Subject.objects.create(
                 name=name,
-                written_works_percentage=written_works_percentage,
-                performance_task_percentage=performance_task_percentage,
-                quarterly_assessment_percentage=quarterly_assessment_percentage
+                assessment=assessment_data
             )
-            return JsonResponse({'success': True, 'subject_id': subject.id})
+            
 
-    return JsonResponse({'success': False, 'error_message': 'Invalid form data'})
+            # Assuming you want to return the subject's ID upon successful creation
+            return JsonResponse({'success': True, 'subject_id': subject.id})
+        else:
+            return JsonResponse({'success': False, 'error_message': 'Missing form data'})
+
+    return JsonResponse({'success': False, 'error_message': 'Invalid request method'})
 
 
 def subject_list(request):
     subjects = Subject.objects.all()
+    print(subjects)
     return render(request, 'admin_template/subject_list.html', {'subjects': subjects})
 
 def update_subject(request):
     if request.method == 'POST':
-        subject_id = request.POST.get('subjectId')
-        subject_name = request.POST.get('subjectName')
-        written_works_percentage = request.POST.get('writtenWorksPercentage')
-        performance_task_percentage = request.POST.get('performanceTaskPercentage')
-        quarterly_assessment_percentage = request.POST.get('quarterlyAssessmentPercentage')
+        subject_id = request.POST.get('subjectId')  # Correct the key names to match the form field names
+        subject_name = request.POST.get('subjectName')  # Correct the key names to match the form field names
+        assessment_str = request.POST.get('assessment_update')
+        
+        assessment_str = assessment_str.replace('\\', '')
+        
+        try:
+            assessment = json.loads(assessment_str)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid assessment data'})  # Correct the key names to match the form field names
 
         subject = get_object_or_404(Subject, id=subject_id)
         subject.name = subject_name
-        subject.written_works_percentage = written_works_percentage
-        subject.performance_task_percentage = performance_task_percentage
-        subject.quarterly_assessment_percentage = quarterly_assessment_percentage
+        subject.assessment = assessment
         subject.save()
 
         user = request.user
-        action = f'{user} update "{subject_name}" subject information'
-        details = f'{user} update "{subject_name}" subject information in the system.'
-        log_activity(user, action, details)
-
-        logs = user, action, details    
-        print(logs)
+        action = f'{user} updated "{subject_name}" subject information'
+        details = f'{user} updated "{subject_name}" subject information in the system.'
+        # log_activity(user, action, details)  # Assuming this is a function you've defined elsewhere
 
         # Return a success response
         return JsonResponse({'success': True, 'message': 'Subject updated successfully'})
 
     # Return a failure response if not a POST request
     return JsonResponse({'success': False, 'message': 'Invalid request'})
+
 @csrf_exempt
 @login_required
 def delete_subject(request):

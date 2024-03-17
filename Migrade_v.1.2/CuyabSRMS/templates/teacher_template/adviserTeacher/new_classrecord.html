@@ -83,9 +83,6 @@
                         <label for="subject">Subject</label>
                         <select class="form-control" id="subject" name="subject" required>
                             <option value="">Select Subject</option>
-                            {% for subject in subjects %}
-                                <option value="{{ subject }}">{{ subject }}</option>
-                            {% endfor %}
                         </select>
                     </div>
 
@@ -119,13 +116,43 @@
         // Check if selected_grade and selected_section are not empty or None before setting the values
         if (selected_grade !== "None" && selected_section !== "None")  {
             // Set the selected grade value in the dropdown
-            document.getElementById('grade').value = selected_grade;
+            $('#grade').val(selected_grade);
 
             // Get the section dropdown element
-            var sectionDropdown = document.getElementById('section');
+            var sectionDropdown = $('#section');
 
             // Set the selected section as the innerHTML of the dropdown
-            sectionDropdown.innerHTML = `<option value="${selected_section}">${selected_section}</option>`;
+            sectionDropdown.html(`<option value="${selected_section}">${selected_section}</option>`);
+
+            // Populate subjects dropdown based on the selected grade
+            populateSubjects(selected_grade);
+        }
+
+        // Event listener for grade change
+        $('#grade').change(function(){
+            var grade = $(this).val();
+            populateSubjects(grade);
+        });
+
+        // Function to populate subjects dropdown based on grade
+        function populateSubjects(grade) {
+            var subjects = [];
+            if (grade === "Grade 1") {
+                subjects = ["MOTHER TONGUE", "FILIPINO", "MATHEMATICS", "ENGLISH", "ARALING PANLIPUNAN", "MUSIC", "ARTS", "PE", "HEALTH", "EDUKASYON SA PAGPAPAKATAO"];
+            } else if (grade === "Grade 2") {
+                subjects = ["MOTHER TONGUE", "FILIPINO", "ENGLISH", "MATHEMATICS", "ARALING PANLIPUNAN", "MUSIC", "ARTS", "PE", "HEALTH", "EDUKASYON SA PAGPAPAKATAO"];
+            } else if (grade === "Grade 3") {
+                subjects = ["MOTHER TONGUE", "FILIPINO", "ENGLISH", "MATHEMATICS", "SCIENCE", "ARALING PANLIPUNAN", "MUSIC", "ARTS", "PE", "HEALTH", "EDUKASYON SA PAGPAPAKATAO"];
+            } else if (grade === "Grade 4" || grade === "Grade 5" || grade === "Grade 6") {
+                subjects = ["ARALING PANLIPUNAN", "EDUKASYON SA PAGPAPAKATAO", "EPP", "ENGLISH", "FILIPINO", "MATHEMATICS", "MUSIC", "ARTS", "PE", "HEALTH", "SCIENCE"];
+            }
+
+            // Populate subjects dropdown
+            var subjectDropdown = $('#subject');
+            subjectDropdown.empty();
+            $.each(subjects, function(index, value){
+                subjectDropdown.append($('<option>').text(value).attr('value', value));
+            });
         }
     });
 </script>

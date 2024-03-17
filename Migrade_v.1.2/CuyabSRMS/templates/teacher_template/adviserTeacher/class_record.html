@@ -39,7 +39,6 @@ Adviser Teacher
     }
 </style>
 
-
 <section class="content container mt-2">
     <form method="post" action="{% url 'calculate_grades' %}">
         {% csrf_token %}
@@ -64,23 +63,7 @@ Adviser Teacher
 
         </div>
         <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-            <ul class="nav nav-tabs " role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#written_works" role="tab"
-                        aria-controls="overview" aria-selected="true">Written Works</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#performance_task" role="tab"
-                        aria-selected="false">Performance Task</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#quarterly_assessment" role="tab"
-                        aria-selected="false">Quarterly Assessment</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="info-tab" data-bs-toggle="tab" href="#classrecord_info" role="tab"
-                        aria-selected="false">Details</a>
-                </li> 
+            <ul class="nav nav-tabs " role="tablist" id="assessmentTabs">
             </ul>
             <div>
                 <div class="d-flex justify-content-end align-items-end">
@@ -89,281 +72,138 @@ Adviser Teacher
             </div>
         </div>
 
-        <div class="tab-content tab-content-basic">
-            <div class="tab-pane fade show active" id="written_works" role="tabpanel" aria-labelledby="home-tab">
-                <div class="mb-3">
-                    {% if students %}
-                    <div class="table-responsive">
-                        <div id="components">WRITTEN WORKS</div>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Name</th>
-                                    <th>1</th>
-                                    <th>2</th>
-                                    <th>3</th>
-                                    <th>4</th>
-                                    <th>5</th>
-                                    <th>6</th>
-                                    <th>7</th>
-                                    <th>8</th>
-                                    <th>9</th>
-                                    <th>10</th>
-                                    <th>Total</th>
-                                    <th>PS</th>
-                                    <th>WS</th>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <th>Highest possible scores</th>
-                                    {% load custom_filters %}
-                                    {% for i in 1|num_range %}
-                                    <td><input name="max_written_works_{{ i }}"></td>
-                                    {% endfor %}
-                                    <td id="total_max_written_works" name="total_max_written_works">Total</td>
-                                    <th>100.00</th>
-                                    <td><input type="text" id="written_works_weight" name="written_works_weight"
-                                            value="{{ written_works_percentage }}" /></td>
-
-                                </tr>
-
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td>{{ number }}</td>
-                                    <td><input type="hidden" name="student_id_{{ student.id }}"
-                                            value="{{ student.id }}">{{ student.name }}</td>
-                                    {% load custom_filters %}
-                                    {% for i in 1|num_range %}
-                                    <td><input class="score-input-ww" name="scores_written_{{ student.id }}_{{ i }}">
-                                    </td>
-                                    {% endfor %}
-
-                                    <td><input id="total_{{ student.id }}" name="total_{{ student.id }}">Total</td>
-                                    <td><input id="ps_{{ student.id }}" name="ps_{{ student.id }}"></td>
-                                    <td><input id="ws_{{ student.id }}" name="ws_{{ student.id  }}"></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% endif %}
-
-
-                </div>
-            </div>
-
-            <div class="tab-pane fade show" id="performance_task" role="tabpanel" aria-labelledby="profile-tab">
-                <div class="mb-3">
-                    {% if students %}
-                    <div class="table-responsive">
-                        <div id="components">PERFORMANCE TASK</div>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Name</th>
-                                    <th>1</th>
-                                    <th>2</th>
-                                    <th>3</th>
-                                    <th>4</th>
-                                    <th>5</th>
-                                    <th>6</th>
-                                    <th>7</th>
-                                    <th>8</th>
-                                    <th>9</th>
-                                    <th>10</th>
-                                    <th>Total</th>
-                                    <th>PS</th>
-                                    <th>WS</th>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <th>Highest possible scores</th>
-                                    {% load custom_filters %}
-                                    {% for i in 1|num_range %}
-                                    <td><input name="max_performance_task_{{ i }}"></td>
-                                    {% endfor %}
-                                    <td id="total_max_performance_task" name="total_max_performance_task">Total</td>
-                                    <th>100.00</th>
-                                    <td><input type="text" id="performance_task_weight" name="performance_task_weight"
-                                            value="{{ performance_task_percentage }}" /></td>
-                                    <!-- <th>
-                                <select name="weight_performance_task_{{ student.id }}">
-                                    <option value="0.3">30%</option>
-                                    <option value="0.5">50%</option>
-                                    <option value="0.2">20%</option>
-                                </select>
-                            </th> -->
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td>{{ number }}</td>
-                                    <td><input type="hidden" name="student_id_{{ student.id }}"
-                                            value="{{ student.id }}">{{ student.name }}</td>
-                                    {% load custom_filters %}
-                                    {% for i in 1|num_range %}
-                                    <td><input class="score-input-pt"
-                                            name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
-                                    {% endfor %}
-                                    <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total
-                                    </td>
-                                    <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
-                                    <td><input id="pt_ws_{{ student.id }}" name="pt_ws_{{ student.id }}"></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-
-            <div class="tab-pane fade show" id="quarterly_assessment" role="tabpanel" aria-labelledby="contact-tab">
-                <div class="mb-3">
-                    {% if students %}
-                    <div class="table-responsive">
-                        <div id="components">QUARTERLY ASSESSMENT</div>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Name</th>
-                                    <th>1</th>
-                                    <th>PS</th>
-                                    <th>WS</th>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <th>Highest possible scores</th>
-                                    <td><input id="total_max_quarterly" name="total_max_quarterly"></td>
-                                    <th>100.00</th>
-                                    <td> <input type="text" id="quarterly_assessment_weight"
-                                            name="quarterly_assessment_weight"
-                                            value="{{ quarterly_assessment_percentage }}" /></td>
-
-                                </tr>
-                            </thead>
-                            <!-- <tbody>
-                    {% for student in students %}
-                    <tr>
-                        <td>{{ number }}</td>
-                        <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                        {% load custom_filters %}
-                        {% for i in 1|num_range %}
-                        <td><input class="score-input-pt" name="scores_performance_task_{{ student.id }}_{{ i }}"></td>
-                        {% endfor %}
-                        <td><input id="pt_total_{{ student.id }}" name="pt_total_{{ student.id }}">Total</td>
-                        <td><input id="pt_ps_{{ student.id }}" name="pt_ps_{{ student.id }}"></td>
-                        <td class="ws" name="ws_{{ student.id }}"></td>
-                    </tr>
-                    {% endfor %}
-                </tbody> -->
-                            <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td>{{ number }}</td>
-                                    <td><input type="hidden" name="student_id_{{ student.id }}"
-                                            value="{{ student.id }}">{{ student.name }}</td>
-                                    <td><input id="qa_total_{{ student.id }}" name="qa_total_{{ student.id }}"></td>
-                                    <td><input id="qa_ps_{{ student.id }}" name="qa_ps_{{ student.id }}"></td>
-                                    <td><input id="qa_ws_{{ student.id }}" name="qa_ws_{{ student.id}}"></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-
-            <!-- <div class="tab-pane fade show" id="initial_grade" role="tabpanel" aria-labelledby="more-tab">
-        <div class="mb-3">
-          {% if students %}
-          <div class="table-responsive" >
-              <div id="components">INITIAL GRADE</div>
-              <table class="table">
-                  <thead>
-                      <tr>
-                          <th></th>
-                          <th>Name</th>
-                          <th>Grade</th>
-                          <th>Quarterly Grade</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {% for student in students %}
-                    <tr>
-                      <td>{{ number }}</td>
-                      <td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>
-                      <td><input id="initial_grade_{{ student.id }}" name="initial_grade_{{ student.id }}"></td> 
-                      <td><input id="quarterly_grade_{{ student.id }}" name="quarterly_grade_{{ student.id}}"></td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-              </table>
-          </div>
-          {% endif %}
-      </div>
-      </div> -->
-
-            <div class="tab-pane fade show" id="classrecord_info" role="tabpanel" aria-labelledby="info-tab">
-                <div class="container mt-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Other Details</h5>
-                            <div>
-                                <label>Region</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>Division</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>School ID</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>School Name</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>District</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>School Year</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>Quarter</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>Grade and Section</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>Teacher</label>
-                                <input type="text" class="form-control" id="" name="">
-
-                                <label>Subject</label>
-                                <input type="text" class="form-control" id="" name="">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="tab-content tab-content-basic" id="assessmentTabContent">
         </div>
 
     </form>
 </section>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
     $(document).ready(function () {
-        // Simulate a click on the submit button
-        $("#submitButton").click();
+        // Function to handle form submission via AJAX
+        function submitForm(formData) {
+            $.ajax({
+                url: "{% url 'calculate_grades' %}",
+                type: "POST",
+                data: formData,
+                success: function (response) {
+                    // Handle success response
+                    console.log("Grades calculated successfully:", response);
+                },
+                error: function (xhr, status, error) {
+                    // Handle error response
+                    console.error("Error calculating grades:", error);
+                }
+            });
+        }
+
     });
 </script>
+<script>
+    $(document).ready(function () {
+        // Get the assessment types from the backend or any other source
+        var assessmentTypes = "{{ assessment_types|safe }}".replace(/[\[\]"']/g, "").split(',').map(function(item) {
+            return item.trim();
+        });
 
+        var assessmentValues = "{{ assessment_values|safe }}".replace(/[\[\]"]/g, "").split(',').map(function(item) {
+            return item.trim();
+        });
+
+
+        console.log(assessmentTypes)
+        console.log(assessmentValues)
+
+        // Loop through each assessment type
+        assessmentTypes.forEach(function (assessmentType, index) {
+            var value = assessmentValues[index]; 
+            console.log(value)
+            // Create a new list item for the assessment tab
+            var listItem = $('<li class="nav-item"></li>');
+            // Create a new anchor tag for the assessment tab
+            var anchorTag = $('<a class="nav-link" role="tab" aria-selected="false"></a>')
+                .attr('id', 'assessment-tab-' + index)
+                .attr('data-bs-toggle', 'tab')
+                .attr('href', '#assessment-' + index)
+                .text(assessmentType);
+
+            // Append the anchor tag to the list item
+            listItem.append(anchorTag);
+
+            // Append the list item to the navigation tabs
+            $('#assessmentTabs').append(listItem);
+
+            // Create a new tab-pane for the assessment content
+            var tabPane = $('<div class="tab-pane fade show"></div>')
+                .attr('id', 'assessment-' + index)
+                .attr('role', 'tabpanel')
+                .append('<h4>' + assessmentType + '</h4>')
+                var totalMaxId = 'total_max_' + assessmentType.replace(/\s+/g, '-').toLowerCase();
+                var weightId = 'weight_' + assessmentType.replace(/\s+/g, '-').toLowerCase();
+              
+                tabPane.append('<table class="table">' +
+                    '<thead>' +
+                        '<tr>' +
+                            '<th></th>' +
+                            '<th>Name</th>' +
+                            '<th>1</th>' +
+                            '<th>2</th>' +
+                            '<th>3</th>' +
+                            '<th>4</th>' +
+                            '<th>5</th>' +
+                            '<th>6</th>' +
+                            '<th>7</th>' +
+                            '<th>8</th>' +
+                            '<th>9</th>' +
+                            '<th>10</th>' +
+                            '<th>Total</th>' +
+                            '<th>PS</th>' +
+                            '<th>WS</th>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<th></th>' +
+                            '<th>Highest possible scores</th>' +
+                            '{% load custom_filters %}' +
+                            '{% for i in 1|num_range %}' +
+                            '<td><input name="max_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ i }}"></td>' +
+                            '{% endfor %}' +
+                            '<td id="' + totalMaxId + '" name="total_max_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '">Total</td>' +
+                            '<th>100.00</th>' +
+                            '<td><input type="text" id="' + weightId + '" name="weight_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '" value="' + value + '" /></td>' +
+                        '</tr>' +
+                    '</thead>' +
+                    '<tbody>' +
+                        '{% for student in students %}' +
+                        '<tr>' +
+                            '<td>{{ number }}</td>' +
+                            '<td><input type="hidden" name="student_id_{{ student.id }}" value="{{ student.id }}">{{ student.name }}</td>' +
+                            '{% load custom_filters %}' +
+                            '{% for i in 1|num_range %}' +
+                            '<td><input class="score-input-ww" name="scores_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}_{{ i }}"></td>' +
+                            '{% endfor %}' +
+                            '<td><input id="total_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}" name="total_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}">Total</td>' +
+                            '<td><input id="ps_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}" name="ps_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}"></td>' +
+                            '<td><input id="ws_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}" name="ws_' + assessmentType.replace(/\s+/g, '-').toLowerCase() + '_{{ student.id }}"></td>' +
+                        '</tr>' +
+                        '{% endfor %}' +
+                    '</tbody>' +
+                    '</table>');
+
+
+            // Append the tab-pane to the tab-content
+            $('#assessmentTabContent').append(tabPane);
+        });
+
+        // Simulate a click on the first assessment tab
+        $('#assessmentTabs li:first-child a').tab('show');
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        // Your existing JavaScript code...
+
+        // Trigger a click event on the submit button once the document is ready
+        $('#submitButton').click();
+    });
+</script>
 {% endblock main_content %}
