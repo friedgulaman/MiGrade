@@ -29,7 +29,7 @@
       </a>
       <div class="collapse" id="ui-master">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item "><a class="nav-link" href="{% url 'manage_master_teacher' %}">Create Master Teacher</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'manage_master_teacher' %}">Create Master Teacher</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'assign_master' %}">Assign Master Teacher</a></li>
         </ul>
       </div>
@@ -80,9 +80,16 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'upload_documents' %}">Upload</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'batch_process_documents' %}">Batch Upload</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'sf10_view' %}">Files</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li>
+          <!-- <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li> -->
         </ul>
       </div>
+    </li>
+    <!-- Archived Records -->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'admin_archived_records' %}">
+        <i class="menu-icon icon-archive"></i>
+        <span class="menu-title">Archived Records</span>
+      </a>
     </li>
   </ul>
 </nav>
