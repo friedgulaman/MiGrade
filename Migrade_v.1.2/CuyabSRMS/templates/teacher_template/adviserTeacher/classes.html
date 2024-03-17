@@ -249,6 +249,8 @@ New Class List
         var selectedYear = dropdown.options[dropdown.selectedIndex].text;
         var currentYear = "{{ selected_school_year }}";  // Get the currently selected year
 
+        console.log(selectedYear)
+        coonsole.log(currentYear)
         // Check if the selected year is different from the current year
         if (selectedYear !== currentYear) {
             window.location = dropdown.value;  // Reload the page with the selected school year

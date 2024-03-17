@@ -244,6 +244,28 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             </div>
                             
                         </div>
+                    
+                        <!-- Upload form for Excel files -->
+                        <div class="modal-body">
+                            <div class="text-center mb-4">
+                                <h5>Upload School Form 2 Excel File (.xls, .xlsx)</h5>
+                            </div>
+                            <form method="post" id="form1" action="{% url 'upload_sf2' %}" class="container text-center d-flex flex-column" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="file" class="form-control-sm" name="excel_file" id="excel_file" required accept=".xls,.xlsx">
+                                <select class="form-select form-select-sm mt-3" name="sheet_name" id="sheet_name" required disabled>
+                                    <option value="" disabled selected>Select Sheet Name</option>
+                                </select>
+                                <button type="submit" id="upload_btn_1" class="btn btn-primary mt-3 container d-flex justify-content-center align-center">
+                                    <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator1" style="display: none;" role="status" aria-hidden="true"></span>
+                                    <span id="upload_btn_1_text">Upload Excel</span>
+                                </button>
+                            </form>
+                        </div>
+
+                      
+     
+                    
                     </div>
 
                     <div class="tab-pane fade show" id="learners_observation" role="tabpanel" aria-labelledby="learners_observation">
@@ -266,6 +288,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             
                         </div>
                     </div>
+                    
                     
                     
                     <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
@@ -540,6 +563,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         </div>
     </div>
 </section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 <script>
     var showStudentList = function(grade, section) {
         var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
@@ -645,53 +669,57 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
     });
 </script>
 <script>
-    // JavaScript to handle tab switching and dynamic text change for dropdown button
-    document.querySelectorAll('.dropdown-menu a').forEach(item => {
-        item.addEventListener('click', event => {
-            const targetTabId = event.target.getAttribute('data-target'); // Get target tab ID from data-target attribute
-            const targetTab = document.querySelector(targetTabId);
+    document.getElementById('excel_file').addEventListener('change', function() {
+        var sheetSelect = document.getElementById('sheet_name');
+        var uploadButton = document.getElementById('upload_btn_1');
+        var file = this.files[0];
+        var reader = new FileReader();
 
-            // Activate the corresponding tab pane and deactivate others
-            document.querySelectorAll('.tab-pane').forEach(tabPane => {
-                if (tabPane === targetTab) {
-                    tabPane.classList.add('show', 'active');
-                } else {
-                    tabPane.classList.remove('show', 'active');
-                }
+        reader.onload = function(e) {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, { type: 'array' });
+
+            sheetSelect.innerHTML = ''; // Clear existing options
+
+            workbook.SheetNames.forEach(function(sheetName) {
+                var option = document.createElement('option');
+                option.value = sheetName;
+                option.textContent = sheetName;
+                sheetSelect.appendChild(option);
             });
 
-            // Update the active class for dropdown items
-            document.querySelectorAll('.dropdown-item').forEach(dropdownItem => {
-                if (dropdownItem === event.target) {
-                    dropdownItem.classList.add('active');
-                } else {
-                    dropdownItem.classList.remove('active');
-                }
-            });
+            sheetSelect.disabled = false; // Enable the sheet select
+            uploadButton.disabled = false; // Enable the upload button
+        };
 
-            // Change the dropdown button text to the clicked item's text
-            const buttonText = event.target.getAttribute('data-text');
-            document.getElementById('dropdownMenuButton').textContent = buttonText;
+        reader.readAsArrayBuffer(file);
+    });
+</script>
+<script>
+    document.getElementById('form1').addEventListener('submit', function () {
+        // Show the loading indicator for Form 1
+        document.getElementById('loadingIndicator1').style.display = 'block';
 
-            // Update the URL with the selected tab
-            const tabId = targetTabId.substring(1); // Remove '#' from tab ID
-            const newUrl = window.location.href.split('#')[0] + '#' + tabId;
-            history.pushState({}, '', newUrl);
+        // Change the text to "Loading, please wait..."
+        document.getElementById('upload_btn_1_text').innerText = 'Loading, please wait...';
+
+        // Optionally, you can disable the submit button to prevent multiple submissions
+        document.getElementById('upload_btn_1').setAttribute('disabled', 'true');
+    });
+</script>
+<script>
+    // jQuery script to open the modal when the button is clicked
+    $(document).ready(function () {
+        $('#openUploadModal').click(function () {
+            $('#uploadModal').modal('show');
         });
     });
-
-    // Listen for popstate event to handle back/forward navigation
-    window.addEventListener('popstate', () => {
-        const tabId = window.location.hash.substring(1); // Get tab ID from URL hash
-        const targetTab = document.getElementById(tabId);
-
-        // Activate the corresponding tab pane and deactivate others
-        document.querySelectorAll('.tab-pane').forEach(tabPane => {
-            if (tabPane === targetTab) {
-                tabPane.classList.add('show', 'active');
-            } else {
-                tabPane.classList.remove('show', 'active');
-            }
+</script>
+<!-- <script>
+    function filterStudents(subject) {
+        // Hide all subject tables
+        document.querySelectorAll('.mb-4').forEach(function(table) {
+            table.style.display = 'none';
         });
 
         // Update the active class for dropdown items

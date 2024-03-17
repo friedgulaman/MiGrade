@@ -24,7 +24,7 @@ from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
 import logging
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages
@@ -70,6 +70,8 @@ from json import loads as json_loads
 from django.db.models import Q
 import datetime
 from datetime import datetime
+from google.cloud import documentai_v1beta3 as documentai
+from google.api_core.client_options import ClientOptions
 import calendar
 from calendar import month_name
 
@@ -254,18 +256,13 @@ def process_google_sheet(spreadsheet_id, sheet_name):
                             key_value_pairs[term.replace(" ", "_")] = None
 
 
-            # Print LRN data and key-value pairs
-            print("LRN Data:")
-            print(lrn_data)
-            print("Key-Value Pairs:")
-            print(key_value_pairs)
-
             return {'lrn_data': lrn_data, 'key_value_pairs': key_value_pairs}
         else:
             return None
     except Exception as e:
         print(f"An error occurred in process_google_sheet: {e}")
         return None
+
 def get_sections(request):
     grade_id = request.GET.get('grade_id')
     
@@ -470,6 +467,9 @@ def save_json_data(request):
 
             section, _ = Section.objects.get_or_create(name=section_name, grade=grade)
 
+            if class_type_data == 'Advisory Class' and section.class_type == class_type:
+                raise ValidationError("Advisory class already exists for this grade and section.")
+
                             # Increment the total_students field for the respective section
             section.total_students += 1
             # Initialize or get the existing class_type dictionary for the section
@@ -530,30 +530,14 @@ def save_json_data(request):
                     }
                 )
    
-
-                existing_class_type = student.class_type 
-                print(f"existing class type : {existing_class_type}")
-
-                # if teacher_id in existing_class_type:
-                #     existing_class_type[teacher_id] += f", {subject}"
-                # else:
-                print(f"before student school year exist: {class_type}")
-                existing_class_type.update(class_type)
-                print(f"existing class type.append : {existing_class_type}")
-                
-
-
-                # print(f"Student.School year: {student.school_year}")
-                # print(f"school year: {school_year}")
-                # Update class_type for existing student
                 if not created:
                     
-                    print(f"during student school year exist: {existing_class_type}")
+                 
                     # Check if the existing student has the same school year
                     if student.school_year == school_year:
-                            print(f"after student school year exist: {existing_class_type}")
+                    
                             student.class_type =  existing_class_type
-                            print(f"student class type: {student.class_type}")
+                            
                             student.save()
                             
                     else:
@@ -572,18 +556,7 @@ def save_json_data(request):
                             section=section.name,
                             class_type=class_type
                         )
-                # Update other fields if needed
-                # student.name = name
-                # student.sex = sex
-                # student.birthday = birthday
-                # student.school_id = school_id
-                # student.division = division
-                # student.district = district
-                # student.school_name = school_name
-                # student.school_year = school_year
-                # student.grade = grade.name
-                # student.section = section.name
-            
+
 
                 # Save the associated objects before saving the student
                 grade.save()
@@ -684,7 +657,7 @@ def get_students_by_grade_and_section(request):
             teacher = get_object_or_404(Teacher, user=user)
 
             # Use a more unique identifier for the class record name
-            classrecord_name = f'{grade_name} {section_name} {subject_name} {quarter_name}'
+            classrecord_name = f'{grade_name} - {section_name} - {subject_name} - {quarter_name}'
 
             classrecord = ClassRecord(
                 name=classrecord_name,
@@ -703,11 +676,15 @@ def get_students_by_grade_and_section(request):
             students = Student.objects.filter(grade=grade_name, section=section_name)
 
             subject = Subject.objects.get(name=subject_name)
+            print(subject)
+            assessments = subject.assessment
+            print(assessments)
 
+# Extract the keys from the dictionary
+            assessment_types = list(assessments.keys())
 
-            weighted_written_works_percentage = subject.written_works_percentage
-            weighted_performance_task_percentage = subject.performance_task_percentage
-            weighted_quarterly_assessment_percentage = subject.quarterly_assessment_percentage 
+            # print(f"assessment_types {assessment_types}")
+
 
 
             # Create a dictionary to store scores for each student
@@ -732,9 +709,9 @@ def get_students_by_grade_and_section(request):
                 'grade_name': grade_name,
                 'section_name': section_name,
                 'student_scores': student_scores,
-                'written_works_percentage': weighted_written_works_percentage,
-                'performance_task_percentage': weighted_performance_task_percentage,
-                'quarterly_assessment_percentage': weighted_quarterly_assessment_percentage,
+                'assessment': assessments,
+                 'assessment_types': assessment_types,
+                 'assessment_values': list(assessments.values()),
             }
 
             return render(request, 'teacher_template/adviserTeacher/class_record.html', context)
@@ -749,6 +726,8 @@ def get_students_by_grade_and_section(request):
     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html')
 
 
+
+
 def calculate_grades(request):
     if request.method == "POST":
         # print(request.POST)
@@ -756,27 +735,49 @@ def calculate_grades(request):
         section_name = request.POST.get("hidden_section")
         subject_name = request.POST.get("hidden_subject")
         quarters_name = request.POST.get("hidden_quarter")
-        print(request.POST)
+        # print(request.POST)
         print(grade_name)
         print(section_name)
         print(subject_name)
         print(quarters_name)
+        
+        subject = Subject.objects.get(name=subject_name)
+        # print(subject)
+        assessments = subject.assessment
+        # print(assessments)
+
+        sanitized_assessment_types = list(assessments.keys())
+
+        assessmentTypes = [assessmentType.replace(' ', '-').lower() for assessmentType in sanitized_assessment_types]
+
+        # print(assessmentTypes)
+
+        scores_hps = {}  # Store scores for each assessment type
+
+        for assessmentType in assessmentTypes:
+            scores_hps[assessmentType] = {}
+            # Extract scores for each assessment type
+            scores_hps[assessmentType]['SCORES'] = [request.POST.get(f"max_{assessmentType}_{i}") for i in range(1, 11)]
+
+            scores_hps[assessmentType]['TOTAL_HPS'] = request.POST.get(f"total_max_{assessmentType}")
+            scores_hps[assessmentType]['WEIGHT'] = request.POST.get(f"weight_{assessmentType}")
 
 
-        scores_ww_hps = [request.POST.get(f"max_written_works_{i}") for i in range(1, 11)]
-        scores_pt_hps = [request.POST.get(f"max_performance_task_{i}") for i in range(1, 11)]
-        total_ww_hps = request.POST.get("total_max_written_works")
-        total_pt_hps = request.POST.get("total_max_performance_task")
-        total_qa_hps = request.POST.get("total_max_quarterly") or 0
-        weight_written= request.POST.get("written_works_weight")
-        weight_performance= request.POST.get("performance_task_weight")
-        weight_quarterly= request.POST.get("quarterly_assessment_weight")
+        # Extract total scores for each assessment type
+        total_hps = {
+            assessmentType: request.POST.get(f"total_max_{assessmentType}")
+            for assessmentType in assessmentTypes
+        }
 
-        print(scores_pt_hps)
-        print(scores_ww_hps)
-        print(total_ww_hps)
-        print(total_pt_hps)
-        print(total_qa_hps)
+        # print(f"scores_hps: {scores_hps}")
+        # print(total_hps)
+
+        weights = {}
+        for assessmentType in assessmentTypes:
+                weights[assessmentType] = request.POST.get(f"weight_{assessmentType}")
+
+
+        # print(weights)
 
         
 
@@ -794,128 +795,113 @@ def calculate_grades(request):
         print(logs)
 
         students = Student.objects.filter(grade=grade_name, section=section_name)
-        
+
         for student in students:
-            scores_written_works = []
-            scores_performance_task = []
-
-            total_score_written = 0
-            total_max_score_written = 0
-            total_score_performance = 0
-            total_max_score_performance = 0
-            total_score_quarterly = 0
-            total_max_score_quarterly = 0
-
-            weight_input_written = 0
-            weight_input_performance = 0
-            weight_input_quarterly = 0
-
-            for i in range(1, 11):
+            total_weighted_score = 0
+            total_weight = 0
+            scores_assessment = {}
+            
+            # Loop through each assessment type for the current student
+            for assessmentType in assessmentTypes:
+            
+                total_score = 0
+                total_max_score = 0
+                scores_assessment[assessmentType] = {
+                    'scores': [],
+                    'total_score': total_score,
+                    'percentage_score': None,
+                    'total_weighted_score': None
+                }
+                
                 # Retrieve scores and maximum scores for each component
-                written_works = request.POST.get(f"scores_written_{student.id}_{i}")
-                max_written_works = request.POST.get(f"max_written_works_{i}" )  # Change this to the actual maximum score
-                performance_task = request.POST.get(f"scores_performance_task_{student.id}_{i}" )
-                max_performance_task = request.POST.get(f"max_performance_task_{i}")  # Change this to the actual maximum score
-                # quarterly_assessment = request.POST.get(f"scores_quarterly_assessment_{student.id}_{i}", "0")
-                # max_quarterly_assessment = request.POST.get(f"max_quarterly_assessment_{i}", "0")  # Change this to the actual maximum score
+                for i in range(1, 11):
+            
+                    score = request.POST.get(f"scores_{assessmentType}_{student.id}_{i}")
+                    max_score = request.POST.get(f"max_{assessmentType}_{i}")
+                    
+                    # Check if score is None before converting to float and appending to scores list
+                    if score is not None:
+                        if score != '':
+                            scores_assessment[assessmentType]['scores'].append(float(score))
+                        else:
+                            scores_assessment[assessmentType]['scores'].append(score)
+                    else:
+                        scores_assessment[assessmentType]['scores'].append(0)
+                        
+                    total_score += float(score) if score is not None and score.isnumeric() else 0
+                    total_max_score += float(max_score) if max_score is not None and max_score.isnumeric() else 0
+                    scores_assessment[assessmentType]['total_score'] = total_score
                 
-                # Retrieve weights for each component
-                weight_input_written = float(request.POST.get(f"written_works_weight", ))  # Change this to the actual weight for written works
-                weight_input_performance = float(request.POST.get(f"performance_task_weight" ))  # Change this to the actual weight for performance tasks
-                # weight_input_quarterly = float(request.POST.get(f"weight_quarterly_assessment_{i}", "0"))  # Change this to the actual weight for quarterly assessments
-                
-                scores_written_works.append(float(written_works) if written_works.isnumeric() else "")
-                scores_performance_task.append(float(performance_task) if performance_task.isnumeric() else "")
-                # scores_quarterly_assessment.append(float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0)
-                total_score_written += float(written_works) if written_works.isnumeric() else 0
-                total_max_score_written += float(max_written_works) if max_written_works.isnumeric() else 0
-                total_score_performance += float(performance_task) if performance_task.isnumeric() else 0
-                total_max_score_performance += float(max_performance_task) if max_performance_task.isnumeric() else 0
+                # Extract weight for the current assessment type
+                    weight_input = request.POST.get(f"weight_{assessmentType}")
+                    if weight_input is not None:
+                        weight_input = float(weight_input)
+                    else:
+                        weight_input = 0 
+                    
+                    # Perform calculations based on the assessment type
+                    if total_max_score > 0:
+                        percentage_score = round((total_score / total_max_score) * 100, 2)
+                    else:
+                        percentage_score = None if total_max_score == 0 else 0
 
-                # total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-                # total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
+                    weighted_score = (percentage_score / 100) * weight_input if percentage_score is not None else None
+                    rounded_weighted_score = round(weighted_score, 2) if weighted_score is not None else None
+                    
 
-            # Perform your calculations (as in your original code)
+                    # Accumulate total weighted score and total weight for all assessment types
+                    if weighted_score is not None:
+                        total_weighted_score += weighted_score
+                        total_weight += weight_input
 
-            quarterly_assessment = request.POST.get(f"qa_total_{student.id}")
-            max_quarterly_assessment = request.POST.get(f"total_max_quarterly")  # Change this to the actual maximum score
-                
-            weight_input_quarterly = float(request.POST.get(f"quarterly_assessment_weight"))  # Change this to the actual weight for quarterly assessments
-            total_score_quarterly += float(quarterly_assessment) if quarterly_assessment.isnumeric() else 0
-            total_max_score_quarterly += float(max_quarterly_assessment) if max_quarterly_assessment.isnumeric() else 0
 
-            if total_max_score_written > 0:
-                percentage_score_written = round((total_score_written / total_max_score_written) * 100, 2)
+                    scores_assessment[assessmentType]['percentage_score'] = percentage_score
+                    scores_assessment[assessmentType]['total_weighted_score'] = weighted_score
+            
+                # print(f"Assessment Type: {assessmentType}")
+                # print(f"Total Score: {total_score}")
+                # print(f"Total Max Score: {total_max_score}")
+                # print(f"Percentage Score: {percentage_score}")
+                # print(f"Weighted Score: {weighted_score}")
+                # print(f"Rounded Weighted Score: {rounded_weighted_score}")
+                # print(f"Scores: {scores}")
+            # print(f"total_weighted_score: {total_weighted_score}")
+            # Calculate initial grades for the current student after processing all assessment types
+            if total_weight > 0:
+                initial_grades = total_weighted_score / 10
             else:
-                 percentage_score_written = None if total_max_score_written == 0 else 0
+                initial_grades = None  # Handle the case where total weight is 0 or not provided
+            
+            # Round off initial grades
+            rounded_initial_grades = round(initial_grades, 2) if initial_grades is not None else None
+            
+            # Calculate the transmuted grades (if needed) based on the initial grades
+            transmuted_grades = transmuted_grade(initial_grades) 
+            
+            # Round off transmuted grades
+            rounded_transmuted_grades = round(transmuted_grades, 2) if transmuted_grades is not None else None
 
-            if total_max_score_performance > 0:
-               percentage_score_performance = round((total_score_performance / total_max_score_performance) * 100, 2)
-            else:
-                 percentage_score_performance = None if total_max_score_performance == 0 else 0
+            # print(f"Student: {student.id}")
+            # print(f"Initial Grades: {initial_grades}")
+            # print(f"Transmuted Grades: {transmuted_grades}")
+            # print(f"Initial Grades: {rounded_initial_grades}")
+            # print(f"Transmuted Grades: {rounded_transmuted_grades}")
 
-            if total_max_score_quarterly > 0:
-               percentage_score_quarterly = round((total_score_quarterly / total_max_score_quarterly) * 100, 2)
-            else:
-                percentage_score_quarterly = None if total_max_score_quarterly == 0 else 0
+            grade_scores_data = {
+                    'scores_hps': scores_hps,
+                    'scores_per_assessment' : scores_assessment
+                }
+            
+            # grade_scores_json = json.dumps(grade_scores_data)
 
-            weight_written = float(weight_input_written)
-            weight_performance = float(weight_input_performance)
-            weight_quarterly = float(weight_input_quarterly)
-
-            weighted_score_written = (percentage_score_written / 100) * weight_written if percentage_score_written is not None else None
-            weighted_score_performance = (percentage_score_performance / 100) * weight_performance if percentage_score_performance is not None else None
-            weighted_score_quarterly = (percentage_score_quarterly / 100) * weight_quarterly if percentage_score_quarterly is not None else None
-
-            rounded_weighted_score_written = round(weighted_score_written, 2) if weighted_score_written is not None else None
-            rounded_weighted_score_performance = round(weighted_score_performance, 2) if weighted_score_performance is not None else None
-            rounded_weighted_score_quarterly = round(weighted_score_quarterly, 2) if weighted_score_quarterly is not None else None
-
-            if weighted_score_written is not None and weighted_score_performance is not None and weighted_score_quarterly is not None:
-                initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
-            else:
-                initial_grades = None
-            transmuted_grades = transmuted_grade(initial_grades)
-
-            if total_max_score_written > 0 or total_max_score_performance > 0 or total_max_score_quarterly > 0:
-                initial_grades = weighted_score_written + weighted_score_performance + weighted_score_quarterly
-                transmuted_grades = transmuted_grade(initial_grades)
-
-                # Rounding only if the value is not empty
-                rounded_initial_grades = round(initial_grades, 2) if initial_grades != "" else ""
-                rounded_transmuted_grades = round(transmuted_grades, 2) if transmuted_grades != "" else ""
-            else:
-                rounded_initial_grades = None
-                rounded_transmuted_grades = None
 
             # Create a new GradeScores object and populate its fields
             grade_scores = GradeScores(
                 student=student,
                 class_record=class_record,
-                scores_hps_written=scores_ww_hps,
-                scores_hps_performance=scores_pt_hps,
-                total_ww_hps=total_ww_hps,
-                total_qa_hps=total_qa_hps,
-                total_pt_hps=total_pt_hps,
-                written_works_scores=scores_written_works,
-                performance_task_scores=scores_performance_task,
                 initial_grades= rounded_initial_grades,
                 transmuted_grades= rounded_transmuted_grades,
-                total_score_written=total_score_written,
-                total_max_score_written=total_max_score_written,
-                total_score_performance=total_score_performance,
-                total_max_score_performance=total_max_score_performance,
-                total_score_quarterly=total_score_quarterly,
-                total_max_score_quarterly=total_max_score_quarterly,
-                percentage_score_written=percentage_score_written,
-                percentage_score_performance=percentage_score_performance,
-                percentage_score_quarterly=percentage_score_quarterly,
-                weighted_score_written=rounded_weighted_score_written,
-                weighted_score_performance=rounded_weighted_score_performance,
-                weighted_score_quarterly=rounded_weighted_score_quarterly,
-                weight_input_written=weight_input_written,
-                weight_input_performance=weight_input_performance,
-                weight_input_quarterly=weight_input_quarterly
+                grade_scores=grade_scores_data 
             )
 
             # Save the GradeScores object to the database
@@ -938,31 +924,62 @@ def calculate_grades(request):
     return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
 def display_classrecord(request, class_record_id=None):
-    # If class_record_id is provided, retrieve the ClassRecord object
+     # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ClassRecord, id=class_record_id)
-
+    subject_name = class_record.subject
     teacher = request.user.teacher
-    # print(request.user)
+        # print(request.user)
     teacher_id = teacher.id
-
     if teacher_id != class_record.teacher_id:
         return HttpResponseForbidden("You don't have permission to access this class record.")
-    # If class_record_id is not provided, you may want to handle this case differently
-    # For example, you can provide a list of available ClassRecord objects for the user to choose from
 
-    # Filter the GradeScores based on the retrieved ClassRecord object
+
     grade_scores = GradeScores.objects.filter(class_record=class_record)
 
+    # print(keys)
+
+            # print(grade)
+
+    subject = Subject.objects.get(name=subject_name)
+    # print(subject)
+    assessments = subject.assessment
+    # print(assessments)
+
+    assessment_types = list(assessments.keys())
+    processed_types = []
+    for assessment_type in assessment_types:
+        processed_type = assessment_type.replace(' ', '-').lower()
+        processed_types.append(processed_type)
+
+    # print(processed_types
+    assessment_type_processed = None
+
     context = {
-        'class_record': class_record,
-        'grade_scores': grade_scores,
-    }
+            'class_record': class_record,
+            'gradescores': grade_scores,
+            'assessment_types': assessment_types,
+            'assessment_values': list(assessments.values()),
+        }
 
     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', context)
     
+# def process_assessment_Type(request):
+#     if request.method == 'POST':
+#         assessment_type_processed = request.POST.get('assessmentTypeProcessed')
+#         # Process the assessment type
+
+#         # Redirect to the next view with the assessment type as a URL parameter
+#         return redirect('get_assessment_type', assessment_type_processed=assessment_type_processed)
+#     else:
+#         return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    
+# def get_assessment_type(request, assessment_type_processed):
+#     print(f"assessdaw: {assessment_type_processed}")
+
+#     return render(request, 'teacher_template/adviserTeacher/display_classrecord.html', {'assessment_type_processed': assessment_type_processed})
 
 
-
+    
 def view_classrecord(request):
     
     # Assuming the user is logged in
@@ -1097,10 +1114,13 @@ def toggle_class_type(request):
 
 def sf9(request):
     # Query all students from the database
-    all_students = Student.objects.all()
-
+    teacher = request.user.teacher
+    teacher_id = teacher.id
+    students = Student.objects.filter(
+        Q(class_type__contains={teacher_id: "Advisory Class"}) | Q(class_type__contains={teacher_id: "Advisory Class, Subject Class"}) 
+    )
     # Pass the queryset to the template context
-    context = {'all_students': all_students}
+    context = {'all_students': students}
 
     # Render the template with the context
     return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
@@ -1309,6 +1329,7 @@ def student_list_for_advisory(request):
         # Fetch advisory classes based on teacher, grade, and section
         advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
 
+
         unique_keys = set()  # Initialize an empty set here
 
         if advisory_classes.exists():
@@ -1323,6 +1344,7 @@ def student_list_for_advisory(request):
         else:
             print("No AdvisoryClass objects found for the specified criteria")
 
+      
         # Filter students based on the class type
         students = Student.objects.filter(grade=grade, section=section)
         students_filtered = []
@@ -1481,11 +1503,13 @@ def student_list_for_advisory(request):
             teacher = user.teacher
 
             # Filter class records based on the teacher
-            class_records = ClassRecord.objects.filter(teacher=teacher)
+            class_records = AdvisoryClass.objects.filter(teacher=teacher)
 
             # Keep track of unique grade and section combinations
             unique_combinations = set()
             unique_class_records = []
+
+            print(unique_class_records)
 
             # Iterate through class records to filter out duplicates
             for record in class_records:
@@ -1495,6 +1519,8 @@ def student_list_for_advisory(request):
                     unique_combinations.add(combination)
                     unique_class_records.append(record)
 
+            
+        
 
         context = {
             'grade': grade,
@@ -1674,6 +1700,21 @@ def delete_month(request):
                 try:
                     record = AttendanceRecord.objects.get(student=student)
                     if month in record.attendance_record:
+                        # Extract the attendance data for the month being deleted
+                        attendance_data = record.attendance_record[month]
+
+                        # Update total school days, days present, and days absent if 'Total' exists
+                        if 'TOTAL' in record.attendance_record:
+                            total_school_days = attendance_data.get('No. of School Days', 0)
+                            total_days_present = attendance_data.get('No. of Days Present', 0)
+                            total_days_absent = attendance_data.get('No. of Days Absent', 0)
+
+                            # Subtract the attendance data for the deleted month from the total records
+                            record.attendance_record['TOTAL']['Total School Days'] -= total_school_days
+                            record.attendance_record['TOTAL']['Total Days Present'] -= total_days_present
+                            record.attendance_record['TOTAL']['Total Days Absent'] -= total_days_absent
+
+                        # Delete the attendance record for the month
                         del record.attendance_record[month]
                         record.save()
                 except AttendanceRecord.DoesNotExist:
@@ -2320,22 +2361,27 @@ def update_score(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         student_name = request.POST.get('student_name')
         new_score = request.POST.get('new_score')
-        column_index = int(request.POST.get('column_index'))
-        section_id = request.POST.get('section_id')  # Added section_id for differentiation
         class_record_id = request.POST.get('class_record_id')
-        scores_hps = request.POST.get('scores_hps')
+        score_data = request.POST.getlist('scoreData[]')  # Changed to match AJAX data key
+        assessment_type = request.POST.get('assessment_type')
+        
+
+        print(f"new_score {new_score}")
+        print(f"classrecordid: {class_record_id}")
+        print(score_data)
+        print(assessment_type)
 
 
          # Assuming you want to filter students by both name and teacher
         students = Student.objects.filter(name=student_name)
-
+        scores_per_assessment = "scores_per_assessment"
         # Ensure there is exactly one matching student
         if students.count() == 1:
             student = students.first()
         else:
             # Handle the case where there are zero or multiple matching students
-            print(f"Error: Found {students.count()} students with the name '{student_name}' for the logged-in teacher.")
-            # Add your error handling logic here, e.g., returning an error response.
+            # print(f"Error: Found {students.count()} students with the name '{student_name}' for the logged-in teacher.")
+            # # Add your error handling logic here, e.g., returning an error response.
             return JsonResponse({'success': False, 'error': 'Error in finding the student'})
 
         try:
@@ -2345,219 +2391,100 @@ def update_score(request):
                 class_record__id=class_record_id
             )
 
-            print("Grade Score Found:", grade_score)  # Add this line for debugging
-
         except GradeScores.DoesNotExist:
             print(f"Not Found: /update_score/")
             return HttpResponse("GradeScores not found for the given student and class record ID.", status=404)
+        
+        scores_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['SCORES']
 
+        # Check if any score exceeds the corresponding scores_hps value
 
-        if section_id == 'written_works':
-            scores_field = 'written_works_scores'
-            hps_field = 'scores_hps_written'  # Adjust with your actual field name for HPS
-            total_field = 'total_score_written'
-            percentage_field = 'percentage_score_written'
-            weighted_field = 'weighted_score_written'
-            max_field = 'total_ww_hps'  # Adjust with your actual field name for max score
-            weight_field = 'weight_input_written'  # Adjust with your actual field name for weight
-        elif section_id == 'performance_task':
-            scores_field = 'performance_task_scores'
-            hps_field = 'scores_hps_performance'  # Adjust with your actual field name for HPS
-            total_field = 'total_score_performance'
-            percentage_field = 'percentage_score_performance'
-            weighted_field = 'weighted_score_performance'
-            max_field = 'total_pt_hps'  # Adjust with your actual field name for max score
-            weight_field = 'weight_input_performance'  # Adjust with your actual field name for weight
-        elif section_id == 'quarterly_assessment':
-            scores_field = 'quarterly_assessment_scores'
-            hps_field = 'scores_hps_quarterly'  # Adjust with your actual field name for HPS
-            total_field = 'total_score_quarterly'
-            percentage_field = 'percentage_score_quarterly'
-            weighted_field = 'weighted_score_quarterly'
-            max_field = 'total_qa_hps'  # Adjust with your actual field name for max score
-            weight_field = 'weight_input_quarterly'  # Adjust with your actual field name for weight
-        else:
-            return JsonResponse({'error': 'Invalid section_id'})
+        previous_scores = grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][:]
 
-
-       # Ensure scores_list has enough elements, initialize with zeros if necessary
-        scores_list = getattr(grade_score, scores_field, [0] * (column_index + 1))
-
-        # Update the specific value in the scores list
-        if section_id == 'written_works':
-            hps_scores_list = getattr(grade_score, hps_field, [0] * (column_index + 1))
-            hps_written = hps_scores_list[column_index]
-
-            if new_score and new_score.strip():
-                try:
-                    new_score_numeric = int(float(new_score))
-                except ValueError:
-                    # Set the score to an empty string if it's not a valid numeric value
-                    setattr(grade_score, scores_field, [0] * (column_index + 1))
-                    return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the written score.'})
-
-                # Check if hps_written is a valid numeric value
-                try:
-                    hps_written_numeric = int(float(hps_written))
-                except ValueError:
-                    # Handle the case where hps_written is not a valid numeric value
-                    return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score. Please provide a valid numeric value.'})
-
-                if new_score_numeric > hps_written_numeric:
-                    # Set the score to an empty string if the condition is met
-                    setattr(grade_score, scores_field, [0] * (column_index + 1))
-                    return JsonResponse({'success': False, 'error': 'Invalid score. Written score cannot exceed HPS score.'})
-        # Add similar logic for performance_task
-
-        elif section_id == 'performance_task':
-            hps_scores_list = getattr(grade_score, 'scores_hps_performance', [0] * (column_index + 1))
-            hps_performance = hps_scores_list[column_index]
-
-            if new_score and new_score.strip():
-                try:
-                    new_score_numeric = int(float(new_score))
-                except ValueError:
-                    # Set the score to an empty string if it's not a valid numeric value
-                    setattr(grade_score, scores_field, [0] * (column_index + 1))
-                    return JsonResponse({'success': False, 'error': 'Invalid score. Please enter a numeric value for the performance task score.'})
-
-                # Check if hps_performance is a valid numeric value
-                try:
-                    hps_performance_numeric = int(float(hps_performance))
-                except ValueError:
-                    # Handle the case where hps_performance is not a valid numeric value
-                    return JsonResponse({'success': False, 'error': 'Invalid Highest Possible score score. Please provide a valid numeric value.'})
-
-                if new_score_numeric > hps_performance_numeric:
-                    # Set the score to an empty string if the condition is met
-                    setattr(grade_score, scores_field, [0] * (column_index + 1))
-                    return JsonResponse({'success': False, 'error': 'Invalid score. Performance task score cannot exceed HPS score.'})
-
-                # Add similar logic for quarterly_assessment
-        elif section_id == 'quarterly_assessment':
-            hps_quarterly = getattr(grade_score, max_field)
-
-            if new_score and new_score.strip():
-                try:
-                    total_quarterly_numeric = int(float(new_score))
-                except ValueError:
-                    # Set the score to an empty string if it's not a valid numeric value
-                    setattr(grade_score, total_field, 0)
-                    return JsonResponse({'success': False, 'error': 'Invalid total score. Please enter a numeric value for the quarterly assessment score.'})
-
-                if total_quarterly_numeric > hps_quarterly:
-                    print('Debug: new_score:', new_score)
-                    print('Debug: total_quarterly_numeric:', total_quarterly_numeric)
-                    print('Debug: hps_quarterly:', hps_quarterly)
-                    # Set the score to an empty string if the condition is met
-                    setattr(grade_score, total_field, 0)
-                    return JsonResponse({'success': False, 'error': 'Invalid total score. Quarterly assessment score cannot exceed HPS score.'})
-                              
-                              
-                                # Update the specific value in the scores list
-        if new_score != '' and new_score.strip():  # Check if new_score is not an empty string or contains only whitespace
-            scores_list[column_index] = int(float(new_score))
-        else:
-            scores_list[column_index] = ''  # Or any default value you prefer
-        # Or any default value you prefer
-
-        # Save the updated scores list to the model
-        setattr(grade_score, scores_field, scores_list)
-
-
-        scores_list = [int(score) if score and score != '' else 0 for score in scores_list]
-
-        if section_id == 'quarterly_assessment':
-            # For quarterly assessment, total_score is directly updated
-            total_score = int(float(new_score))
-            max_value = getattr(grade_score, max_field)
-            percentage_score = (total_score / max_value) * 100 if max_value is not None and max_value != 0 else 0
-            weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
-        else:
-    # For other sections, calculate total_score from scores_list
-            total_score = sum(scores_list)
-            max_field_value = getattr(grade_score, max_field)
-
-            # Check if max_field_value is None before performing division
-            if max_field_value is not None and max_field_value != 0:
-                percentage_score = (total_score / max_field_value) * 100
-                weighted_score = (percentage_score / 100) * getattr(grade_score, weight_field)
-            else:
-                # Handle the case where max_field_value is None (set a default value or handle it as needed)
-                percentage_score = 0
-                weighted_score = 0
+        for idx, score in enumerate(score_data):
+            current_score = grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx]
+            if not (current_score.isdigit() or current_score == ''):  # Check if score is not a numerical value at the current index
+                grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx] = ''
+                grade_score.save()
+                return JsonResponse({'success': False, 'error': 'Invalid score: Please enter a numerical value'})
             
+            if score.isdigit() and scores_hps_data[idx].isdigit():  # Only check if both are numeric
+                if int(score) > int(scores_hps_data[idx]):
+                    grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx] = ''
+                    grade_score.save()
+                    return JsonResponse({'success': False, 'error': 'Invalid score: Exceeds highest possible score'})
+                
+            elif scores_hps_data[idx] == '' and score_data[idx] != '':   # Check if the corresponding scores_hps_data entry is an empty string
+                print("hps", scores_hps_data)
+                print("Debug: scores_hps_data at index", idx, "is empty string.")
+                grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'][idx] = ''
+                grade_score.save()
+                return JsonResponse({'success': False, 'error': 'Invalid score: HPS score is empty'})
+  
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['scores'] = score_data
+        total_score_data = sum(int(score) for score in score_data if score.isdigit())
+        total_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['TOTAL_HPS']
+        weight_input = float(grade_score.grade_scores['scores_hps'][assessment_type]['WEIGHT'])
 
-        # Log the calculated values
-        print("Total Score:", total_score)
-        print("Percentage Score:", percentage_score)
-        print("Weighted Score:", weighted_score)
-        print(scores_hps)
+        print(total_hps_data)
+        print(weight_input)
 
-        # Set the calculated values to the model fields
-        setattr(grade_score, total_field, int(float(total_score)))
-        setattr(grade_score, percentage_field, round(percentage_score, 2))
-        setattr(grade_score, weighted_field, round(weighted_score,2))
-
-        
-        print(scores_list)
-        print(total_field)
-        grade_score.save()
-        # Return updated data as JSON response
-        initial_grade = (
-            (getattr(grade_score, 'weighted_score_written', 0) or 0) +
-            (getattr(grade_score, 'weighted_score_performance', 0) or 0) +
-            (getattr(grade_score, 'weighted_score_quarterly', 0) or 0)
-        )
-        initial_grade = round(initial_grade, 2)
-
-        transmuted_grades = transmuted_grade(initial_grade)
-
-        # Log the initial grade
-        print("Initial Grade:", initial_grade)
-        print("transmuted_grade:", transmuted_grades)
-
-        if section_id == 'quarterly_assessment':
-            scores_hps_value = None  # or any other default value for quarterly assessment
+        total_hps_data = float(total_hps_data)
+        # Calculate percentage score
+        if total_hps_data != 0:
+            percentage_score_data = round((total_score_data / total_hps_data) * 100, 2)
         else:
-            scores_hps_value = getattr(grade_score, hps_field)
+            percentage_score_data = None
 
-        # Set the calculated initial grade to the model field
-        setattr(grade_score, 'initial_grades', initial_grade)
-        setattr(grade_score, 'transmuted_grades', transmuted_grades)
-        grade_score.save()
+        print(percentage_score_data)
 
-        class_record = grade_score.class_record
+        if percentage_score_data is not None:
+            total_weighted_score = round((percentage_score_data / 100) * weight_input, 2)
+        else:
+            total_weighted_score = None
 
-        # Save the changes to ClassRecord
-        class_record.save()
+        print(total_weighted_score)
+        # Store the total score in grade_score
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['total_score'] = total_score_data
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['percentage_score'] = percentage_score_data
+        grade_score.grade_scores[scores_per_assessment][assessment_type]['total_weighted_score'] = total_weighted_score
 
-        # Return updated data as JSON response
-        response_data = {
-            'success': True,
-            'total_score': getattr(grade_score, total_field),
-            'percentage_score': getattr(grade_score, percentage_field),
-            'weighted_score': getattr(grade_score, weighted_field),
-            'initial_grade': initial_grade,  # Add initial grade to the response
-            'scores_hps': scores_hps_value,
-        }
-        
-        
+        assessments = grade_score.grade_scores[scores_per_assessment].keys()
+
+        # Compute initial grades by summing total_weighted_score of each assessment
+        initial_grades = sum(
+            float(grade_score.grade_scores[scores_per_assessment][assmt_type]['total_weighted_score'] or 0)
+            for assmt_type in assessments
+        )
+
+        print(initial_grades)
+        transmuted_grades = transmuted_grade(initial_grades)
+
+        grade_score.initial_grades = initial_grades
+        grade_score.transmuted_grades = transmuted_grades
+
+        try:
+            grade_score.save()
+            print("Grade score saved successfully!")
+        except Exception as e:
+            print("Error saving grade score:", e)
+
+        response_data = {'success': True}
+
         return JsonResponse(response_data)
-
-
-    return JsonResponse({'error': 'Invalid request'})
+    else:
+        return JsonResponse({'error': 'Invalid request'})
 
 
 def update_highest_possible_scores(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         class_record_id = request.POST.get('class_record_id')
-        section_id = request.POST.get('section_id')
         new_hps_data = request.POST.getlist('new_hps_data[]')
+        assessment_type = request.POST.get('assessment_type')
 
-        print("Request POST Data:", request.POST)
         print("Class Record ID:", class_record_id)
-        print(section_id)
+        print(new_hps_data)
+        print(assessment_type)
 
         try:
             # Retrieve GradeScores objects based on the given class record id
@@ -2565,37 +2492,26 @@ def update_highest_possible_scores(request):
         except GradeScores.DoesNotExist:
             return JsonResponse({'error': 'GradeScores not found for the given class record ID.'}, status=404)
 
-        # Determine the field to update based on the section_id
-        if section_id == 'written_works':
-            hps_field = 'scores_hps_written'
-            total_hps_field = 'total_ww_hps'
-        elif section_id == 'performance_task':
-            hps_field = 'scores_hps_performance'
-            total_hps_field = 'total_pt_hps'
-        elif section_id == 'quarterly_assessment':
-            hps_field = 'scores_hps_quarterly'
-            total_hps_field = 'total_qa_hps'
-        else:
-            return JsonResponse({'error': 'Invalid section_id'})
-
         # Update the highest possible scores data for each GradeScores object
         for grade_score in grade_scores:
-            # Convert the new_hps_data to a list of integers, handling empty strings
-            new_hps_list = [int(value) if value.strip() != '' else '' for value in new_hps_data]
+            # Update scores_hps field with new_hps_data
 
-            # Update the scores_hps field with the new list
-            setattr(grade_score, hps_field, new_hps_list)
+            if not all(value.isdigit() or value == '' for value in new_hps_data):
+                print("Debug: Values in new_hps_data:", new_hps_data)
+                return JsonResponse({'success': False, 'error': 'Invalid highest possible scores data. Please provide valid numeric values.'})
+
+            grade_score.grade_scores['scores_hps'][assessment_type]['SCORES'] = new_hps_data
+            total_hps = sum(int(value) for value in new_hps_data if value.isdigit())
+
+
+            grade_score.grade_scores['scores_hps'][assessment_type]['TOTAL_HPS'] = total_hps
             grade_score.save()
 
-            # Update the total_hps_field
-            total_hps_value = sum([int(value) for value in new_hps_list if isinstance(value, int) or (isinstance(value, str) and value.isdigit())])
-            setattr(grade_score, total_hps_field, total_hps_value)
-            grade_score.save()
+            response_data = {'success': True}
 
-        return JsonResponse({'success': True})
+        return JsonResponse(response_data)
 
-    return JsonResponse({'error': 'Invalid request'})
-
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def update_total_max_quarterly(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -2762,6 +2678,9 @@ def process_row(row):
     return row
 
 def divide_scores(score_list):
+    # Convert all values to string
+    score_list = [str(value) if value is not None else '' for value in score_list]
+
     written_works_scores = score_list[:10]
     
     # Check if there are enough elements in the score_list for written works
@@ -2771,9 +2690,9 @@ def divide_scores(score_list):
         weighted_score_written = score_list[12]
     else:
         # Set default values if there are not enough elements for written works
-        total_scores_written = None
-        percentage_score_written = None
-        weighted_score_written = None
+        total_scores_written = ''
+        percentage_score_written = ''
+        weighted_score_written = ''
     
     written_works_dict = {
         "written_works_scores": written_works_scores,
@@ -2782,6 +2701,7 @@ def divide_scores(score_list):
         "weighted_score_written": weighted_score_written
     }
 
+    
     # Extract Performance Task scores and related values
     performance_task_scores = score_list[13:23]
     
@@ -2792,9 +2712,9 @@ def divide_scores(score_list):
         weighted_score_performance = score_list[25]
     else:
         # Set default values if there are not enough elements for performance task
-        total_score_performance = None
-        percentage_score_performance = None
-        weighted_score_performance = None
+        total_score_performance = ''
+        percentage_score_performance = ''
+        weighted_score_performance = ''
     
     performance_task_dict = {
         "performance_task_scores": performance_task_scores,
@@ -2803,15 +2723,25 @@ def divide_scores(score_list):
         "weighted_score_performance": weighted_score_performance
     }
 
+    if len(score_list) >= 27:
+        quarterly_assessment_scores = [score_list[26]] + [''] * 9
+    else:
+        quarterly_assessment_scores = [''] * 10
+
     # Check if there are enough elements in the score_list for Quarterly Assessment
     if len(score_list) >= 29:
         quarterly_assessment = {
+            "quarterly_assessment_scores": quarterly_assessment_scores,
             "total_score_quarterly": score_list[26],
             "percentage_score_quarterly": score_list[27],
             "weighted_score_quarterly": score_list[28]
         }
     else:
         quarterly_assessment = None
+
+    print(written_works_dict)
+    print(performance_task_dict)
+    print(quarterly_assessment)
     
     # Check if there are enough elements in the score_list for Initial Grade
     if len(score_list) >= 30:
@@ -2844,6 +2774,7 @@ def class_record_details(excel_file, sheet_name):
 
     for row in sheet.iter_rows():
         row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
+        # print("Row values:", row_values)
         
         if "TEACHER:" in row_values:
             grade_section = row_values[2].split('-')
@@ -2879,6 +2810,7 @@ def class_record_details(excel_file, sheet_name):
         if teacher_row and school_row and region_row:
             break
 
+
     return teacher_row, school_row, region_row
 
 
@@ -2889,40 +2821,49 @@ def divide_hps(row):
         hps_performance = row[13:26]
         hps_quarterly = row[26:]
 
+        hps_written_works = [str(value) if value is not None else '' for value in hps_written_works]
+        hps_performance = [str(value) if value is not None else '' for value in hps_performance]
+        hps_quarterly = [str(value) if value is not None else '' for value in hps_quarterly]
+
         # Extract values for hps_written_works
         scores_hps_written = hps_written_works[:10]
-        total_ww_hps = hps_written_works[10] if len(hps_written_works) > 10 else None
-        percentage_hps_written = hps_written_works[11] if len(hps_written_works) > 11 else None
-        weight_input_written = hps_written_works[12] if len(hps_written_works) > 12 else None
+        total_ww_hps = hps_written_works[10] if len(hps_written_works) > 10 else ''
+        percentage_hps_written = hps_written_works[11] if len(hps_written_works) > 11 else ''
+        weight_input_written = hps_written_works[12] if len(hps_written_works) > 12 else ''
 
         # Extract values for hps_performance
         scores_hps_performance = hps_performance[:10]
-        total_pt_hps = hps_performance[10] if len(hps_performance) > 10 else None
-        percentage_hps_performance = hps_performance[11] if len(hps_performance) > 11 else None
-        weight_input_performance = hps_performance[12] if len(hps_performance) > 12 else None
+        total_pt_hps = hps_performance[10] if len(hps_performance) > 10 else ''
+        percentage_hps_performance = hps_performance[11] if len(hps_performance) > 11 else ''
+        weight_input_performance = hps_performance[12] if len(hps_performance) > 12 else ''
 
         # Extract values for hps_quarterly
-        total_qa_hps = hps_quarterly[0] if len(hps_quarterly) > 0 else None
-        percentage_hps_quarterly = hps_quarterly[1] if len(hps_quarterly) > 1 else None
-        weight_input_quarterly = hps_quarterly[2] if len(hps_quarterly) > 2 else None
+        scores_hps_quarterly = [hps_quarterly[0]] + [''] * 9
+        total_qa_hps = hps_quarterly[0] if len(hps_quarterly) > 0 else ''
+        percentage_hps_quarterly = hps_quarterly[1] if len(hps_quarterly) > 1 else ''
+        weight_input_quarterly = hps_quarterly[2] if len(hps_quarterly) > 2 else ''
+
+        print(float(weight_input_written) * 100)
+        print(weight_input_performance)
 
         return {
-            "hps_written_works": {
-                "scores_hps_written": scores_hps_written,
-                "total_ww_hps": total_ww_hps,
+            "written-works": {
+                "SCORES": scores_hps_written,
+                "TOTAL_HPS": total_ww_hps,
                 "percentage_hps_written": percentage_hps_written,
-                "weight_input_written": weight_input_written
+                "WEIGHT": int(float(weight_input_written) * 100)
             },
-            "hps_performance": {
-                "scores_hps_performance": scores_hps_performance,
-                "total_pt_hps": total_pt_hps,
-                "percentage_hps_performance": percentage_hps_performance,
-                "weight_input_performance": weight_input_performance
+            "performance-task": {
+               "SCORES": scores_hps_performance,
+                "TOTAL_HPS": total_pt_hps,
+                # "percentage_hps_performance": percentage_hps_performance,
+                "WEIGHT": int(float(weight_input_performance) * 100)
             },
-            "hps_quarterly": {
-                "total_qa_hps": total_qa_hps,
-                "percentage_hps_quarterly": percentage_hps_quarterly,
-                "weight_input_quarterly": weight_input_quarterly
+            "quarterly-assessment": {
+                "SCORES": scores_hps_quarterly,
+                 "TOTAL_HPS": total_qa_hps,
+                # "percentage_hps_quarterly": percentage_hps_quarterly,
+                "WEIGHT": (int(float(weight_input_quarterly) * 100))
             }
         }
 
@@ -3014,108 +2955,74 @@ def map_data_to_model(json_data, teacher_id, request):
     # Initialize messages list
     messages_list = []
     success = True
-    # try:
-        # Extract details from JSON
+
+    # Extract details from JSON
     teacher_info = json_data['details']['teacher_info']
     students_scores = json_data['students_scores']
     hps_class_record = json_data['hps_class_record']['HIGHEST POSSIBLE SCORE']
-    
 
-        # Create ClassRecord instance
+    # Create ClassRecord instance
     class_record_instance = ClassRecord.objects.create(
-            name=f"{teacher_info['grade']} - {teacher_info['section']} - {teacher_info['subject']} - {teacher_info['quarters']}",
-            grade=teacher_info['grade'],
-            section=teacher_info['section'],
-            subject=teacher_info['subject'],
-            quarters=teacher_info['quarters'],
-            teacher_id=teacher_id
+        name=f"{teacher_info['grade']} - {teacher_info['section']} - {teacher_info['subject']} - {teacher_info['quarters']}",
+        grade=teacher_info['grade'],
+        section=teacher_info['section'],
+        subject=teacher_info['subject'],
+        quarters=teacher_info['quarters'],
+        teacher_id=teacher_id
+    )
+
+    # Iterate over student names in JSON data
+    for student_name, student_data in students_scores.items():
+        # Find the student with the same name and teacher ID
+        try:
+            student = Student.objects.get(name=student_name)
+        except Student.DoesNotExist:
+            messages_list.append(('error', f"Student '{student_name}' does not exist in the database for the provided criteria."))
+            continue  # Skip this student if not found
+        
+        total_weighted_score_written = student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
+        if total_weighted_score_written and isinstance(total_weighted_score_written, (int, float)):
+            total_weighted_score_written *= 100
+        # Prepare grade_scores data
+        grade_scores_data = {
+            "scores_hps": hps_class_record,
+
+            "scores_per_assessment": {  
+                "written-works": {
+                    "scores": student_data.get('WRITTEN WORKS', {}).get('written_works_scores', []),
+                    "total_score": student_data.get('WRITTEN WORKS', {}).get('total_scores_written', ""),
+                    "total_percentage_score": student_data.get('WRITTEN WORKS', {}).get('percentage_score_written', "None"),
+                    "total_weighted_score": student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
+                },
+                "performance-task": {
+                     "scores": student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', []),
+                    "total_score": student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', "None"),
+                    "total_percentage_score": student_data.get('PERFORMANCE TASK', {}).get('percentage_score_performance', ""),
+                    "total_weighted_score": student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', "")
+
+                },
+                "quarterly-assessment": {
+                     "scores": student_data.get('QUARTERLY ASSESSMENT', {}).get('quarterly_assessment_scores', []),
+                    "total_score": student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', ""),
+                     "total_percentage_score": student_data.get('QUARTERLY ASSESSMENT', {}).get('percentage_score_quarterly', ""),
+                    "total_weighted_score": student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
+                }
+            },
+        }
+
+        # print("gradescoredata",grade_scores_data)
+
+        # Convert the dictionary to JSON and save it
+        GradeScores.objects.create(
+            student=student,
+            class_record=class_record_instance,
+            initial_grades=student_data.get('INITIAL GRADE', {}).get('initial_grades', None),
+            transmuted_grades=student_data.get('QUARTERLY GRADE', {}).get('transmuted_grades', None),
+            grade_scores=grade_scores_data
         )
 
-        # Iterate over student names in JSON data
-    for student_name, student_data in students_scores.items():
-            # Find the student with the same name and teacher ID
-            try:
-                student = Student.objects.get(name=student_name)
-            except Student.DoesNotExist:
-                messages_list.append(('error', f"Student '{student_name}' does not exist in the database for the provided criteria."))
-                continue  # Skip this student if not found
-
-            # try:
-                # Function to replace None values with empty strings in a list
-            def replace_none_with_empty(lst):
-                    return ["" if item is None else item for item in lst]
-            
-            total_ww_hps = hps_class_record['hps_written_works'].get('total_ww_hps', "")
-            total_pt_hps = hps_class_record['hps_performance'].get('total_pt_hps', "")
-            total_qa_hps = hps_class_record['hps_quarterly'].get('total_qa_hps', "")
-            scores_hps_written = replace_none_with_empty(hps_class_record['hps_written_works'].get('scores_hps_written', []))
-            scores_hps_performance = replace_none_with_empty(hps_class_record['hps_performance'].get('scores_hps_performance', []))
-            written_works_scores = replace_none_with_empty(student_data.get('WRITTEN WORKS', {}).get('written_works_scores', []))
-            performance_task_scores = replace_none_with_empty(student_data.get('PERFORMANCE TASK', {}).get('performance_task_scores', []))
-            initial_grades = student_data.get('INITIAL GRADE', {}).get('initial_grades', "")
-            transmuted_grades = student_data.get('QUARTERLY GRADE', {}).get('transmuted_grades', "")
-            total_score_written = student_data.get('WRITTEN WORKS', {}).get('total_scores_written', "")
-            total_score_performance = student_data.get('PERFORMANCE TASK', {}).get('total_score_performance', "")
-            total_score_quarterly = student_data.get('QUARTERLY ASSESSMENT', {}).get('total_score_quarterly', "")
-            percentage_score_written = student_data.get('WRITTEN WORKS', {}).get('percentage_score_written', "")
-            percentage_score_performance = student_data.get('PERFORMANCE TASK', {}).get('percentage_score_performance', "")
-            percentage_score_quarterly = student_data.get('QUARTERLY ASSESSMENT', {}).get('percentage_score_quarterly', "")
-            weighted_score_written = student_data.get('WRITTEN WORKS', {}).get('weighted_score_written', "")
-            weighted_score_performance = student_data.get('PERFORMANCE TASK', {}).get('weighted_score_performance', "")
-            weighted_score_quarterly = student_data.get('QUARTERLY ASSESSMENT', {}).get('weighted_score_quarterly', "")
-
-            # total_ww_hps = "" if total_ww_hps is None else total_ww_hps
-            # total_pt_hps = "" if total_pt_hps is None else total_pt_hps
-            # total_qa_hps = "" if total_qa_hps is None else total_qa_hps
-            # initial_grades = "" if initial_grades is None else initial_grades
-            # transmuted_grades = "" if transmuted_grades is None else transmuted_grades
-            # total_score_written = "" if total_score_written is None else total_score_written
-            # total_score_performance = "" if total_score_performance is None else total_score_performance
-            # total_score_quarterly = "" if total_score_quarterly is None else total_score_quarterly
-            # percentage_score_written = "" if percentage_score_written is None else percentage_score_written
-            # percentage_score_performance = "" if percentage_score_performance is None else percentage_score_performance
-            # percentage_score_quarterly = "" if percentage_score_quarterly is None else percentage_score_quarterly
-            # weighted_score_written = "" if weighted_score_written is None else weighted_score_written
-            # weighted_score_performance = "" if weighted_score_performance is None else weighted_score_performance
-            # weighted_score_quarterly = "" if weighted_score_quarterly is None else weighted_score_quarterly
-
-                # Now, when saving GradeScores instance, preprocess the lists
-            GradeScores.objects.create(
-                    student=student,
-                    class_record=class_record_instance,
-                    scores_hps_written=scores_hps_written,
-                    scores_hps_performance=scores_hps_performance,
-                    total_ww_hps=total_ww_hps,
-                    total_pt_hps=total_pt_hps,
-                    total_qa_hps=total_qa_hps,
-                    written_works_scores=written_works_scores,
-                    performance_task_scores=performance_task_scores,
-                    initial_grades=initial_grades,
-                    transmuted_grades=transmuted_grades,
-                    total_score_written=total_score_written,
-                    total_score_performance=total_score_performance,
-                    total_score_quarterly=total_score_quarterly,
-                    percentage_score_written=percentage_score_written,
-                    percentage_score_performance=percentage_score_performance,
-                    percentage_score_quarterly=percentage_score_quarterly,
-                    weight_input_written=int(hps_class_record.get('hps_written_works', {}).get('weight_input_written', 0) * 100),
-                    weight_input_performance=int(hps_class_record.get('hps_performance', {}).get('weight_input_performance', 0) * 100),
-                    weight_input_quarterly=int(hps_class_record.get('hps_quarterly', {}).get('weight_input_quarterly', 0) * 100),
-                    weighted_score_written=weighted_score_written,
-                    weighted_score_performance=weighted_score_performance,
-                    weighted_score_quarterly=weighted_score_quarterly
-                )
-            # except Exception as e:
-            #     messages_list.append(('error', f"Error occurs in student '{student_name}': {e}"))
-
-        # Add success message
     messages_list.append(('success', 'Class record uploaded successfully.'))
 
-    # except Exception as e:
-    #     messages_list.append(('error', f"Error code: {e}"))
-    #     success = False
-
-    # Loop through messages list and add messages to request
     for message_type, message_text in messages_list:
         if message_type == 'success':
             messages.success(request, message_text)
@@ -3123,7 +3030,6 @@ def map_data_to_model(json_data, teacher_id, request):
             messages.error(request, message_text)
 
     return success
-
 
 @login_required
 @require_POST
@@ -3136,6 +3042,7 @@ def class_record_upload(request):
 
             # Process each row in class_record_data
         class_record_data_scores = [process_row(row) for row in class_record_data]
+
       
             # Create a dictionary where student's name is the key and the rest of the row values are stored as a list
         class_record_data_scores_with_names = {}
@@ -3157,7 +3064,6 @@ def class_record_upload(request):
                     student_info.update(divide_scores(cleaned_row))
                     class_record_data_scores_with_names[student_name] = student_info
 
-
             # Remove the first student from the dictionary
         if class_record_data_scores_with_names:
                 del class_record_data_scores_with_names[next(iter(class_record_data_scores_with_names))]
@@ -3166,6 +3072,8 @@ def class_record_upload(request):
         students_scores = class_record_data_scores_with_names
 
         teacher_info, school_info, region_info = class_record_details(excel_file, sheet_name)
+
+        # print(teacher_info, school_info)
             
         highest_possible_scores = find_highest_possible_scores(excel_file, sheet_name)
         highest_possible_scores_with_label = {}
@@ -3186,6 +3094,8 @@ def class_record_upload(request):
                 "students_scores": students_scores,
                 "hps_class_record": hps_class_record
         }
+
+        # print(extracted_class_record)
             
             # Save extracted_class_record as a JSON file
         json_filename = 'result.json'
@@ -3819,3 +3729,550 @@ def update_markings(request):
         return JsonResponse({'status': 'success'})
     else:
         return JsonResponse({'status': 'error'}, status=400)
+
+
+@login_required
+@require_POST
+def sf2_upload(request):
+    if request.method == 'POST' and 'pdf_file' in request.FILES:
+        pdf_file = request.FILES['pdf_file']
+        content = pdf_file.read()
+
+
+
+        # Set up Google Cloud Document AI client
+        project_id = "1083879771832"
+        location = "us"  # Format is "us" or "eu"
+        processor_id = "827ebb48ef18ecd"  # Create processor before running sample
+        processor_version = "pretrained-form-parser-v2.0-2022-11-10"  # Refer to https://cloud.google.com/document-ai/docs/manage-processor-versions for more information
+
+
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+            # Process the document and extract tables using Document AI
+        document = process_document_form_sample(project_id, location, processor_id, processor_version, content, "application/pdf")
+
+
+            # Extract table data
+        table_data = []
+
+
+        for page in document.pages:
+                for table in page.tables:
+                    # Extract text content of header and body rows
+                    for row in table.header_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        row_hps = "HIGHEST POSSIBLE SCORE"
+                        table_data.append(row_content)
+
+
+                    for row in table.body_rows:
+                        row_content = [layout_to_text(cell.layout, document.text) for cell in row.cells]
+                        table_data.append(row_content)
+        # # print(table_data)
+        # sf2_data_scores = [sf2_process_row(row) for row in table_data]
+        # # print(f"sf2_Data_scores {sf2_data_scores}")
+
+
+        # sf2_names = {}
+
+
+        # for row in sf2_data_scores:
+        #     if len(row) >= 2 and isinstance(row[1], str):  # Check if the row has at least two elements and the element at index 1 is a string
+        #         student_name = row[1]
+        #         student_info = {'student_name': student_name}
+               
+        #         index = 1
+        #         while index < len(row) and (row[index] == 0 or row[index] is None):
+        #             index += 1
+        #         # You can add additional processing of the row here if needed
+        #         cleaned_row = row[index:] if index < len(row) else []
+        #         sf2_names[student_name] = student_info
+        #         student_info.update(sf2_scores_pdf(cleaned_row))
+
+
+        # school_info = {}
+        # grade_info = None
+
+
+        # for row in table_data:
+        #     # print("Row values:", row)
+
+
+        #     for element in row:
+        #         # Check if the element starts with the desired string
+        #         if element.startswith("Report for the Month of"):
+        #             month_row = element.strip().split("\n")[-1]
+        #             month = month_row.split()[-1]
+        #             school_info['month'] = month
+        #             # print("Month:", month)
+
+
+        #             break  # Exit t
+
+
+        #         # if element.startswith("Month"):
+        #         #     month_part = element.split(':')[1].strip()
+        #         #     month = month_part.split()[0]  # Extract the first word, which should be the month name
+        #         #     school_info['month'] = month
+        #         #     # print("Month:", month)  # Print "Month:" along with the month value
+
+
+        #             break
+
+
+        #     if "Name of School" in row:
+        #         grade_info = {
+        #             "school_name": row[1],
+        #             "grade": row[3],
+        #             "section": row[5]
+        #         }
+        #     if school_info and grade_info:
+        #         break
+
+
+        # # print(school_info)
+
+
+        # # print(table_data)
+        # # print(f"sf2_name {sf2_names}")
+
+
+        # if sf2_names:
+        #     keys_to_remove = list(sf2_names.keys())[1:3]  # Get keys for the next two items
+        #     for key in keys_to_remove:
+        #         del sf2_names[key]
+
+
+        # students_scores = sf2_names
+
+        # # print(f"students_score: {students_scores}")
+
+
+        # extracted_sf2 = {
+        #         "details": {
+        #             "school_info": school_info,
+        #         },
+        #         "students_scores": students_scores,
+        # }
+
+
+        # json_filename = 'result_sf3.json'
+        # json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+
+
+        #     # Ensure the directory exists, if not create it
+        # os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
+
+        # with open(json_path, 'w') as json_file:
+        #         json.dump(extracted_sf2, json_file, indent=4)  
+           
+        #     # Map the loaded JSON data to the model
+        # success = sf2_map_data_to_model_pdf(extracted_sf2, request.user.teacher.id, request)  # Passing request object
+        # print(success)
+        # form_fields_data = []
+
+
+        # for page in document.pages:
+        #         for field in page.form_fields:
+        #             name = layout_to_text(field.field_name, document.text).strip()
+        #             value = layout_to_text(field.field_value, document.text).strip()
+        #             form_field_data = {'name': name, 'value': value}
+        #             form_fields_data.append(form_field_data)
+
+
+        # json_data = {'table_data': table_data, 'form_fields_data': form_fields_data}
+        json_data = {'table_data': table_data}
+        json_file_path = 'document_data.json'
+        with open(json_file_path, 'w') as json_file:
+                json.dump(json_data, json_file)
+
+
+        print(f'Table data saved to {json_file_path}')
+
+
+        return render(request, 'admin_template/table_data.html', {'table_data': table_data})
+# return render(request, 'admin_template/table_data.html', {'table_data': table_data, 'form_fields_data': form_fields_data})
+
+    elif request.method == 'POST':
+        excel_file = request.FILES['excel_file']
+        sheet_name = request.POST.get('sheet_name')
+
+
+        sf2_data = sf2_read_excel_values(excel_file, sheet_name)
+
+        sf2_data_scores = [sf2_process_row(row) for row in sf2_data]
+
+        sf2_names = {}
+
+        # print(sf2_data_scores)
+
+        for row in sf2_data_scores:
+            if isinstance(row[1], str):  # Check if the element at index 1 is a string
+                student_name = row[1]
+                student_info = {'student_name': student_name}
+                
+                index = 1
+                while index < len(row) and (row[index] == 0 or row[index] is None):
+                        index += 1
+                # You can add additional processing of the row here if needed
+                cleaned_row = row[index:] if index < len(row) else []
+                sf2_names[student_name] = student_info
+                student_info.update(sf2_scores(cleaned_row))
+
+        if sf2_names:
+            del sf2_names[next(iter(sf2_names))]
+
+        students_scores = sf2_names
+
+        school_info, grade_info = sf2_class_record_details(excel_file, sheet_name)
+        
+        # print(f"sf2_Data: {sf2_data}")
+        # print(f"sf2_data_scores {sf2_data_scores}")
+        # print(sf2_names)
+        
+        # print(school_info, grade_info)
+
+        extracted_sf2 = {
+                "details": {
+                    "grade_info": grade_info,
+                    "school_info": school_info,
+                },
+                "students_scores": students_scores,
+        }
+
+        print(extracted_sf2)
+        json_filename = 'result_sf2.json'
+        json_path = os.path.join(settings.MEDIA_ROOT, json_filename)
+
+            # Ensure the directory exists, if not create it
+        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+
+        with open(json_path, 'w') as json_file:
+                json.dump(extracted_sf2, json_file, indent=4)  
+            
+            # Map the loaded JSON data to the model
+        success = sf2_map_data_to_model(extracted_sf2, request.user.teacher.id, request)  # Passing request object
+
+        if success:
+                return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
+        else:
+                # If there's an error, return the same template with an error flag
+                return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html', {'error': True})
+        # except Exception as e:
+        #     # Add error message
+        #     messages.error(request, f'Error processing file: {e}')
+
+        return render(request, 'teacher_template/adviserTeacher/class_record_from_excel.html')
+    else:
+        # Return a response in case of non-POST requests
+        return HttpResponse("Only POST requests are allowed.")
+
+def process_document_form_sample(
+    project_id: str,
+    location: str,
+    processor_id: str,
+    processor_version: str,
+    content: bytes,
+    mime_type: str,
+) -> documentai.Document:
+    # Set up Google Cloud Document AI client
+    client_options = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    client = documentai.DocumentProcessorServiceClient(client_options=client_options)
+
+    # The full resource name of the processor version
+    name = client.processor_version_path(project_id, location, processor_id, processor_version)
+
+    # Configure the process request
+    request = documentai.ProcessRequest(
+        name=name,
+        raw_document=documentai.RawDocument(content=content, mime_type=mime_type),
+    )
+
+    # Process the document and extract tables using Document AI
+    result = client.process_document(request=request)
+
+    # Return the processed document
+    return result.document
+
+def layout_to_text(layout, document_text):
+    """
+    Extracts text content from the layout of a Document AI element.
+    """
+    text_content = ""
+    for text_segment in layout.text_anchor.text_segments:
+        start_index = text_segment.start_index
+        end_index = text_segment.end_index
+        text_content += document_text[start_index:end_index]
+    return text_content
+
+def sf2_read_excel_values(excel_file, sheet_name):
+    # Loading the workbook
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    data = []
+    start_reading = False
+
+    for row in sheet.iter_rows():
+        row_values = []
+        for cell in row[1:]:
+            cell_value = cell.value
+            row_values.append(cell_value)
+        
+        if any(cell_value is not None and cell_value != 0 for cell_value in row_values):
+            start_reading = True
+            
+            if start_reading:
+                data.append(row_values)
+
+    return data
+
+def sf2_process_row(row):
+    # Find the index of the first non-None element after index 0
+    index = 1
+    while index < len(row) and row[index] is None:
+        index += 1
+
+    # # Remove the three None values next to index 0
+    # row = [row[0]] + row[index:]
+
+    # Find the index of the last non-None element
+    last_index = len(row) - 1
+    while last_index >= 0 and row[last_index] is None:
+        last_index -= 1
+
+    # Remove all None values from the end of the list until reaching a non-None value
+    row = row[:last_index + 1]
+
+    return row
+
+def sf2_scores(score_list):
+    # Check if there are enough elements in the score_list for Absent
+    if len(score_list) >= 37:
+        absent = {"absent": score_list[36]}
+    else:
+        absent = None
+    
+    # Check if there are enough elements in the score_list for Present
+    if len(score_list) >= 39:
+        present = {"present": score_list[38]}
+    else:
+        present = None
+    
+    return {
+        "ABSENT": absent,
+        "PRESENT": present
+    }
+
+def sf2_scores_pdf(score_list):
+    student_absent = None
+    student_present = None
+
+
+        # Check if there are enough elements in the student_info list for Absent
+    if len(score_list) >= 3:  # Adjust the index as per your data structure
+        if score_list[-1] == '':
+            student_absent = {"absent": score_list[-3]}
+        else:
+            student_absent = {"absent": score_list[-2]} # Adjust the index as per your data structure
+
+
+        # Check if there are enough elements in the student_info list for Present
+    if len(score_list) >= 2:
+            if score_list[-1] == "":
+                student_present = {"present": score_list[-2]}
+            else:  # Adjust the index as per your data structure
+                student_present = {"present": score_list[-1]}  # Adjust the index as per your data structure
+
+
+    return {
+            # Assuming student name is at index 1
+            "ABSENT": student_absent,
+            "PRESENT": student_present
+        }
+
+
+def sf2_class_record_details(excel_file, sheet_name):
+    wb = load_workbook(filename=excel_file, data_only=True)
+    sheet = wb[sheet_name]
+
+    school_info = None
+    grade_info = None
+
+    for row in sheet.iter_rows():
+        row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
+        print("Row values:", row_values)  # Debug print statement
+
+        if "Report for the Month of" in row_values:
+            school_info = {
+                    "school_id": row_values[1],
+                    "school_year": row_values[3],
+                    "month": row_values[5],
+                }
+        
+        if "Name of School" in row_values:
+            grade_info = {
+                "school_name": row_values[1],
+                "grade": row_values[3],
+                "section": row_values[5]
+            }
+
+        if school_info and grade_info:
+            break
+
+    return school_info, grade_info
+
+
+
+@transaction.atomic
+def sf2_map_data_to_model(json_data, teacher_id, request):
+    # Initialize messages list
+    messages_list = []
+    success = True
+
+    # Extract details from JSON
+    details = json_data['details']
+    students_scores = json_data['students_scores']
+
+
+        # Extract grade and school info
+    grade_info = details['grade_info']
+    school_info = details['school_info']
+
+        # Extract month from school info
+    month = school_info.get('month', 'UNKNOWN')
+    response_data = {'message': 'Attendance records saved successfully'}
+    error_response_data = {'error': f'Attendance records for {month} already exist'}
+    total_school_days = 0
+    total_days_present = 0
+    total_days_absent = 0
+
+   
+
+    if AttendanceRecord.objects.filter(attendance_record__has_key=month).exists():
+            return JsonResponse(error_response_data, status=400)
+    
+        # Iterate over student names in JSON data
+    for student_name, student_data in students_scores.items():
+            school_days = student_data.get('ABSENT', {}).get('absent', 0) + student_data.get('PRESENT', {}).get('present', 0)
+            days_present = student_data.get('PRESENT', {}).get('present', 0)
+            days_absent = student_data.get('ABSENT', {}).get('absent', 0)
+
+            total_school_days += school_days
+            total_days_present += days_present
+            total_days_absent += days_absent
+            # Find the student with the same name
+            try:
+                student = Student.objects.get(name=student_name)
+            except Student.DoesNotExist:
+                # messages_list.append(('error', f"Student '{student_name}' does not exist in the database."))
+                continue  # Skip this student if not found
+
+            # Prepare attendance record data
+            # attendance_record = {
+            #     month: {
+            #         "No. of School Days": student_data.get('ABSENT', {}).get('absent', 0) + student_data.get('PRESENT', {}).get('present', 0),
+            #         "No. of Days Present": student_data.get('PRESENT', {}).get('present', 0),
+            #         "No. of Days Absent": student_data.get('ABSENT', {}).get('absent', 0)
+            #     }
+            # }
+
+            # # Update or create AttendanceRecord for the student
+            # record, created = AttendanceRecord.objects.update_or_create(
+            #     student=student,
+            #     defaults={'attendance_record': attendance_record}
+            # )
+
+            # Check if an attendance record exists for the student and month
+            try:
+                attendance_record = AttendanceRecord.objects.get(
+                    student=student,
+                    attendance_record__has_key=month  # Filter records based on the key
+                )
+
+                # Update the existing attendance record with new data
+                existing_data = attendance_record.attendance_record.get(month, {})
+                existing_data['No. of School Days'] = school_days
+                existing_data['No. of Days Present'] = days_present
+                existing_data['No. of Days Absent'] = days_absent
+                attendance_record.attendance_record[month] = existing_data
+                attendance_record.save()
+
+            except AttendanceRecord.DoesNotExist:
+                # If the AttendanceRecord does not exist for the student and month,
+                # create a new record with the given data and month
+                # Check if the student has any existing records, if not, create a new one
+                if not AttendanceRecord.objects.filter(student=student).exists():
+                    AttendanceRecord.objects.create(
+                        student=student,
+                        attendance_record={
+                            month: {
+                                'No. of School Days': school_days,
+                                'No. of Days Present': days_present,
+                                'No. of Days Absent': days_absent
+                            }
+                        }
+                    )
+                else:
+                    # Retrieve all existing records for the student
+                    existing_records = AttendanceRecord.objects.filter(student=student)
+                    # Update all existing records by adding the new month and its data
+                    for record in existing_records:
+                        record.attendance_record[month] = {
+                            'No. of School Days': school_days,
+                            'No. of Days Present': days_present,
+                            'No. of Days Absent': days_absent
+                        }
+                        record.save()
+
+            total_attendance_record, created = AttendanceRecord.objects.get_or_create(
+                student=student,  # For total attendance record
+                defaults={
+                    'attendance_record': {
+                        'Total': {
+                            'Total School Days': school_days,
+                            'Total Days Present': days_present,
+                            'Total Days Absent': days_absent
+                        }
+                    }
+                }
+            )
+
+            if not created:
+                # If the record already exists, update the existing data
+                total_record_data = total_attendance_record.attendance_record.get('TOTAL', {})
+                # Ensure that the 'Total' key exists and initialize it with default values if not
+                if not total_record_data:
+                    total_record_data = {
+                        'Total School Days': 0,
+                        'Total Days Present': 0,
+                        'Total Days Absent': 0
+                    }
+                total_record_data['Total School Days'] += school_days
+                total_record_data['Total Days Present'] += days_present
+                total_record_data['Total Days Absent'] += days_absent
+                total_attendance_record.attendance_record['TOTAL'] = total_record_data
+
+                total_attendance_record.attendance_record = {
+                    k: total_attendance_record.attendance_record[k] for k in sorted(total_attendance_record.attendance_record.keys()) if k != 'TOTAL'
+                }
+                total_attendance_record.attendance_record['TOTAL'] = total_record_data
+                total_attendance_record.save()
+
+            # Check if the record was created or updated
+
+    if created:
+            messages_list.append(('success', f"Total attendance record created successfully."))
+    else:
+            messages_list.append(('success', f"Total attendance record updated successfully."))
+
+    for message_type, message_text in messages_list:
+        if message_type == 'success':
+            messages.success(request, message_text)
+        elif message_type == 'error':
+            messages.error(request, message_text)
+
+   
+
+    return success

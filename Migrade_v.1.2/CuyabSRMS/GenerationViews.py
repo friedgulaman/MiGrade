@@ -46,46 +46,100 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
     # Assuming `grade`, `section`, and `quarter` are passed in the URL parameters
 
     # Query the QuarterlyGrades model
-    quarterly_grades_query = QuarterlyGrades.objects.filter(
-        quarter=quarter, student__grade=grade, student__section=section,
+    grade_scores_queryset = GradeScores.objects.filter(
+        class_record__quarters=quarter, student__grade=grade, student__section=section,
     )
 
+    grade_name = grade
+    section_name = section
+    quarter_name = quarter
+
     school_info = SchoolInformation.objects.all()
+
+    print(grade_scores_queryset)
+
+    # Initialize lists to hold data for each subject
+    subject_data = {}
+    for grade_score in GradeScores.objects.filter(class_record__quarters=quarter, student__grade=grade, student__section=section):
+        class_record_name = grade_score.class_record.name
+        teacher_name = f"{grade_score.class_record.teacher.user.first_name} {grade_score.class_record.teacher.user.last_name}".upper()
+
+        # Assuming `subjects` is the related field to GradeScores
+        subject_name = grade_score.class_record.subject
+
+        if subject_name not in subject_data:
+            subject_data[subject_name] = {'data': [], 'gradescores': []}
+        
+        # Append the grade score and its corresponding GradeScores object to the dictionary
+        subject_data[subject_name]['data'].append((class_record_name, teacher_name))
+        subject_data[subject_name]['gradescores'].append(grade_score)
 
     user = request.user
     action = f'{user} generate a Summary of Quarterly Grades ({quarter}) of {grade} {section}'
     details = f'{user} generate a Summary of Quarterly Grades ({quarter}) of {grade} {section} in the system.'
     log_activity(user, action, details)
 
+    if grade_name == "Grade 1":
+        if quarter_name == "1st Quarter":
+            excel_file_name = f"GRADE 1_1ST QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
 
-    print(grade)
-    print(section)
-    print(quarter)
-    # students = [quarterly_grade.student for quarterly_grade in quarterly_grades_query]
+        elif quarter_name == "2nd Quarter":
+            excel_file_name = f"GRADE 1_2ND QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
 
-    # # Now you can access the students
-    # for student in students:
-    #     print(student.name)
+        elif quarter_name == "3rd Quarter":
+            excel_file_name = f"GRADE 1_3RD QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
 
-     # Original file path for SF9 template
-        # Original file path
-    excel_file_name = "Template - ClassRecord.xlsx"
+        elif quarter_name == "4th Quarter":
+            excel_file_name = f"GRADE 1_4TH QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
 
-    # Get the current working directory
-    # current_directory = os.getcwd()
-    media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
+    elif grade_name == "Grade 2":
+        if quarter_name == "1st Quarter":
+            excel_file_name = f"GRADE 2_1ST QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+
+        elif quarter_name == "2nd Quarter":
+            excel_file_name = f"GRADE 2_2ND QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+        
+        elif quarter_name == "3rd Quarter":
+            excel_file_name = f"GRADE 2_3RD QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+
+        elif quarter_name == "4th Quarter":
+            excel_file_name = f"GRADE 2_4TH QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+        
+    elif grade_name == "Grade 3":
+        if quarter_name == "1st Quarter":
+            excel_file_name = f"GRADE 3_1ST QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+
+        elif quarter_name == "2nd Quarter":
+            excel_file_name = f"GRADE 3_2ND QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+
+        elif quarter_name == "3rd Quarter":
+            excel_file_name = f"GRADE 3_3RD QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+
+        elif quarter_name == "4th Quarter":
+            excel_file_name = f"GRADE 3_4TH QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+            
+
+
+    original_file_path = os.path.join(media_directory, excel_file_name)
+
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
-
-    if not os.path.exists(media_directory):
-        os.makedirs(media_directory)
-
     if not os.path.exists(created_directory):
         os.makedirs(created_directory)
+
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-
-    # Create the path for the original file
-    original_file_path = os.path.join(media_directory, excel_file_name)
 
     # Create a path for the copied file with a timestamp
     copied_file_path = os.path.join(created_directory, f'SUMMARY OF QUARTERLY GRADES {quarter} {timestamp}.xlsx')
@@ -93,44 +147,72 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
-        # Open the copied SF9 Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    # Open the copied SF9 Excel file
+    workbook = openpyxl.load_workbook(copied_file_path)
 
-            # Select the desired sheet (use the correct sheet name from the output)
-        input_sheet_name = 'INPUT DATA'
-        input_sheet = workbook[input_sheet_name]
+    sheet_input_data = 'INPUT DATA'
+    sheet_input = workbook[sheet_input_data]
 
-        sheet_name = 'SUMMARY'
-        sheet = workbook[sheet_name]
-        
-        write_school_info_quarterly(input_sheet, school_info, quarterly_grades_query)
-        write_student_name_quarterly(input_sheet, quarterly_grades_query)
-        write_quarterly_grade_AP(sheet, quarterly_grades_query)
-        write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query)
+    for subject_name, subject_info in subject_data.items():
+        # Extract data and GradeScores objects for the current subject
+        data = subject_info['data']
+        grade_scores = subject_info['gradescores']
 
-            # Save the changes to the SF9 workbook
-        workbook.save(copied_file_path)
+        # Determine the Excel sheet name for each subject
+    
+        if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+        elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+        elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+        elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+        elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+        elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+        elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+        elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+        else:
+                desired_sheet_name = 'Sheet1'
+       
 
-            # Create an HTTP response with the updated SF9 Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = f'SUMMARY OF QUARTERLY GRADES ({quarter}) {timestamp}.xlsx'
-        encoded_filename = urllib.parse.quote(filename)
-        response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+        # Select the desired sheet (use the correct sheet name from the output)
+        sheet = workbook[desired_sheet_name]
 
-        with open(copied_file_path, 'rb') as excel_file:
-                response.write(excel_file.read())
+        write_student_names(sheet_input, grade_scores)
+        write_scores_hps_written(sheet, grade_scores)
+        write_scores_hps_performance(sheet, grade_scores)
+        write_scores_hps_quarterly(sheet, grade_scores)
+        write_written_works_scores(sheet, grade_scores)
+        write_performance_tasks_scores(sheet, grade_scores)
+        write_quarterly_assessment_scores(sheet, grade_scores)
+        write_initial_grade(sheet, grade_scores)
+        write_transmuted_grade(sheet, grade_scores)
 
-        return response
+    write_school_info(sheet_input, school_info, grade, section, teacher_name)
 
-    except Exception as e:
-        # Handle exceptions, such as a corrupted file
-        return HttpResponse(f"An error occurred: {e}")
+    # Save the changes to the SF9 workbook
+    workbook.save(copied_file_path)
+
+    # Create an HTTP response with the updated SF9 Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'SUMMARY OF QUARTERLY GRADES ({quarter}) {timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+
+    with open(copied_file_path, 'rb') as excel_file:
+        response.write(excel_file.read())
+
+    return response
+
+
 
 def generate_final_and_general_grades(request, grade, section):
-    # Assuming `grade`, `section`, and `quarter` are passed in the URL parameters
 
-    # Query the QuarterlyGrades model
     general_grades_query = GeneralAverage.objects.filter(
         student__grade=grade, student__section=section,
     )
@@ -185,49 +267,46 @@ def generate_final_and_general_grades(request, grade, section):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
+    
         # Open the copied SF9 Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    workbook = openpyxl.load_workbook(copied_file_path)
 
             # Select the desired sheet (use the correct sheet name from the output)
         # input_sheet_name = 'INPUT DATA'
         # input_sheet = workbook[input_sheet_name]
 
-        sheet_name = 'SUMMARY - FINAL GRADES'
-        sheet = workbook[sheet_name]
+    sheet_name = 'SUMMARY - FINAL GRADES'
+    sheet = workbook[sheet_name]
         
-        write_school_info_general_average(sheet, school_info, general_grades_query)
-        write_student_name_general_average(sheet, general_grades_query)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
+    write_school_info_general_average(sheet, school_info, general_grades_query)
+    write_student_name_general_average(sheet, general_grades_query)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
 
         # write_quarterly_grade_AP(sheet, quarterly_grades_query)
         # write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query)
 
             # Save the changes to the SF9 workbook
-        workbook.save(copied_file_path)
+    workbook.save(copied_file_path)
 
             # Create an HTTP response with the updated SF9 Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        filename = f'Final and General Average {grade} {section} {timestamp}.xlsx'
-        encoded_filename = urllib.parse.quote(filename)
-        response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'Final and General Average {grade} {section} {timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
 
-        with open(copied_file_path, 'rb') as excel_file:
+    with open(copied_file_path, 'rb') as excel_file:
                 response.write(excel_file.read())
 
-        return response
+    return response
 
-    except Exception as e:
-        # Handle exceptions, such as a corrupted file
-        return HttpResponse(f"An error occurred: {e}")
-
+    
 def generate_excel_for_grades(request, grade, section, subject, quarter):
     # Get GradeScores for the specified grade, section, and subject
     grade_scores_queryset = GradeScores.objects.filter(class_record__grade=grade,
@@ -240,6 +319,10 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     section_name = section
     subject_name = subject
     quarter_name = quarter
+
+    print(quarter_name)
+
+    # print(quarter)
     for grade_score in grade_scores_queryset:
         class_record_name = grade_score.class_record.name
         teacher_name = f"{grade_score.class_record.teacher.user.first_name} {grade_score.class_record.teacher.user.last_name}".upper()
@@ -252,11 +335,433 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
 
 
         # Original file path
-    excel_file_name = "TEMPLATE - CLASSRECORD (2).xlsx"
+    if grade_name in ["Grade 4", "Grade 5", "Grade 6"]:
+        if subject_name == "MATHEMATICS":
+            excel_file_name = "GRADE 4-6_MATHEMATICS.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
 
-    # Get the current working directory
-    # current_directory = os.getcwd()
-    media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'
+
+        elif subject_name == "ARALING PANLIPUNAN":
+            excel_file_name = "GRADE 4-6_ARALING PANLIPUNAN.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'
+
+        elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+            excel_file_name = "GRADE 4-6_EDUKASYON SA PAGPAPAKATAO.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'            
+            
+
+        elif subject_name == "EPP":
+            excel_file_name = "GRADE 4-6_EDUKASYONG PANTAHANAN AT PANGKABUHAYAN.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'
+
+        elif subject_name == "ENGLISH":
+            excel_file_name = "GRADE 4-6_ENGLISH.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'
+
+        elif subject_name == "FILIPINO":
+            excel_file_name = "GRADE 4-6_FILIPINO.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'
+
+        elif subject_name == "SCIENCE":
+            excel_file_name = "GRADE 4-6_SCIENCE.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+            if quarter_name == "1st Quarter":
+                desired_sheet_name = 'Q1'
+            elif quarter_name == "2nd Quarter":
+                desired_sheet_name = 'Q2'
+            elif quarter_name == "3rd Quarter":
+                desired_sheet_name = 'Q3'
+            elif quarter_name == "4th Quarter":
+                desired_sheet_name = 'Q4'
+
+    elif grade_name == "Grade 1":
+        if quarter_name == "1st Quarter":
+            excel_file_name = f"GRADE 1_1ST QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
+            print(media_directory)
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "2nd Quarter":
+            excel_file_name = f"GRADE 1_2ND QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'            
+        elif quarter_name == "3rd Quarter":
+            excel_file_name = f"GRADE 1_3RD QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "4th Quarter":
+            excel_file_name = f"GRADE 1_4TH QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        else:
+            excel_file_name = "TEMPLATE - CLASSRECORD (2).xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-1_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+    elif grade_name == "Grade 2":
+        if quarter_name == "1st Quarter":
+            excel_file_name = f"GRADE 2_1ST QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "2nd Quarter":
+            excel_file_name = f"GRADE 2_2ND QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "3rd Quarter":
+            excel_file_name = f"GRADE 2_3RD QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "4th Quarter":
+            excel_file_name = f"GRADE 2_4TH QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        else:
+            excel_file_name = "TEMPLATE - CLASSRECORD (2).xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-2_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+            
+    elif grade_name == "Grade 3":
+        if quarter_name == "1st Quarter":
+            excel_file_name = f"GRADE 3_1ST QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "2nd Quarter":
+            excel_file_name = f"GRADE 3_2ND QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "3rd Quarter":
+            excel_file_name = f"GRADE 3_3RD QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        elif quarter_name == "4th Quarter":
+            excel_file_name = f"GRADE 3_4TH QUARTER.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+        else:
+            excel_file_name = "TEMPLATE - CLASSRECORD (2).xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-3_E-Class-Record-Templates')
+            if subject_name == "MOTHER TONGUE":
+                desired_sheet_name = 'MTB'
+            elif subject_name == "FILIPINO":
+                desired_sheet_name = 'FILIPINO'
+            elif subject_name == "ENGLISH":
+                desired_sheet_name = 'ENGLISH'
+            elif subject_name == "MATHEMATICS":
+                desired_sheet_name = 'MATH'
+            elif subject_name == "ARALING PANLIPUNAN":
+                desired_sheet_name = 'AP'
+            elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+                desired_sheet_name = subject_name
+            elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
+                desired_sheet_name = 'ESP'
+            elif subject_name == "SCIENCE":
+                desired_sheet_name = 'SCIENCE'
+            else:
+                desired_sheet_name = 'Sheet1'
+
+    else:
+        excel_file_name = "TEMPLATE - CLASSRECORD (2).xlsx"
+        media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord')
+
+
+
+
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-class-record')
 
     # Generate a timestamp for the copy
@@ -265,66 +770,71 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     # Create the path for the original file
     original_file_path = os.path.join(media_directory, excel_file_name)
 
+    print("media",media_directory)
+    print("excel",excel_file_name)
+
     # Create a path for the copied file with a timestamp
     copied_file_path = os.path.join(created_directory, f'SF1 {grade_name}_{section_name}_{subject_name}_{quarter_name}_{timestamp}.xlsx')
 
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
+ 
         # Open the copied Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    workbook = openpyxl.load_workbook(copied_file_path)
 
         # Select the desired sheet (use the correct sheet name from the output)
-        desired_sheet_name = 'Sheet1'
-        sheet = workbook[desired_sheet_name]
+    sheet = workbook[desired_sheet_name]
+
+    sheet_input_data = 'INPUT DATA'
+    sheet_input = workbook[sheet_input_data]
 
         # # Write student names
-        write_student_names(sheet, grade_scores_queryset)
+    write_student_names(sheet_input, grade_scores_queryset)
 
         # Write scores_hps_written
-        write_scores_hps_written(sheet, grade_scores_queryset)
+    write_scores_hps_written(sheet, grade_scores_queryset)
 
         # Write scores_hps_performance
-        write_scores_hps_performance(sheet, grade_scores_queryset)
+    write_scores_hps_performance(sheet, grade_scores_queryset)
 
         # Write scores_hps_quarterly
-        write_scores_hps_quarterly(sheet, grade_scores_queryset)
+    write_scores_hps_quarterly(sheet, grade_scores_queryset)
 
         # Write Written_works_score
-        write_written_works_scores(sheet, grade_scores_queryset)
+    write_written_works_scores(sheet, grade_scores_queryset)
 
         # Write performance_tasks_score
-        write_performance_tasks_scores(sheet, grade_scores_queryset)
+    write_performance_tasks_scores(sheet, grade_scores_queryset)
 
         # Write quarterly assessment score
-        write_quarterly_assessment_scores(sheet, grade_scores_queryset)
+    write_quarterly_assessment_scores(sheet, grade_scores_queryset)
 
         # Write Initial Grade
-        write_initial_grade(sheet, grade_scores_queryset)
+    write_initial_grade(sheet, grade_scores_queryset)
 
         # Write transmuted Grade
-        write_transmuted_grade(sheet, grade_scores_queryset)
+    write_transmuted_grade(sheet, grade_scores_queryset)
 
 
-        write_school_info(sheet, school_info, grade, section, teacher_name)
+    write_school_info(sheet_input, school_info, grade, section, teacher_name)
 
 
         # Save the changes to the workbook
-        workbook.save(copied_file_path)
+    workbook.save(copied_file_path)
 
         # Create an HTTP response with the updated Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=Class Record {grade_name}_{section_name}_{subject_name}_{quarter_name}_{timestamp}.xlsx'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=Class Record {grade_name}_{section_name}_{subject_name}_{quarter_name}_{timestamp}.xlsx'
 
-        with open(copied_file_path, 'rb') as excel_file:
+    with open(copied_file_path, 'rb') as excel_file:
             response.write(excel_file.read())
 
-        return response
+    return response
 
-    except Exception as e:
-        # Handle exceptions, such as a corrupted file
-        return HttpResponse(f"An error occurred: {e}")
+    # except Exception as e:
+    #     # Handle exceptions, such as a corrupted file
+    #     return HttpResponse(f"An error occurred: {e}")
     
 def generate_excel_for_all_subjects(request, grade, section, quarter):
     # Get GradeScores for the specified grade, section, and quarter
@@ -332,11 +842,13 @@ def generate_excel_for_all_subjects(request, grade, section, quarter):
                                                         class_record__section=section,
                                                         class_record__quarters=quarter)
     
+    print(grade_scores_queryset)
     school_info = SchoolInformation.objects.all()
     
     grade_name = grade
     section_name = section
     quarter_name = quarter
+    # print(grade_scores_queryset)
 
     # Logging activity
     user = request.user
@@ -351,51 +863,200 @@ def generate_excel_for_all_subjects(request, grade, section, quarter):
     # File paths
     excel_file_name = "Template - ClassRecord.xlsx"
     media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
+
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-class-record')
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     original_file_path = os.path.join(media_directory, excel_file_name)
+    print("media",media_directory)
+    print("excel",excel_file_name)
     copied_file_path = os.path.join(created_directory, f'ClassRecord_{grade_name}_{section_name}_AllSubjects_{quarter_name}_{timestamp}.xlsx')
 
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    try:
+
         # Open the copied Excel file
-        workbook = openpyxl.load_workbook(copied_file_path)
+    workbook = openpyxl.load_workbook(copied_file_path)
 
         # Iterate through all sheets in the workbook
-        for sheet_name in workbook.sheetnames:
+    
             # Identify the subject based on the sheet name
-            sheet = workbook[sheet_name]
+    sheet_input_data = 'INPUT DATA'
+    sheet = workbook[sheet_input_data]
 
             # Write data to the selected sheet
-            write_student_names(sheet, grade_scores_queryset)
-            write_scores_hps_written(sheet, grade_scores_queryset)
-            write_scores_hps_performance(sheet, grade_scores_queryset)
-            write_scores_hps_quarterly(sheet, grade_scores_queryset)
-            write_written_works_scores(sheet, grade_scores_queryset)
-            write_performance_tasks_scores(sheet, grade_scores_queryset)
-            write_quarterly_assessment_scores(sheet, grade_scores_queryset)
-            write_initial_grade(sheet, grade_scores_queryset)
-            write_transmuted_grade(sheet, grade_scores_queryset)
-            write_school_info(sheet, school_info)
+    write_student_names(sheet, grade_scores_queryset)
+    write_scores_hps_written(sheet, grade_scores_queryset)
+    write_scores_hps_performance(sheet, grade_scores_queryset)
+    write_scores_hps_quarterly(sheet, grade_scores_queryset)
+    write_written_works_scores(sheet, grade_scores_queryset)
+    write_performance_tasks_scores(sheet, grade_scores_queryset)
+    write_quarterly_assessment_scores(sheet, grade_scores_queryset)
+    write_initial_grade(sheet, grade_scores_queryset)
+    write_transmuted_grade(sheet, grade_scores_queryset)
+    write_school_info(sheet, school_info)
 
         # Save changes to the workbook
-        workbook.save(copied_file_path)
+    workbook.save(copied_file_path)
 
         # Prepare HTTP response with updated Excel file
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=ClassRecord_{grade_name}_{section_name}_AllSubjects_{quarter_name}_{timestamp}.xlsx'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=ClassRecord_{grade_name}_{section_name}_AllSubjects_{quarter_name}_{timestamp}.xlsx'
 
-        with open(copied_file_path, 'rb') as excel_file:
+    with open(copied_file_path, 'rb') as excel_file:
             response.write(excel_file.read())
 
-        return response
+    return response
 
-    except Exception as e:
-        # Handle exceptions
-        return HttpResponse(f"An error occurred: {e}")
-    
+
+def generate_summary_for_grades_4_to_6(request, grade, section, subject, quarter):
+    # Query the GradeScores model
+    grade_scores_queryset = GradeScores.objects.filter(
+        class_record__grade=grade,
+        class_record__section=section,
+        class_record__subject=subject,
+    )
+
+    quarter_name = quarter
+    selected_quarter = quarter
+
+    school_info = SchoolInformation.objects.all()
+
+    # Initialize lists to hold data for each subject
+    quarter_data = {}
+    for grade_score in grade_scores_queryset:
+        class_record_name = grade_score.class_record.name
+        teacher_name = f"{grade_score.class_record.teacher.user.first_name} {grade_score.class_record.teacher.user.last_name}".upper()
+
+        if quarter_name not in quarter_data:
+            quarter_data[quarter_name] = {'data': [], 'gradescores': []}
+        
+        # Append the grade score and its corresponding GradeScores object to the dictionary
+        quarter_data[quarter_name]['data'].append((class_record_name, teacher_name))
+        quarter_data[quarter_name]['gradescores'].append(grade_score)
+
+    user = request.user
+    action = f'{user} generate a Summary of Quarterly Grades for {grade} {section} in {subject}'
+    details = f'{user} generate a Summary of Quarterly Grades for {grade} {section} in {subject} in the system.'
+    log_activity(user, action, details)
+
+    if grade in ["Grade 4", "Grade 5", "Grade 6"]:
+        if subject == "MATHEMATICS":
+            excel_file_name = "GRADE 4-6_MATHEMATICS.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+
+        elif subject == "ARALING PANLIPUNAN":
+            excel_file_name = "GRADE 4-6_ARALING PANLIPUNAN.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+
+        elif subject == "EDUKASYON SA PAGPAPAKATAO":
+            excel_file_name = "GRADE 4-6_EDUKASYON SA PAGPAPAKATAO.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+
+        elif subject == "EPP":
+            excel_file_name = "GRADE 4-6_EDUKASYONG PANTAHANAN AT PANGKABUHAYAN.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+
+        elif subject == "ENGLISH":
+            excel_file_name = "GRADE 4-6_ENGLISH.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+
+        elif subject == "FILIPINO":
+            excel_file_name = "GRADE 4-6_FILIPINO.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+
+        elif subject == "SCIENCE":
+            excel_file_name = "GRADE 4-6_SCIENCE.xlsx"
+            media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1')
+    else:
+        # Handle other grades
+        pass
+
+    original_file_path = os.path.join(media_directory, excel_file_name)
+
+    created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
+    if not os.path.exists(created_directory):
+        os.makedirs(created_directory)
+
+    # Generate a timestamp for the copy
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+
+    # Create a path for the copied file with a timestamp
+    copied_file_path = os.path.join(created_directory, f'SUMMARY OF QUARTERLY GRADES {timestamp}.xlsx')
+
+    # Copy the Excel file
+    shutil.copyfile(original_file_path, copied_file_path)
+
+    # Open the copied SF9 Excel file
+    workbook = openpyxl.load_workbook(copied_file_path)
+
+    sheet_input_data = 'INPUT DATA'
+    sheet_input = workbook[sheet_input_data]
+
+    for quarter_info in quarter_data.values():
+        # Extract data and GradeScores objects for the current subject
+        data = quarter_info['data']
+        grade_scores = quarter_info['gradescores']
+
+        # Initialize dictionary to hold data for each quarter
+        quarter_sheets = {'1st Quarter': [], '2nd Quarter': [], '3rd Quarter': [], '4th Quarter': []}
+
+        # Organize grade scores by quarter
+        for grade_score in grade_scores:
+            quarter_name = grade_score.class_record.quarters  # Assuming 'quarter' field exists in ClassRecord model
+            quarter_sheets[quarter_name].append(grade_score)
+
+        # Map quarter names to desired sheet names
+        quarter_sheet_mapping = {
+            "1st Quarter": 'Q1',
+            "2nd Quarter": 'Q2',
+            "3rd Quarter": 'Q3',
+            "4th Quarter": 'Q4'
+        }
+
+        print(selected_quarter)
+        # Process data for each quarter
+        for quarter_name, desired_sheet_name in quarter_sheet_mapping.items():
+            if quarter_name <= selected_quarter:
+                # Select the desired sheet
+                sheet = workbook[desired_sheet_name]
+
+                # Write data to the selected sheet
+                write_student_names(sheet_input, quarter_sheets[quarter_name])
+                write_scores_hps_written(sheet, quarter_sheets[quarter_name])
+                write_scores_hps_performance(sheet, quarter_sheets[quarter_name])
+                write_scores_hps_quarterly(sheet, quarter_sheets[quarter_name])
+                write_written_works_scores(sheet, quarter_sheets[quarter_name])
+                write_performance_tasks_scores(sheet, quarter_sheets[quarter_name])
+                write_quarterly_assessment_scores(sheet, quarter_sheets[quarter_name])
+                write_initial_grade(sheet, quarter_sheets[quarter_name])
+                write_transmuted_grade(sheet, quarter_sheets[quarter_name])
+
+# Now the data will be printed on the corresponding quarter's sheet based on the actual quarter each data belongs to.
+
+            
+    write_student_names(sheet_input, grade_scores)
+    write_school_info(sheet_input, school_info, grade, section, teacher_name)
+
+    # Save the changes to the SF9 workbook
+    workbook.save(copied_file_path)
+
+    # Create an HTTP response with the updated SF9 Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'SUMMARY OF QUARTERLY GRADES {timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+
+    with open(copied_file_path, 'rb') as excel_file:
+        response.write(excel_file.read())
+
+    return response
+
+    # except Exception as e:
+    #     # Handle exceptions, such as a corrupted file
+    #     return HttpResponse(f"An error occurred: {e}")
+  
+
 def generate_excel_for_sf9(request, student_id):
 
     # Retrieve the student object
@@ -444,7 +1105,7 @@ def generate_excel_for_sf9(request, student_id):
 
     # Original file path for SF9 template
         # Original file path
-    excel_file_name = "ELEM SF9 (Learner's Progress Report Card).xlsx"
+    excel_file_name = "SF9.xlsx"
 
     # Get the current working directory
     # current_directory = os.getcwd()
@@ -557,20 +1218,22 @@ def generate_per_all_subject_view(request):
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher)
 
-        # Keep track of unique grade and section combinations
-        unique_combinations = set()
-        unique_class_records = []
+        # Create a dictionary to store data organized by quarter
+        quarters_data = {}
 
-        # Iterate through class records to filter out duplicates
+        # Iterate through class records to organize data by quarter
         for record in class_records:
-            combination = (record.grade, record.section)
-            # Check if the combination is unique
-            if combination not in unique_combinations:
-                unique_combinations.add(combination)
-                unique_class_records.append(record)
+            quarter_data = quarters_data.setdefault(record.quarters, {'subjects': set(), 'grade_sections': set()})
+            quarter_data['grade_sections'].add((record.grade, record.section))
+            quarter_data['subjects'].add(record.subject)
 
+        # Sort subjects alphabetically
+        for quarter_data in quarters_data.values():
+            quarter_data['subjects'] = sorted(quarter_data['subjects'])
+
+        print(quarters_data)
         context = {
-            'class_records': unique_class_records,
+            'quarters_data': quarters_data,
         }
 
         return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html', context)
@@ -595,8 +1258,9 @@ def generate_grade_section_list(request):
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
 
         # Fetch distinct subjects based on grade and section
-        subjects = Subject.objects.values_list('name', flat=True).distinct()
+        subjects = class_records.values_list('subject', flat=True).distinct()
 
+        print(subjects)
 
         context = {
             'grade': grade,

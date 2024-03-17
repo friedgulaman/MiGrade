@@ -47,30 +47,9 @@ def archive_class_record(request, class_record_id):
                 ArchivedGradeScores.objects.create(
                     archived_class_record=archived_class_record,
                     student=archived_student,
-                    scores_hps_written=grade_score.scores_hps_written,
-                    scores_hps_performance=grade_score.scores_hps_performance,
-                    total_ww_hps=grade_score.total_ww_hps,
-                    total_pt_hps=grade_score.total_pt_hps,
-                    total_qa_hps=grade_score.total_qa_hps,
-                    written_works_scores=grade_score.written_works_scores,
-                    performance_task_scores=grade_score.performance_task_scores,
                     initial_grades=grade_score.initial_grades,
                     transmuted_grades=grade_score.transmuted_grades,
-                    total_score_written=grade_score.total_score_written,
-                    total_max_score_written=grade_score.total_max_score_written,
-                    total_score_performance=grade_score.total_score_performance,
-                    total_max_score_performance=grade_score.total_max_score_performance,
-                    total_score_quarterly=grade_score.total_score_quarterly,
-                    total_max_score_quarterly=grade_score.total_max_score_quarterly,
-                    percentage_score_written=grade_score.percentage_score_written,
-                    percentage_score_performance=grade_score.percentage_score_performance,
-                    percentage_score_quarterly=grade_score.percentage_score_quarterly,
-                    weight_input_written=grade_score.weight_input_written,
-                    weight_input_performance=grade_score.weight_input_performance,
-                    weight_input_quarterly=grade_score.weight_input_quarterly,
-                    weighted_score_written=grade_score.weighted_score_written,
-                    weighted_score_performance=grade_score.weighted_score_performance,
-                    weighted_score_quarterly=grade_score.weighted_score_quarterly,
+                    grade_scores=grade_score.grade_scores,
                     # Copy other relevant fields
                 )
 
@@ -169,52 +148,52 @@ def restore_archived_record(request, archived_record_id):
         print(f"Error occurred during restoration: {str(e)}")
         return redirect('error_page')  # Redirect to an error page or handle as needed
 
-def initiate_restore_request(request, archived_record_id):
-    archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
-    if request.method == 'POST':
-        # Check if a restore request already exists for the archived record
-        existing_request = RestoreRequest.objects.filter(archived_record=archived_record).exists()
-        if existing_request:
-            # If a restore request already exists, show a message and redirect back
-            messages.error(request, 'A restore request already exists for this archived record.')
-            return redirect('archived_records')
-        else:
-            # If no restore request exists, create a new restore request
-            RestoreRequest.objects.create(archived_record=archived_record, requester=request.user.teacher)
-            messages.success(request, 'Restore request created successfully.')
-            return redirect('archived_records')  # Redirect to archived records page or a thank you page
-    return render(request, 'archive_template/initiate_restore_request.html', {'archived_record': archived_record})
+# def initiate_restore_request(request, archived_record_id):
+#     archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
+#     if request.method == 'POST':
+#         # Check if a restore request already exists for the archived record
+#         existing_request = RestoreRequest.objects.filter(archived_record=archived_record).exists()
+#         if existing_request:
+#             # If a restore request already exists, show a message and redirect back
+#             messages.error(request, 'A restore request already exists for this archived record.')
+#             return redirect('archived_records')
+#         else:
+#             # If no restore request exists, create a new restore request
+#             RestoreRequest.objects.create(archived_record=archived_record, requester=request.user.teacher)
+#             messages.success(request, 'Restore request created successfully.')
+#             return redirect('archived_records')  # Redirect to archived records page or a thank you page
+#     return render(request, 'archive_template/initiate_restore_request.html', {'archived_record': archived_record})
 
-def restore_requests(request):
-    # Assuming you have a model for restore requests with a foreign key to the User model
-    restore_requests = RestoreRequest.objects.all()
-    return render(request, 'archive_template/restore_requests.html', {'restore_requests': restore_requests})
+# def restore_requests(request):
+#     # Assuming you have a model for restore requests with a foreign key to the User model
+#     restore_requests = RestoreRequest.objects.all()
+#     return render(request, 'archive_template/restore_requests.html', {'restore_requests': restore_requests})
 
-def confirm_restore(request, archived_record_id):
-    try:
-        archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
-        return render(request, 'archive_template/confirm_restore.html', {'archived_record': archived_record})
-    except ArchivedClassRecord.DoesNotExist:
-        return redirect('error_page')  
+# def confirm_restore(request, archived_record_id):
+#     try:
+#         archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
+#         return render(request, 'archive_template/confirm_restore.html', {'archived_record': archived_record})
+#     except ArchivedClassRecord.DoesNotExist:
+#         return redirect('error_page')  
     
-def view_restore_request(request, request_id):
-    restore_request = RestoreRequest.objects.get(id=request_id)
-    return render(request, 'archive_template/view_restore_request.html', {'restore_request': restore_request})
+# def view_restore_request(request, request_id):
+#     restore_request = RestoreRequest.objects.get(id=request_id)
+#     return render(request, 'archive_template/view_restore_request.html', {'restore_request': restore_request})
 
-def approve_restore_request(request, request_id):
-    restore_request = RestoreRequest.objects.get(id=request_id)
-    # Perform logic to approve the request
-    restore_request.status = 'Approved'
-    restore_request.save()
-    # Redirect to the confirm_restore view with the archived record ID
-    return redirect('confirm_restore', archived_record_id=restore_request.archived_record.id)
+# def approve_restore_request(request, request_id):
+#     restore_request = RestoreRequest.objects.get(id=request_id)
+#     # Perform logic to approve the request
+#     restore_request.status = 'Approved'
+#     restore_request.save()
+#     # Redirect to the confirm_restore view with the archived record ID
+#     return redirect('confirm_restore', archived_record_id=restore_request.archived_record.id)
 
-def deny_restore_request(request, request_id):
-    restore_request = RestoreRequest.objects.get(id=request_id)
-    # Perform logic to deny the request
-    restore_request.status = 'Denied'
-    restore_request.save()
-    return redirect('restore_requests')
+# def deny_restore_request(request, request_id):
+#     restore_request = RestoreRequest.objects.get(id=request_id)
+#     # Perform logic to deny the request
+#     restore_request.status = 'Denied'
+#     restore_request.save()
+#     return redirect('restore_requests')
 
 
 
@@ -225,8 +204,12 @@ def admin_archived_records(request):
 
 
 def archived_records(request):
+
+    teacher = request.user.teacher
+
+
     # Retrieve all archived class records
-    archived_records = ArchivedClassRecord.objects.all()
+    archived_records = ArchivedClassRecord.objects.filter(teacher=teacher)
     
     # Retrieve distinct archived student information
     archived_students = ArchivedStudent.objects.values('archived_grade', 'archived_section').distinct()

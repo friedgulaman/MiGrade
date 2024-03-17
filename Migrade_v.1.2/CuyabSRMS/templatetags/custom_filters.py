@@ -1,4 +1,6 @@
 from django import template
+from django.utils.safestring import mark_safe
+import json
 
 register = template.Library()
 
@@ -47,3 +49,11 @@ def get_dict_keys(dictionary):
 @register.filter(name='get_key')
 def get_key(dictionary, key):
     return dictionary.get(key, '')
+
+@register.filter
+def key_exists(dictionary, key):
+    return key in dictionary
+
+@register.filter
+def replace_spaces(value):
+    return value.replace(' ', '_')
