@@ -36,9 +36,13 @@ urlpatterns = [
     path('admin_update_profile_photo', views.admin_update_profile_photo, name='admin_update_profile_photo'),
     path('admin_update_profile', views.admin_update_profile, name='admin_update_profile'), 
     path('admin_change_password/', views.admin_change_password, name='admin_change_password'),
+    path('mt_profile_page/', views.mt_profile_page, name='mt_profile_page'),
+    path('mt_update_profile_photo', views.mt_update_profile_photo, name='mt_update_profile_photo'),
+    path('mt_update_profile', views.mt_update_profile, name='mt_update_profile'), 
+    path('mt_change_password/', views.mt_change_password, name='mt_change_password'),
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
-    path('teachers_activity', views.teachers_activity, name='teachers_activity'),
-    path('admin_activity', views.admin_activity, name='admin_activity'),
+    path('activity', views.activity, name='activity'),
+
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),

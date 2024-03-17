@@ -55,6 +55,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'view_breadcrumbs',
     'captcha',
     'CuyabSRMS',
     'django.contrib.admin',

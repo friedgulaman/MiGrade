@@ -81,7 +81,10 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
-
+#dropdown_classrecord{
+    border: none;
+    background: none;
+}
 </style>
 <section class="content container mt-2">
     <div class="card">
@@ -174,21 +177,34 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
                                 <div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="left-side-design">
-                                                <a id="classRecordLink" class="btn btn-primary" href="#">Class Record +</a>
-                                            </div>
+                                       <div class="mt-4"></div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4 class="card-title">Class Records</h4>
+                                            <button type="button" id="dropdown_classrecord"
+                                                            class="btn-dropdown-toggle dropdown-toggle-split"
+                                                            data-toggle="dropdown" aria-haspopup="true"
+                                                            aria-expanded="false">
+                                                            <svg class="c-qd" width="20px" height="20px"
+                                                                viewBox="0 0 20 20" focusable="false"
+                                                                fill="black">
+                                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                                                <path
+                                                                    d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z">
+                                                                </path>
+                                                            </svg>
+                                                        </button>
+                                                        <!-- Dropdown menu content -->
+                                                        <div class="dropdown-menu delete-dropdown p-2" aria-labelledby="dropdownMenuButton">
+                                                            <div>
+                                                                <a id="classRecordLink" href="#" class="dropdown-item">Class Record +</a>
+                                                            </div>
+                                                            <div>
+                                                                <a id="generateRecordButton" href="#" class="dropdown-item">Generate Class Record</a>
+                                                            </div>
+                                                        </div>
+                                                        
                                         </div>
-                                        <div class="col-md-6 text-md-right mt-2 mt-md-0">
-                                            <div class="right-side-design">
-                                                <a id="generateRecordButton" class="btn btn-primary" href="#">Generate Class Record</a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                        <div class="mt-4"></div>
-                                        <h4 class="card-title">Class Records</h4>
+                                        
                                         <div class="table-responsive">
                                             <table class="table table-hover">
                                                 <thead>
@@ -270,7 +286,7 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                                         <td>{{ record.subject }}</td>
                                                         <td>
                                                             <a class="quarterly_id" title="Send" href="{% url 'transfer_quarterly_grade' grade=record.grade section=record.section subject=record.subject class_record_id=record.id %}">
-                                                                <i class="fas fa-share"></i> <!-- This assumes you're using Font Awesome -->
+                                                                <i class="fas fa-share"></i> <span class="ms-2"> Send</span>
                                                             </a>
                                                             
                                                         </td>
@@ -292,23 +308,26 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                     <div class="tab-pane fade show" id="rankings" role="tabpanel" aria-labelledby="rankings">
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
-                                <div class="card">
+                                <div class="p-2 m-2">
                                     <div class="card-body">
-                                        <h1 class="card-title">Subject Rankings</h1>
-                                        <select id="subjectSelect" onchange="toggleSubjectRankings()">
-                                            <option value="" selected disabled>Select Subject</option>
-                                            {% for subject in subjects %}
-                                            <option value="{{ subject.subject }}">{{ subject.subject }}</option>
-                                        {% endfor %}
-                                        </select>
-                                        <div id="subjectRankings">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h2>Subject Rankings</h2>
+                                            <select class="form-select-sm" id="subjectSelect" onchange="toggleSubjectRankings()">
+                                                <option value="" selected disabled>Select Subject</option>
+                                                {% for subject in subjects %}
+                                                <option value="{{ subject.subject }}">{{ subject.subject }}</option>
+                                            {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="subjectRankings" class="mt-3">
                                             {% for subject, grades in subject_grades.items %}
-                                                <div class="subjectRanking" id="{{ subject }}">
-                                                    <h3>{{ subject }}</h3>
+                                                <div class="card subjectRanking p-4" id="{{ subject }}">
+                                                    <h3 class="mt-2"><strong>Subject:</strong><em>{{ subject }}</em></h3>
                                                     <table class="table table-bordered">
                                                         <thead>
                                                             <tr>
-                                                                <th>#</th>
+                                                                <th>Rank</th>
                                                                 <th>Student Name</th>
                                                                 <th>Grade</th>
                                                                 <th>Remarks</th>
@@ -379,6 +398,10 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
     });
 
     $(document).ready(function () {
+        $(document).ready(function () {
+        $('.btn-dropdown-toggle').dropdown();
+    });
+
         $('.delete-record').click(function () {
             var recordId = $(this).data('record-id');
             

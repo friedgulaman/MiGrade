@@ -52,6 +52,12 @@ Inbox Messages
     overflow: auto;
   }
 
+  .file-name-td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px; /* Adjust as needed based on your design */
+    }
 </style>
 <section class="content container mt-2 vh-100">
   <div class="d-sm-flex align-items-center justify-content-between border-bottom">
@@ -98,48 +104,48 @@ Inbox Messages
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                           </div>
                           <div class="modal-body">
-                              <p class="json-data ">
-                                <div class="d-flex justify-content-between align-items-center">
-                                <div>
+                            <div class="json-data">
+                              <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                                <div class="mb-2 mb-md-0">
                                   <strong>Grade:</strong> {{ message.json_data.grade }}<br>
                                   <strong>Section:</strong> {{ message.json_data.section }}<br>
                                   <strong>Subject:</strong> {{ message.json_data.subject }}<br>
                                   <strong>From Teacher:</strong> {{ message.json_data.teacher }}<br>
-                                  
                                 </div>
-                                 <div>
-                                  <button class="btn accept-btn" data-message-id="{{ message.id }}">
-                                    <i class="fas fa-check"><p>Save Records</p></i>
-                                </button>
-                                <button class="btn reject-btn" data-message-id="{{ message.id }}">
-                                    <i class="fas fa-times"><p>Delete Message</p></i>
-                                </button>
-                                 </div>
+                                <div>
+                                  <button class="btn accept-btn border" data-message-id="{{ message.id }}">
+                                    <i class="fas fa-check"></i><span>Save Records</span>
+                                  </button>
+                                  <button class="btn reject-btn border" data-message-id="{{ message.id }}">
+                                    <i class="fas fa-times"></i><span>Delete Message</span>
+                                  </button>
                                 </div>
-                                  <hr>
-                                  <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                              <th></th>
-                                                <th>Student</th>
-                                                <th>Grades</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for student in message.json_data.students %}
-                                            <tr>
-                                              <td>{{ forloop.counter }}</td>
-                                                <td>{{ student.name }}</td>
-                                                <td>{{ student.quarter }}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                
-                              </p>
+                              </div>
+                              
+                              <hr>
+                              <div class="table-responsive">
+                                <table class="table table-hover">
+                                  <thead>
+                                    <tr>
+                                      <th></th>
+                                      <th>Student</th>
+                                      <th>Grades</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for student in message.json_data.students %}
+                                    <tr>
+                                      <td>{{ forloop.counter }}</td>
+                                      <td>{{ student.name }}</td>
+                                      <td>{{ student.quarter }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
                           </div>
+                          
                       </div>
                   </div>
               </div>
@@ -155,7 +161,7 @@ Inbox Messages
   </div>
   
   <div class="tab-pane fade show" id="audiences" role="tabpanel" aria-labelledby="audiences">
-    <div class="card">
+    <div class="card history-card">
         <div class="card-body">
             <h3 class="p-1">Inbox Messages</h3>
         </div>
@@ -171,7 +177,7 @@ Inbox Messages
                 <tbody>
                     {% for message in accepted_messages %}
                     <tr class="message" data-bs-toggle="modal" data-bs-target="#acceptedModal{{ message.id }}">
-                        <td>
+                        <td class="file-name-td" title="{{ message.file_name }}">
                             {% load custom_filters %}
                             {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
                         </td>

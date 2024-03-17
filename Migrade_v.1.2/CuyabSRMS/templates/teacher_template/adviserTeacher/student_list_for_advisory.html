@@ -231,12 +231,13 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 <ul class="attendance_link">
                                     <li>
                                         <a target="_blank" href="{% url 'create_attendance_view' %}?grade={{ grade }}&section={{ section }}&teacher_id={{ teacher_id }}&class_type={{ class_type }}">Create Attendance</a>
-                                        <p>Description: Click here to create attendance for this class.</p>
+                                        <p></p>Click here to mark attendance for this class.</p>
                                     </li>
                                     <li>
                                         <a target="_blank" href="{% url 'attendance_records' grade=grade section=section %}">View Attendance Records</a>
-                                        <p>Description: Click here to create attendance for this class.</p>
+                                        <p></p>Click here to view attendance records for this class.</p>
                                     </li>
+                                    
                                 </ul>
                                 
                             
@@ -252,12 +253,12 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 <ul class="lo_link">
                                     <li>
                                         <a target="_blank" href="{% url 'students_behavior' grade=grade section=section %}">Create Students Behavior</a>
-                                        <p>Description: Click here to create attendance for this class.</p>
+                                        <p></p>Click here to record and manage students' behavior for this class.</p>
                                     </li>
                                     <li>
                                         <a target="_blank" href="{% url 'display_learners_observation' grade=grade section=section %}">View Learners Observation</a>
-                                        <p>Description: Click here to create attendance for this class.</p>
-                                    </li>
+                                        <p></p>Click here to view observations and insights about learners in this class.</p>
+                                    
                                 </ul>
                                 
                             
@@ -414,10 +415,10 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                     <div class="tab-pane fade show" id="all_final_grades" role="tabpanel" aria-labelledby="all_final_grades">
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
-                                <h1>All Final Grades</h1>
+                                <h3>All Final Grades</h3>
                     
                                 {% if final_grades %}
-                                    <div class="table-responsive">
+                                    <div class="table-responsive mt-3">
                                         <table class="table table-bordered table-striped">
                                             <thead>
                                                 <tr>
@@ -477,18 +478,25 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                     </div>
 
                     <div class="tab-pane fade show" id="Upload_sf_10" role="tabpanel" aria-labelledby="Upload_sf_10">
-                        <a class="btn btn-primary btn-lg mb-2 upload-button" href="{% url 'teacher_upload_documents' %}">
-                            <i class="fas fa-upload"></i> <!-- Upload icon -->
-                            Upload
-                        </a>
-                        <a class="btn btn-primary btn-lg mb-2 batch-upload-button" href="{% url 'teacher_batch_process_documents' %}">
-                            <i class="fas fa-upload"></i> <!-- Batch upload icon -->
-                            Batch Upload
-                        </a>
-                        <a class="btn btn-primary btn-lg mb-2 files-button" href="{% url 'teacher_sf10_views' %}">
-                            <i class="fas fa-file-alt"></i> <!-- Files icon -->
-                            Files
-                        </a>
+                        <div class="container mt-4">
+                            <div class="card-body">
+                                <h4 class="card-title">Learners Observation</h4>
+                                <ul class="lo_link">
+                                    <li>
+                                        <a target="_blank" href="{% url 'teacher_upload_documents' %}">Upload Document</a>
+                                        <p>Click here to upload School Form 10.</p>
+                                    </li>
+                                    <li>
+                                        <a target="_blank" href="{% url 'teacher_batch_process_documents' %}">Batch Upload</a>
+                                        <p>You can upload multiple files at once.</p>
+                                    </li>                                    
+                                    <li>
+                                        <a target="_blank" href="{% url 'teacher_sf10_views' %}">Files</a>
+                                        <p>View your School Form 10 here.</p>
+                                    </li>
+                                </ul> 
+                            </div>     
+                        </div>
                     </div>
                     
                     
@@ -503,21 +511,21 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                         <div class="row">
                                             {% for record in class_records %}   
                                                 <div class="col-lg-4 mb-3">
-                                                    <div class="card border-0">
-                                                        <div class="card-body">
+                                                    <div class="card rounded-0 ">
+                                                        <div class="card-body d-flex row p-0 m-0">
                                                             <!-- <button type="button" class="btn btn-secondary btn-lg btn-block" onclick="showStudentList('{{ record.grade }}', '{{ record.section }}')"> -->
-                                                                <button type="button" class="btn btn-secondary btn-lg btn-block">
-                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                    <span>{{ record.grade }} {{ record.section }}</span>
-                                                                    <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
+                                                                
+                                                                <div class="d-flex justify-content-center align-items-center">
+                                                                    <span class="p-3 ">{{ record.grade }} {{ record.section }}</span>
+                                                                    <svg class="ms-2" height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
                                                                         <g>
                                                                             <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
                                                                             <path d="M0 0h24v24H0z" fill="none"></path>
                                                                         </g>
                                                                     </svg>
                                                                 </div>
-                                                            </button>
-                                                            <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}" class="btn btn-primary btn-sm btn-block mt-3">Generate Final Grade and General Average</a>
+                                                            
+                                                            <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}" class="btn btn-primary  mt-3 rounded-0">Generate Final Grade and General Average</a>
                                                         </div>
                                                     </div>
                                                 </div>

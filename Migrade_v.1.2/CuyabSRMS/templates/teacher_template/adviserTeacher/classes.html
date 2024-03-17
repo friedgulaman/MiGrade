@@ -13,6 +13,11 @@ New Class List
     .delete-dropdown {
         font-size: 12px;
     }
+    .class_btn {
+    width: clamp(200px, 50%, 250px);
+    margin: auto;
+    padding: 12px;
+}
 
 </style>
 
@@ -75,8 +80,8 @@ New Class List
                                             {% with class_type_dict=grade_section.class_type|safe %}
                                             {% if teacher.id|add:" " in class_type_dict %}
                                             {% if class_type_dict == 'Advisory Class' or 'Advisory Class, Subject Class' in class_type_dict %}
-                                            <li class="d-block p-2">
-                                                <div class="btn-group">
+                                            <li class="d-block">
+                                                <div class="btn-group class_btn">
                                                     <button type="button"
                                                         class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-primary"
                                                         onclick="showStudentListAdvisory('{{ grade_section.grade }}', '{{ grade_section.section }}', '{{ grade_section.class_type }}')">
@@ -158,7 +163,7 @@ New Class List
                                             {% if teacher.id|add:" " in class_type_dict %}
                                             {% if class_type_dict == 'Subject Class' or 'Advisory Class, Subject Class' in class_type_dict %}
                                             <li class="d-block p-2">
-                                                <div class="btn-group">
+                                                <div class="btn-group class_btn">
                                                     <button type="button"
                                                         class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary"
                                                         onclick="showStudentListSubject('{{ grade_section.grade }}', '{{ grade_section.section }}', '{{ grade_section.class_type }}')">
@@ -250,6 +255,7 @@ New Class List
         }
     }
 </script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
    var showStudentListSubject = function (grade, section, class_type) {
         var url = "{% url 'student_list_for_subject' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section) + "&class_type=" + encodeURIComponent(class_type);

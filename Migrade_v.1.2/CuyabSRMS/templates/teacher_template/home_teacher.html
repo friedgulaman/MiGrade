@@ -99,8 +99,8 @@
   </div>
   
     <div class="d-flex  align-items-center">
-      <a class="nav-link" href="#">Documentation</a>
-      <a class="nav-link" href="#">FAQs</a>
+      <!-- <a class="nav-link" href="#">Documentation</a>
+      <a class="nav-link" href="#">FAQs</a> -->
       <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
         <img class="img-xs rounded-circle" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
       <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
@@ -110,7 +110,7 @@
         </div>
         <a class="dropdown-item" href="{% url 'profile_page' %}"><i
             class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-        <a class="dropdown-item" href="{% url 'teachers_activity' %}"><i
+        <a class="dropdown-item" href="{% url 'activity' %}"><i
             class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
         <a class="dropdown-item" href="{% url 'logout_user' %}"><i
             class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
@@ -135,11 +135,12 @@
       Welcome, <span class="user text-primary">{{user}}</span>
     </div>
     <div class="display-1-desc text-center w-50">
-      <a class="text-decoration-none btn text-dark container explore" href="{% url 'home_adviser_teacher'%}">
+      <a id="loadingLink" class="text-decoration-none btn text-dark container explore" href="{% url 'home_adviser_teacher'%}" onclick="handleClick()">
           <!-- Arrow icon -->
           <span class="arrow-icon p-0">&rarr;</span> 
       </a>
   </div>
+
   
   </div>
 
@@ -226,7 +227,16 @@
       });
   });
   </script>
-  
+  <script>
+    function handleClick() {
+        // Show loading indicator
+        var link = document.getElementById('loadingLink');
+        link.innerHTML = '<i class="fas fa-spinner fa-spin fs-1"></i>';
+        // Disable the link to prevent multiple clicks
+        link.setAttribute('disabled', 'true');
+        link.classList.remove('explore');
+    }
+</script>
 
 
 

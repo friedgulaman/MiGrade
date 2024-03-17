@@ -17,11 +17,11 @@
   <link rel="stylesheet" href="{% static 'star-admin/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-  <link rel="icon" type="image/png" href="static/star-admin/images/ces_logo.png">
+  <link rel="icon" type="image/png" href="{% static 'star-admin/images/ces_logo.png' %}">
 </head>
 <style>
-  html{
-    background: white;
+  body{
+    background: #f5f5f5;
   }
 .description {
     max-width: 200px; /* Adjust the max-width as needed */
@@ -75,10 +75,10 @@ body::-webkit-scrollbar-track {
           </div>
           <div>
             <a class="navbar-brand brand-logo" href="{% url 'home_teacher' %}">
-              <img class="img-fluid fs-1" src="static/star-admin/images/logo_migrade_text.png" alt="logo" />
+              <img class="img-fluid fs-1" src="{% static 'star-admin/images/logo_migrade_text.png' %}" alt="logo" />
             </a>
             <a class="navbar-brand brand-logo-mini" href="{% url 'home_teacher' %}">
-              <img class="img-fluid" src="static/star-admin/images/logo_migrade_mini.png" alt="logo" />
+              <img class="img-fluid" src="{% static 'star-admin/images/logo_migrade_mini.png' %}" alt="logo" />
             </a>
           </div>
         </div>
@@ -102,8 +102,8 @@ body::-webkit-scrollbar-track {
                   <p class="mb-1 font-weight-semibold">{{ user }}</p>
                   <p class="fw-light text-muted mb-0">{{ user.email }}</p>
                 </div>
-                <a class="dropdown-item" href="{% url 'profile_page' %}"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
-                <a class="dropdown-item" href="{% url 'teachers_activity' %}"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
+                <a class="dropdown-item" href="{% url 'mt_profile_page' %}"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> My Profile</a>
+                <a class="dropdown-item" href="{% url 'activity' %}"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>
                 <a class="dropdown-item"  href="{% url 'logout_user' %}"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Sign Out</a>
               </div>
             </li>

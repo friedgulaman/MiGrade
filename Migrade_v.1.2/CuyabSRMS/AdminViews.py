@@ -113,6 +113,24 @@ def save_assignment(request):
         messages.error(request, 'Invalid request method')
 
     return JsonResponse({'success': False})
+
+@login_required
+@require_POST
+def remove_grade(request):
+    master_id = request.POST.get('master_id')
+    grade_name = request.POST.get('grade')
+
+    master = get_object_or_404(MT, id=master_id)
+
+    if grade_name in master.assigned_grades:
+        master.assigned_grades.remove(grade_name)
+        master.save()
+        messages.success(request, f'Grade "{grade_name}" removed from master successfully.')
+    else:
+        messages.error(request, f'Grade "{grade_name}" is not assigned to this master.')
+
+    return redirect('assign_master')
+    
 def add_master(request):
     if request.method != "POST":
         messages.error(request, "Invalid Method ")
