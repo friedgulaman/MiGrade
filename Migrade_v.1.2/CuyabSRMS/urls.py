@@ -18,6 +18,8 @@ from .ForgotPassword import ResetPasswordView
 from django.contrib.auth import views as auth_views
 from .teacher_required import teacher_required
 from .admin_required import admin_required
+from .mt_required import mt_required
+from .super_required import super_required
 
 
 
@@ -107,49 +109,14 @@ urlpatterns = [
     path('update-master/', admin_required(AdminViews.update_master), name='update_master'),
     path('delete-master/', admin_required(AdminViews.delete_master), name='delete_master'),
     path('download-activities/', admin_required(AdminViews.download_activities), name='download_activities'),
-    path('school-information/', AdminViews.school_information_view, name='school_information'),
-    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
-    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
-    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
-    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
-    path('school-information/', AdminViews.school_information_view, name='school_information'),
-    path('add/', AdminViews.add_school_view, name='add_school'),
-    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
-    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
-    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
-    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
-    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
-    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
-    path('school-information/', AdminViews.school_information_view, name='school_information'),
-    path('add/', AdminViews.add_school_view, name='add_school'),
-    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
-    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
-    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
-    path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
-
-
-
-    # path('school-information/', AdminViews.school_information_view, name='school_information'),
-    # path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
-    # path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
-    # path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
-    # path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
-    # path('school-information/', AdminViews.school_information_view, name='school_information'),
-    path('add/', AdminViews.add_school_view, name='add_school'),
-    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
-    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
-    path('sf10/edit_view/<int:id>/',AdminViews.sf10_edit_view, name='sf10_edit_view'),
-    path('sf10/edit/<int:id>/', AdminViews.sf10_edit, name='sf10_edit'),
-    path('sf10/delete/', AdminViews.sf10_delete, name='sf10_delete'),
-    path('download/<int:id>/', AdminViews.download_processed_document, name='download_processed_document'),
-    path('school-information/', AdminViews.school_information_view, name='school_information'),
-    path('add/', AdminViews.add_school_view, name='add_school'),
-    path('edit/<int:school_id>/', AdminViews.edit_school_view, name='edit_school'),
-    path('delete/<int:school_id>/', AdminViews.delete_school_view, name='delete_school'),
-    path('batch_process_documents/', AdminViews.batch_process_documents, name='batch_process_documents'),
-    path('detect-and-convert-tables/', AdminViews.detect_and_convert_tables, name='detect_and_convert_tables'),
-
-
+    path('school-information/', admin_required(AdminViews.school_information_view), name='school_information'),
+    path('sf10/edit_view/<int:id>/', admin_required(AdminViews.sf10_edit_view), name='sf10_edit_view'),
+    path('sf10/edit/<int:id>/', admin_required(AdminViews.sf10_edit), name='sf10_edit'),
+    path('sf10/delete/', admin_required(AdminViews.sf10_delete), name='sf10_delete'),
+    path('download/<int:id>/', admin_required(AdminViews.download_processed_document), name='download_processed_document'),
+    path('add/', admin_required(AdminViews.AdminViews.add_school_view), name='add_school'),
+    path('edit/<int:school_id>/', admin_required(AdminViews.edit_school_view), name='edit_school'),
+    path('delete/<int:school_id>/',  admin_required(AdminViews.delete_school_view), name='delete_school'),
 
     # Adviser Teacher
 
@@ -207,7 +174,6 @@ urlpatterns = [
     path('get_grades_and_sections', TeacherViews.get_grades_and_sections, name='get_grades_and_sections'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_grade_details', TeacherViews.get_grade_details, name='get_grade_details'),
-    # path('students', TeacherViews.get_students_by_grade_and_section, name='students'),
     path('calculate_grades', TeacherViews.calculate_grades, name='calculate_grades'),
     path('get_sections/', TeacherViews.get_sections, name='get_sections'),
     path('display_classrecord/<int:class_record_id>/', teacher_required(TeacherViews.display_classrecord), name='display_classrecord'),
@@ -276,14 +242,14 @@ urlpatterns = [
 
 
     # superadmin
-    path('home_superadmin', SuperAdminViews.home_superadmin, name='home_superadmin'),
-    path('manage_admin', SuperAdminViews.manage_admin, name='manage_admin'),
-    path('super_manage_master_teacher', SuperAdminViews.super_manage_master_teacher, name='super_manage_master_teacher'),
-    path('manage_teacher', SuperAdminViews.manage_teacher, name='manage_teacher'),
-    path('add_admin', SuperAdminViews.add_admin, name='add_admin'),    
-    path('get-admin-data/', SuperAdminViews.get_admin_data, name='get_admin_data'),
-    path('update-admin/', SuperAdminViews.update_admin, name='update_admin'),
-    path('delete-admin/', SuperAdminViews.delete_admin, name='delete_admin'),
+    path('home_superadmin', super_required(SuperAdminViews.home_superadmin), name='home_superadmin'),
+    path('manage_admin', super_required(SuperAdminViews.manage_admin), name='manage_admin'),
+    path('super_manage_master_teacher', super_required(SuperAdminViews.super_manage_master_teacher), name='super_manage_master_teacher'),
+    path('manage_teacher', super_required(SuperAdminViews.manage_teacher), name='manage_teacher'),
+    path('add_admin', super_required(SuperAdminViews.add_admin), name='add_admin'),    
+    path('get-admin-data/', super_required(SuperAdminViews.get_admin_data), name='get_admin_data'),
+    path('update-admin/', super_required(SuperAdminViews.update_admin), name='update_admin'),
+    path('delete-admin/', super_required(SuperAdminViews.delete_admin), name='delete_admin'),
 
    
 # transfer record Views
@@ -300,18 +266,13 @@ urlpatterns = [
     # path('transfer_class_record/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_class_record), name='transfer_class_record'),
     path('get_teacher_list/', teacher_required(TransferRecordViews.get_teacher_list), name='get_teacher_list'),
 
-
-    
-    # # Student
-    # path('student_list/', StudentViews.student_list, name='student_list'),
-
     # master teacher
-    path('home_mt', MasterTeacherViews.home_mt, name='home_mt'),
-    path('advisory_classes_mt', MasterTeacherViews.advisory_classes_mt, name='advisory_classes_mt'),
-    path('subject_classes_mt', MasterTeacherViews.subject_classes_mt, name='subject_classes_mt'),
-    path('distinct_sections', MasterTeacherViews.distinct_sections, name='distinct_sections'),
-    path('subject_quarters', MasterTeacherViews.subject_quarters, name='subject_quarters'),
-    path('subject_subjects', MasterTeacherViews.subject_subjects, name='subject_subjects'),
+    path('home_mt', mt_required(MasterTeacherViews.home_mt), name='home_mt'),
+    path('advisory_classes_mt', mt_required(MasterTeacherViews.advisory_classes_mt), name='advisory_classes_mt'),
+    path('subject_classes_mt', mt_required(MasterTeacherViews.subject_classes_mt), name='subject_classes_mt'),
+    path('distinct_sections', mt_required(MasterTeacherViews.distinct_sections), name='distinct_sections'),
+    path('subject_quarters', mt_required(MasterTeacherViews.subject_quarters), name='subject_quarters'),
+    path('subject_subjects', mt_required(MasterTeacherViews.subject_subjects), name='subject_subjects'),
 
     path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
 ]
