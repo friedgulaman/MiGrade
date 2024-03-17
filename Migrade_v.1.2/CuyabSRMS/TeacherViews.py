@@ -1004,7 +1004,6 @@ def view_classrecord(request):
         # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
     
-@login_required
 def display_students(request):
     user = request.user
 
