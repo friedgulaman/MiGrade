@@ -2,7 +2,7 @@ from functools import wraps
 from django.shortcuts import redirect
 from .views import ShowLoginPage
 
-def admin_required(view_func):
+def super_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         if request.user.is_authenticated and request.user.user_type == 1:

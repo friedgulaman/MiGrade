@@ -20,8 +20,8 @@ from .teacher_required import teacher_required
 from .admin_required import admin_required
 from .mt_required import mt_required
 from .super_required import super_required
-from .mt_required import mt_required
-from .super_required import super_required
+
+
 
 
 
@@ -120,7 +120,7 @@ urlpatterns = [
     path('sf10/edit/<int:id>/', admin_required(AdminViews.sf10_edit), name='sf10_edit'),
     path('sf10/delete/', admin_required(AdminViews.sf10_delete), name='sf10_delete'),
     path('download/<int:id>/', admin_required(AdminViews.download_processed_document), name='download_processed_document'),
-    path('add/', admin_required(AdminViews.AdminViews.add_school_view), name='add_school'),
+    path('add/', admin_required(AdminViews.add_school_view), name='add_school'),
     path('edit/<int:school_id>/', admin_required(AdminViews.edit_school_view), name='edit_school'),
     path('delete/<int:school_id>/',  admin_required(AdminViews.delete_school_view), name='delete_school'),
     path('school-information/', admin_required(AdminViews.school_information_view), name='school_information'),
@@ -128,9 +128,10 @@ urlpatterns = [
     path('sf10/edit/<int:id>/', admin_required(AdminViews.sf10_edit), name='sf10_edit'),
     path('sf10/delete/', admin_required(AdminViews.sf10_delete), name='sf10_delete'),
     path('download/<int:id>/', admin_required(AdminViews.download_processed_document), name='download_processed_document'),
-    path('add/', admin_required(AdminViews.AdminViews.add_school_view), name='add_school'),
+    # path('add/', admin_required(AdminViews.AdminViews.add_school_view), name='add_school'),
     path('edit/<int:school_id>/', admin_required(AdminViews.edit_school_view), name='edit_school'),
     path('delete/<int:school_id>/',  admin_required(AdminViews.delete_school_view), name='delete_school'),
+    path('remove_grade/', admin_required(AdminViews.remove_grade), name='remove_grade'),
 
     # Adviser Teacher
 
