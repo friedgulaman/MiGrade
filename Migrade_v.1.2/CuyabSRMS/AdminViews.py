@@ -572,6 +572,7 @@ def add_subject(request):
                 name=name,
                 assessment=assessment_data
             )
+            
 
             # Assuming you want to return the subject's ID upon successful creation
             return JsonResponse({'success': True, 'subject_id': subject.id})
@@ -590,7 +591,14 @@ def update_subject(request):
     if request.method == 'POST':
         subject_id = request.POST.get('subjectId')  # Correct the key names to match the form field names
         subject_name = request.POST.get('subjectName')  # Correct the key names to match the form field names
-        assessment = request.POST.get('assessment_update')  # Correct the key names to match the form field names
+        assessment_str = request.POST.get('assessment_update')
+        
+        assessment_str = assessment_str.replace('\\', '')
+        
+        try:
+            assessment = json.loads(assessment_str)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid assessment data'})  # Correct the key names to match the form field names
 
         subject = get_object_or_404(Subject, id=subject_id)
         subject.name = subject_name

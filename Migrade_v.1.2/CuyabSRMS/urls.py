@@ -258,6 +258,8 @@ urlpatterns = [
     path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', GenerationViews.generate_summary_of_quarterly_grades, 
          name='generate_summary_of_quarterly_grades'),
     path('generate_final_and_general_grades/<str:grade>/<str:section>/', GenerationViews.generate_final_and_general_grades, name='generate_final_and_general_grades'),
+    path('generate-summary-for-grades-4-to-6/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', GenerationViews.generate_summary_for_grades_4_to_6, name='generate_summary_for_grades_4_to_6'),
+
 
     #Archived
     path('archived-records/', ArchivedViews.archived_records, name='archived_records'),

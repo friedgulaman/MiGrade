@@ -53,3 +53,7 @@ def get_key(dictionary, key):
 @register.filter
 def key_exists(dictionary, key):
     return key in dictionary
+
+@register.filter
+def replace_spaces(value):
+    return value.replace(' ', '_')

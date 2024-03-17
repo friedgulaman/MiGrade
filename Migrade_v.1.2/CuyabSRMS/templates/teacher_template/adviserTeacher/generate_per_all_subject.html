@@ -7,10 +7,9 @@ New Class List
     .folder {
         width: 240px;
     }
-    .delete-dropdown{
+    .delete-dropdown {
         font-size: 12px;
     }
-    
 </style>
 <section class="content container mt-2">
     <div class="card">
@@ -24,10 +23,10 @@ New Class List
                         {% csrf_token %}
                         <div class="mt-5">
                             <ul class="d-flex flex-wrap justify-content-start align-items-center">
-                                {% for record in class_records %}
-                                    <li class="d-block p-2 ">
-                                        <div class="btn-group ">
-                                            <button type="button" class="folder d-flex justify-content-evenly align-items-center py-auto p-1 btn btn-secondary" onclick="showStudentList('{{ record.grade }}', '{{ record.section }}')">
+                                {% for quarter, data in quarters_data.items %}
+                                    {% for grade_section in data.grade_sections %}
+                                        <li class="d-block p-2 ">
+                                            <div class="btn-group ">
                                                 <div class="btn-group ">
                                                     <svg height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
                                                         <g>
@@ -37,14 +36,19 @@ New Class List
                                                     </svg>
                                                 </div>
                                                 <div class="btn-group">
-                                                    {{ record.grade }} {{ record.section }}
-                                                    <a href="{% url 'generate_summary_of_quarterly_grades' grade=record.grade section=record.section quarter=record.quarters %}">Generate Summary of Quarterly Grades</a>
-                                                    <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}">Generate Final Grade and General Average</a>
+                                                    <h5 class="dropdown-header">
+                                                        {{ grade_section.0 }} {{ grade_section.1 }} - {{ quarter }}
+                                                    </h5>
+                                                    <div class="btn-links">
+                                                        {% if grade_section.0 == 'Grade 1' or grade_section.0 == 'Grade 2' or grade_section.0 == 'Grade 3' %}
+                                                        <a href="{% url 'generate_summary_of_quarterly_grades' grade=grade_section.0 section=grade_section.1 quarter=quarter %}" class="btn btn-success">Generate Summary of Quarterly Grades</a>
+                                                        {% endif %}
+                                                        <a href="{% url 'generate_final_and_general_grades' grade=grade_section.0 section=grade_section.1 %}" class="btn btn-info">Generate Final Grade and General Average</a>
+                                                    </div>
                                                 </div>
-
-                                            </button>
-                                        </div>
-                                    </li>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
                                 {% endfor %}
                             </ul>
                         </div>
@@ -54,7 +58,13 @@ New Class List
         </div>
     </div>
 </section>
-
+<script>
+    $(document).ready(function(){
+        $('.dropdown-toggle').on('click', function(e) {
+            $(this).next('.dropdown-menu').toggle();
+        });
+    });
+</script>
 <script>
     var showStudentList = function(grade, section) {
         var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);

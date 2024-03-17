@@ -264,18 +264,13 @@ def process_google_sheet(spreadsheet_id, sheet_name):
                             key_value_pairs[term.replace(" ", "_")] = None
 
 
-            # Print LRN data and key-value pairs
-            print("LRN Data:")
-            print(lrn_data)
-            print("Key-Value Pairs:")
-            print(key_value_pairs)
-
             return {'lrn_data': lrn_data, 'key_value_pairs': key_value_pairs}
         else:
             return None
     except Exception as e:
         print(f"An error occurred in process_google_sheet: {e}")
         return None
+
 def get_sections(request):
     grade_id = request.GET.get('grade_id')
     
@@ -480,6 +475,9 @@ def save_json_data(request):
 
             section, _ = Section.objects.get_or_create(name=section_name, grade=grade)
 
+            if class_type_data == 'Advisory Class' and section.class_type == class_type:
+                raise ValidationError("Advisory class already exists for this grade and section.")
+
                             # Increment the total_students field for the respective section
             section.total_students += 1
             # Initialize or get the existing class_type dictionary for the section
@@ -540,30 +538,14 @@ def save_json_data(request):
                     }
                 )
    
-
-                existing_class_type = student.class_type 
-                print(f"existing class type : {existing_class_type}")
-
-                # if teacher_id in existing_class_type:
-                #     existing_class_type[teacher_id] += f", {subject}"
-                # else:
-                print(f"before student school year exist: {class_type}")
-                existing_class_type.update(class_type)
-                print(f"existing class type.append : {existing_class_type}")
-                
-
-
-                # print(f"Student.School year: {student.school_year}")
-                # print(f"school year: {school_year}")
-                # Update class_type for existing student
                 if not created:
                     
-                    print(f"during student school year exist: {existing_class_type}")
+                 
                     # Check if the existing student has the same school year
                     if student.school_year == school_year:
-                            print(f"after student school year exist: {existing_class_type}")
+                    
                             student.class_type =  existing_class_type
-                            print(f"student class type: {student.class_type}")
+                            
                             student.save()
                             
                     else:
@@ -582,24 +564,13 @@ def save_json_data(request):
                             section=section.name,
                             class_type=class_type
                         )
-                # Update other fields if needed
-                # student.name = name
-                # student.sex = sex
-                # student.birthday = birthday
-                # student.school_id = school_id
-                # student.division = division
-                # student.district = district
-                # student.school_name = school_name
-                # student.school_year = school_year
-                # student.grade = grade.name
-                # student.section = section.name
-            
+
 
                 # Save the associated objects before saving the student
                 grade.save()
                 student.save()
 
-            response_data = {'message': 'JSON data saved successfully'}
+            response_data = {'message': 'Student data saved successfully'}
             return JsonResponse(response_data)
         
         except json.JSONDecodeError:
@@ -1142,10 +1113,13 @@ def toggle_class_type(request):
 
 def sf9(request):
     # Query all students from the database
-    all_students = Student.objects.all()
-
+    teacher = request.user.teacher
+    teacher_id = teacher.id
+    students = Student.objects.filter(
+        Q(class_type__contains={teacher_id: "Advisory Class"}) | Q(class_type__contains={teacher_id: "Advisory Class, Subject Class"}) 
+    )
     # Pass the queryset to the template context
-    context = {'all_students': all_students}
+    context = {'all_students': students}
 
     # Render the template with the context
     return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
@@ -1358,6 +1332,7 @@ def student_list_for_advisory(request):
         # Fetch advisory classes based on teacher, grade, and section
         advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
 
+
         unique_keys = set()  # Initialize an empty set here
 
         if advisory_classes.exists():
@@ -1372,6 +1347,7 @@ def student_list_for_advisory(request):
         else:
             print("No AdvisoryClass objects found for the specified criteria")
 
+      
         # Filter students based on the class type
         students = Student.objects.filter(grade=grade, section=section)
         students_filtered = []
@@ -1530,11 +1506,13 @@ def student_list_for_advisory(request):
             teacher = user.teacher
 
             # Filter class records based on the teacher
-            class_records = ClassRecord.objects.filter(teacher=teacher)
+            class_records = AdvisoryClass.objects.filter(teacher=teacher)
 
             # Keep track of unique grade and section combinations
             unique_combinations = set()
             unique_class_records = []
+
+            print(unique_class_records)
 
             # Iterate through class records to filter out duplicates
             for record in class_records:
@@ -1544,6 +1522,8 @@ def student_list_for_advisory(request):
                     unique_combinations.add(combination)
                     unique_class_records.append(record)
 
+            
+        
 
         context = {
             'grade': grade,

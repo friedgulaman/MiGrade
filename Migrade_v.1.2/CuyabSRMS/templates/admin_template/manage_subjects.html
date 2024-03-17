@@ -91,9 +91,9 @@ Manage Subjects
                             </div>
 
                             <div class="form-group">
-                                <label for="assessment">Assessment (Ex.{"written_works_percentage": 40, "performance_task_percentage": 40, "quarterly_assessment_percentage": 20})</label>
+                                <label for="assessment">Assessment: Ex. {"WRITTEN WORKS": 40, "PERFORMANCE TASK": 40, "QUARTERLY ASSESSMENT": 20}</label>
                                 <input type="text" name="assessment" class="form-control"
-                                    id="assessment" placeholder='{"written_works_percentage": 40, "performance_task_percentage": 40, "quarterly_assessment_percentage": 20}'
+                                    id="assessment" placeholder='{"WRITTEN WORKS": 40, "PERFORMANCE TASK": 40, "QUARTERLY ASSESSMENT": 20}'
                                     required>
                             </div>
 
@@ -102,7 +102,6 @@ Manage Subjects
                     </div>
                 </div>
             </div>
-
         </div>
 
 
@@ -250,7 +249,16 @@ $(document).ready(function(){
             data: formData,
             success: function(response){
                 // Handle success response here
-                console.log(response);
+                if (response.success) {
+                    // If the response indicates success
+                    alert('Subject added successfully. Subject ID: ' + response.subject_id);
+                    location.reload();
+                    // You can redirect the user to another page or perform any other action
+                } else {
+                    // If the response indicates failure
+                    alert('Failed to add subject: ' + response.error_message);
+                    location.reload();
+                }
             },
             error: function(xhr, errmsg, err){
                 // Handle error response here
