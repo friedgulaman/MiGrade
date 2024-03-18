@@ -44,10 +44,10 @@ SECRET_KEY = django
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 # http://127.0.0.1:8000/
 
-# ALLOWED_HOSTS = ['192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1']
+ALLOWED_HOSTS = ['192.168.43.70','192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1', '192.168.1.134']
 
 
 
@@ -106,7 +106,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.2.0',
+        'NAME': 'migrade_v.2.1',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   
@@ -123,14 +123,14 @@ REST_FRAMEWORK = {
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"  # or "django.contrib.sessions.backends.cache", etc.
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 3600  # Set session expiration time to 1 hour
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_NAME = 'sessionid_user'
 CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
+# CSRF_COOKIE_SECURE = True
+# CSRF_COOKIE_HTTPONLY = True
 
 
 AUTH_PASSWORD_VALIDATORS = [
