@@ -166,7 +166,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 <a class="dropdown-item nav-link" href="javascript:void(0)" data-target="#rankings" data-text="Rankings">Rankings</a> <!-- Dropdown Item 7 -->
                             </li>
                             <li class="nav-item">
-                                <a class="dropdown-item nav-link" href="javascript:void(0)" data-target="#generate" data-text="Generate">Generate</a> <!-- Dropdown Item 8 -->
+                                <a class="dropdown-item nav-link" href="{% url 'generate_per_all_subject' %}">Generate</a> <!-- Dropdown Item 8 -->
                             </li>
                             {% if grade == "Grade 6" %}
                             <li class="nav-item">
@@ -517,15 +517,9 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                                 
                                                                 <div class="d-flex justify-content-center align-items-center">
                                                                     <span class="p-3 ">{{ record.grade }} {{ record.section }}</span>
-                                                                    <svg class="ms-2" height="24px" width="24px" focusable="false" viewBox="0 0 24 24" fill="#5f6368">
-                                                                        <g>
-                                                                            <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5 3c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2zm4 8h-8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1z"></path>
-                                                                            <path d="M0 0h24v24H0z" fill="none"></path>
-                                                                        </g>
-                                                                    </svg>
                                                                 </div>
                                                             
-                                                            <a href="{% url 'generate_final_and_general_grades' grade=record.grade section=record.section %}" class="btn btn-primary  mt-3 rounded-0">Generate Final Grade and General Average</a>
+                                                            <a href="{% url 'generate_per_all_subject' %}" class="btn btn-primary  mt-3 rounded-0">Go to</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -540,6 +534,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
         </div>
     </div>
 </section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     var showStudentList = function(grade, section) {
         var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
@@ -590,21 +585,25 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
     function refreshQuarterlyTab() {
         // Store the current scroll position in session storage
         sessionStorage.setItem('scrollPosition', window.scrollY);
-        // Store the current tab information in sessionStorage
-        sessionStorage.setItem('currentTab', 'quarterly');
+        // Store the current tab information in sessionStorage after a short delay
+        setTimeout(function() {
+            sessionStorage.setItem('currentTab', 'quarterly');
+        }, 100); // 100 milliseconds delay
 
-        // Reload the page
-        location.reload();
+        // Reload the page after a short delay
+        setTimeout(function() {
+            location.reload();
+        }, 200); // 200 milliseconds delay
     }
 
     // Ensure jQuery is loaded before using it
-    $(document).ready(function() {
+    {% comment %} $(document).ready(function() {
         var currentTab = sessionStorage.getItem('currentTab');
         if (currentTab === 'quarterly') {
             // Activate the #quarterly tab
             $('a[href="#quarterly"]').tab('show');
         }
-    });
+    }); {% endcomment %}
 </script>
 
 <script>
