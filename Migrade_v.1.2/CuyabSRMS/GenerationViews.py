@@ -10,6 +10,7 @@ import pandas as pd
 import shutil
 from datetime import datetime
 import urllib.parse
+from django.contrib import messages 
 from django.conf import settings
 from .utils import (
     write_student_names,
@@ -206,6 +207,14 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
 
     with open(copied_file_path, 'rb') as excel_file:
         response.write(excel_file.read())
+
+    # Add success or error message
+    if os.path.exists(copied_file_path):
+        messages.success(request, f'Summary of Quarterly Grades ({quarter}) generated successfully.')
+        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
+    else:
+        messages.error(request, 'An error occurred while generating the summary.')
+        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
 
     return response
 

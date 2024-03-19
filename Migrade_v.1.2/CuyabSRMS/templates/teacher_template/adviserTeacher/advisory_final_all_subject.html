@@ -1,0 +1,80 @@
+{% extends 'teacher_template/adviserTeacher/_blank_base.html' %}
+{% load static %}
+{% block title %}
+Student List for {{ grade }} {{ section }} {{ class_type }}
+{% endblock title %}
+
+{% block main_content %}
+<style>
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .final{
+        overflow: scroll;
+    }
+
+</style>
+    <div class="container-fluid mt-4 final m-5">
+            <h3>Final Grades {{ grade }} {{ section }}</h3>
+            {% if final_grades %}
+                <div class="table-responsive mt-3 ">
+                    <table class="table table-bordered table-striped ">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <!-- Columns for subjects -->
+                                {% for subject_info in final_grades.0.subjects %}
+                                    <th colspan="5">{{ subject_info.subject }}</th>
+                                {% endfor %}
+                                <th></th>
+                                <th>General Average</th>
+                            </tr>
+                            <tr>
+                                <th>ID</th>
+                                <th></th>
+                                <!-- Quarter grades and final grade -->
+                                {% for subject_info in final_grades.0.subjects %}
+                                    <th>1</th>
+                                    <th>2</th>
+                                    <th>3</th>
+                                    <th>4</th>
+                                    <th>Final Grade</th>
+                                {% endfor %}
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student_data in final_grades %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ student_data.name }}</td>
+                                    <!-- Loop through subject info -->
+                                    {% for subject_info in student_data.subjects %}
+                                        <!-- Loop through quarter grades and final grade -->
+                                        {% for quarter, grade in subject_info.quarter_grades.items %}
+                                            <td>{{ grade|floatformat:2 }}</td>
+                                        {% endfor %}
+                                        <td>{{ subject_info.final_grade|floatformat:2 }}</td>
+                                    {% endfor %}
+                                    <!-- Display general average -->
+                                    <td>{{ student_data.general_average|floatformat:2 }}</td>
+                                    <td>{{ student_data.general_average|floatformat:0 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+    </div>
+</div>
+<script>
+    // JavaScript to handle the back button click event
+    document.querySelector(".back-button").addEventListener("click", function () {
+        window.history.back();
+    });
+</script>
+{% endblock main_content %}
