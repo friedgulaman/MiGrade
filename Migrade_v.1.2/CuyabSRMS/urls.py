@@ -243,8 +243,8 @@ urlpatterns = [
     path('generate_grade_section_list/', teacher_required(GenerationViews.generate_grade_section_list), name='generate_grade_section_list'),
     path('generate-per-all-subject/', teacher_required(GenerationViews.generate_per_all_subject_view), name='generate_per_all_subject'),
     path('generate-excel/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_excel_for_all_subjects), name='generate_excel_for_all_subjects'),
-    path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_quarterly_grades), 
-         name='generate_summary_of_quarterly_grades'),
+    path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_quarterly_grades), name='generate_summary_of_quarterly_grades'),
+
     path('generate_final_and_general_grades/<str:grade>/<str:section>/', teacher_required(GenerationViews.generate_final_and_general_grades), name='generate_final_and_general_grades'),
     path('generate-summary-for-grades-4-to-6/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_for_grades_4_to_6), name='generate_summary_for_grades_4_to_6'),
 

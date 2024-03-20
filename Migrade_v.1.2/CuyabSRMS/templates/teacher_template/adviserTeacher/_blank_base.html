@@ -75,7 +75,7 @@ body::-webkit-scrollbar-track {
             <a class="navbar-brand brand-logo" href="{% url 'home_teacher' %}">
               <img class="img-fluid fs-1" src="{% static 'star-admin/images/logo_migrade_text.png' %}" alt="logo" />
             </a>
-            <a class="navbar-brand brand-logo-mini" href="{% url 'home_teacher' %}">
+            <a class="navbar-brand brand-logo-mini" href="{% url 'home_adviser_teacher' %}">
               <img class="img-fluid " src="{% static 'star-admin/images/logo_migrade_mini_3.png' %}" alt="logo" />
             </a>
           </div>
@@ -86,7 +86,7 @@ body::-webkit-scrollbar-track {
             <li class="nav-item dropdown  d-lg-block user-dropdown">
               <a id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                 {% if user.profile_image %}
-                <img class="img-xs rounded-circle" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
+                <img class="img-xs rounded-circle border border-3" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
                 {% else %}
                     <p>No profile image available.</p>
                 {% endif %}

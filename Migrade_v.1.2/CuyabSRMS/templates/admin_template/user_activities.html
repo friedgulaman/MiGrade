@@ -6,10 +6,11 @@ Adviser Teacher
 
 {% block main_content %}
 <style>
-    .page_nav{
-    position: fixed;
-    bottom: 0;
+    .page_nav {
+        position: fixed;
+        bottom: 0;
     }
+
     .back-button {
         color: #1027ac;
         font-size: 30px;
@@ -17,19 +18,28 @@ Adviser Teacher
         cursor: pointer;
     }
 </style>
-    <div class="container p-3">
-        <div class="d-flex justify-content-between align-items-center">
+<div class="container p-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
             <h3>User Activity</h3>
-            <a class="back-button">&larr;</a>
         </div>
-        {% if page_obj %}
-        <div class=" table-responsive card p-3 mb-3 mt-2">
+        <div>
+            <form action="{% url 'download_activities' %}" method="GET" id="downloadForm">
+                <input type="hidden" name="id" value="{{ user_id }}">
+                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to download activities?')">Download Activities</button>
+            </form>
+        </div>
+        
+    </div>
+    {% if page_obj %}
+
+    <div class="table-responsive card p-3 mb-3 mt-2">
+
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Details</th>
                     <th>Timestamp</th>
-
                 </tr>
             </thead>
             <tbody>
@@ -37,100 +47,63 @@ Adviser Teacher
                 <tr>
                     <td>{{ activity.details }}</td>
                     <td>{{ activity.timestamp }}</td>
-
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-        <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
-        <nav aria-label="Page navigation" class="page_nav container">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?id={{ user_id }}&page=1" aria-label="First">
-                        <span aria-hidden="true">&laquo;&laquo;</span>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="page_nav container">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?id={{ user_id }}&page=1" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.previous_page_number }}"
+                    aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:"-5" and num < page_obj.number|add:"5" %} <li class="page-item">
+                <a class="page-link" href="?id={{ user_id }}&page={{ num }}">{{ num }}</a>
                 </li>
                 {% endif %}
-                {% for num in page_obj.paginator.page_range %}
-                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
-                    <a class="page-link" href="?id={{ user_id }}&page={{ num }}">{{ num }}</a>
-                </li>
                 {% endfor %}
                 {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.next_page_number }}"
+                        aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                    <a class="page-link" href="?id={{ user_id }}&page={{ page_obj.paginator.num_pages }}"
+                        aria-label="Last">
                         <span aria-hidden="true">&raquo;&raquo;</span>
                     </a>
                 </li>
                 {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-        {% else %}
-        <p>No activities found for the user.</p>
-        {% endif %}
-    </div>
-    <script>
-        // JavaScript to handle the back button click event
-        document.querySelector(".back-button").addEventListener("click", function() {
-            window.location.href = 'home_admin';
-        });
-      </script>
-
-<div class="container">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">User Activities</h3>
-                </div>
-                <div class="card-body">
-                    <form action="{% url 'download_activities' %}" method="GET" class="mb-3">
-                        <input type="hidden" name="id" value="{{ user_id }}">
-                        <button type="submit" class="btn btn-success">Download Activities</button>
-                    </form>
-                    {% if activities %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Timestamp</th>
-                                    <th>Action</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for activity in activities %}
-                                <tr>
-                                    <td>{{ activity.timestamp }}</td>
-                                    <td>{{ activity.action }}</td>
-                                    <td>{{ activity.details }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info" role="alert">
-                        No activities found for the user.
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <p>No activities found for the user.</p>
+    {% endif %}
 </div>
+<script>
+    // JavaScript to handle the back button click event
+    document.querySelector(".back-button").addEventListener("click", function () {
+        window.location.href = 'home_admin';
+    });
+</script>
 {% endblock main_content %}

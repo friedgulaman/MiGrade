@@ -128,33 +128,23 @@ Manage Teachers
                                 <tr>
                                     <th>ID</th>
                                     <th>Teacher</th>
-                                    <th>Grade</th>
-                                    <th>Section</th>
+                                    <th>Grade & Section</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for teacher in teachers %}
-                                {% if teacher.sections.all %}
-                                {% for section in teacher.sections.all %}
-                                    <tr class="text-muted">
-                                        <td>{{ teacher.user.id }}</td>
-                                        <td>
-                                            {{ teacher.user.first_name }} {{ teacher.user.last_name }}
-                                        </td>
-                                       
-                                                <td class="text-muted">{{ section.grade.name }}</td>
-                                                <td class="text-muted">{{ section.name }}</td>
-                                            {% endfor %}
-                                        {% else %}
-                                        <td class="text-muted">{{ teacher.user.id }}</td>
-                                        <td class="text-muted">
-                                            {{ teacher.user.first_name }} {{ teacher.user.last_name }}
-                                        </td>
-                                            <td class="text-muted">Not assigned</td>
-                                            <td class="text-muted">Not assigned</td>
-                                        {% endif %}
-                                    </tr>
-                                {% endfor %}
+                              {% for teacher in teachers %}
+                              <tr class="text-muted">
+                                  <td>{{ teacher.user.id }}</td>
+                                  <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
+                                  {% if teacher.grade_section %}
+                                  <td class="text-muted">{{ teacher.grade_section }}</td>
+                              {% else %}
+                                  <td class="text-muted">Not assigned</td>
+                              {% endif %}
+                              </tr>
+                          {% endfor %}
+                          
                             </tbody>
                         </table>
                     </div>
