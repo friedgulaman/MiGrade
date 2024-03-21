@@ -22,6 +22,12 @@ Student List for {{ grade }} {{ section }}
                     </div>
                 </div>
                 <div class=" me-4">
+                    <form action="{% url 'generate_per_all_subject'%}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Generate Final grade and General Avevrage</button>
+                   
+                </div>
+                <div class=" me-4">
                     <a class="back-button">&larr; Back</a>
                 </div>
             </div>

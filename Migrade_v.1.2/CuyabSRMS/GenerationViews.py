@@ -284,7 +284,7 @@ def generate_final_and_general_grades(request, grade, section):
     write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
     write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
     write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUBNAN', 26, 30)
+    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
     write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
     write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
     write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
@@ -1072,20 +1072,8 @@ def generate_excel_for_sf9(request, student_id):
 
     print(school_info)
     # Check which specific records are missing
-    missing_records = []
     if advisory_class is None:
-        missing_records.append("Advisory Class")
-    if general_average is None:
-        missing_records.append("General Average")
-    if attendance_record is None:
-        missing_records.append("Attendance Record")
-    if learners_observation is None:
-        missing_records.append("Learners Observation")
-
-    # If any required record is missing, return a 404 response with a message
-    if missing_records:
-        missing_records_str = ', '.join(missing_records)
-        return HttpResponseNotFound(f"One or more required records not found for this student: {missing_records_str}")
+         return render(request, 'teacher_template/adviserTeacher/generate_excel_for_sf9.html', {'advisory_class_missing': True})
 
     # Proceed with generating the Excel file
     print(f"learners_observation: {learners_observation}")
@@ -1270,6 +1258,37 @@ def generate_grade_section_list(request):
         }
 
         return render(request, 'teacher_template/adviserTeacher/generate_grade_section_list.html', context)
+    else:
+        # Handle the case where the user is not a teacher
+        return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
+    
+@login_required
+def generate_final_grade_view(request):
+    # Retrieve the user and check if the user is a teacher
+    user = request.user
+    if hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+
+        # Filter class records based on the teacher
+        class_records = ClassRecord.objects.filter(teacher=teacher)
+
+        # Create a set to store grade_sections
+        grade_sections = set()
+
+        # Iterate through class records to organize data by grade and section
+        for record in class_records:
+            grade_sections.add((record.grade, record.section))
+
+        # Convert the set to a sorted list
+        grade_sections = sorted(grade_sections)
+
+        context = {
+            'grade_sections': grade_sections,
+        }
+
+        return render(request, 'teacher_template/adviserTeacher/generate_final_grade.html', context)
+    
     else:
         # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")

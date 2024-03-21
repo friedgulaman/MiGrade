@@ -99,8 +99,8 @@
   </div>
   
     <div class="d-flex  align-items-center">
-      <!-- <a class="nav-link" href="#">Documentation</a>
-      <a class="nav-link" href="#">FAQs</a> -->
+       <a class="nav-link" href="#">Documentation</a>
+      <a class="nav-link" href="{% url 'faq_view' %}">FAQs</a> 
       <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
         <img class="img-xs rounded-circle" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
       <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">

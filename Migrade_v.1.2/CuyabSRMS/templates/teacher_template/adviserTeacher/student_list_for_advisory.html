@@ -166,7 +166,11 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                 <a class="dropdown-item nav-link" href="javascript:void(0)" data-target="#rankings" data-text="Rankings">Rankings</a> <!-- Dropdown Item 7 -->
                             </li>
                             <li class="nav-item">
+                                {% if grade in 'Grade 1' or grade in 'Grade 2' or grade in 'Grade 3' %}
                                 <a class="dropdown-item nav-link" href="{% url 'generate_per_all_subject' %}">Generate</a> <!-- Dropdown Item 8 -->
+                            {% elif grade in 'Grade 4' or grade in 'Grade 5' or grade in 'Grade 6' %}
+                                <a class="dropdown-item nav-link" href="{% url 'generate_final_grade' %}">Generate</a> <!-- Dropdown Item 8 -->
+                            {% endif %}
                             </li>
                             {% if grade == "Grade 6" %}
                             <li class="nav-item">

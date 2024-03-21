@@ -477,6 +477,7 @@ class GeneralAverage(models.Model):
     section = models.CharField(max_length=50)
     general_average = models.FloatField(null=True, blank=True)
     remarks = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"{self.student_name} - {self.grade} - {self.section} - General Average: {self.general_average}"

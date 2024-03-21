@@ -75,6 +75,10 @@ from google.api_core.client_options import ClientOptions
 import calendar
 from calendar import month_name
 
+def faq_view(request):
+    # Dito mo ilalagay ang iyong logic para sa FAQ page
+    return render(request, 'teacher_template/adviserTeacher/faq.html')  #saka etooo
+
 @login_required
 def home_teacher(request):
     announcements = Announcement.objects.all()
@@ -448,7 +452,7 @@ def save_json_data(request):
                 subject = 'Advisory Class'
             elif class_type_data == 'Subject':
                 subject = 'Subject Class'
-            elif class_type_data == 'advisory_Subject':
+            elif class_type_data == 'advisory_Subject_g1' or class_type_data == 'advisory_Subject_g4':
                 subject = 'Advisory Class, Subject Class'
 
             teacher_id = teacher.id
@@ -467,18 +471,95 @@ def save_json_data(request):
 
             section, _ = Section.objects.get_or_create(name=section_name, grade=grade)
 
-            if class_type_data == 'Advisory Class' and section.class_type == class_type:
-                raise ValidationError("Advisory class already exists for this grade and section.")
 
+            if 'Advisory Class, Subject Class' in subject:
+                existing_asc = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__icontains="Advisory Class, Subject Class")
+                )
+                
+                # Check if an advisory class already exists
+                if existing_asc.exists():
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+                existing_subject = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                     Q(class_type__contains={teacher_id: "Subject Class"})
+                )
+                
+                # Check if an advisory class already exists
+                if existing_subject.exists():
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+                # existing_advisory = Student.objects.filter(
+                #     Q(grade=grade_name) &
+                #     Q(section=section_name) &
+                #     Q(school_year=school_year) &
+                #     Q(class_type__contains={teacher_id: "Advisory Class"})
+                # )
+                
+                # # Check if an advisory class already exists
+                # if existing_advisory.exists():
+                #     return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+                             
+            elif 'Subject Class' in subject:
+                existing_advisory_class = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__icontains="Advisory Class"))
+                
+
+                # Check if an advisory class already exists
+                if existing_advisory_class.exists():
+                    return JsonResponse({'status': 'error', 'message': f"An Advisory Class already exists for this {grade_name} {section_name} - School Year: {school_year}. If you wish to add a Subject Class, please refer to the Advisory Class and Subject Class and select the appropriate Class type."})
+
+                existing_subject_class = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__contains={teacher_id: "Subject Class"})
+                )
+
+                # Check if a subject class already exists
+                if existing_subject_class.exists():
+                    return JsonResponse({'status': 'error', 'message': f"Subject class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+            elif 'Advisory Class' in subject:
+                existing_sub = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__icontains="Subject Class")
+                )
+                
+                # Check if a subject class already exists
+                if existing_sub.exists():
+                    return JsonResponse({'status': 'error', 'message': f"Subject class already exists for this {grade_name} {section_name} - School Year: {school_year}. If you wish to add Advisory Class, please refer to the Advisory Class and Subject Class and select the appropriate Class type."})
+
+                existing_adv = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    (Q(class_type__icontains="Advisory Class") | Q(class_type__icontains="Advisory Class, Subject Class"))
+                )
+                
+                # Check if an advisory class already exists
+                if existing_adv.exists():
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+            
                             # Increment the total_students field for the respective section
             section.total_students += 1
             # Initialize or get the existing class_type dictionary for the section
             existing_class_type = section.class_type or {}
 
             # Check if the class_type already exists
-            if any(existing_teacher_id == teacher_id for existing_teacher_id in existing_class_type):
-                # Raise an error indicating that the class_type already exists
-                raise ValidationError("Class type already exists for this teacher.")
+ 
 
             # Update the existing class_type with the new value
             existing_class_type.update(class_type)
@@ -562,12 +643,12 @@ def save_json_data(request):
                 grade.save()
                 student.save()
 
-            response_data = {'message': 'Created a class successfully'}
+            response_data = {'status': 'success', 'message': 'The class has been successfully created'}
             return JsonResponse(response_data)
         
-        except json.JSONDecodeError:
-            response_data = {'message': 'Invalid JSON data'}
-            return JsonResponse(response_data, status=400)
+        except ValidationError as e:
+        # Return a JSON response with the error message
+            return JsonResponse({'error': str(e)})
         
     else:
         response_data = {'message': 'Method not allowed'}
@@ -1283,6 +1364,7 @@ def student_list_for_subject(request):
 
                 # Determine remarks based on transmuted grade
                 remarks = determine_remarks(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
+                status = determine_status(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
 
                 # If both initial grade and transmuted grade exist, append the data to the subject_grades dictionary
                 if highest_initial_grade is not None and transmuted_grade is not None:
@@ -1291,7 +1373,8 @@ def student_list_for_subject(request):
                         'student_name': student.name,
                         'highest_initial_grade': highest_initial_grade.initial_grades,
                         'transmuted_grade': transmuted_grade.transmuted_grades,
-                        'remarks': remarks
+                        'remarks': remarks,
+                        'status': status
                     })
 
             # Sort the students for this subject by highest initial grade
@@ -2220,6 +2303,21 @@ def determine_remarks(general_average):
         return 'PASSED'
     else:
         return 'FAILED'
+    
+def determine_status(general_average):
+    if general_average is None:
+        return 'No Grade'
+     
+    if general_average >= 98:
+        return 'PASSED'
+    elif general_average >= 95:
+        return 'PASSED'
+    elif general_average >= 90:
+        return 'PASSED'
+    elif general_average >= 75:
+        return 'PASSED'
+    else:
+        return 'FAILED'
 
 
 def save_general_average(student_data, grade, section):
@@ -2229,6 +2327,7 @@ def save_general_average(student_data, grade, section):
         student = student_data['student']
         general_average = round(student_data['general_average'], 2)
         remarks = determine_remarks(general_average)
+        status = determine_status(general_average)
 
         # Filter GeneralAverage objects based on student, grade, and section
         general_average_records = GeneralAverage.objects.filter(
@@ -2243,6 +2342,7 @@ def save_general_average(student_data, grade, section):
             general_average_record = general_average_records.first()
             general_average_record.general_average = general_average
             general_average_record.remarks = remarks
+            general_average_record.status = status
             general_average_record.save()
         else:
             # Create a new record if none exist
@@ -2251,7 +2351,8 @@ def save_general_average(student_data, grade, section):
                 grade=grade,
                 section=section,
                 general_average=general_average,
-                remarks=remarks
+                remarks=remarks,
+                status=status
             )
 
 def display_all_final_grades(request, grade, section):
