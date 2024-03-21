@@ -105,6 +105,170 @@ margin-right: 5px;
     .dropdown-toggle:hover{
         color: #f5f5f5;
     }
+
+    .sr-only {
+  position: absolute;
+  top: -30em;
+}
+
+table.sortable td,
+table.sortable th {
+  padding: 0.155em 0.35em;
+  width: 8em;
+}
+
+table.sortable th {
+  font-weight: bold;
+  position: relative;
+}
+
+table.sortable th.no-sort {
+  padding-top: 0.35em;
+}
+
+table.sortable th:nth-child(5) {
+  width: 1em;
+}
+
+table.sortable th button {
+  padding: 4px;
+  margin: 1px;
+  font-size: 100%;
+  font-weight: bold;
+  background: none;
+  border: none;
+  display: inline;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: left;
+  outline: none;
+  cursor: pointer;
+}
+
+table.sortable th button span {
+  position: absolute;
+  right: 4px;
+}
+
+table.sortable th[aria-sort="descending"] span::after {
+  content: "↓";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+
+table.sortable th[aria-sort="ascending"] span::after {
+  content: "↑";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+
+table.show-unsorted-icon th:not([aria-sort]) button span::after {
+  content: "♢";
+  color: currentcolor;
+  font-size: 100%;
+  position: relative;
+  top: -3px;
+  left: -4px;
+}
+
+table.sortable td.num {
+  text-align: right;
+}
+
+table.sortable tbody td {
+  padding: 12px; 
+}
+
+/* Focus and hover styling */
+
+table.sortable th button:focus,
+table.sortable th button:hover {
+  border: none; 
+}
+
+table.sortable th button:focus span,
+table.sortable th button:hover span {
+  right: 2px;
+}
+
+table.sortable th:not([aria-sort]) button:focus span::after,
+table.sortable th:not([aria-sort]) button:hover span::after {
+  content: "↓";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+.table_res{
+    position: relative;
+    max-height: 90vh;
+    overflow: auto;
+}
+.table_res::-webkit-scrollbar {
+        width: 10px;
+        /* For Chrome, Safari, and Opera */
+        display: none;
+        /* Hide the scrollbar by default */
+    }
+
+    .table_res:hover::-webkit-scrollbar {
+        display: block;
+        /* Show the scrollbar on hover */
+    }
+
+    .table_res::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        /* For Chrome, Safari, and Opera */
+    }
+
+    .table_res::-webkit-scrollbar-track {
+        background-color: #f5f5f5;
+        /* For Chrome, Safari, and Opera */
+    }
+    #subjectRankings {
+    position: relative;
+    margin-top: 30px;
+}
+
+.ul_counter {
+    position: absolute;
+    border: 1px solid rgba(0, 0, 0, 0);
+    top: 6em;
+    left: 12px;
+    width: 150px;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+.ul_counter ul {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.ul_counter ul li {
+    list-style: none;
+    border: 1px solid rgba(0, 0, 0, 0);
+    vertical-align: middle;
+    line-height: 0.92;
+    padding: 12.01px;
+    width: 8em;
+    font-size: 0.820rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    .ul_counter {
+        left: 0;
+    }
+}
+
 </style>
 <section class="content container mt-2">
     <div class="card">
@@ -192,8 +356,8 @@ margin-right: 5px;
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade show" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
-                       <div class="container mt-4">
+                    <div class="tab-pane fade show table_res" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
+                       <div class="container mt-4 ">
                         <div class="grid-margin stretch-card">
                             <div>
                                 <div class="card-body">
@@ -212,14 +376,35 @@ margin-right: 5px;
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="table-responsive ">
+                                        <table class="table table-hover sortable">
                                             <thead>
                                                 <tr>
-                                                    <th>File</th>
-                                                <th>Date Modified</th>
-                                                <th>Quarter</th>
-                                                <th>Subject</th>
+                                                <th>
+                                                    <button>
+                                                    File Name
+                                                    <span aria-hidden="true"></span>
+                                                  </button>
+                                                </th>
+                                                <th aria-sort="ascending">
+                                                    <button>
+                                                     Data Modified
+                                                      <span aria-hidden="true"></span>
+                                                    </button>
+                                                  </th>
+                                                
+                                                  <th>
+                                                    <button>
+                                                      Quarter
+                                                      <span aria-hidden="true"></span>
+                                                    </button>
+                                                  </th>
+                                                  <th>
+                                                    <button>
+                                                      Subject
+                                                      <span aria-hidden="true"></span>
+                                                    </button>
+                                                  </th>
                                                 <th></th>
                                                 </tr>
                                             </thead>
@@ -279,6 +464,7 @@ margin-right: 5px;
                                                         
                                                         </td>
                                                     </tr>
+                                                    
                                                 {% endfor %}
                                             {% else %}
                                                 <tr>
@@ -358,21 +544,34 @@ margin-right: 5px;
                                             {% for subject, grades in subject_grades.items %}
                                                 <div class="card subjectRanking p-4" id="{{ subject }}">
                                                     <h3 class="mt-2"><strong>Subject:</strong><em>{{ subject }}</em></h3>
-                                                    <table class="table table-bordered">
+                                                    <div class="ul_counter">
+                                                        <ul>
+                                                            {% for grade in grades %}
+                                                            <li> <td>{{ forloop.counter }}</td></li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                   
+                                                    <table class="table table-bordered sortable">
                                                         <thead>
                                                             <tr>
                                                                 <th>Rank</th>
                                                                 <th>Student Name</th>
-                                                                <th>Grade</th>
+                                                                <th class="num">
+                                                                    <button>
+                                                                        Grade
+                                                                        <span aria-hidden="true"></span>
+                                                                      </button>
+                                                                </th>
                                                                 <th>Remarks</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             {% for grade in grades %}
                                                                 <tr>
-                                                                    <td>{{ forloop.counter }}</td>
+                                                                    <td></td>
                                                                     <td>{{ grade.student_name }}</td>
-                                                                    <td>{{ grade.transmuted_grade }}</td>
+                                                                    <td class="num">{{ grade.transmuted_grade }}</td>
                                                                     <td>{{ grade.remarks }}</td>
                                                                 </tr>
                                                             {% endfor %}
@@ -507,4 +706,165 @@ margin-right: 5px;
         generateGradeSectionList(grade, section);
     });
 </script>
+<script>
+    'use strict';
+
+class SortableTable {
+  constructor(tableNode) {
+    this.tableNode = tableNode;
+
+    this.columnHeaders = tableNode.querySelectorAll('thead th');
+
+    this.sortColumns = [];
+
+    for (var i = 0; i < this.columnHeaders.length; i++) {
+      var ch = this.columnHeaders[i];
+      var buttonNode = ch.querySelector('button');
+      if (buttonNode) {
+        this.sortColumns.push(i);
+        buttonNode.setAttribute('data-column-index', i);
+        buttonNode.addEventListener('click', this.handleClick.bind(this));
+      }
+    }
+
+    this.optionCheckbox = document.querySelector(
+      'input[type="checkbox"][value="show-unsorted-icon"]'
+    );
+
+    if (this.optionCheckbox) {
+      this.optionCheckbox.addEventListener(
+        'change',
+        this.handleOptionChange.bind(this)
+      );
+      if (this.optionCheckbox.checked) {
+        this.tableNode.classList.add('show-unsorted-icon');
+      }
+    }
+  }
+
+  setColumnHeaderSort(columnIndex) {
+    if (typeof columnIndex === 'string') {
+      columnIndex = parseInt(columnIndex);
+    }
+
+    for (var i = 0; i < this.columnHeaders.length; i++) {
+      var ch = this.columnHeaders[i];
+      var buttonNode = ch.querySelector('button');
+      if (i === columnIndex) {
+        var value = ch.getAttribute('aria-sort');
+        if (value === 'descending') {
+          ch.setAttribute('aria-sort', 'ascending');
+          this.sortColumn(
+            columnIndex,
+            'ascending',
+            ch.classList.contains('num')
+          );
+        } else {
+          ch.setAttribute('aria-sort', 'descending');
+          this.sortColumn(
+            columnIndex,
+            'descending',
+            ch.classList.contains('num')
+          );
+        }
+      } else {
+        if (ch.hasAttribute('aria-sort') && buttonNode) {
+          ch.removeAttribute('aria-sort');
+        }
+      }
+    }
+  }
+
+  sortColumn(columnIndex, sortValue, isNumber) {
+    function compareValues(a, b) {
+      if (sortValue === 'ascending') {
+        if (a.value === b.value) {
+          return 0;
+        } else {
+          if (isNumber) {
+            return a.value - b.value;
+          } else {
+            return a.value < b.value ? -1 : 1;
+          }
+        }
+      } else {
+        if (a.value === b.value) {
+          return 0;
+        } else {
+          if (isNumber) {
+            return b.value - a.value;
+          } else {
+            return a.value > b.value ? -1 : 1;
+          }
+        }
+      }
+    }
+
+    if (typeof isNumber !== 'boolean') {
+      isNumber = false;
+    }
+
+    var tbodyNode = this.tableNode.querySelector('tbody');
+    var rowNodes = [];
+    var dataCells = [];
+
+    var rowNode = tbodyNode.firstElementChild;
+
+    var index = 0;
+    while (rowNode) {
+      rowNodes.push(rowNode);
+      var rowCells = rowNode.querySelectorAll('th, td');
+      var dataCell = rowCells[columnIndex];
+
+      var data = {};
+      data.index = index;
+      data.value = dataCell.textContent.toLowerCase().trim();
+      if (isNumber) {
+        data.value = parseFloat(data.value);
+      }
+      dataCells.push(data);
+      rowNode = rowNode.nextElementSibling;
+      index += 1;
+    }
+
+    dataCells.sort(compareValues);
+
+    // remove rows
+    while (tbodyNode.firstChild) {
+      tbodyNode.removeChild(tbodyNode.lastChild);
+    }
+
+    // add sorted rows
+    for (var i = 0; i < dataCells.length; i += 1) {
+      tbodyNode.appendChild(rowNodes[dataCells[i].index]);
+    }
+  }
+
+  /* EVENT HANDLERS */
+
+  handleClick(event) {
+    var tgt = event.currentTarget;
+    this.setColumnHeaderSort(tgt.getAttribute('data-column-index'));
+  }
+
+  handleOptionChange(event) {
+    var tgt = event.currentTarget;
+
+    if (tgt.checked) {
+      this.tableNode.classList.add('show-unsorted-icon');
+    } else {
+      this.tableNode.classList.remove('show-unsorted-icon');
+    }
+  }
+}
+
+// Initialize sortable table buttons
+window.addEventListener('load', function () {
+  var sortableTables = document.querySelectorAll('table.sortable');
+  for (var i = 0; i < sortableTables.length; i++) {
+    new SortableTable(sortableTables[i]);
+  }
+});
+
+    </script>
 {% endblock main_content %}

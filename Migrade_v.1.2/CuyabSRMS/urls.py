@@ -54,7 +54,7 @@ urlpatterns = [
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
-    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
     path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
 
    
@@ -291,6 +291,7 @@ urlpatterns = [
     path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
     path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
     path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
+    path('reject-btn_message', teacher_required(TransferRecordViews.reject_message), name='reject_message'),
     path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
     
 

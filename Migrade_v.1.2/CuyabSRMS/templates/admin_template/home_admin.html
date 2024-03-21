@@ -144,7 +144,7 @@ MiGrade - Admin
     background: transparent;
   }
   .activity-log{
-    max-height: 380px;
+    max-height: 580px;
     overflow: scroll;
     overflow-x: hidden;
   }
@@ -199,7 +199,7 @@ MiGrade - Admin
 
         </div>
         <div class="p-2">
-        <img src="static/star-admin/images/u_r_admin.svg" style="width: 140px; filter: drop-shadow(0 0 0.55rem rgb(78, 78, 78));">
+        <img src="{% static 'star-admin/images/logo_migrade_text.png' %}" style="width: 200px; filter: drop-shadow(0 0 0.55rem rgb(78, 78, 78));">
       </div>
       </div>
       <div class="col-5 second">
@@ -243,7 +243,7 @@ MiGrade - Admin
   </div>
   <div class="container mb-5">
     <div class="row justify-content-evenly mt-4">
-      <div class="col-lg-6 me-lg-2 mb-4 mb-lg-0 card p-4">
+      <div class="col-lg-6 me-lg-2 mb-4 mb-lg-0 card p-2">
         <div class="d-sm-flex align-items-center justify-content-between border-bottom">
           <ul class="nav nav-tabs text" role="tablist">
             <li class="nav-item">
@@ -256,7 +256,7 @@ MiGrade - Admin
           <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
             <div>
               <div>
-                <canvas id="studentsChart" width="400" height="200"></canvas>
+                <canvas id="studentsChart" width="400" height="300"></canvas>
               </div>
             </div>
           </div>
@@ -344,8 +344,8 @@ MiGrade - Admin
           },
           layout: {
             padding: {
-              left: 50, // Adjust the left padding to add more space
-              right: 50,
+              left: 0, // Adjust the left padding to add more space
+              right: 0,
               top: 0,
               bottom: 0
             }

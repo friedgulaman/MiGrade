@@ -32,7 +32,9 @@ Manage Teachers
 .teacher-link{
   text-decoration: none;
 }
-
+.text_grade_section{
+  max-width: 550px;
+}
 </style>
 <section class=" container p-4">
   {% include 'admin_template/_green.html' %}
@@ -138,7 +140,7 @@ Manage Teachers
                                   <td>{{ teacher.user.id }}</td>
                                   <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
                                   {% if teacher.grade_section %}
-                                  <td class="text-muted">{{ teacher.grade_section }}</td>
+                                  <td class="text-muted"><textarea class="text_grade_section container form-text">{{ teacher.grade_section }}</textarea></td>
                               {% else %}
                                   <td class="text-muted">Not assigned</td>
                               {% endif %}

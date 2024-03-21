@@ -167,7 +167,6 @@ def process_google_sheet(spreadsheet_id, sheet_name):
     client_email = os.getenv("SHEET_CLIENT_EMAIL")
     client_id = os.getenv("SHEET_CLIENT_ID")
     token_uri = "https://oauth2.googleapis.com/token"  # Provide the token_uri
-
     # Construct credentials from environment variables
     credentials = service_account.Credentials.from_service_account_info({
         "type": "service_account",

@@ -1,53 +1,80 @@
 {% extends 'admin_template/admin_base.html' %}
 
 {% block page_title %}
-Home
+upload
 {% endblock page_title %}
 
 {% block main_content %}
-{% load static %}
 <style>
-    .table_con{
-max-width: 1010px;
-overflow: hidden;
+    .table-container {
+        max-width: 100%;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+
+    th,
+    td {
+        font-size: 10px;
+        padding: 5px;
+        text-align: center;
+
+    }
+
+    td {
+        color: #737F8B;
+    }
+
+
+    .sf10 {
+        max-width: 100%;
+        height: 100vh;
     }
 </style>
-<section>
-<div class="container card p-4 table_con ">
-    <h3 class="mb-4">Archived Records</h3>
-<div class="table-responsive " >
-<table class="table table-striped table-bordered table-hover">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Grade</th>
-            <th>Section</th>
-            <th>Subject</th>
-            <th>Teacher</th>
-            <th>Quarters</th>
-            <th>Date Archived</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for record in archived_records %}
-        <tr>
-            <td>{{ record.name }}</td>
-            <td>{{ record.grade }}</td>
-            <td>{{ record.section }}</td>
-            <td>{{ record.subject }}</td>
-            <td>{{ record.teacher.user.first_name }} {{ record.teacher.user.last_name }}</td>
-            <td>{{ record.quarters }}</td>
-            <td>{{ record.date_archived }}</td>
-            <td>
-                <!-- Add a button/link to restore the archived record -->
-                <!-- <a href="{% url 'restore_archived_record' record.id %}?return_url={{ request.path }}" class="btn btn-primary btn-sm">Restore</a> -->
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container-fluid  ">
+    <div class="card sf10">
+        <div class="card-body p-4">
+     <h3 class="mb-4 p-2">Archived Records</h3>
+            <div class="table-container">
+                <div>
+
+                    <table class="container">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Section</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Quarters</th>
+                                <th>Date Archived</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in archived_records %}
+                            <tr>
+                                <td>{{ record.name }}</td>
+                                <td>{{ record.grade }}</td>
+                                <td>{{ record.section }}</td>
+                                <td>{{ record.subject }}</td>
+                                <td>{{ record.teacher.user.first_name }} {{ record.teacher.user.last_name }}</td>
+                                <td>{{ record.quarters }}</td>
+                                <td>{{ record.date_archived }}</td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
-</section>
 {% endblock main_content %}

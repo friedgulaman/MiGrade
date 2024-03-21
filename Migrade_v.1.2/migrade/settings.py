@@ -11,8 +11,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
-from . info import *
-from .info import EMAIL_USE_TLS, EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_PORT
 from django.conf.urls.static import static
 import sys
 import os
@@ -23,6 +21,12 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
 
 EMAIL_USE_TLS = EMAIL_USE_TLS
 EMAIL_HOST = EMAIL_HOST
@@ -38,7 +42,10 @@ EMAIL_DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
 django = os.getenv("DJANGO")
+public = os.getenv("RECAPTCHA_PUBLIC_KEY")
+private = os.getenv("RECAPTCHA_PRIVATE_KEY ")
 SECRET_KEY = django
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -201,12 +208,13 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # You can keep the default backend too.
 ]
 
-# reCAPTCHA settings
-RECAPTCHA_PUBLIC_KEY = '6LdtT_UoAAAAABPTKkOz8yelSuu-p3vpt4VbXIMI'
-RECAPTCHA_PRIVATE_KEY = '6LdtT_UoAAAAABm6NBYEVktmHP2vIGajVg2_kzJW'
+RECAPTCHA_PUBLIC_KEY = public
+RECAPTCHA_PRIVATE_KEY = private
+
 
 
 # Define the base directory where uploaded files will be stored
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # or any large number that suits your needs
+PASSWORD_RESET_TIMEOUT_MINUTES = 15
