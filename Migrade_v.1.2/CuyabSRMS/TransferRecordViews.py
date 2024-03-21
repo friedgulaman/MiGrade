@@ -88,6 +88,7 @@ def get_teacher_list(request):
         for grade_section, class_type in current_teacher.grade_section.items():
             if class_type == 'Subject Class' or class_type == 'Advisory Class, Subject Class':
                 current_subject_classes.append(grade_section)
+        print(current_subject_classes)
 
         teacher_list = []
 
@@ -108,10 +109,12 @@ def get_teacher_list(request):
                                 teacher_info = {
                                     'id': teacher.id,
                                     'name': f"{teacher.user.first_name} {teacher.user.last_name}",
-                                    'grade_section': current_subject_class
+                                    'grade_section': current_subject_classes
                                 }
                                 teacher_list.append(teacher_info)
                                 break  # Break after finding a match to avoid duplicate entries
+        print(teacher_list)
+
 
         return JsonResponse({'teachers': teacher_list})
 
@@ -261,7 +264,7 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     sections = Section.objects.filter(
     Q(name=section) &
     (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]) )
-)
+    )
     
   
     # Check if there is more than one Section returned
@@ -405,9 +408,9 @@ def save_data(message, json_data, teacher):
                 subject_teacher_data['from_teacher_id'] = json_data.get('teacher')
                 subject_teacher_data['subject'] = json_data.get('subject')
 
-                # Compute the final grade
-# Compute the final grade
-                quarter_grades = [float(subject_teacher_data[q]) for q in quarter_field_mapping.values() if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]  # Ensure the value is not empty
+                quarter_grades = [float(subject_teacher_data[q]) 
+                                  for q in quarter_field_mapping.values() 
+                                    if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]  # Ensure the value is not empty
                 final_grade = round(sum(quarter_grades) / len(quarter_grades), 2) if quarter_grades else None
 
                 subject_teacher_data['final_grade'] = final_grade
@@ -426,6 +429,9 @@ def save_data(message, json_data, teacher):
                     student=student_instance,
                 )
                 quarters = quarter_field_mapping[quarter]
+
+                grades_data = {}
+
                 # Add from_teacher_id to the subject_teacher_data dictionary
                 subject_teacher_data = {
                     "subject": json_data.get('subject'),
@@ -433,6 +439,7 @@ def save_data(message, json_data, teacher):
                     quarters: transmuted_grade,
                     'final_grade': transmuted_grade  # Assuming the final grade is initially set to the first quarter grade
                 }
+
                 new_advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
                 new_advisory_class.save()
                 print(f"Saved new AdvisoryClass with {quarter} for {student_name}.")

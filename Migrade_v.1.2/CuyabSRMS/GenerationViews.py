@@ -200,7 +200,7 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
 
     # Create an HTTP response with the updated SF9 Excel file
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = f'SUMMARY OF QUARTERLY GRADES ({quarter}) {timestamp}.xlsx'
+    filename = f'SUMMARY OF QUARTERLY GRADES ({quarter}) {grade} - {section} {excel_file_name}_{timestamp}.xlsx'
     encoded_filename = urllib.parse.quote(filename)
     response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
 
@@ -242,7 +242,15 @@ def generate_final_and_general_grades(request, grade, section):
 
      # Original file path for SF9 template
         # Original file path
-    excel_file_name = "GRADE 4-6_SUMMARY FINAL GRADES.xlsx"
+    if grade == 'Grade 1':
+        excel_file_name = "GRADE 1_SUMMARY FINAL GRADES.xlsx"
+    elif grade == 'Grade 2':
+        excel_file_name = "GRADE 2_SUMMARY FINAL GRADES.xlsx"
+    elif grade == 'Grade 3':
+        excel_file_name = "GRADE 3_SUMMARY FINAL GRADES.xlsx"
+    elif grade == 'Grade 4' or grade == 'Grade 5' or grade == 'Grade 6' :
+        excel_file_name = "GRADE 4-6_SUMMARY FINAL GRADES.xlsx"
+   
 
     # Get the current working directory
     # current_directory = os.getcwd()
@@ -277,17 +285,51 @@ def generate_final_and_general_grades(request, grade, section):
 
     sheet_name = 'SUMMARY - FINAL GRADES'
     sheet = workbook[sheet_name]
-        
-    write_school_info_general_average(sheet, school_info, general_grades_query)
-    write_student_name_general_average(sheet, general_grades_query)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
-    write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
+    if grade == 'Grade 1':
+        write_school_info_general_average(sheet, school_info, general_grades_query)
+        write_student_name_general_average(sheet, general_grades_query)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MOTHER TONGUE', 6, 10)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 11, 15)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 16, 20)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 21, 25)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+
+    elif grade == 'Grade 2':
+        write_school_info_general_average(sheet, school_info, general_grades_query)
+        write_student_name_general_average(sheet, general_grades_query)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MOTHER TONGUE', 6, 10)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 11, 15)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 16, 20)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 21, 25)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+
+    elif grade == 'Grade 3':
+        write_school_info_general_average(sheet, school_info, general_grades_query)
+        write_student_name_general_average(sheet, general_grades_query)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MOTHER TONGUE', 6, 10)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 11, 15)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 16, 20)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 21, 25)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 26, 30)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 36, 40)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 41, 45)
+
+    elif grade == 'Grade 4' or grade == 'Grade 5' or grade == 'Grade 6' :
+        write_school_info_general_average(sheet, school_info, general_grades_query)
+        write_student_name_general_average(sheet, general_grades_query)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'FILIPINO', 6, 10)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ENGLISH', 11, 15)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
 
         # write_quarterly_grade_AP(sheet, quarterly_grades_query)
         # write_quarterly_grade_ENGLISH(sheet, quarterly_grades_query)
@@ -306,7 +348,6 @@ def generate_final_and_general_grades(request, grade, section):
 
     return response
 
-    
 def generate_excel_for_grades(request, grade, section, subject, quarter):
     # Get GradeScores for the specified grade, section, and subject
     grade_scores_queryset = GradeScores.objects.filter(class_record__grade=grade,
@@ -774,7 +815,7 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     print("excel",excel_file_name)
 
     # Create a path for the copied file with a timestamp
-    copied_file_path = os.path.join(created_directory, f'SF1 {grade_name}_{section_name}_{subject_name}_{quarter_name}_{timestamp}.xlsx')
+    copied_file_path = os.path.join(created_directory, f'SF1 {grade_name}_{section_name}_{excel_file_name}{timestamp}.xlsx')
 
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
@@ -1043,7 +1084,7 @@ def generate_summary_for_grades_4_to_6(request, grade, section, subject, quarter
 
     # Create an HTTP response with the updated SF9 Excel file
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = f'SUMMARY OF QUARTERLY GRADES {timestamp}.xlsx'
+    filename = f'SUMMARY OF QUARTERLY GRADES ({quarter}) {grade} - {section} {excel_file_name}_{timestamp}.xlsx'
     encoded_filename = urllib.parse.quote(filename)
     response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
 
@@ -1244,12 +1285,15 @@ def generate_grade_section_list(request):
         
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
+        print(class_records)
 
         # Fetch distinct subjects based on grade and section
         subjects = class_records.values_list('subject', flat=True).distinct()
 
-        print(subjects)
+        for class_record in class_records:
+            subject = class_record.subject
 
+    
         context = {
             'grade': grade,
             'section': section,

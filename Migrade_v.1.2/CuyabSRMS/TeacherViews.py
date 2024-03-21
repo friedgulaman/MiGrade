@@ -456,6 +456,7 @@ def save_json_data(request):
                 subject = 'Advisory Class, Subject Class'
 
             teacher_id = teacher.id
+            print(teacher_id)
 
             class_type = {teacher_id: subject}
 
@@ -477,7 +478,7 @@ def save_json_data(request):
                     Q(grade=grade_name) &
                     Q(section=section_name) &
                     Q(school_year=school_year) &
-                    Q(class_type__icontains="Advisory Class, Subject Class")
+                    Q(class_type__icontains={"Advisory Class, Subject Class"})
                 )
                 
                 # Check if an advisory class already exists
@@ -488,30 +489,30 @@ def save_json_data(request):
                     Q(grade=grade_name) &
                     Q(section=section_name) &
                     Q(school_year=school_year) &
-                     Q(class_type__contains={teacher_id: "Subject Class"})
+                   Q(class_type__contains={teacher_id: "Subject Class"})
                 )
                 
                 # Check if an advisory class already exists
                 if existing_subject.exists():
                     return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
 
-                # existing_advisory = Student.objects.filter(
-                #     Q(grade=grade_name) &
-                #     Q(section=section_name) &
-                #     Q(school_year=school_year) &
-                #     Q(class_type__contains={teacher_id: "Advisory Class"})
-                # )
+                existing_advisory = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__contains={teacher_id: "Advisory Class"})
+                )
                 
-                # # Check if an advisory class already exists
-                # if existing_advisory.exists():
-                #     return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+                # Check if an advisory class already exists
+                if existing_advisory.exists():
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
                              
             elif 'Subject Class' in subject:
                 existing_advisory_class = Student.objects.filter(
                     Q(grade=grade_name) &
                     Q(section=section_name) &
                     Q(school_year=school_year) &
-                    Q(class_type__icontains="Advisory Class"))
+                    Q(class_type__contains={teacher_id: "Advisory Class"}) | Q(class_type__icontains="Advisory Class, Subject Class"))
                 
 
                 # Check if an advisory class already exists
@@ -679,20 +680,19 @@ def class_record(request):
 def get_grade_details(request):
 
     user = request.user
+    teacher = user.teacher
+    teacher_id = teacher.id
+    print(teacher_id)
     selected_grade = request.GET.get('grade')
     selected_section = request.GET.get('section')
-    print(selected_grade)
-    print(selected_section)
 
     teacher = Teacher.objects.get(user=user)
-    grades = Student.objects.values_list('grade', flat=True).distinct()
+    grades = Student.objects.filter(Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"})).values_list('grade', flat=True).distinct()
     sections = Student.objects.values_list('section', flat=True).distinct()
     subjects = Subject.objects.values_list('name', flat=True).distinct()
     quarters = Quarters.objects.values_list('quarters', flat=True).distinct()
     
-
-
-
+    print(grades)
     context = {
         'teacher': teacher,
         'grades': grades,
@@ -711,8 +711,10 @@ def get_grade_details(request):
    
 def get_sections_classrecord(request):
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        teacher = request.user.teacher
+        teacher_id = teacher.id
         grade_id = request.GET.get('grade_id')
-        sections = Student.objects.filter(grade=grade_id).values_list('section', flat=True).distinct()
+        sections = Student.objects.filter(Q(grade=grade_id), Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"}) ).values_list('section', flat=True).distinct()
         sections_list = list(sections)
         return JsonResponse({'sections': sections_list})
     else:
@@ -2466,10 +2468,10 @@ def update_score(request):
         assessment_type = request.POST.get('assessment_type')
         
 
-        print(f"new_score {new_score}")
-        print(f"classrecordid: {class_record_id}")
-        print(score_data)
-        print(assessment_type)
+        # print(f"new_score {new_score}")
+        # print(f"classrecordid: {class_record_id}")
+        # print(score_data)
+        # print(assessment_type)
 
 
          # Assuming you want to filter students by both name and teacher
@@ -2526,8 +2528,8 @@ def update_score(request):
         total_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['TOTAL_HPS']
         weight_input = float(grade_score.grade_scores['scores_hps'][assessment_type]['WEIGHT'])
 
-        print(total_hps_data)
-        print(weight_input)
+        # print(total_hps_data)
+        # print(weight_input)
 
         total_hps_data = float(total_hps_data)
         # Calculate percentage score
@@ -2536,14 +2538,14 @@ def update_score(request):
         else:
             percentage_score_data = None
 
-        print(percentage_score_data)
+        # print(percentage_score_data)
 
         if percentage_score_data is not None:
             total_weighted_score = round((percentage_score_data / 100) * weight_input, 2)
         else:
             total_weighted_score = None
 
-        print(total_weighted_score)
+        # print(total_weighted_score)
         # Store the total score in grade_score
         grade_score.grade_scores[scores_per_assessment][assessment_type]['total_score'] = total_score_data
         grade_score.grade_scores[scores_per_assessment][assessment_type]['percentage_score'] = percentage_score_data
@@ -2557,7 +2559,7 @@ def update_score(request):
             for assmt_type in assessments
         )
 
-        print(initial_grades)
+        # print(initial_grades)
         transmuted_grades = transmuted_grade(initial_grades)
 
         grade_score.initial_grades = initial_grades

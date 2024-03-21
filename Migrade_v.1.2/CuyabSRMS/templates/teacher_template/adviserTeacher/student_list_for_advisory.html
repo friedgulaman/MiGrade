@@ -539,6 +539,12 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
     </div>
 </section>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% if request.GET.alert %}
+<script>
+    alert('{{ request.session.error_message }}');
+    alert('{{ request.session.info_message }}');
+</script>
+{% endif %}
 <script>
     var showStudentList = function(grade, section) {
         var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
@@ -601,13 +607,7 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
     }
 
     // Ensure jQuery is loaded before using it
-    {% comment %} $(document).ready(function() {
-        var currentTab = sessionStorage.getItem('currentTab');
-        if (currentTab === 'quarterly') {
-            // Activate the #quarterly tab
-            $('a[href="#quarterly"]').tab('show');
-        }
-    }); {% endcomment %}
+
 </script>
 
 <script>

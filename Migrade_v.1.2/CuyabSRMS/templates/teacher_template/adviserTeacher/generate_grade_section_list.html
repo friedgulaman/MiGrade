@@ -21,12 +21,14 @@ Student List for {{ grade }} {{ section }}
                         <h4 class="display-5 fw-bold"> {{ grade }} ({{ section }})</h4>
                     </div>
                 </div>
+                {% if grade == 'Grade 4' or grade == 'Grade 5' or grade == 'Grade 6' %}
                 <div class=" me-4">
-                    <form action="{% url 'generate_per_all_subject'%}" method="post">
+                    <form action="{% url 'generate_final_grade'%}" method="post">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary">Generate Final grade and General Avevrage</button>
-                   
+                    </form>
                 </div>
+                {% endif %}
                 <div class=" me-4">
                     <a class="back-button">&larr; Back</a>
                 </div>
