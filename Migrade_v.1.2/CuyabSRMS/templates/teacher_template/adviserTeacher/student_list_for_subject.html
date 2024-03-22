@@ -81,10 +81,201 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
-#dropdown_classrecord{
+
+#action{
     border: none;
     background: none;
+    padding: 3px;
 }
+
+.action button{
+border: none;
+text-align: center;
+}
+.action span{
+color: red;
+margin-right: 5px;
+}
+.dropdown-toggle {
+        background-color:#1F3BB3;
+        padding-left: 42px;
+        padding-right: 42px;
+        color:#f5f5f5;
+    }
+    .dropdown-toggle:hover{
+        color: #f5f5f5;
+    }
+
+    .sr-only {
+  position: absolute;
+  top: -30em;
+}
+
+table.sortable td,
+table.sortable th {
+  padding: 0.155em 0.35em;
+  width: 8em;
+}
+
+table.sortable th {
+  font-weight: bold;
+  position: relative;
+}
+
+table.sortable th.no-sort {
+  padding-top: 0.35em;
+}
+
+table.sortable th:nth-child(5) {
+  width: 1em;
+}
+
+table.sortable th button {
+  padding: 4px;
+  margin: 1px;
+  font-size: 100%;
+  font-weight: bold;
+  background: none;
+  border: none;
+  display: inline;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: left;
+  outline: none;
+  cursor: pointer;
+}
+
+table.sortable th button span {
+  position: absolute;
+  right: 4px;
+}
+
+table.sortable th[aria-sort="descending"] span::after {
+  content: "↓";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+
+table.sortable th[aria-sort="ascending"] span::after {
+  content: "↑";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+
+table.show-unsorted-icon th:not([aria-sort]) button span::after {
+  content: "♢";
+  color: currentcolor;
+  font-size: 100%;
+  position: relative;
+  top: -3px;
+  left: -4px;
+}
+
+table.sortable td.num {
+  text-align: right;
+}
+
+table.sortable tbody td {
+  padding: 12px; 
+}
+
+/* Focus and hover styling */
+
+table.sortable th button:focus,
+table.sortable th button:hover {
+  border: none; 
+  background: #dad7d7;
+}
+
+table.sortable th button:focus span,
+table.sortable th button:hover span {
+  right: 10;;
+}
+
+table.sortable th:not([aria-sort]) button:focus span::after,
+table.sortable th:not([aria-sort]) button:hover span::after {
+  content: "↓";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+.table_res{
+    position: relative;
+    max-height: 90vh;
+    overflow: auto;
+}
+.table_res::-webkit-scrollbar {
+        width: 10px;
+        /* For Chrome, Safari, and Opera */
+        display: none;
+        /* Hide the scrollbar by default */
+    }
+
+    .table_res:hover::-webkit-scrollbar {
+        display: block;
+        /* Show the scrollbar on hover */
+    }
+
+    .table_res::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        /* For Chrome, Safari, and Opera */
+    }
+
+    .table_res::-webkit-scrollbar-track {
+        background-color: #f5f5f5;
+        /* For Chrome, Safari, and Opera */
+    }
+    #subjectRankings {
+    position: relative;
+    margin-top: 30px;
+}
+
+.ul_counter {
+    position: absolute;
+    border: 1px solid rgba(0, 0, 0, 0);
+    top: 6em;
+    left: 12px;
+    width: 150px;
+    background-color: transparent;
+    z-index: 1;
+}
+
+.ul_counter ul {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0);
+    filter: blur(100%);
+}
+
+.ul_counter ul li {
+    list-style: none;
+    border: 1px solid rgba(0, 0, 0, 0);
+    vertical-align: middle;
+    line-height: 0.92;
+    padding: 12.01px;
+    width: 8em;
+    font-size: 0.820rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    .ul_counter {
+        margin-left: -28px;
+    }
+}
+@media (max-width: 420px) {
+    .ul_counter {
+        margin-top: 15px;
+    }
+}
+
 </style>
 <section class="content container mt-2">
     <div class="card">
@@ -172,94 +363,130 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade show " id="classrecord" role="tabpanel" aria-labelledby="classrecord">
-
-                        <div class="container mt-4">
-                            <div class="grid-margin stretch-card">
-                                <div>
-                                       <div class="mt-4"></div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h4 class="card-title">Class Records</h4>
-                                            <button type="button" id="dropdown_classrecord"
-                                                            class="btn-dropdown-toggle dropdown-toggle-split"
-                                                            data-toggle="dropdown" aria-haspopup="true"
-                                                            aria-expanded="false">
-                                                            <svg class="c-qd" width="20px" height="20px"
-                                                                viewBox="0 0 20 20" focusable="false"
-                                                                fill="black">
-                                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
-                                                                <path
-                                                                    d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z">
-                                                                </path>
-                                                            </svg>
-                                                        </button>
-                                                        <!-- Dropdown menu content -->
-                                                        <div class="dropdown-menu delete-dropdown p-2" aria-labelledby="dropdownMenuButton">
-                                                            <div>
-                                                                <a id="classRecordLink" href="#" class="dropdown-item">Class Record +</a>
-                                                            </div>
-                                                            <div>
-                                                                <a id="generateRecordButton" href="#" class="dropdown-item">Generate Class Record</a>
-                                                            </div>
-                                                        </div>
-                                                        
+                    <div class="tab-pane fade show table_res" id="classrecord" role="tabpanel" aria-labelledby="classrecord">
+                       <div class="container mt-4 ">
+                        <div class="grid-margin stretch-card">
+                            <div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h4 class="card-title">Class Records</h4>
+                                        <div class="btn-group">
+                                            <button type="button" id="dropdown_classrecord" class="btn btn-primary dropdown-toggle  btn-dropdown-toggle  text-light m-2"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Menu
+                                                
+                                            </button>
+                                            <!-- Dropdown menu content -->
+                                            <div class="dropdown-menu btn p-2" aria-labelledby="dropdown_classrecord">
+                                                <a id="classRecordLink" href="#" class="dropdown-item">Class Record +</a>
+                                                <a id="generateRecordButton" href="#" class="dropdown-item">Generate Class Record</a>
+                                            </div>
                                         </div>
-                                        
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>File</th>
-                                                        <th>Date Modified</th>
-                                                        <th>Quarter</th>
-                                                        <th>Subject</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% if class_records %}
-                                                    {% for record in class_records %}
-                                                    <tr>
-                                                        <td>
-                                                            <a class="record_id" href="{% url 'display_classrecord' class_record_id=record.id %}">{{record.name}}</a>
+                                    </div>
+                                    <div class="table-responsive ">
+                                        <table class="table table-hover sortable">
+                                            <thead>
+                                                <tr>
+                                                <th aria-sort="ascending">
+                                                    <button>
+                                                    File Name
+                                                    <span aria-hidden="true"></span>
+                                                  </button>
+                                                </th>
+                                                <th aria-sort="ascending">
+                                                    <button>
+                                                     Data Modified
+                                                      <span aria-hidden="true"></span>
+                                                    </button>
+                                                  </th>
+                                                
+                                                  <th aria-sort="ascending">
+                                                    <button>
+                                                      Quarter
+                                                      <span aria-hidden="true"></span>
+                                                    </button>
+                                                  </th>
+                                                  <th aria-sort="ascending">
+                                                    <button>
+                                                      Subject
+                                                      <span aria-hidden="true"></span>
+                                                    </button>
+                                                  </th>
+                                                <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if class_records %}
+                                                {% for record in class_records %}
+                                                    <tr title="{{ record.name }}"> 
+                                                        <td style="max-width: 200px; /* Adjust the max-width as needed */
+                                                        white-space: nowrap;
+                                                        overflow: hidden;
+                                                        text-overflow: ellipsis;"> <!-- Adjust max-width as needed -->
+                                                            <a class="record_id" title="{{ record.name }}" href="{% url 'display_classrecord' class_record_id=record.id %}">{{ record.name }}</a>
                                                         </td>
+                                                        
                                                         <td>{{ record.date_modified }}</td>
                                                         <td>{{ record.quarters }}</td>
                                                         <td>{{ record.subject }}</td>
                                                         <td>
-                                                            <form id="archiveForm_{{ record.id }}" method="post" action="{% url 'archive_class_record' class_record_id=record.id %}" onsubmit="return confirm('Are you sure you want to archive this class record?');"
-                                                            style="display:inline;">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="archive-record" data-record-id="{{ record.id }}">
-                                                                Archive <!-- You can customize the button label as needed -->
-                                                            </button>
-                                                        </form>
-
-                                                            <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}"  onsubmit="return confirm('Are you sure you want to delete this class record? This action cannot be undone.');"
-                                                            style="display:inline;">
-                                                            {% csrf_token %}
-                                                            <button type="button" class="delete-record" data-record-id="{{ record.id }}">
-                                                                <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
-                                                            </button>
-                                                        </form>
-                                                        </td>
+                                                            <div class="btn-group">
+                                                                <button type="button" id="action" class="btn btn-secondary btn-dropdown-toggle dropdown-toggle-split"
+                                                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                    <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="blue">
+                                                                        <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                                                        <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
+                                                                    </svg>
+                                                                </button>
+                                                                <!-- Dropdown menu content -->
+                                                                <div class="dropdown-menu action p-2" aria-labelledby="action">
+                                                                   <div>
+                                                                  
+                                                                    <form id="archiveForm_{{ record.id }}" method="post" action="{% url 'archive_class_record' class_record_id=record.id %}" onsubmit="return confirm('Are you sure you want to archive this class record?');" style="display:inline;">
+                                                                        {% csrf_token %}
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                           
+                                                                            <button type="submit" class="archive-record dropdown-item" data-record-id="{{ record.id }}">
+                                                                                <span class="icon-archive"></span> Archive
+                                                                        </div>
+                                                                    
+                                                                    </form> 
+                                                                   </div> 
+                                                                   <div>
+                                                                    
+                                                                    <form id="deleteForm_{{ record.id }}" method="post" action="{% url 'delete_classrecord' class_record_id=record.id %}" onsubmit="return confirm('Are you sure you want to delete this class record? This action cannot be undone.');" style="display:inline;">
+                                                                        {% csrf_token %}
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                           
+                                                                            <button type="button" class=" dropdown-item" data-record-id="{{ record.id }}">
+                                                                                <span class="icon-delete"></span> Delete
+                                                                            </button>
+                                                                        </div>
+                                                                        
+                                                                    </form>
+                                                                   </div>
+                                                                    
+                                                                </div>
+                                                            </div>
                                                         
+                                                        </td>
                                                     </tr>
-                                                    {% endfor %}
-                                                    {% else %}
-                                                    <tr>
-                                                        <td colspan="4">No class records found.</td>
-                                                    </tr>
-                                                    {% endif %}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                    
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="5">No class records found.</td>
+                                                </tr>
+                                            {% endif %}
+                                            </tbody>
+                                        </table>
                                     </div>
-                         
+                                </div>
                             </div>
                         </div>
-
                     </div>
+                    </div>
+                    
                     <div class="tab-pane fade show " id="quarterly" role="tabpanel" aria-labelledby="subjects">
                         <div class="container mt-4">
                             <div class="grid-margin stretch-card">
@@ -267,11 +494,22 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                     <div class="card-body">
                                         <h4 class="card-title">Quarterly Grades</h4>
                                         <div class="table-responsive">
-                                            <table class="table table-hover">
+                                            <table class="table table-hover sortable">
                                                 <thead>
                                                     <tr>
-                                                        <th>Quarter</th>
-                                                        <th>Subject</th>
+                                                        <th aria-sort="ascending">
+                                                            <button>
+                                                                Quarter
+                                                                <span aria-hidden="true"></span>
+                                                              </button> 
+                                                    </th>
+                                                        <th aria-sort="ascending">
+                                                            <button>
+                                                                Subject
+                                                                <span aria-hidden="true"></span>
+                                                              </button> 
+                                                        </th>
+                                                          
                                                         <th>Send to Adviser</th>
                                                         
                                                     </tr>
@@ -315,35 +553,49 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
                                             <select class="form-select-sm" id="subjectSelect" onchange="toggleSubjectRankings()">
                                                 <option value="" selected disabled>Select Subject</option>
                                                 {% for subject in subjects %}
-                                                <option value="{{ subject.subject }}">{{ subject.subject }}</option>
-                                            {% endfor %}
+                                                    <option value="{{ subject.subject }}">{{ subject.subject }}</option>
+                                                {% endfor %}
                                             </select>
                                         </div>
                                         
-                                        <div id="subjectRankings" class="mt-3">
+                                        <div id="subjectRankings" class="mt-3 card ">
                                             {% for subject, grades in subject_grades.items %}
-                                                <div class="card subjectRanking p-4" id="{{ subject }}">
+                                                <div class="subjectRanking p-4" id="{{ subject }}" style="display: none;"> <!-- Hide subject rankings by default -->
                                                     <h3 class="mt-2"><strong>Subject:</strong><em>{{ subject }}</em></h3>
-                                                    <table class="table table-bordered">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Rank</th>
-                                                                <th>Student Name</th>
-                                                                <th>Grade</th>
-                                                                <th>Remarks</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
+                                                    <div class="ul_counter">
+                                                        <ul>
                                                             {% for grade in grades %}
-                                                                <tr>
-                                                                    <td>{{ forloop.counter }}</td>
-                                                                    <td>{{ grade.student_name }}</td>
-                                                                    <td>{{ grade.transmuted_grade }}</td>
-                                                                    <td>{{ grade.remarks }}</td>
-                                                                </tr>
+                                                                <li><td>{{ forloop.counter }}</td></li>
                                                             {% endfor %}
-                                                        </tbody>
-                                                    </table>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered sortable container">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Rank</th>
+                                                                    <th>Student Name</th>
+                                                                    <th class="num">
+                                                                        <button>
+                                                                            Grade
+                                                                            <span aria-hidden="true"></span>
+                                                                        </button>
+                                                                    </th>
+                                                                    <th>Remarks</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for grade in grades %}
+                                                                    <tr>
+                                                                        <td></td>
+                                                                        <td>{{ grade.student_name }}</td>
+                                                                        <td class="num">{{ grade.transmuted_grade }}</td>
+                                                                        <td>{{ grade.remarks }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -390,7 +642,13 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
             noData.style.display = "block"; // Show the "No data available" message if no subject is selected
         }
     }
+
+    // Initially hide all subject rankings and the "No data available" message
+    window.onload = function() {
+        toggleSubjectRankings();
+    };
 </script>
+
 <script>
     // JavaScript to handle the back button click event
     document.querySelector(".back-button").addEventListener("click", function () {
@@ -473,4 +731,165 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
         generateGradeSectionList(grade, section);
     });
 </script>
+<script>
+    'use strict';
+
+class SortableTable {
+  constructor(tableNode) {
+    this.tableNode = tableNode;
+
+    this.columnHeaders = tableNode.querySelectorAll('thead th');
+
+    this.sortColumns = [];
+
+    for (var i = 0; i < this.columnHeaders.length; i++) {
+      var ch = this.columnHeaders[i];
+      var buttonNode = ch.querySelector('button');
+      if (buttonNode) {
+        this.sortColumns.push(i);
+        buttonNode.setAttribute('data-column-index', i);
+        buttonNode.addEventListener('click', this.handleClick.bind(this));
+      }
+    }
+
+    this.optionCheckbox = document.querySelector(
+      'input[type="checkbox"][value="show-unsorted-icon"]'
+    );
+
+    if (this.optionCheckbox) {
+      this.optionCheckbox.addEventListener(
+        'change',
+        this.handleOptionChange.bind(this)
+      );
+      if (this.optionCheckbox.checked) {
+        this.tableNode.classList.add('show-unsorted-icon');
+      }
+    }
+  }
+
+  setColumnHeaderSort(columnIndex) {
+    if (typeof columnIndex === 'string') {
+      columnIndex = parseInt(columnIndex);
+    }
+
+    for (var i = 0; i < this.columnHeaders.length; i++) {
+      var ch = this.columnHeaders[i];
+      var buttonNode = ch.querySelector('button');
+      if (i === columnIndex) {
+        var value = ch.getAttribute('aria-sort');
+        if (value === 'descending') {
+          ch.setAttribute('aria-sort', 'ascending');
+          this.sortColumn(
+            columnIndex,
+            'ascending',
+            ch.classList.contains('num')
+          );
+        } else {
+          ch.setAttribute('aria-sort', 'descending');
+          this.sortColumn(
+            columnIndex,
+            'descending',
+            ch.classList.contains('num')
+          );
+        }
+      } else {
+        if (ch.hasAttribute('aria-sort') && buttonNode) {
+          ch.removeAttribute('aria-sort');
+        }
+      }
+    }
+  }
+
+  sortColumn(columnIndex, sortValue, isNumber) {
+    function compareValues(a, b) {
+      if (sortValue === 'ascending') {
+        if (a.value === b.value) {
+          return 0;
+        } else {
+          if (isNumber) {
+            return a.value - b.value;
+          } else {
+            return a.value < b.value ? -1 : 1;
+          }
+        }
+      } else {
+        if (a.value === b.value) {
+          return 0;
+        } else {
+          if (isNumber) {
+            return b.value - a.value;
+          } else {
+            return a.value > b.value ? -1 : 1;
+          }
+        }
+      }
+    }
+
+    if (typeof isNumber !== 'boolean') {
+      isNumber = false;
+    }
+
+    var tbodyNode = this.tableNode.querySelector('tbody');
+    var rowNodes = [];
+    var dataCells = [];
+
+    var rowNode = tbodyNode.firstElementChild;
+
+    var index = 0;
+    while (rowNode) {
+      rowNodes.push(rowNode);
+      var rowCells = rowNode.querySelectorAll('th, td');
+      var dataCell = rowCells[columnIndex];
+
+      var data = {};
+      data.index = index;
+      data.value = dataCell.textContent.toLowerCase().trim();
+      if (isNumber) {
+        data.value = parseFloat(data.value);
+      }
+      dataCells.push(data);
+      rowNode = rowNode.nextElementSibling;
+      index += 1;
+    }
+
+    dataCells.sort(compareValues);
+
+    // remove rows
+    while (tbodyNode.firstChild) {
+      tbodyNode.removeChild(tbodyNode.lastChild);
+    }
+
+    // add sorted rows
+    for (var i = 0; i < dataCells.length; i += 1) {
+      tbodyNode.appendChild(rowNodes[dataCells[i].index]);
+    }
+  }
+
+  /* EVENT HANDLERS */
+
+  handleClick(event) {
+    var tgt = event.currentTarget;
+    this.setColumnHeaderSort(tgt.getAttribute('data-column-index'));
+  }
+
+  handleOptionChange(event) {
+    var tgt = event.currentTarget;
+
+    if (tgt.checked) {
+      this.tableNode.classList.add('show-unsorted-icon');
+    } else {
+      this.tableNode.classList.remove('show-unsorted-icon');
+    }
+  }
+}
+
+// Initialize sortable table buttons
+window.addEventListener('load', function () {
+  var sortableTables = document.querySelectorAll('table.sortable');
+  for (var i = 0; i < sortableTables.length; i++) {
+    new SortableTable(sortableTables[i]);
+  }
+});
+
+    </script>
 {% endblock main_content %}

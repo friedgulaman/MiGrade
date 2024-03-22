@@ -4,11 +4,17 @@
 {% endblock page_title %}
 {% block main_content %}
 <style>
-    .table, th {
-        border: solid 2px;
+    *{
+        font-size: 5px;
     }
-    td {
-        border: solid 2px;
+    .table, th {
+        border: solid 0.50px black;
+        font-size: 10px;
+        
+    }
+    .table td {
+        border: solid 0.50px black;
+        font-size: 10px;
     }
 
     #components {
@@ -17,11 +23,18 @@
     }
     .table-responsive {
         width: 100%; /* Adjust the width as needed */
-        margin: 0 auto; /* Center the table within its container */
+        height: 100vh;
+        aspect-ratio: 16 / 9;
+        overflow: scroll;
+        border: solid 0.50px black;
+
     }
 
     .table {
         width: 100%; /* Make the table fill the available width */
+        background-color: #ffffff;
+        border: solid 0.50px black;
+        
     }
 
     .back-button {
@@ -30,27 +43,136 @@
     text-decoration: none;
     cursor: pointer;
   }
+
+
+  .header > th{
+    color: rgb(255, 255, 255);
+    padding: 12px;
+    background: #1027ac;
+    font-size: 12px !important;
+    text-align: center;
+    border: solid 0.50px black;
+
     
+  }
+  .body > td{
+    color: rgb(255, 255, 255);
+    background: #1027ac;
+    padding: 5px;
+    font-size: 12px !important;
+    text-align: center;
+    border: solid 0.50px black;
+  }
+  .highest > td{
+    color: rgb(255, 255, 255);
+    background: #1027ac;
+    padding: 5px;
+    font-size: 12px !important;
+    text-align: center;
+    border: solid 0.50px black;
+  }
+  .male, .female{
+    color: rgb(8, 8, 8);
+    background: #c2c2c2;
+    font-size: 12px !important;
+    border: solid 0.50px black;
+
+  }
+.male > th{
+    background: #c2c2c2;
+    border: solid 0.50px black;
+}
+.female > th{
+    background: #c2c2c2;
+    border: solid 0.50px black;
+}
+  .male-row > td{
+    background: #ffffff !important;
+    border: solid 0.50px black;
+  }
+  .female-row > td{
+    background: #ffffff !important;
+    border: solid 0.50px black;
+}
+  .header >  *:nth-child(1),
+  .header >  *:nth-child(2),
+  .body >  *:nth-child(1),
+  .body >  *:nth-child(2),
+  .highest >  *:nth-child(1),
+  .highest >  *:nth-child(2),
+  .male >  *:nth-child(1),
+  .male >  *:nth-child(2),
+  .female >  *:nth-child(1),
+  .female >  *:nth-child(2),
+  .male-row >  *:nth-child(1),
+  .male-row >  *:nth-child(2),
+  .female-row >  *:nth-child(1),
+  .female-row >  *:nth-child(2) {
+    position: sticky;
+    left: 0;
+}
+.header th {
+        position: sticky;
+        top: 0;
+        z-index: 100; 
+}
+
+/* Customize scrollbar appearance for WebKit-based browsers */
+.table-responsive::-webkit-scrollbar {
+    width: 8px; /* Adjust the width of the scrollbar */ 
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: #c7c5c5; /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Rounded corners of the thumb */
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background-color: #F4F5F7; /* Color of the scrollbar track */
+}
+
+/* Customize scrollbar appearance for Firefox */
+.table-responsive {
+    scrollbar-width: thin; /* Adjust the width of the scrollbar */
+    scrollbar-color: #c7c5c5 #F4F5F7; /* Color of the scrollbar thumb and track */
+}
+
+/* Customize scrollbar appearance for Microsoft Edge (Chromium) */
+.table-responsive {
+    scrollbar-width: thin; /* Adjust the width of the scrollbar */
+    scrollbar-color: #c7c5c5 #F4F5F7; /* Color of the scrollbar thumb and track */
+}
+.card-text{
+    font-size: 8px;
+    text-wrap: wrap;
+}
+.card-text strong{
+    font-size: 8px;
+}
+.head_text{
+    font-size: 8px;
+    margin-bottom: 12px;
+}
 </style>
-<section class="content container mt-2">
+<section class="content container-fluid mt-2 p-2 mb-3">
       <div class="mt-5 border-bottom">
         <div class="card-body ">
             <div class="d-flex justify-content-between align-items-center m-2 p-3 ">
-          <h3 >Class Record Information</h3>
+          <h3 class="head_text">Class Record Information</h3>
           <!-- <a class="back-button ">&larr;</a> -->
           </div>
-          <div class="row text-primary d-flex justify-content-between align-items-center text-center">
-            <div class="col">
-              <p class="card-text "><strong class="text-muted">Grade:</strong> {{ class_record.grade }}</p>
+          <div class="row text-primary d-flex justify-content-between align-items-center text-center mb-5 p-3">
+            <div class="col-md-3 col-sm-6 p-3">
+                <p class="card-text"><strong class="text-muted">Grade:</strong> {{ class_record.grade }}</p>
             </div>
-            <div class="col">
-              <p class="card-text"><strong class="text-muted">Section:</strong> {{ class_record.section }}</p>
+            <div class="col-md-3 col-sm-6 p-3">
+                <p class="card-text"><strong class="text-muted">Section:</strong> {{ class_record.section }}</p>
             </div>
-            <div class="col">
-              <p class="card-text"><strong class="text-muted">Subject:</strong> {{ class_record.subject }}</p>
+            <div class="col-md-3 col-sm-6 p-3">
+                <p class="card-text"><strong class="text-muted">Subject:</strong> {{ class_record.subject }}</p>
             </div>
-            <div class="col">
-              <p class="card-text"><strong class="text-muted">Quarters:</strong> {{ class_record.quarters }}</p>
+            <div class="col-md-3 col-sm-6 p-3">
+                <p class="card-text"><strong class="text-muted">Quarters:</strong> {{ class_record.quarters }}</p>
             </div>
             <!-- <div class="col">
                 <p class="card-text"><strong class="text-muted">Class Record Id:</strong> {{ class_record.id }}</p>
@@ -71,9 +193,9 @@
     </div>
     
     <div class="table-responsive">
-        <table class="table">
+        <table class="table table-hover">
             <thead>
-                <tr>
+                <tr class="header">
                     <th></th>
                     <th></th>
                     <!-- Loop through the AssessmentType -->
@@ -85,7 +207,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr class="body">
                     <td></td>
                     <td>Name</td>
                     {% for _ in assessment_types %}
@@ -104,7 +226,7 @@
                 
                 {% load custom_filters %}
                
-                <tr>
+                <tr class="highest">
                     <td></td>  
                     <td> HIGHEST POSSIBLE SCORE</td>
                     {% for record in gradescores %}
@@ -125,7 +247,7 @@
                     <td></td>
                     <td></td>
                 </tr>
-                <tr>
+                <tr class="male">
                     <th></th>
                     <th>MALE</th>
                     {% load custom_filters %}
@@ -134,6 +256,7 @@
                     <th></th>
                     {% endfor %}
                     {% endfor %}
+                    <th></th>
                     <th></th>
 
 
@@ -160,7 +283,7 @@
                 {% endif %}
                 {% endfor %}
 
-                <tr>
+                <tr class="female">
                     <th></th>
                     <th>FEMALE</th>
                     {% load custom_filters %}
@@ -169,6 +292,7 @@
                     <th></th>
                     {% endfor %}
                     {% endfor %}
+                    <th></th>
                     <th></th>
 
 

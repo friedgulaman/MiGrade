@@ -54,7 +54,7 @@ urlpatterns = [
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
-    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
     path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
 
    
@@ -156,6 +156,8 @@ urlpatterns = [
     path('display_students/', teacher_required(TeacherViews.display_students), name='display_students'),
     path('student_list_for_subject', teacher_required(TeacherViews.student_list_for_subject), name='student_list_for_subject'),
     path('student_list_for_advisory', teacher_required(TeacherViews.student_list_for_advisory), name='student_list_for_advisory'),
+    path('advisory_quarterly_grades', teacher_required(TeacherViews.advisory_quarterly_grades), name='advisory_quarterly_grades'),
+    path('advisory_final_all_subject', teacher_required(TeacherViews.advisory_final_all_subject), name='advisory_final_all_subject'),
     path('toggle_class_type/', teacher_required(TeacherViews.toggle_class_type), name='toggle_class_type'),
     path('display_advisory_data', teacher_required(TeacherViews.display_advisory_data), name='display_advisory_data'),
     path('display_student_transmuted_grades/', teacher_required(TeacherViews.display_student_transmuted_grades), name='display_student_transmuted_grades'),
@@ -241,8 +243,8 @@ urlpatterns = [
     path('generate_grade_section_list/', teacher_required(GenerationViews.generate_grade_section_list), name='generate_grade_section_list'),
     path('generate-per-all-subject/', teacher_required(GenerationViews.generate_per_all_subject_view), name='generate_per_all_subject'),
     path('generate-excel/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_excel_for_all_subjects), name='generate_excel_for_all_subjects'),
-    path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_quarterly_grades), 
-         name='generate_summary_of_quarterly_grades'),
+    path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_quarterly_grades), name='generate_summary_of_quarterly_grades'),
+
     path('generate_final_and_general_grades/<str:grade>/<str:section>/', teacher_required(GenerationViews.generate_final_and_general_grades), name='generate_final_and_general_grades'),
     path('generate-summary-for-grades-4-to-6/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_for_grades_4_to_6), name='generate_summary_for_grades_4_to_6'),
 
@@ -289,6 +291,7 @@ urlpatterns = [
     path('transfer_quarterly_grade/<str:grade>/<str:section>/<str:subject>/<int:class_record_id>/', teacher_required(TransferRecordViews.transfer_quarterly_grade), name='transfer_quarterly_grade'),
     path('transfer-json',  teacher_required(TransferRecordViews.transfer_json_to_teacher), name='transfer_json_to_teacher'),
     path('accept_message', teacher_required(TransferRecordViews.accept_message), name='accept_message'),
+    path('reject-btn_message', teacher_required(TransferRecordViews.reject_message), name='reject_message'),
     path('final_grade_details', teacher_required(TransferRecordViews.final_grade_details), name='final_grade_details'),
     
 

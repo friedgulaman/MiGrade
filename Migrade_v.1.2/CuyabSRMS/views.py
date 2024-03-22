@@ -37,6 +37,7 @@ def activity(request):
 
 
 def ShowLoginPage(request):
+    public = os.getenv("RECAPTCHA_PUBLIC_KEY")  # Get the public key
     if request.user.is_authenticated:
         # User is already logged in, so redirect them to the appropriate page based on user type
         if request.user.user_type == 1:  # SuperAdmin user type
@@ -50,13 +51,18 @@ def ShowLoginPage(request):
         else:
             # Handle other user types or redirect to a generic home page
             pass
-    return render(request, 'login_page.html')
+    # Pass the public key to the template context
+    context = {
+        'public_key': public,
+    }
+    
+    return render(request, 'login_page.html', context)
 
 def doLogin(request):
     if request.method == "POST":
         captcha_response = request.POST.get("g-recaptcha-response")
         captcha = os.getenv("CAPTCHA")
-        
+
         if not captcha_response:
             messages.error(request, "Please complete the reCAPTCHA.")
             return redirect('ShowLoginPage')

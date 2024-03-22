@@ -1,0 +1,138 @@
+
+{% extends 'teacher_template/adviserTeacher/_blank_base.html' %}
+{% load static %}
+{% block title %}
+Student List for {{ grade }} {{ section }} {{ class_type}}
+{% endblock title %}
+
+{% block main_content %}
+<style>
+    .back-button {
+        color: #1027ac;
+        font-size: 30px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+<div class="container mt-4">
+    <div class="grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex  justify-content-between align-items-center">
+                <div>
+                <form id="quarterForm" method="get">
+                    <!-- Hidden input fields for grade, section, and class_type -->
+                    <input type="hidden" name="grade" value="{{ grade }}">
+                    <input type="hidden" name="section" value="{{ section }}">
+                    <input type="hidden" name="class_type" value="{{ class_type }}">
+                
+                    <!-- Select dropdown for the quarter -->
+                    <select name="quarter" onchange="submitFormAndRememberScroll()">
+                        <option value="" selected disabled>Select Quarter</option>
+                        <option value="1st Quarter" {% if quarter == '1st Quarter' %} selected {% endif %}>1st Quarter</option>
+                        <option value="2nd Quarter" {% if quarter == '2nd Quarter' %} selected {% endif %}>2nd Quarter</option>
+                        <option value="3rd Quarter" {% if quarter == '3rd Quarter' %} selected {% endif %}>3rd Quarter</option>
+                        <option value="4th Quarter" {% if quarter == '4th Quarter' %} selected {% endif %}>4th Quarter</option>
+                    </select>
+                    <button type="button" class="btn btn-link refresh-button" onclick="refreshQuarterlyTab()">
+                        <i class="fas fa-sync-alt"></i> <!-- Refresh icon -->
+                    </button>
+                </form>
+                </div>
+                <div>
+                    <a class="back-button">&larr;</a>
+                </div>
+                </div>
+                <h4 class="card-title mt-4">Summary of Quarterly Grades ({{ quarter }})</h4>
+                <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Student Name</th>
+                            {% for subject_data in data.0.subjects_data %}
+                                <th>{{ subject_data.subject }}</th>
+                            {% endfor %}
+                            <th>Average Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                            <tr>
+                                <td>{{ item.no }}</td>
+                                <td>{{ item.student_name }}</td>
+                                    {% for subject_data in item.subjects_data %}
+                                        <td>{{ subject_data.score|default_if_none:""}}</td>
+                                    {% endfor %}
+
+                                <td>{{ item.average_score|default_if_none:"" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Automatically reload the page when it loads
+    window.onload = function() {
+        location.reload();
+    };
+    // JavaScript to handle the back button click event
+    document.querySelector(".back-button").addEventListener("click", function () {
+        window.history.back();
+    });
+
+</script>
+
+<script>
+    function submitFormAndRememberScroll(selectedQuarter) {
+        // Store the current scroll position in session storage
+        sessionStorage.setItem('scrollPosition', window.scrollY);
+
+        // Update the quarter parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('quarter', selectedQuarter);
+        const newUrl = window.location.pathname + '?' + urlParams.toString();
+
+        // Submit the form with the updated URL
+        document.getElementById('quarterForm').action = newUrl;
+        document.getElementById('quarterForm').submit();
+    }
+
+    // Restore scroll position when the page loads
+    window.onload = function() {
+        var scrollPosition = sessionStorage.getItem('scrollPosition');
+        if (scrollPosition !== null) {
+            window.scrollTo(0, scrollPosition);
+            sessionStorage.removeItem('scrollPosition'); // Remove stored scroll position
+        }
+
+        // Check if there is a query parameter for the quarter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const quarter = urlParams.get('quarter');
+        if (quarter !== null) {
+            // Activate the #quarterly tab
+            $('a[href="#quarterly"]').tab('show');
+        }
+    };
+</script>
+
+<script>
+    function refreshQuarterlyTab() {
+        // Store the current scroll position in session storage
+        sessionStorage.setItem('scrollPosition', window.scrollY);
+        // Store the current tab information in sessionStorage after a short delay
+        setTimeout(function() {
+            sessionStorage.setItem('currentTab', 'quarterly');
+        }, 100); // 100 milliseconds delay
+
+        // Reload the page after a short delay
+        setTimeout(function() {
+            location.reload();
+        }, 200); // 200 milliseconds delay
+    }
+</script>
+{% endblock main_content %}

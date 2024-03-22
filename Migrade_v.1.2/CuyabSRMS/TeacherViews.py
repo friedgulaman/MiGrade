@@ -167,7 +167,6 @@ def process_google_sheet(spreadsheet_id, sheet_name):
     client_email = os.getenv("SHEET_CLIENT_EMAIL")
     client_id = os.getenv("SHEET_CLIENT_ID")
     token_uri = "https://oauth2.googleapis.com/token"  # Provide the token_uri
-
     # Construct credentials from environment variables
     credentials = service_account.Credentials.from_service_account_info({
         "type": "service_account",
@@ -1539,8 +1538,464 @@ def student_list_for_advisory(request):
 
         return render(request, 'teacher_template/adviserTeacher/student_list_for_advisory.html', context)
     
-    
+def advisory_quarterly_grades(request):
+    # Assuming the user is logged in
+    user = request.user
 
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+        teacher_id = teacher.id 
+
+        grade = request.GET.get('grade')    
+        section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
+        quarter = request.GET.get('quarter', '1st Quarter')  # Default to 1st Quarter if not provided
+
+        # Fetch advisory classes based on teacher, grade, and section
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
+
+
+        unique_keys = set()  # Initialize an empty set here
+
+        if advisory_classes.exists():
+            for advisory_class in advisory_classes:
+                grades_data = advisory_class.grades_data
+                if grades_data:
+                    for key, value in grades_data.items():
+                        unique_keys.add((key, value.get('from_teacher_id')))  # Add (key, from_teacher_id) tuple to the set
+
+            # Print the unique keys
+            # print("Unique keys and from_teacher_ids in grades_data for all AdvisoryClass objects:", unique_keys)
+        else:
+            print("No AdvisoryClass objects found for the specified criteria")
+
+      
+        # Filter students based on the class type
+        students = Student.objects.filter(grade=grade, section=section)
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
+                students_filtered.append(student)
+
+        # Unique keys context
+        unique_keys_context = list(unique_keys)
+
+        # Filter quarterly grades based on the selected quarter
+        quarterly_grades = QuarterlyGrades.objects.filter(student__grade=grade, student__section=section, quarter=quarter)
+
+        # Prepare data to pass to the template
+        data = []
+        for index, grades in enumerate(quarterly_grades, start=1):
+            student_name = grades.student.name
+            subjects_grades = grades.grades
+            average_score = subjects_grades.pop('average_score', None)
+            subjects_data = [{'subject': subject, 'score': score} for subject, score in subjects_grades.items()]
+
+            data.append({
+                'no': index,
+                'student_name': student_name,
+                'subjects_data': subjects_data,
+                'average_score': average_score,
+            })
+        
+        students = AdvisoryClass.objects.filter(grade=grade, section=section)
+        # Dictionary to store subject-wise grades and average score for each student
+        subject_grades = {}
+        quarter_mapping = {
+            '1st Quarter': 'first_quarter',
+            '2nd Quarter': 'second_quarter',
+            '3rd Quarter': 'third_quarter',
+            '4th Quarter': 'fourth_quarter',
+        }
+
+        # Fetch subject-wise grades for each student
+        for student in students:
+            grades_data = student.grades_data
+            subject_grades[student.student.name] = {}
+            grades = []  # List to store grades for calculating mean
+
+            for subject, grades_info in grades_data.items():
+                if quarter_mapping[quarter] in grades_info:
+                    subject_grade = grades_info[quarter_mapping[quarter]]
+                    # print(subject_grade)
+                    subject_grades[student.student.name][subject] = subject_grade
+                    if subject_grade is not None:
+                        grades.append(float(subject_grade))
+
+            # Calculate average score
+            if grades:
+                subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
+            else:
+                subject_grades[student.student.name]['average_score'] = None
+
+            # Check if QuarterlyGrades entry already exists for this student and quarter
+            existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
+            if not existing_entry:
+                # Save grades to QuarterlyGrades model
+                QuarterlyGrades.objects.create(
+                    student=student.student,
+                    quarter=quarter,
+                    grades=subject_grades[student.student.name]
+                )
+            elif existing_entry.grades != subject_grades[student.student.name]:
+                # Update the existing entry if the grades are different
+                existing_entry.grades = subject_grades[student.student.name]
+                existing_entry.save()
+
+        subjects = list(students.first().grades_data.keys()) if students else []
+
+        students = Student.objects.filter(grade=grade, section=section)
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
+
+        final_grades = []
+        for student in students:
+            student_data = {
+                'id': student.id,
+                'name': student.name,
+                'grade': grade,
+                'section': section,
+                'subjects': [],
+                'student': student
+            }
+
+            for advisory_class in advisory_classes.filter(student=student):
+                grades_data = advisory_class.grades_data
+                for subject, subject_info in grades_data.items():
+                    # Access grades data for each subject
+                    subject_data = {
+                        'subject': subject,
+                        'quarter_grades': {
+                            'first_quarter': subject_info.get('first_quarter', ''),
+                            'second_quarter': subject_info.get('second_quarter', ''),
+                            'third_quarter': subject_info.get('third_quarter', ''),
+                            'fourth_quarter': subject_info.get('fourth_quarter', ''),
+                            # Add more quarters if available
+                        },
+                        'final_grade': subject_info.get('final_grade', ''),
+                        'teacher_name': subject_info.get('from_teacher_id', 'Unknown Teacher')
+                    }
+                    student_data['subjects'].append(subject_data)
+
+            # Append student data to the final grades
+            final_grades.append(student_data)
+        
+        # Compute the general average and save it for each student
+        for student_data in final_grades:
+            total_final_grade = 0
+            num_subjects = len(student_data['subjects'])
+            for subject_info in student_data['subjects']:
+                final_grade = subject_info['final_grade']
+                try:    
+                    if final_grade is not None:
+                        total_final_grade += float(final_grade) 
+                except ValueError:
+                    # Handle the case where final_grade is not a valid number
+                    pass
+
+            student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
+            save_general_average(student_data, grade, section)
+
+        sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
+        highest_per_quarter = {
+            'first_quarter': [],
+            'second_quarter': [],
+            'third_quarter': [],
+            'fourth_quarter': [],
+        }
+
+        # Populate data for each quarter
+        for quarters in ['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter']:
+            sorted_students = []
+            for student in final_grades:
+                if 'subjects' in student and student['subjects']:  # Check if 'subjects' list exists and is not empty
+                    quarter_grades = student['subjects'][0]['quarter_grades'].get(quarters)
+                    if quarter_grades is not None and quarter_grades != '':
+                        sorted_students.append(student)
+            sorted_students = sorted(sorted_students, key=lambda x: float(x['subjects'][0]['quarter_grades'].get(quarters, '0') or '0'), reverse=True)
+            highest_per_quarter[quarters] = sorted_students
+
+
+
+            general_averages = GeneralAverage.objects.filter(grade=grade, section=section)
+
+        # Sort GeneralAverage instances based on the general average from highest to lowest
+            sorted_general_averages = general_averages.order_by('-general_average')
+
+        user = request.user
+        if hasattr(user, 'teacher'):
+            # Retrieve the teacher associated with the user
+            teacher = user.teacher
+
+            # Filter class records based on the teacher
+            class_records = AdvisoryClass.objects.filter(teacher=teacher)
+
+            # Keep track of unique grade and section combinations
+            unique_combinations = set()
+            unique_class_records = []
+
+            print(unique_class_records)
+
+            # Iterate through class records to filter out duplicates
+            for record in class_records:
+                combination = (record.grade, record.section)
+                # Check if the combination is unique
+                if combination not in unique_combinations:
+                    unique_combinations.add(combination)
+                    unique_class_records.append(record)
+
+            
+        
+
+        context = {
+            'grade': grade,
+            'section': section,
+            'unique_keys': unique_keys_context,
+            'students': students_filtered,
+            'class_type': class_type,
+            'data': data,
+            'quarter': quarter,
+            'final_grades': sorted_final_grades,
+            'highest_per_quarter': highest_per_quarter,
+            'general_averages': sorted_general_averages,
+            'class_records': unique_class_records,
+
+         
+        }
+
+        return render(request, 'teacher_template/adviserTeacher/advisory_quarterly_grades.html', context)
+
+def advisory_final_all_subject(request):
+    # Assuming the user is logged in
+    user = request.user
+
+    # Check if the user is a teacher
+    if user.is_authenticated and hasattr(user, 'teacher'):
+        # Retrieve the teacher associated with the user
+        teacher = user.teacher
+        teacher_id = teacher.id 
+
+        grade = request.GET.get('grade')    
+        section = request.GET.get('section')
+        class_type = request.GET.get('class_type')
+        quarter = request.GET.get('quarter', '1st Quarter')  # Default to 1st Quarter if not provided
+
+        # Fetch advisory classes based on teacher, grade, and section
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section, teacher=teacher)
+
+
+        unique_keys = set()  # Initialize an empty set here
+
+        if advisory_classes.exists():
+            for advisory_class in advisory_classes:
+                grades_data = advisory_class.grades_data
+                if grades_data:
+                    for key, value in grades_data.items():
+                        unique_keys.add((key, value.get('from_teacher_id')))  # Add (key, from_teacher_id) tuple to the set
+
+            # Print the unique keys
+            # print("Unique keys and from_teacher_ids in grades_data for all AdvisoryClass objects:", unique_keys)
+        else:
+            print("No AdvisoryClass objects found for the specified criteria")
+
+      
+        # Filter students based on the class type
+        students = Student.objects.filter(grade=grade, section=section)
+        students_filtered = []
+        for student in students:
+            class_type_json = student.class_type
+            if class_type_json and str(teacher_id) in class_type_json and class_type_json[str(teacher_id)] == class_type:
+                students_filtered.append(student)
+
+        # Unique keys context
+        unique_keys_context = list(unique_keys)
+
+        # Filter quarterly grades based on the selected quarter
+        quarterly_grades = QuarterlyGrades.objects.filter(student__grade=grade, student__section=section, quarter=quarter)
+
+        # Prepare data to pass to the template
+        data = []
+        for index, grades in enumerate(quarterly_grades, start=1):
+            student_name = grades.student.name
+            subjects_grades = grades.grades
+            average_score = subjects_grades.pop('average_score', None)
+            subjects_data = [{'subject': subject, 'score': score} for subject, score in subjects_grades.items()]
+
+            data.append({
+                'no': index,
+                'student_name': student_name,
+                'subjects_data': subjects_data,
+                'average_score': average_score,
+            })
+        
+        students = AdvisoryClass.objects.filter(grade=grade, section=section)
+        # Dictionary to store subject-wise grades and average score for each student
+        subject_grades = {}
+        quarter_mapping = {
+            '1st Quarter': 'first_quarter',
+            '2nd Quarter': 'second_quarter',
+            '3rd Quarter': 'third_quarter',
+            '4th Quarter': 'fourth_quarter',
+        }
+
+        # Fetch subject-wise grades for each student
+        for student in students:
+            grades_data = student.grades_data
+            subject_grades[student.student.name] = {}
+            grades = []  # List to store grades for calculating mean
+
+            for subject, grades_info in grades_data.items():
+                if quarter_mapping[quarter] in grades_info:
+                    subject_grade = grades_info[quarter_mapping[quarter]]
+                    # print(subject_grade)
+                    subject_grades[student.student.name][subject] = subject_grade
+                    if subject_grade is not None:
+                        grades.append(float(subject_grade))
+
+            # Calculate average score
+            if grades:
+                subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
+            else:
+                subject_grades[student.student.name]['average_score'] = None
+
+            # Check if QuarterlyGrades entry already exists for this student and quarter
+            existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
+            if not existing_entry:
+                # Save grades to QuarterlyGrades model
+                QuarterlyGrades.objects.create(
+                    student=student.student,
+                    quarter=quarter,
+                    grades=subject_grades[student.student.name]
+                )
+            elif existing_entry.grades != subject_grades[student.student.name]:
+                # Update the existing entry if the grades are different
+                existing_entry.grades = subject_grades[student.student.name]
+                existing_entry.save()
+
+        subjects = list(students.first().grades_data.keys()) if students else []
+
+        students = Student.objects.filter(grade=grade, section=section)
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
+
+        final_grades = []
+        for student in students:
+            student_data = {
+                'id': student.id,
+                'name': student.name,
+                'grade': grade,
+                'section': section,
+                'subjects': [],
+                'student': student
+            }
+
+            for advisory_class in advisory_classes.filter(student=student):
+                grades_data = advisory_class.grades_data
+                for subject, subject_info in grades_data.items():
+                    # Access grades data for each subject
+                    subject_data = {
+                        'subject': subject,
+                        'quarter_grades': {
+                            'first_quarter': subject_info.get('first_quarter', ''),
+                            'second_quarter': subject_info.get('second_quarter', ''),
+                            'third_quarter': subject_info.get('third_quarter', ''),
+                            'fourth_quarter': subject_info.get('fourth_quarter', ''),
+                            # Add more quarters if available
+                        },
+                        'final_grade': subject_info.get('final_grade', ''),
+                        'teacher_name': subject_info.get('from_teacher_id', 'Unknown Teacher')
+                    }
+                    student_data['subjects'].append(subject_data)
+
+            # Append student data to the final grades
+            final_grades.append(student_data)
+        
+        # Compute the general average and save it for each student
+        for student_data in final_grades:
+            total_final_grade = 0
+            num_subjects = len(student_data['subjects'])
+            for subject_info in student_data['subjects']:
+                final_grade = subject_info['final_grade']
+                try:    
+                    if final_grade is not None:
+                        total_final_grade += float(final_grade) 
+                except ValueError:
+                    # Handle the case where final_grade is not a valid number
+                    pass
+
+            student_data['general_average'] = total_final_grade / num_subjects if num_subjects > 0 else 0
+            save_general_average(student_data, grade, section)
+
+        sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
+        highest_per_quarter = {
+            'first_quarter': [],
+            'second_quarter': [],
+            'third_quarter': [],
+            'fourth_quarter': [],
+        }
+
+        # Populate data for each quarter
+        for quarters in ['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter']:
+            sorted_students = []
+            for student in final_grades:
+                if 'subjects' in student and student['subjects']:  # Check if 'subjects' list exists and is not empty
+                    quarter_grades = student['subjects'][0]['quarter_grades'].get(quarters)
+                    if quarter_grades is not None and quarter_grades != '':
+                        sorted_students.append(student)
+            sorted_students = sorted(sorted_students, key=lambda x: float(x['subjects'][0]['quarter_grades'].get(quarters, '0') or '0'), reverse=True)
+            highest_per_quarter[quarters] = sorted_students
+
+
+
+            general_averages = GeneralAverage.objects.filter(grade=grade, section=section)
+
+        # Sort GeneralAverage instances based on the general average from highest to lowest
+            sorted_general_averages = general_averages.order_by('-general_average')
+
+        user = request.user
+        if hasattr(user, 'teacher'):
+            # Retrieve the teacher associated with the user
+            teacher = user.teacher
+
+            # Filter class records based on the teacher
+            class_records = AdvisoryClass.objects.filter(teacher=teacher)
+
+            # Keep track of unique grade and section combinations
+            unique_combinations = set()
+            unique_class_records = []
+
+            print(unique_class_records)
+
+            # Iterate through class records to filter out duplicates
+            for record in class_records:
+                combination = (record.grade, record.section)
+                # Check if the combination is unique
+                if combination not in unique_combinations:
+                    unique_combinations.add(combination)
+                    unique_class_records.append(record)
+
+            
+        
+
+        context = {
+            'grade': grade,
+            'section': section,
+            'unique_keys': unique_keys_context,
+            'students': students_filtered,
+            'class_type': class_type,
+            'data': data,
+            'quarter': quarter,
+            'final_grades': sorted_final_grades,
+            'highest_per_quarter': highest_per_quarter,
+            'general_averages': sorted_general_averages,
+            'class_records': unique_class_records,
+
+         
+        }
+
+        return render(request, 'teacher_template/adviserTeacher/advisory_final_all_subject.html', context)
+    
 def create_attendance_view(request):
     if request.method == 'GET':
         grade = request.GET.get('grade')

@@ -1,63 +1,138 @@
 {% extends 'admin_template/admin_base.html' %}
+
 {% block page_title %}
-Confirm Subject Deletion
+upload
 {% endblock page_title %}
+
 {% block main_content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Information</title>
-</head>
-<body>
-    <div class="main-panel">
-        <div class="content-wrapper">
-            <div class="row">
-                <div class="col-sm-12">
+<style>
+       .table-container {
+        max-width: 100%;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+
+    th,
+    td {
+        font-size: 10px;
+        padding: 5px;
+        text-align: center;
+
+    }
+
+    td {
+        color: #737F8B;
+    }
+
+    .search-icon {
+        border: none;
+        color: #1F3BB3;
+        background: transparent;
+    }
+
+    .search-icon:hover {
+        color: #000000;
+        border-radius: 0;
+    }
+    .sf10{
+        max-width: 100%;
+        height: 100vh;
+    }
+    .menu *{
+    font-size: 10px;
+    text-decoration: none;
+    border: none;
+    background: none;
+    color: #1F3BB3;       
+    }
+    .menu *:hover{
+        color: #000000;
+    }
+    #action{
+        background: none;
+        border: none;
+    }
+</style>
+</style>
+<div class="container-fluid  ">
+    <div class="card sf10">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-between mb-4 p-1">
+                    <h3>School Information</h3>
                     <div>
-                        <h2 class="font-weight-bold">School Information</h2>
+                        <a class="btn btn-success btn-sm" href="{% url 'add_school' %}">Add New</a>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Region</th>
-                                    <th>Division</th>
-                                    <th>School ID</th>
-                                    <th>School Name</th>
-                                    <th>District</th>
-                                    <th>School Year</th>
-                                    <th>Principal</th>
-                                    <th></th> <!-- New column for actions -->
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for school in school_info %}
-                                <tr>
-                                    <td>{{ school.region }}</td>
-                                    <td>{{ school.division }}</td>
-                                    <td>{{ school.school_id }}</td>
-                                    <td>{{ school.school_name }}</td>
-                                    <td>{{ school.district }}</td>
-                                    <td>{{ school.school_year }}</td>
-                                    <td>{{school.principal_name}}</td>
-                                    <td>
-                                        <a class="btn btn-primary" href="{% url 'edit_school' school.id %}">Edit</a>
-                                        <a  class="btn btn-danger" href="{% url 'delete_school' school.id %}">Delete</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <a class="btn btn-success" href="{% url 'add_school' %}">Add New</a>
-                    </div>
+                
+
+            </div>
+            <div class="table-container">
+                <div>
+
+                    <table class="container">
+                        <thead>
+                            <tr>
+                                <th>Region</th>
+                                <th>Division</th>
+                                <th>School ID</th>
+                                <th>School Name</th>
+                                <th>District</th>
+                                <th>School Year</th>
+                                <th>Principal</th>
+                                <th></th> <!-- New column for actions -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for school in school_info %}
+                            <tr>
+                                <td>{{ school.region }}</td>
+                                <td>{{ school.division }}</td>
+                                <td>{{ school.school_id }}</td>
+                                <td>{{ school.school_name }}</td>
+                                <td>{{ school.district }}</td>
+                                <td>{{ school.school_year }}</td>
+                                <td>{{school.principal_name}}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" id="action" class="btn btn-secondary btn-dropdown-toggle dropdown-toggle-split"
+                                                data-bs-toggle="dropdown" >
+                                            <svg class="c-qd" width="20px" height="20px" viewBox="0 0 20 20" focusable="false" fill="blue">
+                                                <path fill="none" d="M0 0h20v20H0V0z"></path>
+                                                <path d="M10 6c.82 0 1.5-.68 1.5-1.5S10.82 3 10 3s-1.5.67-1.5 1.5S9.18 6 10 6zm0 5.5c.82 0 1.5-.68 1.5-1.5s-.68-1.5-1.5-1.5-1.5.68-1.5 1.5.68 1.5 1.5 1.5zm0 5.5c.82 0 1.5-.67 1.5-1.5 0-.82-.68-1.5-1.5-1.5s-1.5.68-1.5 1.5c0 .83.68 1.5 1.5 1.5z"></path>
+                                            </svg>
+                                        </button>
+                                        <!-- Dropdown menu content -->
+                                        <div class="dropdown-menu action p-2 " aria-labelledby="action">
+                                            <div class="d-flex flex-column justify-content-center align-items-center menu">
+                                                <a  href="{% url 'edit_school' school.id %}">Edit</a>
+                                                <a  href="{% url 'delete_school' school.id %}">Delete</a>
+                                            </div>
+                                          
+                                            
+                                        </div>
+                                    </div>
+                                   
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(document).ready(function () {
+        $('.btn-dropdown-toggle').dropdown();
+    });
+    });
+</script>
 {% endblock main_content %}
