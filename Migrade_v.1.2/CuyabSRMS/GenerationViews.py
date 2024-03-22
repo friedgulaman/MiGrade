@@ -5,12 +5,14 @@ from django.http import HttpResponseNotFound
 from .models import Student, FinalGrade, GeneralAverage, ClassRecord, Subject, SchoolInformation, QuarterlyGrades, AdvisoryClass, AttendanceRecord, LearnersObservation,BehaviorStatement,  SchoolInformation
 from .views import log_activity
 import os
+import subprocess
 import openpyxl
 import pandas as pd
 import shutil
 from datetime import datetime
 import urllib.parse
 from django.conf import settings
+
 from .utils import (
     write_student_names,
     write_scores_hps_written,
@@ -1099,7 +1101,6 @@ def generate_summary_for_grades_4_to_6(request, grade, section, subject, quarter
   
 
 def generate_excel_for_sf9(request, student_id):
-
     # Retrieve the student object
     student = get_object_or_404(Student, id=student_id)
 
@@ -1108,44 +1109,30 @@ def generate_excel_for_sf9(request, student_id):
     general_average = GeneralAverage.objects.filter(student=student).first()
     attendance_record = AttendanceRecord.objects.filter(student=student).first()
     learners_observation = LearnersObservation.objects.filter(student=student).first()
-
     school_info =  SchoolInformation.objects.all()
 
-    print(school_info)
-    # Check which specific records are missing
+    # Check if any required records are missing
     if advisory_class is None:
-         return render(request, 'teacher_template/adviserTeacher/generate_excel_for_sf9.html', {'advisory_class_missing': True})
+        return render(request, 'teacher_template/adviserTeacher/generate_excel_for_sf9.html', {'advisory_class_missing': True})
 
     # Proceed with generating the Excel file
-    print(f"learners_observation: {learners_observation}")
-    
     student_name = student.name
     grade_name = student.grade
     section_name = student.section
 
-    user = request.user
-    action = f'{user} generated an SF9 for the Student "{student_name} in {grade_name} {section_name}"'
-    details = f'{user} generated an SF9 for the Student "{student_name} in {grade_name} {section_name} in the system.'
-    log_activity(user, action, details)
-
-
-
-    # print(student_name)
-
     # Original file path for SF9 template
-        # Original file path
     excel_file_name = "SF9.xlsx"
 
-    # Get the current working directory
-    # current_directory = os.getcwd()
+    # Define directories
     media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
     created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
 
+    # Create directories if they don't exist
     if not os.path.exists(media_directory):
         os.makedirs(media_directory)
-
     if not os.path.exists(created_directory):
         os.makedirs(created_directory)
+
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
@@ -1158,43 +1145,54 @@ def generate_excel_for_sf9(request, student_id):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
-    # try:
-        # Open the copied SF9 Excel file
+    # Open the copied SF9 Excel file
     workbook = openpyxl.load_workbook(copied_file_path)
 
-            # Select the desired sheet (use the correct sheet name from the output)
+    # Select the desired sheet (use the correct sheet name from the output)
     front_sheet_name = 'FRONT'
     front_sheet = workbook[front_sheet_name]
-
     back_sheet_name = 'BACK'
     back_sheet = workbook[back_sheet_name]
 
-            # Write SF9-specific data using a utility function (update this function based on your needs)
+    # Write SF9-specific data using utility functions
     write_sf9_data(front_sheet, student)
     write_sf9_school_info(front_sheet, school_info)
     write_sf9_grades(back_sheet, advisory_class, general_average)
-
     write_sf9_attendance(front_sheet, attendance_record)
     write_sf9_total_attendance(front_sheet, attendance_record)
-
     write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_1', 25)
     write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_2', 26)
     write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_3', 27)
     write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_4', 28)
 
-            # Save the changes to the SF9 workbook
+    # Save the changes to the SF9 workbook
     workbook.save(copied_file_path)
 
-            # Create an HTTP response with the updated SF9 Excel file
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    filename = f'SF9_{student_name}_{grade_name}_{section_name}_{timestamp}.xlsx'
-    encoded_filename = urllib.parse.quote(filename)
-    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+    # Convert Excel to PDF using libreoffice
+    excel_file_path = copied_file_path
+    pdf_file_path = f'SF9_{student_name}_{grade_name}_{section_name}_{timestamp}.pdf'
 
-    with open(copied_file_path, 'rb') as excel_file:
-                response.write(excel_file.read())
+    libreoffice_cmd = [
+        'libreoffice',
+        '--headless',
+        '--convert-to',
+        'pdf',
+        excel_file_path,
+        '--outdir',
+        os.path.dirname(pdf_file_path)
+    ]
+
+    subprocess.run(libreoffice_cmd, check=True)
+
+    # Create an HTTP response with the generated PDF file
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{pdf_file_path}"'
+
+    with open(pdf_file_path, 'rb') as pdf_file:
+        response.write(pdf_file.read())
 
     return response
+    # return response
 
     # except Exception as e:
     #     # Handle exceptions, such as a corrupted file

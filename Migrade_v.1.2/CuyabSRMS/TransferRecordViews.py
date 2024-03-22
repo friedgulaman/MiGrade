@@ -414,6 +414,45 @@ def save_data(message, json_data, teacher):
                 final_grade = round(sum(quarter_grades) / len(quarter_grades), 2) if quarter_grades else None
 
                 subject_teacher_data['final_grade'] = final_grade
+                
+                if json_data.get('subject') in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                    mapeh_quarter_data = grades_data.get('MAPEH', {})
+                    mapeh_quarter_data[quarter_field_mapping[quarter]] = transmuted_grade
+                    grades_data['MAPEH'] = mapeh_quarter_data
+
+
+                # Compute MAPEH's final grade
+                if transmuted_grade is not None:
+                    mapeh_quarter_grades = [float(transmuted_grade)]
+                else:
+                    mapeh_quarter_grades = []
+
+                # Add other grades from MAPEH data
+                individual_subjects = ['MUSIC', 'ARTS', 'PE', 'HEALTH']
+                for subject in individual_subjects:
+                    if subject != json_data.get('subject'):  # Exclude the current subject
+                        subject_grades = grades_data.get(subject, {})
+                        for quarter in quarter_field_mapping.values():
+                            if quarter in subject_grades and isinstance(subject_grades[quarter], str) and subject_grades[quarter].strip(): 
+                                mapeh_quarter_grades.append(float(subject_grades[quarter]))
+
+                # Ensure the value is a non-empty string
+                mapeh_quarter_grades = [grade for grade in mapeh_quarter_grades if grade is not None]
+                
+
+                # Compute MAPEH's final grade
+                mapeh_final_grade = round(sum(mapeh_quarter_grades) / len(mapeh_quarter_grades), 2) if mapeh_quarter_grades else None
+
+                if 'MAPEH' not in grades_data:
+                    grades_data['MAPEH'] = {}
+
+                if quarter in quarter_field_mapping:
+                    grades_data['MAPEH'][quarter_field_mapping[quarter]] = mapeh_final_grade
+                else:
+                    # Handle the case where the quarter is not found in the mapping
+                    # This could involve logging an error, setting a default value, or some other action
+                    pass
+                grades_data['MAPEH']['final_grade'] = mapeh_final_grade
 
                 # Set the updated subject_teacher_data back to the grades_data
                 advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
