@@ -20,6 +20,8 @@ from .teacher_required import teacher_required
 from .admin_required import admin_required
 from .mt_required import mt_required
 from .super_required import super_required
+from django.urls import path  #eto saka sa baba
+from . import TeacherViews
 
 
 
@@ -50,7 +52,8 @@ urlpatterns = [
     path('mt_change_password/', views.mt_change_password, name='mt_change_password'),
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
     path('activity', views.activity, name='activity'),
-
+    path('faq_view', teacher_required(TeacherViews.faq_view), name='faq_view'),  # etoo gar
+    path('doc_view', teacher_required(TeacherViews.doc_view), name='doc_view'),  # etoo gar
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),

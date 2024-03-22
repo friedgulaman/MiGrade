@@ -106,7 +106,7 @@ WSGI_APPLICATION = 'migrade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'migrade_v.2.1',
+        'NAME': 'migrade_v_2_1',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',   

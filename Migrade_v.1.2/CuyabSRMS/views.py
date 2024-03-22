@@ -14,6 +14,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+
+
 def custom_404(request, exception=None):
     return render(request, 'custom_404.html', status=404) 
     

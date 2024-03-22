@@ -75,6 +75,13 @@ from google.api_core.client_options import ClientOptions
 import calendar
 from calendar import month_name
 
+
+def faq_view(request):
+    # Dito mo ilalagay ang iyong logic para sa FAQ page
+    return render(request, 'teacher_template/adviserTeacher/faq.html')  #saka etooo
+def doc_view(request):
+    # Dito mo ilalagay ang iyong logic para sa FAQ page
+    return render(request, 'teacher_template/adviserTeacher/documentation.html')  #saka etooo
 @login_required
 def home_teacher(request):
     announcements = Announcement.objects.all()
@@ -88,6 +95,8 @@ def new_classrecord(request):
 @login_required
 def classes(request):
         return render(request, 'teacher_template/adviserTeacher/classes.html')
+
+
 
 
 # adviser
