@@ -58,25 +58,26 @@
           </div>
       </li>
       <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="collapse" href="#classrecords" aria-expanded="false" aria-controls="classrecords">
-              <i class="menu-icon mdi mdi-table"></i>
-              <span class="menu-title">Generate Class Record</span>
-              <i class="menu-arrow"></i>
-          </a>
-          <div class="collapse" id="classrecords">
-              <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="{% url 'generate_per_subject' %}">Generate per Subject</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="{% url 'generate_per_all_subject' %}">Generate all Subject</a></li>
-              </ul>
-          </div>
-      </li>
-      <li class="nav-item nav-category">Archive</li>
-      <li class="nav-item">
-          <a class="nav-link" href="{% url 'archived_records' %}">
-              <i class="menu-icon mdi mdi-archive"></i>
-              <span class="menu-title">Archived</span>
-          </a>
-      </li>
+        <a class="nav-link" data-bs-toggle="collapse" href="#classrecords" aria-expanded="false" aria-controls="classrecords">
+            <i class="menu-icon mdi mdi-table"></i>
+            <span class="menu-title">Generate Class Record</span>
+            <i class="menu-arrow"></i>
+        </a>
+        <div class="collapse" id="classrecords">
+            <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{% url 'generate_per_subject' %}">Generate Class Record</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'generate_per_all_subject' %}">Generate Summary of Quarterly Grades</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'generate_final_grade' %}">Generate Final Grade and General Average</a></li>
+            </ul>
+        </div>
+    </li>
+    <li class="nav-item nav-category">Archive</li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'archived_records' %}">
+            <i class="menu-icon mdi mdi-archive"></i>
+            <span class="menu-title">Archived</span>
+        </a>
+    </li>
 
   </ul>
 </nav>

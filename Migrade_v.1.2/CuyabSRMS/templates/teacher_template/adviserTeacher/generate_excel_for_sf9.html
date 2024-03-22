@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Excel for SF9</title>
+</head>
+<body>
+    {% if advisory_class is None %}
+        <script>
+            alert("Advisory Class record not found for this student");
+            window.location.href = "{% url 'sf9' %}";  // Redirect to the homepage or any other page
+        </script>
+    {% else %}
+        <!-- Your content for generating the Excel file -->
+    {% endif %}
+</body>
+</html>

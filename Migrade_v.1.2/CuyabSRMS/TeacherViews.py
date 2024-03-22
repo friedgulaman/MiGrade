@@ -251,7 +251,7 @@ def process_google_sheet(spreadsheet_id, sheet_name):
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
 
             # Extract key-value pairs from the first few rows of the sheet
-            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Section"]
+            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Section", "Age"]
             key_value_pairs = {}
 
             for i, row in enumerate(rows_list, start=1):
@@ -343,7 +343,7 @@ def process_excel_file(file_path):
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
 
             # Extract key-value pairs from the first few rows of the sheet
-            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Grade", "Section"]
+            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Grade", "Section", "Age"]
             key_value_pairs = {}
 
             for i, row in enumerate(row_list, start=1):
@@ -450,6 +450,7 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
+            age = received_data.get('age', '')
             class_type_data = received_data.get('classType', '')   # New field for class type
 
             subject = ''
@@ -457,10 +458,11 @@ def save_json_data(request):
                 subject = 'Advisory Class'
             elif class_type_data == 'Subject':
                 subject = 'Subject Class'
-            elif class_type_data == 'advisory_Subject':
+            elif class_type_data == 'advisory_Subject_g1' or class_type_data == 'advisory_Subject_g4':
                 subject = 'Advisory Class, Subject Class'
 
             teacher_id = teacher.id
+            print(teacher_id)
 
             class_type = {teacher_id: subject}
 
@@ -476,18 +478,101 @@ def save_json_data(request):
 
             section, _ = Section.objects.get_or_create(name=section_name, grade=grade)
 
-            if class_type_data == 'Advisory Class' and section.class_type == class_type:
-                raise ValidationError("Advisory class already exists for this grade and section.")
 
+            if 'Advisory Class, Subject Class' in subject:
+                existing_asc = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__icontains="Advisory Class, Subject Class")
+                )
+                
+                # Check if an advisory class already exists
+                if existing_asc.exists():
+                    print("adv,sbj-adv,sub: error")
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+                existing_subject = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                   Q(class_type__contains={teacher_id: "Subject Class"})
+                )
+                
+                # Check if an advisory class already exists
+                if existing_subject.exists():
+                    print("adv,sbj-sub: error")
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+                # existing_advisory = Student.objects.filter(
+                #     Q(grade=grade_name) &
+                #     Q(section=section_name) &
+                #     Q(school_year=school_year) &
+                #     Q(class_type__contains={teacher_id: "Advisory Class"})
+                # )
+                
+                # # Check if an advisory class already exists
+                # if existing_advisory.exists():
+                #     return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+                             
+            elif 'Subject Class' in subject:
+                # existing_advisory_class = Student.objects.filter(
+                #     Q(grade=grade_name) &
+                #     Q(section=section_name) &
+                #     Q(school_year=school_year) &
+                #     Q(class_type__icontains="Advisory Class"))
+                
+
+                # # Check if an advisory class already exists
+                # if existing_advisory_class.exists():
+                #     print("sub-advisory: error")
+                #     return JsonResponse({'status': 'error', 'message': f"An Advisory Class already exists for this {grade_name} {section_name} - School Year: {school_year}. If you wish to add a Subject Class, please refer to the Advisory Class and Subject Class and select the appropriate Class type."})
+
+                existing_subject_class = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__contains={teacher_id: "Subject Class"})
+                )
+
+                # Check if a subject class already exists
+                if existing_subject_class.exists():
+                    print("sub-sub: error")
+                    return JsonResponse({'status': 'error', 'message': f"Subject class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+            elif 'Advisory Class' in subject:
+                existing_sub = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__icontains="Subject Class")
+                )
+                
+                # Check if a subject class already exists
+                if existing_sub.exists():
+                    print("adv-sub: error")
+                    return JsonResponse({'status': 'error', 'message': f"Subject class already exists for this {grade_name} {section_name} - School Year: {school_year}. If you wish to add Advisory Class, please refer to the Advisory Class and Subject Class and select the appropriate Class type."})
+
+                existing_adv = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    (Q(class_type__icontains="Advisory Class") | Q(class_type__contains={teacher_id: "Advisory Class, Subject Class"}))
+                )
+                
+                # Check if an advisory class already exists
+                if existing_adv.exists():
+                    print("adv-advisory|advsbc: error")
+                    return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+            
                             # Increment the total_students field for the respective section
             section.total_students += 1
             # Initialize or get the existing class_type dictionary for the section
             existing_class_type = section.class_type or {}
 
             # Check if the class_type already exists
-            if any(existing_teacher_id == teacher_id for existing_teacher_id in existing_class_type):
-                # Raise an error indicating that the class_type already exists
-                raise ValidationError("Class type already exists for this teacher.")
+ 
 
             # Update the existing class_type with the new value
             existing_class_type.update(class_type)
@@ -503,6 +588,7 @@ def save_json_data(request):
                 name = item.get('Name')
                 sex = item.get('Sex')
                 birthday = item.get('Birthday')
+                age = item.get('Age')
 
                 # Create or update the Grade object
 
@@ -527,6 +613,7 @@ def save_json_data(request):
                     defaults={
                         'name': name,
                         'sex': sex,
+                        'age': age,
                         'birthday': birthday,
                         'lrn':lrn,
                         'school_id': school_id,
@@ -538,15 +625,16 @@ def save_json_data(request):
                         'class_type': class_type  # Save the class type on Student
                     }
                 )
+                print("update daw")
    
                 if not created:
                     
                  
                     # Check if the existing student has the same school year
                     if student.school_year == school_year:
-                    
+           
                             student.class_type =  existing_class_type
-                            
+                            print("update student classtype")
                             student.save()
                             
                     else:
@@ -555,6 +643,7 @@ def save_json_data(request):
                             lrn=lrn,
                             name=name,
                             sex=sex,
+                            age=age,
                             birthday=birthday,
                             school_id=school_id,
                             district=district,
@@ -571,12 +660,12 @@ def save_json_data(request):
                 grade.save()
                 student.save()
 
-            response_data = {'message': 'Created a class successfully'}
+            response_data = {'status': 'success', 'message': 'The class has been successfully created'}
             return JsonResponse(response_data)
         
-        except json.JSONDecodeError:
-            response_data = {'message': 'Invalid JSON data'}
-            return JsonResponse(response_data, status=400)
+        except ValidationError as e:
+        # Return a JSON response with the error message
+            return JsonResponse({'error': str(e)})
         
     else:
         response_data = {'message': 'Method not allowed'}
@@ -607,20 +696,19 @@ def class_record(request):
 def get_grade_details(request):
 
     user = request.user
+    teacher = user.teacher
+    teacher_id = teacher.id
+    print(teacher_id)
     selected_grade = request.GET.get('grade')
     selected_section = request.GET.get('section')
-    print(selected_grade)
-    print(selected_section)
 
     teacher = Teacher.objects.get(user=user)
-    grades = Student.objects.values_list('grade', flat=True).distinct()
+    grades = Student.objects.filter(Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"})).values_list('grade', flat=True).distinct()
     sections = Student.objects.values_list('section', flat=True).distinct()
     subjects = Subject.objects.values_list('name', flat=True).distinct()
     quarters = Quarters.objects.values_list('quarters', flat=True).distinct()
     
-
-
-
+    print(grades)
     context = {
         'teacher': teacher,
         'grades': grades,
@@ -639,8 +727,10 @@ def get_grade_details(request):
    
 def get_sections_classrecord(request):
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        teacher = request.user.teacher
+        teacher_id = teacher.id
         grade_id = request.GET.get('grade_id')
-        sections = Student.objects.filter(grade=grade_id).values_list('section', flat=True).distinct()
+        sections = Student.objects.filter(Q(grade=grade_id), Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"}) ).values_list('section', flat=True).distinct()
         sections_list = list(sections)
         return JsonResponse({'sections': sections_list})
     else:
@@ -1292,6 +1382,7 @@ def student_list_for_subject(request):
 
                 # Determine remarks based on transmuted grade
                 remarks = determine_remarks(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
+                status = determine_status(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
 
                 # If both initial grade and transmuted grade exist, append the data to the subject_grades dictionary
                 if highest_initial_grade is not None and transmuted_grade is not None:
@@ -1300,7 +1391,8 @@ def student_list_for_subject(request):
                         'student_name': student.name,
                         'highest_initial_grade': highest_initial_grade.initial_grades,
                         'transmuted_grade': transmuted_grade.transmuted_grades,
-                        'remarks': remarks
+                        'remarks': remarks,
+                        'status': status
                     })
 
             # Sort the students for this subject by highest initial grade
@@ -1399,18 +1491,24 @@ def student_list_for_advisory(request):
             grades = []  # List to store grades for calculating mean
 
             for subject, grades_info in grades_data.items():
+                # Skip subjects 'MUSIC', 'ARTS', 'PE', and 'HEALTH'
+                if subject in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                    continue
+                
                 if quarter_mapping[quarter] in grades_info:
                     subject_grade = grades_info[quarter_mapping[quarter]]
-                    # print(subject_grade)
-                    subject_grades[student.student.name][subject] = subject_grade
-                    if subject_grade is not None:
-                        grades.append(float(subject_grade))
+                    print(subject_grade)
+                    subject_grade_str = str(subject_grade) if subject_grade is not None else ""
+                    if subject_grade_str.strip():  # Check if the string is not empty after stripping whitespace
+                        subject_grades[student.student.name][subject] = subject_grade_str
+                        if subject_grade is not None:
+                            grades.append(float(subject_grade))
 
             # Calculate average score
             if grades:
                 subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
             else:
-                subject_grades[student.student.name]['average_score'] = None
+                subject_grades[student.student.name]['average_score'] = ""
 
             # Check if QuarterlyGrades entry already exists for this student and quarter
             existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
@@ -1445,6 +1543,8 @@ def student_list_for_advisory(request):
             for advisory_class in advisory_classes.filter(student=student):
                 grades_data = advisory_class.grades_data
                 for subject, subject_info in grades_data.items():
+                    if subject.upper() in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                        continue
                     # Access grades data for each subject
                     subject_data = {
                         'subject': subject,
@@ -1855,7 +1955,7 @@ def display_advisory_data(request):
         section = request.GET.get('section')
         key = request.GET.get('key')
         # print(key)
-        
+        print(key)
         
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
@@ -1865,6 +1965,7 @@ def display_advisory_data(request):
             section=section, 
             grades_data__has_key=key
         )
+     
 
         for advisory_class in advisory_classes:
             # print(f"Advisory class: {advisory_class}")
@@ -1872,6 +1973,7 @@ def display_advisory_data(request):
             grades_data = advisory_class.grades_data
             if grades_data:
                 specific_key = key
+             
                 # if specific_key in grades_data:
                 #     # print(f"Value for {specific_key}: {grades_data[specific_key]}")
                 # else:
@@ -2229,6 +2331,21 @@ def determine_remarks(general_average):
         return 'PASSED'
     else:
         return 'FAILED'
+    
+def determine_status(general_average):
+    if general_average is None:
+        return 'No Grade'
+     
+    if general_average >= 98:
+        return 'PASSED'
+    elif general_average >= 95:
+        return 'PASSED'
+    elif general_average >= 90:
+        return 'PASSED'
+    elif general_average >= 75:
+        return 'PASSED'
+    else:
+        return 'FAILED'
 
 
 def save_general_average(student_data, grade, section):
@@ -2238,6 +2355,7 @@ def save_general_average(student_data, grade, section):
         student = student_data['student']
         general_average = round(student_data['general_average'], 2)
         remarks = determine_remarks(general_average)
+        status = determine_status(general_average)
 
         # Filter GeneralAverage objects based on student, grade, and section
         general_average_records = GeneralAverage.objects.filter(
@@ -2252,6 +2370,7 @@ def save_general_average(student_data, grade, section):
             general_average_record = general_average_records.first()
             general_average_record.general_average = general_average
             general_average_record.remarks = remarks
+            general_average_record.status = status
             general_average_record.save()
         else:
             # Create a new record if none exist
@@ -2260,7 +2379,8 @@ def save_general_average(student_data, grade, section):
                 grade=grade,
                 section=section,
                 general_average=general_average,
-                remarks=remarks
+                remarks=remarks,
+                status=status
             )
 
 def display_all_final_grades(request, grade, section):
@@ -2374,10 +2494,10 @@ def update_score(request):
         assessment_type = request.POST.get('assessment_type')
         
 
-        print(f"new_score {new_score}")
-        print(f"classrecordid: {class_record_id}")
-        print(score_data)
-        print(assessment_type)
+        # print(f"new_score {new_score}")
+        # print(f"classrecordid: {class_record_id}")
+        # print(score_data)
+        # print(assessment_type)
 
 
          # Assuming you want to filter students by both name and teacher
@@ -2434,8 +2554,8 @@ def update_score(request):
         total_hps_data = grade_score.grade_scores['scores_hps'][assessment_type]['TOTAL_HPS']
         weight_input = float(grade_score.grade_scores['scores_hps'][assessment_type]['WEIGHT'])
 
-        print(total_hps_data)
-        print(weight_input)
+        # print(total_hps_data)
+        # print(weight_input)
 
         total_hps_data = float(total_hps_data)
         # Calculate percentage score
@@ -2444,14 +2564,14 @@ def update_score(request):
         else:
             percentage_score_data = None
 
-        print(percentage_score_data)
+        # print(percentage_score_data)
 
         if percentage_score_data is not None:
             total_weighted_score = round((percentage_score_data / 100) * weight_input, 2)
         else:
             total_weighted_score = None
 
-        print(total_weighted_score)
+        # print(total_weighted_score)
         # Store the total score in grade_score
         grade_score.grade_scores[scores_per_assessment][assessment_type]['total_score'] = total_score_data
         grade_score.grade_scores[scores_per_assessment][assessment_type]['percentage_score'] = percentage_score_data
@@ -2465,7 +2585,7 @@ def update_score(request):
             for assmt_type in assessments
         )
 
-        print(initial_grades)
+        # print(initial_grades)
         transmuted_grades = transmuted_grade(initial_grades)
 
         grade_score.initial_grades = initial_grades
@@ -3045,13 +3165,18 @@ def class_record_upload(request):
     if request.method == 'POST':
         excel_file = request.FILES['excel_file']
         sheet_name = request.POST.get('sheet_name')
+
+        user = request.user
+        action = f'{user} upload Classrecord "{excel_file}" - "{sheet_name}"'
+        details = f'{user} upload Classrecord "{excel_file}" - "{sheet_name}"'
+        log_activity(user, action, details)
         # try:
         class_record_data = read_excel_values(excel_file, sheet_name)
 
             # Process each row in class_record_data
         class_record_data_scores = [process_row(row) for row in class_record_data]
 
-      
+
             # Create a dictionary where student's name is the key and the rest of the row values are stored as a list
         class_record_data_scores_with_names = {}
         for row in class_record_data_scores:

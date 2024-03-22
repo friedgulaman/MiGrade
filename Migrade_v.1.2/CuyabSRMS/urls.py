@@ -137,7 +137,7 @@ urlpatterns = [
     path('remove_grade/', admin_required(AdminViews.remove_grade), name='remove_grade'),
 
     # Adviser Teacher
-
+    path('faq_view', teacher_required(TeacherViews.faq_view), name="faq_view"),
     path('home_teacher', teacher_required(TeacherViews.home_teacher), name="home_teacher"),
     path('home_adviser_teacher', teacher_required(TeacherViews.home_adviser_teacher), name="home_adviser_teacher"),
     path('dashboard', teacher_required(TeacherViews.dashboard), name="dashboard"),   
@@ -248,6 +248,8 @@ urlpatterns = [
          name='generate_summary_of_quarterly_grades'),
     path('generate_final_and_general_grades/<str:grade>/<str:section>/', teacher_required(GenerationViews.generate_final_and_general_grades), name='generate_final_and_general_grades'),
     path('generate-summary-for-grades-4-to-6/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_for_grades_4_to_6), name='generate_summary_for_grades_4_to_6'),
+    path('generate-final-grade/', teacher_required(GenerationViews.generate_final_grade_view), name='generate_final_grade'),
+
 
 
     #Archived
