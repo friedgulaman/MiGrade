@@ -246,7 +246,7 @@ def process_google_sheet(spreadsheet_id, sheet_name):
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
 
             # Extract key-value pairs from the first few rows of the sheet
-            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Section"]
+            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Section", "Age"]
             key_value_pairs = {}
 
             for i, row in enumerate(rows_list, start=1):
@@ -338,7 +338,7 @@ def process_excel_file(file_path):
             lrn_data = find_lrn_and_store_as_dict(existing_sheet_values)
 
             # Extract key-value pairs from the first few rows of the sheet
-            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Grade", "Section"]
+            terms_to_find = ["School ID", "School Name", "Division", "District", "School Year", "Grade Level", "Grade", "Section", "Age"]
             key_value_pairs = {}
 
             for i, row in enumerate(row_list, start=1):
@@ -445,6 +445,7 @@ def save_json_data(request):
             school_year = received_data.get('school_year', '')
             grade_name = received_data.get('grade', '')
             section_name = received_data.get('section', '')
+            age = received_data.get('age', '')
             class_type_data = received_data.get('classType', '')   # New field for class type
 
             subject = ''
@@ -582,6 +583,7 @@ def save_json_data(request):
                 name = item.get('Name')
                 sex = item.get('Sex')
                 birthday = item.get('Birthday')
+                age = item.get('Age')
 
                 # Create or update the Grade object
 
@@ -606,6 +608,7 @@ def save_json_data(request):
                     defaults={
                         'name': name,
                         'sex': sex,
+                        'age': age,
                         'birthday': birthday,
                         'lrn':lrn,
                         'school_id': school_id,
@@ -635,6 +638,7 @@ def save_json_data(request):
                             lrn=lrn,
                             name=name,
                             sex=sex,
+                            age=age,
                             birthday=birthday,
                             school_id=school_id,
                             district=district,
@@ -1482,18 +1486,24 @@ def student_list_for_advisory(request):
             grades = []  # List to store grades for calculating mean
 
             for subject, grades_info in grades_data.items():
+                # Skip subjects 'MUSIC', 'ARTS', 'PE', and 'HEALTH'
+                if subject in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                    continue
+                
                 if quarter_mapping[quarter] in grades_info:
                     subject_grade = grades_info[quarter_mapping[quarter]]
-                    # print(subject_grade)
-                    subject_grades[student.student.name][subject] = subject_grade
-                    if subject_grade is not None:
-                        grades.append(float(subject_grade))
+                    print(subject_grade)
+                    subject_grade_str = str(subject_grade) if subject_grade is not None else ""
+                    if subject_grade_str.strip():  # Check if the string is not empty after stripping whitespace
+                        subject_grades[student.student.name][subject] = subject_grade_str
+                        if subject_grade is not None:
+                            grades.append(float(subject_grade))
 
             # Calculate average score
             if grades:
                 subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
             else:
-                subject_grades[student.student.name]['average_score'] = None
+                subject_grades[student.student.name]['average_score'] = ""
 
             # Check if QuarterlyGrades entry already exists for this student and quarter
             existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
@@ -1528,6 +1538,8 @@ def student_list_for_advisory(request):
             for advisory_class in advisory_classes.filter(student=student):
                 grades_data = advisory_class.grades_data
                 for subject, subject_info in grades_data.items():
+                    if subject.upper() in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                        continue
                     # Access grades data for each subject
                     subject_data = {
                         'subject': subject,
@@ -1938,7 +1950,7 @@ def display_advisory_data(request):
         section = request.GET.get('section')
         key = request.GET.get('key')
         # print(key)
-        
+        print(key)
         
         # Fetch students based on grade and section
         students = Student.objects.filter(grade=grade, section=section)
@@ -1948,13 +1960,18 @@ def display_advisory_data(request):
             section=section, 
             grades_data__has_key=key
         )
+     
 
         for advisory_class in advisory_classes:
             # print(f"Advisory class: {advisory_class}")
             # print("Grades data:")
             grades_data = advisory_class.grades_data
+            mapeh = grades_data["MAPEH"]
+            print(mapeh)
+
             if grades_data:
                 specific_key = key
+             
                 # if specific_key in grades_data:
                 #     # print(f"Value for {specific_key}: {grades_data[specific_key]}")
                 # else:

@@ -115,6 +115,7 @@ margin-left: 30px;
                                         <th>Name</th>
                                         <th>Sex</th>
                                         <th>Birthday</th>
+                                        <th>Age</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -124,6 +125,7 @@ margin-left: 30px;
                                         <td>{{ values.0.1 }}</td>
                                         <td>{{ values.0.2 }}</td>
                                         <td>{{ values.0.3 }}</td>
+                                        <td>{{ values.0.4 }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -248,7 +250,8 @@ margin-left: 30px;
                 rowData.LRN = cells[0].textContent;  // Adjust the index based on your table structure
                 rowData.Name = cells[1].textContent;
                 rowData.Sex = cells[2].textContent;
-                rowData.Birthday = cells[3].textContent;  // Adjust the index based on your table structure
+                rowData.Birthday = cells[3].textContent;
+                rowData.Age =  cells[4].textContent;// Adjust the index based on your table structure
 
                 data.rows.push(rowData);
             });

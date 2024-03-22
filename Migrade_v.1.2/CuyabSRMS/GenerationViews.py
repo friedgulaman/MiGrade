@@ -5,7 +5,6 @@ from django.http import HttpResponseNotFound
 from .models import Student, FinalGrade, GeneralAverage, ClassRecord, Subject, SchoolInformation, QuarterlyGrades, AdvisoryClass, AttendanceRecord, LearnersObservation,BehaviorStatement,  SchoolInformation
 from .views import log_activity
 import os
-import subprocess
 import openpyxl
 import pandas as pd
 import shutil
@@ -1168,30 +1167,19 @@ def generate_excel_for_sf9(request, student_id):
     # Save the changes to the SF9 workbook
     workbook.save(copied_file_path)
 
-    # Convert Excel to PDF using libreoffice
-    excel_file_path = copied_file_path
-    pdf_file_path = f'SF9_{student_name}_{grade_name}_{section_name}_{timestamp}.pdf'
+            # Create an HTTP response with the updated SF9 Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'SF9_{student_name}_{grade_name}_{section_name}_{timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
 
-    libreoffice_cmd = [
-        'libreoffice',
-        '--headless',
-        '--convert-to',
-        'pdf',
-        excel_file_path,
-        '--outdir',
-        os.path.dirname(pdf_file_path)
-    ]
-
-    subprocess.run(libreoffice_cmd, check=True)
-
-    # Create an HTTP response with the generated PDF file
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{pdf_file_path}"'
-
-    with open(pdf_file_path, 'rb') as pdf_file:
-        response.write(pdf_file.read())
+    with open(copied_file_path, 'rb') as excel_file:
+                response.write(excel_file.read())
 
     return response
+
+    # Convert Excel to PDF using libreoffice
+  
     # return response
 
     # except Exception as e:
