@@ -12,7 +12,7 @@ from django.db import transaction
 from collections import defaultdict
 from django.db import IntegrityError
 from django.db.models import Q
-
+from .views import log_activity
 
 def transfer_record(request):
     teacher = request.user.teacher
@@ -170,6 +170,9 @@ def submit_json(request):
 def transfer_json_to_teacher(request):
     if request.method == 'POST':
         try:
+
+
+
             json_data = json.loads(request.body.decode('utf-8'))
             target_teacher_id = json_data.get('target_teacher')
             from_teacher_id = json_data.get('teacher')
@@ -181,6 +184,11 @@ def transfer_json_to_teacher(request):
             quarter_name = next(iter(quarter_info.keys()))
             file_name = (grade, section, quarter_name, subject)
             section = json_data.get('section')
+            user = request.user
+            action = f'{user} send the {grade} {section} - {subject} {quarter_name} Classrecord to the adviser of {grade} {section}'
+            details = f'{user} send the {grade} {section} - {subject} {quarter_name} Classrecord to the adviser of {grade} {section}'
+            log_activity(user, action, details)
+
             print(json_data)
             print(file_name)
             print(from_teacher_id)

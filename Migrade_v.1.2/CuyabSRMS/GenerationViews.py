@@ -1103,6 +1103,8 @@ def generate_excel_for_sf9(request, student_id):
     # Retrieve the student object
     student = get_object_or_404(Student, id=student_id)
 
+    user = request.user
+
     # Query for other related objects
     advisory_class = AdvisoryClass.objects.filter(student=student).first()
     general_average = GeneralAverage.objects.filter(student=student).first()
@@ -1113,6 +1115,14 @@ def generate_excel_for_sf9(request, student_id):
     # Check if any required records are missing
     if advisory_class is None:
         return render(request, 'teacher_template/adviserTeacher/generate_excel_for_sf9.html', {'advisory_class_missing': True})
+    student_name = student.name
+    grade_name = student.grade
+    section_name = student.section
+
+    user = request.user
+    action = f'{user} generate the SF9 of student "{student_name}" in {grade_name} {section_name}'
+    details = f'{user} generate the SF9 of student "{student_name}" in {grade_name} {section_name}.'
+    log_activity(user, action, details)
 
     # Proceed with generating the Excel file
     student_name = student.name

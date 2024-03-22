@@ -1966,9 +1966,6 @@ def display_advisory_data(request):
             # print(f"Advisory class: {advisory_class}")
             # print("Grades data:")
             grades_data = advisory_class.grades_data
-            mapeh = grades_data["MAPEH"]
-            print(mapeh)
-
             if grades_data:
                 specific_key = key
              
@@ -3163,13 +3160,18 @@ def class_record_upload(request):
     if request.method == 'POST':
         excel_file = request.FILES['excel_file']
         sheet_name = request.POST.get('sheet_name')
+
+        user = request.user
+        action = f'{user} upload Classrecord "{excel_file}" - "{sheet_name}"'
+        details = f'{user} upload Classrecord "{excel_file}" - "{sheet_name}"'
+        log_activity(user, action, details)
         # try:
         class_record_data = read_excel_values(excel_file, sheet_name)
 
             # Process each row in class_record_data
         class_record_data_scores = [process_row(row) for row in class_record_data]
 
-      
+
             # Create a dictionary where student's name is the key and the rest of the row values are stored as a list
         class_record_data_scores_with_names = {}
         for row in class_record_data_scores:
