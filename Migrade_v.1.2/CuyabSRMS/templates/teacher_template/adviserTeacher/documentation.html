@@ -1,0 +1,128 @@
+{% extends 'teacher_template/teacher_base.html' %}
+
+{% block page_title %} MiGrade - Documentation {% endblock page_title %}
+
+{% block main_content %}
+
+<style>
+.theme-bg-light-green-gradient {
+    background: linear-gradient(to right, #96e6a1, #59d672);
+}
+
+.header {
+    background-color: white; /* White background color */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Siguraduhing mas mataas ito kaysa sa z-index ng page-header */
+}
+
+
+.page-header {
+    margin-top: 60px; /* I-adjust ang margin upang hindi matakpan ng header */
+}
+
+
+
+</style>
+<header class="header fixed-top">	 
+    <div class="branding docs-branding">
+        <div class="container-fluid position-relative py-2">
+            <div class="docs-logo-wrapper">
+                <div class="site-logo"><a class="navbar-brand" href="#"><img class="logo-icon me-2" src="static/star-admin/images/logo_migrade.png" alt="logo" style="max-height: 40px;"></a></div><!--//docs-logo-wrapper-->
+            </div><!--//container-->
+        </div><!--//branding-->
+    </div><!--//branding-->
+</header><!--//header-->
+
+<div class="page-header theme-bg-light-green-gradient py-5 text-center position-relative">
+    <div class="theme-bg-shapes-right"></div>
+    <div class="theme-bg-shapes-left"></div>
+    <div class="container">
+        <h1 class="page-heading single-col-max mx-auto">Documentation</h1>
+        <div class="page-intro single-col-max mx-auto">Everything you need about MiGrade.</div>
+    </div>
+</div><!--//page-header-->
+
+
+    <div class="middle-section py-5 bg-light shadow-sm">
+        <div class="container">
+            <h1 class="text-center mb-5"><strong>MiGrade Documentation </strong></h1>
+            <p>
+                Welcome to MiGrade! This document serves as a guide to help you navigate and utilize our digital grading system effectively. MiGrade is designed to simplify the process of recording and managing student grades for teachers of Cuyab Elementary School. Below are some key aspects of our system along with instructions on how to use them: 
+            </p>
+            <h2 class="text-left font-weight-bold mb-5">
+                Migrade System Access and Login
+            </h2>
+            <p>
+                <ul>
+                    <li><strong>Welcome Screen:</strong> When you access MiGrade, you will be greeted by our logo, signifying that you've arrived at the right place.</li>
+                    <br>
+                    <img src="media/manual/welcome logo.png" alt="Welcome Logo" style="max-width: 30%; max-height: 30%;">
+                    <li><strong>Navigating to Login:</strong> To access the MiGrade login page, simply click on the arrow button provided.</li>
+                    <li><strong>Enter Your Credentials:</strong> Enter the username and password provided to you by the system administrator. These credentials are unique to each user and ensure secure access to the system.</li>
+                    <br>
+                    <img src="media/manual/login.png" alt="Welcome Logo" style="max-width: 40%; max-height: 30%;">
+                    <li><strong>Login:</strong> Once you've entered your credentials, click on the "Login" button to proceed. As an additional security measure, make sure to complete the captcha by clicking "I'm not a robot."</li>
+                    <li><strong>Teacher Homepage:</strong> Upon successful login, you'll be directed to the MiGrade Teacher Homepage. Here, you'll find a user-friendly interface with menus conveniently located on the left side of the page. Additionally, you'll have access to important information such as DepEd orders and memoranda, ensuring that you stay informed about the latest updates and announcements.</li>
+                    <br>
+                    <img src="media/manual/home.png" alt="Welcome Logo" style="max-width: 30%; max-height: 30%;">
+                </ul>
+            </p>
+            <h2 class="text-left font-weight-bold mb-5 mt-3">
+                About the Project
+            </h2>
+            <p class="text-left">
+                Welcome to MiGrade, your all-in-one solution for efficient and streamlined school management. MiGrade is designed to simplify administrative tasks, such as grade management, attendance tracking, and student record keeping, making it easier for educators to focus on what matters most: student success. 
+            </p>
+            <h2 class="text-left font-weight-bold mb-5 mt-3">
+                Integration with OCR Technology
+            </h2>
+            <p class="text-left">
+                Our School Management System is seamlessly integrated with Optical Character Recognition (OCR) technology, revolutionizing the way we handle documents and data. OCR enables the system to extract text from scanned documents, such as student records, reports, and forms, making them searchable and editable within the platform. This advanced functionality streamlines administrative tasks, accelerates data entry processes, and reduces reliance on manual transcription, saving valuable time and resources.
+            </p>
+            <h2 class="text-left font-weight-bold mb-5 mt-3">
+                User Roles and Permissions
+            </h2>
+            <p class="text-left">
+                Our system features distinct user roles tailored to different stakeholders within the school community:
+            </p>
+            <ul>
+                <li>Admin: Administrators have full access to system settings, data management tools, and reporting features, enabling them to oversee system operations and ensure compliance with policies and regulations.</li>
+                <li>Teacher: Teachers can manage class-related tasks, such as recording attendance, inputting grades, and accessing student profiles, to facilitate effective teaching and student monitoring.</li>
+                <li>Master Class: Master Class users have enhanced privileges, allowing them to oversee multiple classes, coordinate curriculum planning, and monitor academic performance across grade levels or subjects.</li>
+            </ul>
+            <h2 class="text-left font-weight-bold mb-5 mt-3">
+               Conclusion
+            </h2>
+            <p class="text-left">
+                Our School Management System represents a transformative solution for Cuyab Elementary School, empowering stakeholders with the tools and resources needed to streamline administrative processes, enhance teaching and learning experiences, and foster collaborative partnerships. By leveraging cutting-edge technology, user-centered design principles, and collaborative engagement, we are proud to introduce a platform that embodies our commitment to excellence, innovation, and student success.
+            </p>
+            <p class="text-left">
+                Explore our website to learn more about our School Management System, its features, benefits, and implementation process. Join us on this journey of digital transformation and educational advancement as we strive to create a more efficient, effective, and inclusive learning environment for all.
+            </p>
+            <!-- Include your documentation content here -->
+        </div>
+    </div>
+
+
+
+
+    <section class="cta-section text-center py-5 theme-bg-dark  theme-bg-light-green-gradient position-relative">
+        <div class="theme-bg-shapes-right"></div>
+        <div class="theme-bg-shapes-left"></div>
+        <div class="container">
+            <h3 class="mb-2 text-black mb-3">Thank you for using MiGrade</h3>
+            <div class="section-intro text-black mb-3 single-col-max mx-auto">Easy manage student records because of MiGrade.</div>
+        </div>
+    </section><!--//cta-section-->
+
+    <footer class="footer">
+        <div class="footer-bottom text-center py-5">
+            <small class="copyright">Solely Developed for Cuyab Elementary School</small>
+        </div>
+    </footer>
+
+{% endblock main_content %}

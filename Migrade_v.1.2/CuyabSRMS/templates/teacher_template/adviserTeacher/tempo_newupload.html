@@ -92,7 +92,9 @@ margin-left: 30px;
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center mt-5 buton">
+                <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
                 <button type="button" class="btn btn-primary next-tab">Next</button>
+           
             </div>
             </div>
             {% endif %}
@@ -113,6 +115,7 @@ margin-left: 30px;
                                         <th>Name</th>
                                         <th>Sex</th>
                                         <th>Birthday</th>
+                                        <th>Age</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -122,6 +125,7 @@ margin-left: 30px;
                                         <td>{{ values.0.1 }}</td>
                                         <td>{{ values.0.2 }}</td>
                                         <td>{{ values.0.3 }}</td>
+                                        <td>{{ values.0.4 }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -143,17 +147,17 @@ margin-left: 30px;
                             <div class="mb-3">
                                 <label class="form-label">What type of class is this? Advisory or Subject Class</label>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="classType" id="advisory_subjectClass"
-                                        value="advisory_Subject">
-                                    <label class="form-check-label" for="advisory_subjectClass">
+                                    <input class="form-check-input" type="radio" name="classType" id="advisory_subjectClass_g1"
+                                        value="advisory_Subject_g1">
+                                    <label class="form-check-label" for="advisory_subjectClass_g1">
                                         Advisory and Subject Class <br>
                                         (Grade 1 to Grade 3)
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="classType" id="advisory_subjectClass"
-                                        value="advisory_Subject">
-                                    <label class="form-check-label" for="advisory_subjectClass">
+                                    <input class="form-check-input" type="radio" name="classType" id="advisory_subjectClass_g4"
+                                        value="advisory_Subject_g4">
+                                    <label class="form-check-label" for="advisory_subjectClass_g4">
                                         Advisory and Subject Class <br>
                                         (Grade 4 to Grade 6)
                                     </label>
@@ -246,7 +250,8 @@ margin-left: 30px;
                 rowData.LRN = cells[0].textContent;  // Adjust the index based on your table structure
                 rowData.Name = cells[1].textContent;
                 rowData.Sex = cells[2].textContent;
-                rowData.Birthday = cells[3].textContent;  // Adjust the index based on your table structure
+                rowData.Birthday = cells[3].textContent;
+                rowData.Age =  cells[4].textContent;// Adjust the index based on your table structure
 
                 data.rows.push(rowData);
             });
@@ -275,29 +280,53 @@ margin-left: 30px;
         }
 
         function sendJsonData(jsonData) {
-            fetch("{% url 'save_json_data' %}", {  // Replace with the actual URL
-                method: 'POST',
+            $.ajax({
+                url: "{% url 'save_json_data' %}",
+                type: "POST",
+                contentType: "application/json",
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
                 },
-                body: JSON.stringify(jsonData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert("Successfully Created a Class!");
-                window.location.href = "display_students";
-            })
-            .catch(error => {
-                alert("An error occurred while saving JSON data: " + error.message);
+                data: JSON.stringify(jsonData),
+                success: function(data) {
+                    // Check if the response contains a status field
+                    if (data && data.status) {
+                        if (data.status === 'success') {
+                            // If status is 'success', display success message
+                            if (data.message) {
+                                alert(data.message); // Display success message
+                            }
+                            window.location.href = "display_students"; // Redirect to the desired page
+                        } else if (data.status === 'error') {
+                            // If status is 'error', display error message
+                            if (data.message) {
+                                alert(data.message); // Display error message
+                            } else {
+                                console.error("Invalid error response format");
+                            }
+                        } else {
+                            console.error("Invalid response status");
+                        }
+                    } else {
+                        console.error("Invalid response format");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    var errorMessage = xhr.status + ': ' + xhr.statusText;
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    }
+                    alert(errorMessage);
+                }
             });
         }
+        
 
         // Function to handle the form submission when the save button is clicked
         $('#saveGradeSection').click(function () {
             // Get the existing JSON data from the table
             const lrnData = tableToJson();
-
+        
             // Add other data from hidden input fields to lrnData
             lrnData.school_id = $('#hiddenSchoolID').val();
             lrnData.division = $('#hiddenDivision').val();
@@ -305,16 +334,76 @@ margin-left: 30px;
             lrnData.school_name = $('#hiddenSchoolName').val();
             lrnData.school_year = $('#hiddenSchoolYear').val();
             lrnData.grade = $('#hiddenGradeLevel').val();
+            console.log(lrnData.grade)
             lrnData.section = $('#hiddenSection').val();
-
-             // Include the selected class type in lrnData
-            lrnData.classType = $("input[name='classType']:checked").val();
-            // Now, lrnData contains all the necessary data including school_id, division, district, etc.
-            console.log(lrnData);
-
-            // Call the sendJsonData function to send data to Django views
-            sendJsonData(lrnData);
+        
+            // Include the selected class type in lrnData
+            var selectedClassType = $("input[name='classType']:checked").val();
+            console.log(selectedClassType)
+            if (selectedClassType) {
+                // Perform additional validation based on the grade level
+                if (lrnData.grade === "Grade 1" || lrnData.grade === "Grade 2" || lrnData.grade === "Grade 3") {
+                    if (selectedClassType === "advisory_Subject_g1") {
+                        lrnData.classType = selectedClassType;
+                        // Now, lrnData contains all the necessary data including school_id, division, district, etc.
+                        saveFunction(lrnData);
+                    } else {
+                        alert("For Grade 1 to Grade 3, please select Advisory and Subject Class only.");
+                    }
+                } else if (lrnData.grade === "Grade 4" || lrnData.grade === "Grade 5" || lrnData.grade === "Grade 6") {
+                    if (selectedClassType === "advisory_Subject_g4" || selectedClassType === "Advisory" || selectedClassType === "Subject") {
+                        lrnData.classType = selectedClassType;
+                        
+                        // Now, lrnData contains all the necessary data including school_id, division, district, etc.
+                        saveFunction(lrnData);
+                    } else {
+                        alert("For Grade 4 to Grade 6, please select Advisory and Subject Class, Advisory Class, or Subject Class only.");
+                    }
+                } else {
+                    alert("Invalid grade level.");
+                }
+            } else {
+                console.log(selectedClassType)
+                alert("Please select a class type.");
+            }
         });
+        function saveFunction(lrnData) {
+            // Get the selected class type
+            var selectedClassType = document.querySelector('input[name="classType"]:checked');
+        
+            // Check if any class type is selected
+            if (selectedClassType && selectedClassType.labels[0]) {
+                var confirmationMessage = "Are you sure you want to save the selected class type:\n" + selectedClassType.labels[0].innerText.trim();
+                
+                // Ask for confirmation
+                if (confirm(confirmationMessage)) {
+                    // Perform save operation or any other action here
+                    console.log("Selection saved successfully!");
+                    lrnData.classType = $("input[name='classType']:checked").val();
+                    console.log(lrnData.classType)
+                    // Call the sendJsonData function to send data to Django views
+                    sendJsonData(lrnData);
+                } else {
+                    // Do nothing or handle cancellation
+                    console.log("Save operation cancelled.");
+                }
+            } else {
+                alert("Please select a class type.");
+            }
+        }
+    });
+</script>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+    document.querySelector('.cancel-btn').addEventListener('click', function() {
+        // Your logic to handle canceling the current action
+        // For example, you might redirect the user to another page or show a confirmation dialog:
+        if (confirm('Are you sure you want to cancel?')) {
+            // Perform the cancel action, for example:
+            goBack(); // Redirect to the dashboard page
+        }
     });
 </script>
 

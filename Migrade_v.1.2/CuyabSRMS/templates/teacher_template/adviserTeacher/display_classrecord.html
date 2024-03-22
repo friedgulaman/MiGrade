@@ -8,9 +8,7 @@
         font-size: 5px;
     }
     .table, th {
-        border: solid 0.50px black;
-        font-size: 10px;
-        
+        border: solid 2px;
     }
     .table td {
         border: solid 0.50px black;
@@ -43,116 +41,7 @@
     text-decoration: none;
     cursor: pointer;
   }
-
-
-  .header > th{
-    color: rgb(255, 255, 255);
-    padding: 12px;
-    background: #1027ac;
-    font-size: 12px !important;
-    text-align: center;
-    border: solid 0.50px black;
-
     
-  }
-  .body > td{
-    color: rgb(255, 255, 255);
-    background: #1027ac;
-    padding: 5px;
-    font-size: 12px !important;
-    text-align: center;
-    border: solid 0.50px black;
-  }
-  .highest > td{
-    color: rgb(255, 255, 255);
-    background: #1027ac;
-    padding: 5px;
-    font-size: 12px !important;
-    text-align: center;
-    border: solid 0.50px black;
-  }
-  .male, .female{
-    color: rgb(8, 8, 8);
-    background: #c2c2c2;
-    font-size: 12px !important;
-    border: solid 0.50px black;
-
-  }
-.male > th{
-    background: #c2c2c2;
-    border: solid 0.50px black;
-}
-.female > th{
-    background: #c2c2c2;
-    border: solid 0.50px black;
-}
-  .male-row > td{
-    background: #ffffff !important;
-    border: solid 0.50px black;
-  }
-  .female-row > td{
-    background: #ffffff !important;
-    border: solid 0.50px black;
-}
-  .header >  *:nth-child(1),
-  .header >  *:nth-child(2),
-  .body >  *:nth-child(1),
-  .body >  *:nth-child(2),
-  .highest >  *:nth-child(1),
-  .highest >  *:nth-child(2),
-  .male >  *:nth-child(1),
-  .male >  *:nth-child(2),
-  .female >  *:nth-child(1),
-  .female >  *:nth-child(2),
-  .male-row >  *:nth-child(1),
-  .male-row >  *:nth-child(2),
-  .female-row >  *:nth-child(1),
-  .female-row >  *:nth-child(2) {
-    position: sticky;
-    left: 0;
-}
-.header th {
-        position: sticky;
-        top: 0;
-        z-index: 100; 
-}
-
-/* Customize scrollbar appearance for WebKit-based browsers */
-.table-responsive::-webkit-scrollbar {
-    width: 8px; /* Adjust the width of the scrollbar */ 
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background-color: #c7c5c5; /* Color of the scrollbar thumb */
-    border-radius: 4px; /* Rounded corners of the thumb */
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background-color: #F4F5F7; /* Color of the scrollbar track */
-}
-
-/* Customize scrollbar appearance for Firefox */
-.table-responsive {
-    scrollbar-width: thin; /* Adjust the width of the scrollbar */
-    scrollbar-color: #c7c5c5 #F4F5F7; /* Color of the scrollbar thumb and track */
-}
-
-/* Customize scrollbar appearance for Microsoft Edge (Chromium) */
-.table-responsive {
-    scrollbar-width: thin; /* Adjust the width of the scrollbar */
-    scrollbar-color: #c7c5c5 #F4F5F7; /* Color of the scrollbar thumb and track */
-}
-.card-text{
-    font-size: 8px;
-    text-wrap: wrap;
-}
-.card-text strong{
-    font-size: 8px;
-}
-.head_text{
-    font-size: 8px;
-    margin-bottom: 12px;
-}
 </style>
 <section class="content container-fluid mt-2 p-2 mb-3">
       <div class="mt-5 border-bottom">
@@ -183,27 +72,28 @@
         </div>
       </div>
       <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-        <ul class="nav nav-tabs" role="tablist" id="assessmentTabs">
-        </ul>
-        <!-- <div>
-            <div class="d-flex justify-content-end align-items-end">
-                <button id="submitButton" type="submit" class="btn btn-primary p-2 m-2">Save</button>
+        <div class="dropdown">
+            <button class="dropbtn">Assessment Types</button>
+            <div class="dropdown-content">
+                <!-- Populate dropdown items dynamically -->
+                {% for assessment_type in assessment_types %}
+                <a href="#" onclick="scrollToColumn('{{ assessment_type|title }}')">{{ assessment_type|title }}</a>
+                {% endfor %}
             </div>
-        </div> -->
+        </div>
     </div>
-    
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>
-                <tr class="header">
+                <tr>
                     <th></th>
                     <th></th>
                     <!-- Loop through the AssessmentType -->
                     {% for assessment_type in assessment_types %}
-                    <th colspan="13">{{ assessment_type|title }}</th>
+                    <th colspan="13" id="{{ assessment_type|title }}"> {{ assessment_type|title }}</th>
                     {% endfor %}
-                    <th>Initial Grade</th>
-                    <th>Transmuted Grade</th>
+                    <th id="initial_grades">Initial Grade</th>
+                    <th id="transmuted_grades">Transmuted Grade</th>
                 </tr>
             </thead>
             <tbody>
@@ -263,7 +153,7 @@
                 </tr>
                 {% for record in gradescores %}
                 {% if record.student.sex == 'M' %}  
-                <tr class="male-row">
+                <tr class="row_{{record.student.name}}">
                     <td>{{ forloop.counter }}</td>  
                     <td id="student_name_{{ record.student.name}}">{{ record.student.name}}</td>
                     {% for key, value in record.grade_scores.scores_per_assessment.items %}
@@ -299,7 +189,7 @@
                 </tr>
                 {% for record in gradescores %}
                 {% if record.student.sex == 'F' %}  
-                <tr class="female-row">
+                <tr class="row_{{record.student.name}}">
                     <td>{{ forloop.counter }}</td>  
                     <td id="student_name_{{ record.student.name}}">{{ record.student.name}}</td>
                     {% for key, value in record.grade_scores.scores_per_assessment.items %}
@@ -328,6 +218,15 @@
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
+    function scrollToColumn(assessmentType) {
+      // Find the th element corresponding to the selected assessment type
+      var thElement = document.getElementById(assessmentType);
+      
+      // Scroll to the th element
+      thElement.scrollIntoView();
+    }
+</script>
+<script>
 
 $(document).ready(function () {
 
@@ -353,7 +252,7 @@ $(document).ready(function () {
 
 
 
-        function calculateTotalScore(studentName, assessmentType) {
+    function calculateTotalScore(studentName, assessmentType) {
                 var totalScore = 0;
                 $('tr:has(td[id^="student_name_' + studentName + '"]) .score-cell_' + assessmentType + '[contenteditable="true"]').each(function() {
                     var score = parseFloat($(this).text()) || 0;
@@ -380,7 +279,7 @@ $(document).ready(function () {
         // Initially update total scores for all assessment types
         updateTotalScores();
 
-        function updateTotalPercentageScores() {
+    function updateTotalPercentageScores() {
         $('[id^="total_percentage_score_"]').each(function() {
             var assessmentType = $(this).attr('id').replace('total_percentage_score_', '');
             var studentName = $(this).closest('tr').find('[id^="student_name_"]').attr('id').replace('student_name_', '');
@@ -404,7 +303,7 @@ $(document).ready(function () {
             // Initially update total percentage scores for all assessment types
             updateTotalPercentageScores();
 
-        function updateTotalWeightedScores() {
+    function updateTotalWeightedScores() {
         $('[id^="total_weighted_score_"]').each(function() {
             var assessmentType = $(this).attr('id').replace('total_weighted_score_', '');
             var studentName = $(this).closest('tr').find('[id^="student_name_"]').attr('id').replace('student_name_', '');
@@ -432,27 +331,116 @@ $(document).ready(function () {
     // Initially update total weighted scores for all assessment types for a specific student
     updateTotalWeightedScores();
 
-    function computeInitialGrades() {
-        var students = document.querySelectorAll('[id^="initial_grades_"]');
-        var studentName = studentElement.id.split("_")[2];
-        students.forEach(function(studentElement) {
+    function updateInitialGrades(studentName) {
+        $('[id^="initial_grades_' + studentName + '"]').each(function() {
             var totalInitialGrades = 0;
-            var keys = document.querySelectorAll('[id^="total_weighted_score_"]');
-            keys.forEach(function(keyElement) {
-                var score = parseFloat(keyElement.textContent) || 0;
+            $('[id^="total_weighted_score_"]').each(function() {
+                var score = parseFloat($(this).text()) || 0;
                 totalInitialGrades += score;
             });
-            document.getElementById("initial_grades_" + studentName).textContent = totalInitialGrades.toFixed(2); // Update the initial_grades element
+            $(this).text(totalInitialGrades.toFixed(2)); // Update the initial_grades element
         });
     }
 
+    function updateTransmutedGrades(studentName) {
+        $('[id^="transmuted_grades_' + studentName + '"]').each(function() {
+            var initialGrade = parseFloat($(this).text()) || 0;
+            var transmutedGrade = computeTransmutedGrade(initialGrade);
+            $(this).text(transmutedGrade); // Update the transmuted_grades element
+        });
+    }
     
+    function computeTransmutedGrade(initialGrade) {
+        if (initialGrade === null || isNaN(initialGrade)) {
+            return '';
+        } else if (98.40 <= initialGrade && initialGrade <= 99.99) {
+            return 99;
+        } else if (96.80 <= initialGrade && initialGrade <= 98.39) {
+            return 98;
+        } else if (95.20 <= initialGrade && initialGrade <= 96.79) {
+            return 97;
+        } else if (93.60 <= initialGrade && initialGrade <= 95.19) {
+            return 96;
+        } else if (92.00 <= initialGrade && initialGrade <= 93.59) {
+            return 95;
+        } else if (90.40 <= initialGrade && initialGrade <= 91.99) {
+            return 94;
+        } else if (88.80 <= initialGrade && initialGrade <= 90.39) {
+            return 93;
+        } else if (87.20 <= initialGrade && initialGrade <= 88.79) {
+            return 92;
+        } else if (85.60 <= initialGrade && initialGrade <= 87.19) {
+            return 91;
+        } else if (84.00 <= initialGrade && initialGrade <= 85.59) {
+            return 90;
+        } else if (82.40 <= initialGrade && initialGrade <= 83.99) {
+            return 89;
+        } else if (80.80 <= initialGrade && initialGrade <= 82.39) {
+            return 88;
+        } else if (79.20 <= initialGrade && initialGrade <= 80.79) {
+            return 87;
+        } else if (77.60 <= initialGrade && initialGrade <= 79.19) {
+            return 86;
+        } else if (76.00 <= initialGrade && initialGrade <= 77.59) {
+            return 85;
+        } else if (74.40 <= initialGrade && initialGrade <= 75.99) {
+            return 84;
+        } else if (72.80 <= initialGrade && initialGrade <= 74.39) {
+            return 83;
+        } else if (71.20 <= initialGrade && initialGrade <= 72.79) {
+            return 82;
+        } else if (69.60 <= initialGrade && initialGrade <= 71.19) {
+            return 81;
+        } else if (68.00 <= initialGrade && initialGrade <= 69.59) {
+            return 80;
+        } else if (66.40 <= initialGrade && initialGrade <= 67.99) {
+            return 79;
+        } else if (64.80 <= initialGrade && initialGrade <= 66.39) {
+            return 78;
+        } else if (63.20 <= initialGrade && initialGrade <= 64.79) {
+            return 77;
+        } else if (61.60 <= initialGrade && initialGrade <= 63.19) {
+            return 76;
+        } else if (60.00 <= initialGrade && initialGrade <= 61.59) {
+            return 75;
+        } else if (56.00 <= initialGrade && initialGrade <= 59.99) {
+            return 74;
+        } else if (52.00 <= initialGrade && initialGrade <= 55.99) {
+            return 73;
+        } else if (48.00 <= initialGrade && initialGrade <= 51.99) {
+            return 72;
+        } else if (44.00 <= initialGrade && initialGrade <= 47.99) {
+            return 71;
+        } else if (40.00 <= initialGrade && initialGrade <= 43.99) {
+            return 70;
+        } else if (36.00 <= initialGrade && initialGrade <= 39.99) {
+            return 69;
+        } else if (32.00 <= initialGrade && initialGrade <= 35.99) {
+            return 68;
+        } else if (28.00 <= initialGrade && initialGrade <= 31.99) {
+            return 67;
+        } else if (24.00 <= initialGrade && initialGrade <= 27.99) {
+            return 66;
+        } else if (20.00 <= initialGrade && initialGrade <= 23.99) {
+            return 65;
+        } else if (16.00 <= initialGrade && initialGrade <= 19.99) {
+            return 64;
+        } else if (12.00 <= initialGrade && initialGrade <= 15.99) {
+            return 63;
+        } else if (8.00 <= initialGrade && initialGrade <= 11.99) {
+            return 62;
+        } else if (4.00 <= initialGrade && initialGrade <= 7.99) {
+            return 61;
+        } else if (0 <= initialGrade && initialGrade <= 3.99) {
+            return 0;
+        } else {
+            return '';
+        }
+    }
+
         // Add an event listener for the contenteditable cells in the highest possible scores row
         $('td[class^="highest-possible-scores_"][contenteditable="true"]').on('input', function () {
-            console.log('Blur event triggered for scores.');
-            console.log('Class Record ID:', $('input[name="class_record_id"]').val());
-            console.log('Section ID:', $(this).closest('.tab-pane').attr('id'));
-            
+
     
             updateTotalHpsScores();
 
@@ -473,9 +461,7 @@ $(document).ready(function () {
             var totalMaxScore = $('#total_max_' + assessmentType).text();
             
     
-            console.log('New Scores Data:', newScoresData);
-            console.log(totalMaxScore)
-            console.log(assessmentType)
+
             // Send an AJAX request to update the scores
             $.ajax({
                 type: "POST",
@@ -513,6 +499,7 @@ $(document).ready(function () {
 
         var row = $(this).closest('tr');
         var studentName = row.find('td:eq(1)').text();
+        console.log(studentName)
 
 
         var classRecordId = $('input[name="class_record_id"]').val();
@@ -524,12 +511,6 @@ $(document).ready(function () {
         var total_Score = $('#total_score_' + assessmentType).text();
         var percentageScore =$('#total_percentage_score' + assessmentType).text();
         var weightedScore =$('#total_weighted_score' + assessmentType).text();
-
-        console.log("scores_data", ScoresData)
-        console.log("classrecord", classRecordId)
-        console.log("studentname:", studentName)
-        console.log("assessment", assessmentType)
-        console.log("total_score:", total_Score)
 
         // Send an AJAX request to update the score
         $.ajax({
@@ -548,6 +529,8 @@ $(document).ready(function () {
                 updateTotalScores();
                 updateTotalPercentageScores();
                 updateTotalWeightedScores();
+                updateInitialGrades(studentName);
+                updateTransmutedGrades(studentName);
                 if (data.success === false) {
                     alert(data.error);
                     location.reload(true);
@@ -563,66 +546,46 @@ $(document).ready(function () {
 
     </script>
 <script>
-     // Add an event listener for the arrow keys in quarterly assessment
-$('.table tbody tr td[contenteditable="true"]').keydown(function (e) {
-    var currentCell = $(this);
+$('td[class^="score-cell_"][contenteditable="true"]').keydown(function(e) {
+    var currentCell = $(this); 
     var currentRow = currentCell.closest('tr');
-    var currentColumnIndex = currentCell.index();
-
-    switch (e.which) {
-
-        case 38: // Up arrow
-            e.preventDefault();
-            navigateUp(currentRow, currentColumnIndex);
+    console.log(currentRow)
+    var classes = currentCell.attr('class').split(' ');
+    var assessmentType = null;
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].indexOf('score-cell_') === 0) {
+            assessmentType = classes[i].split('_')[1];
             break;
-
-        case 40: // Down arrow
-            e.preventDefault();
-            navigateDown(currentRow, currentColumnIndex);
-            break;
-
-        default:
-            return; // Exit if not an arrow key
+        }
     }
-});
 
-function navigateUp(row, columnIndex) {
-    var prevRow = row.prev('tr');
-    if (prevRow.length > 0) {
-        prevRow.find('td:eq(' + columnIndex + ')').focus();
+    if (assessmentType === null) {
+        console.error('Assessment type not found.');
+        return;
     }
-}
-
-function navigateDown(row, columnIndex) {
-    var nextRow = row.next('tr');
-    if (nextRow.length > 0) {
-        nextRow.find('td:eq(' + columnIndex + ')').focus();
-    }
-}
-$('.score-cell[contenteditable="true"]').keydown(function(e) {
-    var currentCell = $(this);
-    var currentRow = currentCell.closest('tr');
-    var currentColumnIndex = currentCell.index();
-
+    var currentColumnIndex = calculateColumnIndex_cell(currentCell, assessmentType); // Calculate correct column index
+    var currentRowIndex = calculateRowIndex(currentCell, assessmentType);
+    var studentNameRows = currentCell.closest('table').find('tr[class^="row_"]');
+    console.log("currentrow", currentRowIndex)
     switch (e.which) {
         case 37: // Left arrow
             e.preventDefault();
-            navigateLeft(currentRow, currentColumnIndex);
+            navigateLeft(currentRow, currentColumnIndex, assessmentType);
             break;
 
         case 39: // Right arrow
             e.preventDefault();
-            navigateRight(currentRow, currentColumnIndex);
-            break;
+            navigateRight(currentRow, currentColumnIndex, assessmentType);
+            break;  
 
         case 38: // Up arrow
             e.preventDefault();
-            navigateUp(currentRow, currentColumnIndex);
+            navigateUp(currentColumnIndex, currentRowIndex, studentNameRows, assessmentType);
             break;
 
         case 40: // Down arrow
             e.preventDefault();
-            navigateDown(currentRow, currentColumnIndex);
+            navigateDown(currentColumnIndex, currentRowIndex, studentNameRows, assessmentType);
             break;
 
         default:
@@ -630,38 +593,65 @@ $('.score-cell[contenteditable="true"]').keydown(function(e) {
     }
 });
 
-function navigateLeft(row, columnIndex) {
-    if (columnIndex > 2) {
-        row.find('td:eq(' + (columnIndex - 1) + ')').focus();
+function navigateLeft(row, columnIndex, assessmentType) {
+    var currentIndex = columnIndex;
+    var row = row;
+    var prevCellIndex = columnIndex - 1;
+    row.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + prevCellIndex + ')').focus();
+}
+
+function navigateRight(row, columnIndex, assessmentType) {
+    var currentIndex = columnIndex;
+    console.log("current index", currentIndex)
+    var nextCellIndex = columnIndex + 1;
+    var rows = row;
+    row.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + nextCellIndex + ')').focus();
+}
+
+function navigateUp(currentColumnIndex, currentRowIndex, studentNameRows, assessmentType) {
+    var currentColumnIndex = currentColumnIndex;
+    console.log("currentcolumnindex", currentColumnIndex)
+    var nextRowIndex = currentRowIndex - 1;
+    console.log(nextRowIndex)
+    var nextRow = studentNameRows.eq(nextRowIndex);
+    console.log("nextRow.length:", nextRow.length);
+    if (nextRow.length > 0) {   
+        nextRow.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + currentColumnIndex + ')').focus();
     }
 }
 
-function navigateRight(row, columnIndex) {
-    if (columnIndex < 13) {
-        row.find('td:eq(' + (columnIndex + 1) + ')').focus();
-    }
-}
-
-function navigateUp(row, columnIndex) {
-    var prevRow = row.prev('tr');
-    if (prevRow.length > 0) {
-        prevRow.find('td:eq(' + columnIndex + ')').focus();
-    }
-}
-
-function navigateDown(row, columnIndex) {
-    var nextRow = row.next('tr');
-    if (nextRow.length > 0) {
-        nextRow.find('td:eq(' + columnIndex + ')').focus();
+function navigateDown(currentColumnIndex, currentRowIndex, studentNameRows, assessmentType) {
+    var currentColumnIndex = currentColumnIndex;
+    console.log("currentcolumnindex", currentColumnIndex)
+    var nextRowIndex = currentRowIndex + 1;
+    console.log(nextRowIndex)
+    var nextRow = studentNameRows.eq(nextRowIndex);
+    console.log("nextRow.length:", nextRow.length);
+    if (nextRow.length > 0) {   
+        nextRow.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + currentColumnIndex + ')').focus();
     }
 }
 
 $('td[class^="highest-possible-scores_"][contenteditable="true"]').keydown(function(e) {
     var currentCell = $(this);
     var currentRow = currentCell.closest('tr');
-    var currentColumnIndex = calculateColumnIndex(currentCell); // Calculate correct column index
-    console.log(currentColumnIndex);
-    var assessmentType = currentCell.attr('class').split('_')[1];
+    var classes = currentCell.attr('class').split(' ');
+    var assessmentType = null;
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].indexOf('highest-possible-scores_') === 0) {
+            assessmentType = classes[i].split('_')[1];
+            break;
+        }
+    }
+
+    if (assessmentType === null) {
+        console.error('Assessment type not found.');
+        return;
+    }
+    var currentColumnIndex = calculateColumnIndex(currentCell, assessmentType); // Calculate correct column index
+    console.log("currentcolumn", currentColumnIndex);
+    console.log("current", currentCell)
+
 
     switch (e.which) {
         case 37: // Left arrow
@@ -679,26 +669,52 @@ $('td[class^="highest-possible-scores_"][contenteditable="true"]').keydown(funct
     }
 });
 
-function calculateColumnIndex(cell) {
+function calculateColumnIndex(cell, assessmentType) {
     var index = 0;
+    var assessmentCells = cell.closest('tr').find('td[class^="highest-possible-scores_' + assessmentType + '"]');
     cell.prevAll().each(function() {
-        index += $(this).attr('colspan') ? parseInt($(this).attr('colspan'), 10) : 1;
+        if (assessmentCells.index($(this)) !== -1) {
+            index += $(this).attr('colspan') ? parseInt($(this).attr('colspan'), 10) : 1;
+        }
     });
     return index;
 }
 
+function calculateColumnIndex_cell(cell, assessmentType) {
+    var index = 0;
+    var assessmentCells = cell.closest('tr').find('td[class^="score-cell_' + assessmentType + '"]');
+    cell.prevAll().each(function() {
+        if (assessmentCells.index($(this)) !== -1) {
+            index += $(this).attr('colspan') ? parseInt($(this).attr('colspan'), 10) : 1;
+        }
+    });
+    return index;
+}
+
+function calculateRowIndex(cell, assessmentType) {
+    var index = 0;
+    var studentNameRows = cell.closest('table').find('tr[class^="row_"]');
+    cell.parent().prevAll().each(function() {
+        if (studentNameRows.index($(this)) !== -1) {
+            index += $(this).attr('rowspan') ? parseInt($(this).attr('rowspan'), 10) : 1;
+        }
+    });
+    return index;
+}
+
+
+
 function navigateLeftHPS(row, columnIndex, assessmentType) {
+    var currentIndex = columnIndex;
     var prevCellIndex = columnIndex - 1;
-    if (prevCellIndex >= 0) {
-        row.find('td[class^="highest-possible-scores_' + assessmentType + '"]:eq(' + prevCellIndex + ')').focus();
-    }
+    row.find('td[class^="highest-possible-scores_' + assessmentType + '"]:eq(' + prevCellIndex + ')').focus();
 }
 
 function navigateRightHPS(row, columnIndex, assessmentType) {
+    var currentIndex = columnIndex;
     var nextCellIndex = columnIndex + 1;
     row.find('td[class^="highest-possible-scores_' + assessmentType + '"]:eq(' + nextCellIndex + ')').focus();
 }
-
 </script>
     
 <!-- <script>

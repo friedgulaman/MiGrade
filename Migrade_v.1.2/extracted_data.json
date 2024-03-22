@@ -1,11 +1,36 @@
 {
-    "LAST NAME": "ESPELETA",
-    "FIRST NAME": "MIDDLE NAME:",
-    "MIDDLE NAME": "JANNA CHRIZZIA",
-    "LRN": "108420160017",
-    "SCHOOL YEAR": "2017-2018, 2018-2019, 2019-2020, 2020-2021, 2021-2022, 2012-1023",
-    "BIRTHDATE": "2/20/2011",
-    "Classified as Grade:": "ONE, Two, Three, Four, Six",
-    "GENERAL AVERAGE": "85, 85, 84, 85, 09, 92",
-    "SEX": "FEMALE"
+    "MUSIC": {
+        "subject": "MUSIC",
+        "from_teacher_id": "eric",
+        "first_quarter": 65,
+        "final_grade": 65,
+        "status": "FAILED"
+    },
+    "MAPEH": {
+        "first_quarter": 63.0,
+        "second_quarter": 64.5
+    },
+    "ARTS": {
+        "first_quarter": "64.0",
+        "from_teacher_id": "eric",
+        "subject": "ARTS",
+        "final_grade": 64.0,
+        "status": "FAILED"
+    },
+    "PE": {
+        "first_quarter": "62.0",
+        "from_teacher_id": "eric",
+        "subject": "PE",
+        "final_grade": 63.0,
+        "status": "FAILED",
+        "second_quarter": "64.0"
+    },
+    "HEALTH": {
+        "first_quarter": "61.0",
+        "from_teacher_id": "eric",
+        "subject": "HEALTH",
+        "final_grade": 63.0,
+        "status": "FAILED",
+        "second_quarter": "65.0"
+    }
 }
