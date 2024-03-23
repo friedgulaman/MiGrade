@@ -12,7 +12,7 @@ from django.db import transaction
 from collections import defaultdict
 from django.db import IntegrityError
 from django.db.models import Q
-
+from .views import log_activity
 
 def transfer_record(request):
     teacher = request.user.teacher
@@ -88,6 +88,7 @@ def get_teacher_list(request):
         for grade_section, class_type in current_teacher.grade_section.items():
             if class_type == 'Subject Class' or class_type == 'Advisory Class, Subject Class':
                 current_subject_classes.append(grade_section)
+        print(current_subject_classes)
 
         teacher_list = []
 
@@ -108,10 +109,12 @@ def get_teacher_list(request):
                                 teacher_info = {
                                     'id': teacher.id,
                                     'name': f"{teacher.user.first_name} {teacher.user.last_name}",
-                                    'grade_section': current_subject_class
+                                    'grade_section': current_subject_classes
                                 }
                                 teacher_list.append(teacher_info)
                                 break  # Break after finding a match to avoid duplicate entries
+        print(teacher_list)
+
 
         return JsonResponse({'teachers': teacher_list})
 
@@ -167,6 +170,9 @@ def submit_json(request):
 def transfer_json_to_teacher(request):
     if request.method == 'POST':
         try:
+
+
+
             json_data = json.loads(request.body.decode('utf-8'))
             target_teacher_id = json_data.get('target_teacher')
             from_teacher_id = json_data.get('teacher')
@@ -178,6 +184,11 @@ def transfer_json_to_teacher(request):
             quarter_name = next(iter(quarter_info.keys()))
             file_name = (grade, section, quarter_name, subject)
             section = json_data.get('section')
+            user = request.user
+            action = f'{user} send the {grade} {section} - {subject} {quarter_name} Classrecord to the adviser of {grade} {section}'
+            details = f'{user} send the {grade} {section} - {subject} {quarter_name} Classrecord to the adviser of {grade} {section}'
+            log_activity(user, action, details)
+
             print(json_data)
             print(file_name)
             print(from_teacher_id)
@@ -261,7 +272,7 @@ def transfer_quarterly_grade(request, grade, section, subject, class_record_id):
     sections = Section.objects.filter(
     Q(name=section) &
     (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]) )
-)
+    )
     
   
     # Check if there is more than one Section returned
@@ -405,17 +416,69 @@ def save_data(message, json_data, teacher):
                 subject_teacher_data['from_teacher_id'] = json_data.get('teacher')
                 subject_teacher_data['subject'] = json_data.get('subject')
 
-                # Compute the final grade
-# Compute the final grade
-                quarter_grades = [float(subject_teacher_data[q]) for q in quarter_field_mapping.values() if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]  # Ensure the value is not empty
+                quarter_grades = [float(subject_teacher_data[q]) for q in quarter_field_mapping.values() 
+                                  if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]
+                
+                # print(quarter_grades)
                 final_grade = round(sum(quarter_grades) / len(quarter_grades), 2) if quarter_grades else None
 
                 subject_teacher_data['final_grade'] = final_grade
+                subject_teacher_data['status'] = determine_status(final_grade)    
 
-                # Set the updated subject_teacher_data back to the grades_data
+                advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
+                advisory_class.save()   
+                      
+
+                if json_data.get('subject') in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                    mapeh_quarter_data = grades_data.get('MAPEH', {})
+                    mapeh_quarter_data[quarter_field_mapping[quarter]] = transmuted_grade
+                    grades_data['MAPEH'] = mapeh_quarter_data
+
+                    mapeh_quarter_grades = []
+                    for subject in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                        if subject in grades_data:
+                            print("Subject:", subject)  # Debugging
+                            for q in quarter_field_mapping.values():
+                                if q in grades_data[subject] and q == quarter_field_mapping[quarter] and isinstance(grades_data[subject][q], str) and grades_data[subject][q] and grades_data[subject][q].strip():
+                                    print("Quarter:", q)  # Debugging
+                                    mapeh_quarter_grades.append(float(str(grades_data[subject][q]))) 
+                                
+                                    print(f"Quarter grades for {subject} subjects:", mapeh_quarter_grades)
+                        mapeh_final_grade = round(sum(mapeh_quarter_grades) / len(mapeh_quarter_grades), 2) if mapeh_quarter_grades else None
+                        print(f"Calculated {subject}:", mapeh_final_grade)
+                                    # Update MAPEH's final grade
+                        mapeh_quarter_grade = grades_data.get('MAPEH', {})
+                        mapeh_quarter_grade[quarter_field_mapping[quarter]] = mapeh_final_grade
+                        mapeh_quarter_data['from_teacher_id'] = json_data.get('teacher')
+                        mapeh_quarter_data['subjects'] = "MAPEH"
+
+
+                    mapeh_average = []
+                        # Iterate through each quarter
+                    for q in quarter_field_mapping.values():
+                            # Check if the quarter exists in the MAPEH grades data and it's not empty
+                            if 'MAPEH' in grades_data and q in grades_data['MAPEH'] and isinstance(grades_data['MAPEH'][q], (int, float)):
+                                # Append the quarter grade to the list after converting it to float
+                                mapeh_average.append(float(grades_data['MAPEH'][q]))
+
+                        # Calculate the final grade for MAPEH
+                    mapeh_final_grade = round(sum(mapeh_average) / len(mapeh_average), 2) if mapeh_average else None
+                    print("mapeh final grade", mapeh_final_grade)
+                    mapeh_quarter_grade['final_grade'] = mapeh_final_grade
+                    mapeh_quarter_grade['status'] = determine_status(mapeh_final_grade)
+
+
+                        # Calculate average final grade for all quarters
+
+                        # mapeh_quarter_grade['final_grade'] = average_final_grade
+                    grades_data['MAPEH'] = mapeh_quarter_grade
+
+
+                    
+
                 advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
                 advisory_class.save()
-                print(f"Updated AdvisoryClass with {json_data.get('subject')} {quarter} for {student_name}.")
+                # print(f"Updated AdvisoryClass with {json_data.get('subject')} {quarter} for {student_name}.")
 
             # If no existing advisory classes, create a new one
             if not existing_advisory_classes:
@@ -426,16 +489,32 @@ def save_data(message, json_data, teacher):
                     student=student_instance,
                 )
                 quarters = quarter_field_mapping[quarter]
+
                 # Add from_teacher_id to the subject_teacher_data dictionary
                 subject_teacher_data = {
                     "subject": json_data.get('subject'),
                     "from_teacher_id": json_data.get('teacher'),
                     quarters: transmuted_grade,
-                    'final_grade': transmuted_grade  # Assuming the final grade is initially set to the first quarter grade
+                    'final_grade': transmuted_grade,  # Assuming the final grade is initially set to the first quarter grade
+                    'status': determine_status(transmuted_grade)
                 }
+                
+                
+                # if json_data.get('subject') in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                #     mapeh_quarter_data = grades_data.get('MAPEH', {})  # Get existing data or create an empty dictionary
+                #     mapeh_quarter_data[quarter_field_mapping[quarter]] = transmuted_grade
+                #     mapeh_quarter_data['final_grade'] = transmuted_grade  # Update or add the transmuted grade for the current quarter
+                #     mapeh_quarter_data['subject'] = "MAPEH"
+                #     new_advisory_class.set_grade_for_subject("MAPEH", mapeh_quarter_data)
+                #     print("GUMANA ATA?")
+                
+
                 new_advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
                 new_advisory_class.save()
+
+         
                 print(f"Saved new AdvisoryClass with {quarter} for {student_name}.")
+
 
 def save_accepted_message(message):
     try:
@@ -452,3 +531,18 @@ def save_accepted_message(message):
         # Handle duplicate primary key error
         print(f"Error: {e}")
         # Add additional error handling or logging here as needed
+
+def determine_status(general_average):
+    if general_average is None:
+        return 'No Grade'
+     
+    if general_average and float(general_average) >= 98:
+        return 'PASSED'
+    elif general_average and float(general_average) >= 95:
+        return 'PASSED'
+    elif general_average and float(general_average) >= 90:
+        return 'PASSED'
+    elif general_average and float(general_average) >= 75:
+        return 'PASSED'
+    else:
+        return 'FAILED'

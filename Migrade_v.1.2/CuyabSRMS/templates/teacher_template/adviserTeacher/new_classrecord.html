@@ -51,7 +51,7 @@
     <h3>Create New Class Record</h3>
     <a class="back-button" >&larr;</a>
 </div>
-    <form method="post" action="{% url 'students_classrecord' %}">
+    <form id="class_record_form" method="post" action="{% url 'students_classrecord' %}">
         {% csrf_token %}
         <div class="container">
             <label class="text-muted mb-4 fs-sm">Note: If there are no Grade & Section options, please create a class first.</label>
@@ -100,7 +100,7 @@
 
             <input type="hidden" id="teacher" name="teacher" value="{{ teacher.user.id }}">
             <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary mt-1">Create</button>
+                <button type="submit" class="btn btn-primary mt-1" onclick="saveData(event)">Create</button>
             </div>
         </div>
     </form>
@@ -108,6 +108,48 @@
 </section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    function saveData(event) {
+        event.preventDefault();
+         // Prevent the default form submission behavior
+        
+        // Get the selected values of grade, section, subject, and quarter
+        var selectedGrade = $('#grade').val();
+        var selectedSection = $('#section').val();
+        var selectedSubject = $('#subject').val();
+        var selectedQuarter = $('#quarter').val();
+
+        if (selectedGrade === 'Grade 1' && selectedSubject === 'FILIPINO' && selectedQuarter === '1st Quarter') {
+            alert("The selected subject is not available in Grade 1 for the 1st Quarter.");
+            return false; // Prevent the form submission
+        }
+        else if (selectedGrade === 'Grade 1' && selectedSubject === 'ENGLISH' && (selectedQuarter === '1st Quarter' || selectedQuarter === '2nd Quarter')) {
+            alert("The selected subject is not available in Grade 1 for the 1st Quarter or 2nd Quarter.");
+            return false; 
+        }
+        
+    
+        // Display a confirmation dialog
+        var confirmationMessage = 'You have selected the following:\n';
+        confirmationMessage += 'Grade: ' + selectedGrade + '\n';
+        confirmationMessage += 'Section: ' + selectedSection + '\n';
+        confirmationMessage += 'Subject: ' + selectedSubject + '\n';
+        confirmationMessage += 'Quarter: ' + selectedQuarter + '\n';
+    
+        // Show the confirmation dialog
+        var confirmResult = confirm(confirmationMessage);
+    
+        // Check the user's response
+        if (confirmResult) {
+            // User clicked "OK"
+            // Submit the form
+            document.getElementById('class_record_form').submit();
+        } else {
+            console.log("Save operation cancelled.");
+            return false; 
+        }
+    }
+</script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var selected_grade = "{{ selected_grade }}";

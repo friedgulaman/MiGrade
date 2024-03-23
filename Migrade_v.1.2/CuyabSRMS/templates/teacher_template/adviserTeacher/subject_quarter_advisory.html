@@ -39,7 +39,7 @@ Subject Quarterly Grade
                             <td>{{ forloop.counter }}</td>
                             <td>{{ advisory_class.student.name }}</td>
                             {% for subjects, data in advisory_class.grades_data.items %}
-                            {% if subjects in subject %}
+                            {% if subjects == subject %}
                             <td class="first_quarter text-muted">{{ data.first_quarter |default_if_none:"0"}}</td>
                             <td class="second_quarter text-muted">{{ data.second_quarter |default_if_none:"0"}}</td>
                             <td class="third_quarter text-muted">{{ data.third_quarter |default_if_none:"0"}}</td>

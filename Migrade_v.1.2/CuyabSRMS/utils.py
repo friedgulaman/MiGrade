@@ -834,23 +834,24 @@ def write_sf9_data(front_sheet, student):
     column_coordinates_section = 20
     row_coordinates_age = 16
     column_coordinates_age = 17
-    # birthdate = student.birthday
+    birthdate = datetime.strptime(student.birthday, '%m-%d-%Y')
 
+    print(birthdate)
     # Get the current date
     current_date = datetime.now()
 
     bold_font = Font(bold=True, name='Aparajita')
 
     # Calculate the age
-    # age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
-
+    age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
+    print(age)
     # Write the student's name to the specified cell
     front_sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
     front_sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
     front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
-    # front_sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=age if student else "N/A")
+    front_sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=student.age if student else "N/A")
     # print(student.name)
 
 
@@ -882,10 +883,10 @@ def write_sf9_grades(back_sheet, advisory_class, general_average):
         "EDUKASYON SA PAGPAPAKATAO": 13,
         "EDUKASYONG PANTAHANAN AT PANGKABUHAYAN": 15,
         "MAPEH": 17,
-        "Music": 18,
-        "Arts": 19,
+        "MUSIC": 18,
+        "ARTS": 19,
         "PE": 20,
-        "Health": 21,
+        "HEALTH": 21,
         # Add more subjects as needed
     }
 
@@ -896,16 +897,62 @@ def write_sf9_grades(back_sheet, advisory_class, general_average):
             continue  # Skip if subject not found in the coordinates
 
         # Write quarter grades and final grade to the back sheet
-        back_sheet.cell(row=row, column=14, value=data.get("first_quarter", ""))
-        back_sheet.cell(row=row, column=15, value=data.get("second_quarter", ""))
-        back_sheet.cell(row=row, column=16, value=data.get("third_quarter", ""))
-        back_sheet.cell(row=row, column=17, value=data.get("fourth_quarter", ""))
-        back_sheet.cell(row=row, column=18, value=data.get("final_grade", ""))
+        first_quarter_value = data.get("first_quarter", "")
+        second_quarter_value = data.get("second_quarter", "")
+        third_quarter_value = data.get("third_quarter", "")
+        fourth_quarter_value = data.get("fourth_quarter", "")
+        final_grade_value = data.get("final_grade", "")
+        status = data.get("status", "")
 
-        # Write general average
-        back_sheet.cell(row=22, column=18, value=general_average.general_average)
+        # Validation for first quarter value
+        if first_quarter_value and isinstance(first_quarter_value, str):
+            try:
+                first_quarter_value = float(first_quarter_value)
+            except ValueError:
+                first_quarter_value = None
+
+        # Validation for second quarter value
+        if second_quarter_value and isinstance(second_quarter_value, str):
+            try:
+                second_quarter_value = float(second_quarter_value)
+            except ValueError:
+                second_quarter_value = None
+
+        # Validation for third quarter value
+        if third_quarter_value and isinstance(third_quarter_value, str):
+            try:
+                third_quarter_value = float(third_quarter_value)
+            except ValueError:
+                third_quarter_value = None
+
+        # Validation for fourth quarter value
+        if fourth_quarter_value and isinstance(fourth_quarter_value, str):
+            try:
+                fourth_quarter_value = float(fourth_quarter_value)
+            except ValueError:
+                fourth_quarter_value = None
+
+        # Validation for final grade value
+        if final_grade_value and isinstance(final_grade_value, str):
+            try:
+                final_grade_value = float(final_grade_value)
+            except ValueError:
+                final_grade_value = None
+
+        # Set values in the cells
+        back_sheet.cell(row=row, column=14, value=int(round(first_quarter_value)) if first_quarter_value is not None and first_quarter_value != '' else None)
+        back_sheet.cell(row=row, column=15, value=int(round(second_quarter_value)) if second_quarter_value is not None and second_quarter_value != '' else None)
+        back_sheet.cell(row=row, column=16, value=int(round(third_quarter_value)) if third_quarter_value is not None and third_quarter_value != '' else None)
+        back_sheet.cell(row=row, column=17, value=int(round(fourth_quarter_value)) if fourth_quarter_value is not None and fourth_quarter_value != '' else None)
+
+     
+        if fourth_quarter_value is not None and fourth_quarter_value != '':
+                    back_sheet.cell(row=row, column=18, value=int(round(final_grade_value)) if final_grade_value is not None and final_grade_value != '' else None)
+                    back_sheet.cell(row=row, column=19, value=status)
+                    back_sheet.cell(row=22, column=18, value=general_average.general_average)
 
 def write_sf9_total_attendance(front_sheet, attendance_record):
+ if attendance_record is not None:
     attendance_data = attendance_record.attendance_record
     row_total_school_days = 12
     row_total_days_present = 16
@@ -923,53 +970,57 @@ def write_sf9_total_attendance(front_sheet, attendance_record):
         front_sheet.cell(row=row_total_school_days, column=column_coordinates, value=total_school_days)
         front_sheet.cell(row=row_total_days_present, column=column_coordinates, value=total_days_present)
         front_sheet.cell(row=row_total_days_absent, column=column_coordinates, value=total_days_absent)
+    else:
+        pass
 
 def write_sf9_attendance(front_sheet, attendance_record):
-    attendance_data = attendance_record.attendance_record
-    row_school_days = 12
-    row_days_present = 16
-    row_days_absent =  20
-    row_total_school_days = 12
-    row_total_days_present = 16
-    row_total_days_absent = 20 # Starting row for school days
-    column_coordinates = {
-        "JUNE": 12,
-        "JULY": 13,
-        "AUGUST": 2,
-        "SEPTEMBER": 3,
-        "OCTOBER": 4,
-        "NOVEMBER": 5,
-        "DECEMBER": 6,
-        "JANUARY": 7,
-        "FEBRUARY": 8,
-        "MARCH": 9,
-        "APRIL": 10,
-        "MAY": 11,
-        "TOTAL": 14,
-        # Add more months as needed
-    }
+    if attendance_record is not None:
+        attendance_data = attendance_record.attendance_record
+        row_school_days = 12
+        row_days_present = 16
+        row_days_absent =  20
+        row_total_school_days = 12
+        row_total_days_present = 16
+        row_total_days_absent = 20 # Starting row for school days
+        column_coordinates = {
+            "JUNE": 12,
+            "JULY": 13,
+            "AUGUST": 2,
+            "SEPTEMBER": 3,
+            "OCTOBER": 4,
+            "NOVEMBER": 5,
+            "DECEMBER": 6,
+            "JANUARY": 7,
+            "FEBRUARY": 8,
+            "MARCH": 9,
+            "APRIL": 10,
+            "MAY": 11,
+            "TOTAL": 14,
+            # Add more months as needed
+        }
 
-    # Iterate over the months and their attendance records
-    for month, record in attendance_data.items():
-        print(f"month {month}")
-        # Access the number of school days for the current month
-        school_days = record.get('No. of School Days', '')
-        days_present = record.get('No. of Days Present', '')
-        days_absent = record.get('No. of Days Absent', '')
+        # Iterate over the months and their attendance records
+        for month, record in attendance_data.items():
+            print(f"month {month}")
+            # Access the number of school days for the current month
+            school_days = record.get('No. of School Days', '')
+            days_present = record.get('No. of Days Present', '')
+            days_absent = record.get('No. of Days Absent', '')
 
-        # print(f"school days:{school_days}")
-        # print(f"days present:{days_present}")
-        # print(f"days absent:{days_absent}")
-        
-        # Get the column index based on the month
-        column_index = column_coordinates.get(month, -1)
-        # print(f"month: {column_index}")
-            # Write the school days to the respective column for the current month
-            # Adjust row and column indices here
-        front_sheet.cell(row=row_school_days, column=column_index, value=school_days)
-        front_sheet.cell(row=row_days_present, column=column_index, value=days_present)
-        front_sheet.cell(row=row_days_absent, column=column_index, value=days_absent)
-
+            # print(f"school days:{school_days}")
+            # print(f"days present:{days_present}")
+            # print(f"days absent:{days_absent}")
+            
+            # Get the column index based on the month
+            column_index = column_coordinates.get(month, -1)
+            # print(f"month: {column_index}")
+                # Write the school days to the respective column for the current month
+                # Adjust row and column indices here
+            front_sheet.cell(row=row_school_days, column=column_index, value=school_days)
+            front_sheet.cell(row=row_days_present, column=column_index, value=days_present)
+            front_sheet.cell(row=row_days_absent, column=column_index, value=days_absent)
+    else:
+         print("Warning: Attendance record is None.")
 
 def get_behavior_rows():
     # Define behavior rows
