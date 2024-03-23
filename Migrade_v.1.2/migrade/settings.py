@@ -16,6 +16,7 @@ import sys
 import os
 from dotenv import load_dotenv
 load_dotenv()
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,13 +49,13 @@ SECRET_KEY = django
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
-# ALLOWED_HOSTS = ['192.168.1.14']
+ALLOWED_HOSTS = ['*']
 # http://127.0.0.1:8000/
 
-ALLOWED_HOSTS = ['192.168.43.70','192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1', '192.168.1.134']
+# ALLOWED_HOSTS = ['192.168.43.70','192.168.18.21', 'localhost', '127.0.0.1', '131.226.107.101', '192.168.43.70', '192.168.18.1', '192.168.1.134']
 
 
 
@@ -120,6 +121,8 @@ DATABASES = {
         'PORT': '3306',
     }    
 }
+
+
 
 
 REST_FRAMEWORK = {
