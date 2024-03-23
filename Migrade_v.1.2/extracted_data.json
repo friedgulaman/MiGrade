@@ -1,36 +1,150 @@
-{
-    "MUSIC": {
-        "subject": "MUSIC",
-        "from_teacher_id": "eric",
-        "first_quarter": 65,
-        "final_grade": 65,
-        "status": "FAILED"
-    },
-    "MAPEH": {
-        "first_quarter": 63.0,
-        "second_quarter": 64.5
-    },
-    "ARTS": {
-        "first_quarter": "64.0",
-        "from_teacher_id": "eric",
-        "subject": "ARTS",
-        "final_grade": 64.0,
-        "status": "FAILED"
-    },
-    "PE": {
-        "first_quarter": "62.0",
-        "from_teacher_id": "eric",
-        "subject": "PE",
-        "final_grade": 63.0,
-        "status": "FAILED",
-        "second_quarter": "64.0"
-    },
-    "HEALTH": {
-        "first_quarter": "61.0",
-        "from_teacher_id": "eric",
-        "subject": "HEALTH",
-        "final_grade": 63.0,
-        "status": "FAILED",
-        "second_quarter": "65.0"
-    }
+{'ARALING PANLIPUNAN': [
+        {'student_name': 'ANIBAN,LEO JELLY, TINAPAY', 'highest_initial_grade': 3.0, 'transmuted_grade': 0.0, 'remarks': 'FAILED', 'status': 'FAILED'
+        },
+        {'student_name': 'ASILO,RAIN JUSTINE, MERCADO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CAMBE,SEAN DAVE, ARAGON', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CARANAY,JHAYCEE CARL, CORDERO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CASTRO,ICHIRO, MENDOZA', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CAYLAO,DAYNE, VIÑA', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CHAN,JHON RHAYNE, REPELAR', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'GETALADO,EARL SAMUEL, CLAVE', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'GLOBIO,MARCKY, GALVAN', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'MIRANDA,ANDREI, BIANES', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'NAVAREZ,ANDREI, MONTAÑEZ', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'SALAYSAY,JOHN LOUIE, FLORES', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'SAMANIEGO,MATTHEW ANDREI, ANGULO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'SAN JUAN JR.,ARLY, PLATINO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'SANTOS,MARK, BELANO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'VILLANUEVA,JOSH CYREL, CLASA', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'ARRESGADO,LEANNE ROSE, CARLOS', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'BORCELANGO,DONA LYNN, DAPRINAL', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CAONES,JUSEA MICAH, LACANIN', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'CLEMENTE,MARTHA ASHLEE, COLIS', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'DEL MUNDO,CATHLYN, SALDINO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'DICDICAN,TRISHA ELLAINE, REALON', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'ESPINAR,ANGIELYN, MARCE', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'GABATIN,LADY TRISHA, AMORTIZADO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'JOVEN,JENALEN, MASIKAT', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'MALABAG,ANGELICA, MIRANDA', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'MAMANSAG,JEIAH EUNICE, SERRANO', 
+'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'MANALILI,JAMAICA AMOR, ROSALES', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'MARTINEZ,ASHLEE NICHOLE, SABANAL', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'NAVAL,GEARLY SHANE, OCAMPO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'OLAVARIO,ALLIYAH LORRAINE, GUILLERMO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'PUNZALAN,CHANELLE, POSO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'ROTUBIO,ALLIANA JALYN, BERONDO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'SUZON,RYGIN LOVE, GIMENTIZA', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'TAVU,RENY DENIEZE, RAMOS', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        },
+        {'student_name': 'VARGAS,REIGN BEYONCE, GUILLERMO', 'highest_initial_grade': None, 'transmuted_grade': None, 'remarks': 'No Grade', 'status': 'No Grade'
+        }
+    ], 'EDUKASYON SA PAGPAPAKATAO': [
+        {'student_name': 'ANIBAN,LEO JELLY, TINAPAY', 'highest_initial_grade': 85.51, 'transmuted_grade': 90.0, 'remarks': 'WITH HONOR', 'status': 'PASSED'
+        },
+        {'student_name': 'DEL MUNDO,CATHLYN, SALDINO', 'highest_initial_grade': 83.39, 'transmuted_grade': 89.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'ASILO,RAIN JUSTINE, MERCADO', 'highest_initial_grade': 82.15, 'transmuted_grade': 88.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CAONES,JUSEA MICAH, LACANIN', 'highest_initial_grade': 81.07, 'transmuted_grade': 88.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'GABATIN,LADY TRISHA, AMORTIZADO', 'highest_initial_grade': 80.38, 'transmuted_grade': 87.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'MALABAG,ANGELICA, MIRANDA', 'highest_initial_grade': 79.22, 'transmuted_grade': 87.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CAMBE,SEAN DAVE, ARAGON', 'highest_initial_grade': 78.7, 'transmuted_grade': 86.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CARANAY,JHAYCEE CARL, CORDERO', 'highest_initial_grade': 77.7, 'transmuted_grade': 86.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'VILLANUEVA,JOSH CYREL, CLASA', 'highest_initial_grade': 78.35, 'transmuted_grade': 86.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'OLAVARIO,ALLIYAH LORRAINE, GUILLERMO', 'highest_initial_grade': 78.84, 'transmuted_grade': 86.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CASTRO,ICHIRO, MENDOZA', 'highest_initial_grade': 77.03, 'transmuted_grade': 85.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CHAN,JHON RHAYNE, REPELAR', 'highest_initial_grade': 77.53, 'transmuted_grade': 85.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'GETALADO,EARL SAMUEL, CLAVE', 'highest_initial_grade': 76.19, 'transmuted_grade': 85.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'NAVAREZ,ANDREI, MONTAÑEZ', 'highest_initial_grade': 77.5, 'transmuted_grade': 85.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'SANTOS,MARK, BELANO', 'highest_initial_grade': 76.0, 'transmuted_grade': 85.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'ARRESGADO,LEANNE ROSE, CARLOS', 'highest_initial_grade': 77.36, 'transmuted_grade': 85.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'MIRANDA,ANDREI, BIANES', 'highest_initial_grade': 75.16, 'transmuted_grade': 84.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'SAMANIEGO,MATTHEW ANDREI, ANGULO', 'highest_initial_grade': 74.81, 'transmuted_grade': 84.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'BORCELANGO,DONA LYNN, DAPRINAL', 'highest_initial_grade': 74.66, 'transmuted_grade': 84.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'MAMANSAG,JEIAH EUNICE, SERRANO', 'highest_initial_grade': 75.67, 'transmuted_grade': 84.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'PUNZALAN,CHANELLE, POSO', 'highest_initial_grade': 74.52, 'transmuted_grade': 84.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'SALAYSAY,JOHN LOUIE, FLORES', 'highest_initial_grade': 74.31, 'transmuted_grade': 83.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'ROTUBIO,ALLIANA JALYN, BERONDO', 'highest_initial_grade': 73.83, 'transmuted_grade': 83.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'DICDICAN,TRISHA ELLAINE, REALON', 'highest_initial_grade': 71.62, 'transmuted_grade': 82.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'ESPINAR,ANGIELYN, MARCE', 'highest_initial_grade': 71.83, 'transmuted_grade': 82.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'JOVEN,JENALEN, MASIKAT', 'highest_initial_grade': 72.14, 'transmuted_grade': 82.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'NAVAL,GEARLY SHANE, OCAMPO', 'highest_initial_grade': 71.36, 'transmuted_grade': 82.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CAYLAO,DAYNE, VIÑA', 'highest_initial_grade': 70.47, 'transmuted_grade': 81.0, 
+'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'CLEMENTE,MARTHA ASHLEE, COLIS', 'highest_initial_grade': 68.28, 'transmuted_grade': 80.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'SAN JUAN JR.,ARLY, PLATINO', 'highest_initial_grade': 66.93, 'transmuted_grade': 79.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'MANALILI,JAMAICA AMOR, ROSALES', 'highest_initial_grade': 66.81, 'transmuted_grade': 79.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'MARTINEZ,ASHLEE NICHOLE, SABANAL', 'highest_initial_grade': 66.47, 'transmuted_grade': 79.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'SUZON,RYGIN LOVE, GIMENTIZA', 'highest_initial_grade': 67.78, 'transmuted_grade': 79.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'GLOBIO,MARCKY, GALVAN', 'highest_initial_grade': 65.58, 'transmuted_grade': 78.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'TAVU,RENY DENIEZE, RAMOS', 'highest_initial_grade': 61.74, 'transmuted_grade': 76.0, 'remarks': 'PASSED', 'status': 'PASSED'
+        },
+        {'student_name': 'VARGAS,REIGN BEYONCE, GUILLERMO', 'highest_initial_grade': 55.69, 'transmuted_grade': 73.0, 'remarks': 'FAILED', 'status': 'FAILED'
+        }
+    ]
 }

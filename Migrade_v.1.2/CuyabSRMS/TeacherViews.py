@@ -1377,7 +1377,7 @@ def student_list_for_subject(request):
                 transmuted_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name, class_record__quarters=quarter).order_by('transmuted_grades').first()
                 if transmuted_grade:
                     quarter = transmuted_grade.class_record.quarters
-                    print(quarter)
+                    # print(quarter)
 
                 # Determine remarks based on transmuted grade
                 remarks = determine_remarks(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
@@ -1727,12 +1727,18 @@ def advisory_quarterly_grades(request):
             grades = []  # List to store grades for calculating mean
 
             for subject, grades_info in grades_data.items():
+                # Skip subjects 'MUSIC', 'ARTS', 'PE', and 'HEALTH'
+                if subject in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                    continue
+                
                 if quarter_mapping[quarter] in grades_info:
                     subject_grade = grades_info[quarter_mapping[quarter]]
-                    # print(subject_grade)
-                    subject_grades[student.student.name][subject] = subject_grade
-                    if subject_grade is not None:
-                        grades.append(float(subject_grade))
+                    print(subject_grade)
+                    subject_grade_str = str(subject_grade) if subject_grade is not None else ""
+                    if subject_grade_str.strip():  # Check if the string is not empty after stripping whitespace
+                        subject_grades[student.student.name][subject] = subject_grade_str
+                        if subject_grade is not None:
+                            grades.append(float(subject_grade))
 
             # Calculate average score
             if grades:
@@ -1956,18 +1962,24 @@ def advisory_final_all_subject(request):
             grades = []  # List to store grades for calculating mean
 
             for subject, grades_info in grades_data.items():
+                # Skip subjects 'MUSIC', 'ARTS', 'PE', and 'HEALTH'
+                if subject in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                    continue
+                
                 if quarter_mapping[quarter] in grades_info:
                     subject_grade = grades_info[quarter_mapping[quarter]]
-                    # print(subject_grade)
-                    subject_grades[student.student.name][subject] = subject_grade
-                    if subject_grade is not None:
-                        grades.append(float(subject_grade))
+                    print(subject_grade)
+                    subject_grade_str = str(subject_grade) if subject_grade is not None else ""
+                    if subject_grade_str.strip():  # Check if the string is not empty after stripping whitespace
+                        subject_grades[student.student.name][subject] = subject_grade_str
+                        if subject_grade is not None:
+                            grades.append(float(subject_grade))
 
             # Calculate average score
             if grades:
                 subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
             else:
-                subject_grades[student.student.name]['average_score'] = None
+                subject_grades[student.student.name]['average_score'] = ""
 
             # Check if QuarterlyGrades entry already exists for this student and quarter
             existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
@@ -2002,6 +2014,8 @@ def advisory_final_all_subject(request):
             for advisory_class in advisory_classes.filter(student=student):
                 grades_data = advisory_class.grades_data
                 for subject, subject_info in grades_data.items():
+                    if subject.upper() in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
+                        continue
                     # Access grades data for each subject
                     subject_data = {
                         'subject': subject,
@@ -2037,6 +2051,7 @@ def advisory_final_all_subject(request):
             save_general_average(student_data, grade, section)
 
         sorted_final_grades = sorted(final_grades, key=lambda x: x.get('general_average', 0), reverse=True)
+        print(sorted_final_grades)
         highest_per_quarter = {
             'first_quarter': [],
             'second_quarter': [],
@@ -2102,6 +2117,7 @@ def advisory_final_all_subject(request):
 
          
         }
+
 
         return render(request, 'teacher_template/adviserTeacher/advisory_final_all_subject.html', context)
     

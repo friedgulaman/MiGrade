@@ -944,11 +944,12 @@ def write_sf9_grades(back_sheet, advisory_class, general_average):
         back_sheet.cell(row=row, column=15, value=int(round(second_quarter_value)) if second_quarter_value is not None and second_quarter_value != '' else None)
         back_sheet.cell(row=row, column=16, value=int(round(third_quarter_value)) if third_quarter_value is not None and third_quarter_value != '' else None)
         back_sheet.cell(row=row, column=17, value=int(round(fourth_quarter_value)) if fourth_quarter_value is not None and fourth_quarter_value != '' else None)
-        back_sheet.cell(row=row, column=18, value=int(round(final_grade_value)) if final_grade_value is not None and final_grade_value != '' else None)
-        back_sheet.cell(row=row, column=19, value=status)
 
-        # Write general average
-        back_sheet.cell(row=22, column=18, value=general_average.general_average)
+     
+        if fourth_quarter_value is not None and fourth_quarter_value != '':
+                    back_sheet.cell(row=row, column=18, value=int(round(final_grade_value)) if final_grade_value is not None and final_grade_value != '' else None)
+                    back_sheet.cell(row=row, column=19, value=status)
+                    back_sheet.cell(row=22, column=18, value=general_average.general_average)
 
 def write_sf9_total_attendance(front_sheet, attendance_record):
  if attendance_record is not None:

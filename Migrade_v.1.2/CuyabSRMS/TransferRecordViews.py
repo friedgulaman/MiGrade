@@ -417,13 +417,17 @@ def save_data(message, json_data, teacher):
                 subject_teacher_data['subject'] = json_data.get('subject')
 
                 quarter_grades = [float(subject_teacher_data[q]) for q in quarter_field_mapping.values() 
-                                  if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]  # Ensure the value is not empt
+                                  if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]
                 
                 # print(quarter_grades)
                 final_grade = round(sum(quarter_grades) / len(quarter_grades), 2) if quarter_grades else None
 
                 subject_teacher_data['final_grade'] = final_grade
-                subject_teacher_data['status'] = determine_status(final_grade)             
+                subject_teacher_data['status'] = determine_status(final_grade)    
+
+                advisory_class.set_grade_for_subject(json_data.get('subject'), subject_teacher_data)
+                advisory_class.save()   
+                      
 
                 if json_data.get('subject') in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
                     mapeh_quarter_data = grades_data.get('MAPEH', {})
@@ -433,16 +437,16 @@ def save_data(message, json_data, teacher):
                     mapeh_quarter_grades = []
                     for subject in ['MUSIC', 'ARTS', 'PE', 'HEALTH']:
                         if subject in grades_data:
-                            # print("Subject:", subject)  # Debugging
+                            print("Subject:", subject)  # Debugging
                             for q in quarter_field_mapping.values():
                                 if q in grades_data[subject] and q == quarter_field_mapping[quarter] and isinstance(grades_data[subject][q], str) and grades_data[subject][q] and grades_data[subject][q].strip():
-                                    # print("Quarter:", q)  # Debugging
+                                    print("Quarter:", q)  # Debugging
                                     mapeh_quarter_grades.append(float(str(grades_data[subject][q]))) 
                                 
-                        # print(f"Quarter grades for {subject} subjects:", mapeh_quarter_grades)
+                                    print(f"Quarter grades for {subject} subjects:", mapeh_quarter_grades)
                         mapeh_final_grade = round(sum(mapeh_quarter_grades) / len(mapeh_quarter_grades), 2) if mapeh_quarter_grades else None
-                        # print(f"Calculated {subject}:", mapeh_final_grade)
-            # Update MAPEH's final grade
+                        print(f"Calculated {subject}:", mapeh_final_grade)
+                                    # Update MAPEH's final grade
                         mapeh_quarter_grade = grades_data.get('MAPEH', {})
                         mapeh_quarter_grade[quarter_field_mapping[quarter]] = mapeh_final_grade
                         mapeh_quarter_data['from_teacher_id'] = json_data.get('teacher')
@@ -450,22 +454,23 @@ def save_data(message, json_data, teacher):
 
 
                     mapeh_average = []
-                    # Iterate through each quarter
+                        # Iterate through each quarter
                     for q in quarter_field_mapping.values():
-                        # Check if the quarter exists in the MAPEH grades data and it's not empty
-                        if 'MAPEH' in grades_data and q in grades_data['MAPEH'] and isinstance(grades_data['MAPEH'][q], (int, float)):
-                            # Append the quarter grade to the list after converting it to float
-                            mapeh_average.append(float(grades_data['MAPEH'][q]))
+                            # Check if the quarter exists in the MAPEH grades data and it's not empty
+                            if 'MAPEH' in grades_data and q in grades_data['MAPEH'] and isinstance(grades_data['MAPEH'][q], (int, float)):
+                                # Append the quarter grade to the list after converting it to float
+                                mapeh_average.append(float(grades_data['MAPEH'][q]))
 
-                    # Calculate the final grade for MAPEH
+                        # Calculate the final grade for MAPEH
                     mapeh_final_grade = round(sum(mapeh_average) / len(mapeh_average), 2) if mapeh_average else None
+                    print("mapeh final grade", mapeh_final_grade)
                     mapeh_quarter_grade['final_grade'] = mapeh_final_grade
                     mapeh_quarter_grade['status'] = determine_status(mapeh_final_grade)
 
 
-                    # Calculate average final grade for all quarters
+                        # Calculate average final grade for all quarters
 
-                    # mapeh_quarter_grade['final_grade'] = average_final_grade
+                        # mapeh_quarter_grade['final_grade'] = average_final_grade
                     grades_data['MAPEH'] = mapeh_quarter_grade
 
 
@@ -509,6 +514,7 @@ def save_data(message, json_data, teacher):
 
          
                 print(f"Saved new AdvisoryClass with {quarter} for {student_name}.")
+
 
 def save_accepted_message(message):
     try:
