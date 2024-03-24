@@ -18,7 +18,14 @@ Subject Quarterly Grade
             <div class="d-flex justify-content-between align-items-center mb-2 ">
                 <h3><strong class="text-danger">{{ subject }}</strong> <span class="text-muted">- {{ grade}}, {{ section}}</span></h3>
                 <a class="back-button">&larr;</a>
+                {% comment %} <select class="quarter-select">
+                    <option value="first_quarter">First Quarter</option>
+                    <option value="second_quarter">Second Quarter</option>
+                    <option value="third_quarter">Third Quarter</option>
+                    <option value="fourth_quarter">Fourth Quarter</option>
+                </select> {% endcomment %}
             </div>
+                {% comment %} <button class="delete-btn btn btn-danger">Delete</button> {% endcomment %}
 
             <div class="table-responsive">
                 <table class="table table-hover">

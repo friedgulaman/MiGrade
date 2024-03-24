@@ -235,6 +235,7 @@ urlpatterns = [
     path('save-observations/', teacher_required(TeacherViews.save_observations), name='save_observations'),
     path('display-observation/<str:grade>/<str:section>/', teacher_required(TeacherViews.display_learners_observation), name='display_learners_observation'),
     path('update-markings/', teacher_required(TeacherViews.update_markings), name='update_markings'),
+    path('grades/<str:grade>/<str:section>/delete_subject/<str:subject>/', teacher_required(TeacherViews.delete_grade_data_subject), name='delete_grade_data_subject'),
 
    # urls.py
     # Generation

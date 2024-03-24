@@ -1221,7 +1221,7 @@ def student_list_for_subject(request):
         section = request.GET.get('section')
         class_type = request.GET.get('class_type')
         # quarter = request.GET.get('quarter')
-        quarter = '1st Quarter'
+        quarters = {"1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"}
 
         # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
@@ -1237,41 +1237,49 @@ def student_list_for_subject(request):
         # Initialize a dictionary to store highest initial grade and transmuted grades per subject
         subject_grades = {}
 
-
         # Loop through each subject
         for subject in subjects:
             subject_name = subject['subject']
             subject_students = students
 
+            # Initialize a dictionary to store grades for each quarter
+            subject_grades[subject_name] = {}
 
             # Fetch highest initial grade and transmuted grades for students in this subject
-            subject_grades[subject_name] = []
-            for student in subject_students:
-                # Retrieve the student's highest initial grade
-                highest_initial_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name).order_by('-initial_grades').first()
+            for quarter in quarters:
+                grades_for_quarter = []  # Initialize a list to store grades for the current quarter
+                for student in subject_students:
+                    # Retrieve the student's highest initial grade
+                    highest_initial_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name).order_by('-initial_grades').first()
 
-                # Retrieve the student's transmuted grade for the specific subject
-                transmuted_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name, class_record__quarters=quarter).order_by('transmuted_grades').first()
-                if transmuted_grade:
-                    quarter = transmuted_grade.class_record.quarters
+                    # Retrieve the student's transmuted grade for the specific subject and quarter
+                    transmuted_grade = GradeScores.objects.filter(student=student, class_record__subject=subject_name, class_record__quarters=quarter).order_by('transmuted_grades').first()
+                    if transmuted_grade:
+                        quarter = transmuted_grade.class_record.quarters
 
-                # Determine remarks based on transmuted grade
-                remarks = determine_remarks(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
-                status = determine_status(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
+                    # Determine remarks based on transmuted grade
+                    remarks = determine_remarks(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
+                    status = determine_status(transmuted_grade.transmuted_grades) if transmuted_grade else 'No Grade'
 
-                # If both initial grade and transmuted grade exist, append the data to the subject_grades dictionary
-                if highest_initial_grade is not None and transmuted_grade is not None:
-                    # Append the student's data to the subject grades list
-                    subject_grades[subject_name].append({
-                        'student_name': student.name,
-                        'highest_initial_grade': highest_initial_grade.initial_grades,
-                        'transmuted_grade': transmuted_grade.transmuted_grades,
-                        'remarks': remarks,
-                        'status': status
-                    })
+                    # If both initial grade and transmuted grade exist, append the data to the grades_for_quarter list
+                    if highest_initial_grade is not None and transmuted_grade is not None:
+                        # Append the student's data to the grades_for_quarter list
+                        grades_for_quarter.append({
+                            'student_name': student.name,
+                            'highest_initial_grade': highest_initial_grade.initial_grades,
+                            'transmuted_grade': transmuted_grade.transmuted_grades,
+                            'remarks': remarks,
+                            'status': status,
+                            'quarter': quarter  # Include the quarter information
+                        })
 
-            # Sort the students for this subject by highest initial grade
-            subject_grades[subject_name].sort(key=lambda x: x['transmuted_grade'] if x['transmuted_grade'] is not None else 0, reverse=True)
+                # Sort the grades for this quarter by highest initial grade
+                grades_for_quarter.sort(key=lambda x: x['transmuted_grade'] if x['transmuted_grade'] is not None else 0, reverse=True)
+
+                # Store the grades for this quarter in the subject_grades dictionary
+                subject_grades[subject_name][quarter] = grades_for_quarter
+
+        # print(subject_grades)
 
     context = {
         'grade': grade,
@@ -4687,6 +4695,26 @@ def sf2_map_data_to_model(json_data, teacher_id, request):
         elif message_type == 'error':
             messages.error(request, message_text)
 
-   
-
     return success
+
+def delete_grade_data_subject(request, grade, section, subject):
+    try:
+        advisory_classes = AdvisoryClass.objects.filter(grade=grade, section=section)
+    except AdvisoryClass.DoesNotExist:
+        return JsonResponse({'error': 'AdvisoryClass not found'}, status=404)
+
+    deleted = False  # Flag to check if any deletion occurred
+
+    # Check if the provided subject is present in grades_data for each advisory class
+    for advisory_class in advisory_classes:
+        if subject in advisory_class.grades_data:
+            # Delete the key associated with the subject from grades_data
+            del advisory_class.grades_data[subject]
+            # Save the changes
+            advisory_class.save()
+            deleted = True
+
+    if deleted:
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+    else:
+        return JsonResponse({'error': f'{subject} not found in grades_data for any matching AdvisoryClass objects'}, status=400)
