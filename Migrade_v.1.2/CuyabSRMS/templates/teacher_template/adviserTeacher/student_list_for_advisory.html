@@ -294,10 +294,15 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                     <tbody class="text-muted">
                                                         {% if unique_keys %}
                                                             {% for key, from_teacher_id in unique_keys %}
-                                                                <tr onclick="showQuarters('{{ grade }}', '{{ section }}', '{{ key }}', '{{ from_teacher_id }}')">
+                                                                <tr>
                                                                     <td>{{ key }}</td>
                                                                     <td>{{ from_teacher_id }}</td>
-                                                                    <td class="text-muted view">View Details</td>
+                                                                    <td class="text-muted view" onclick="showQuarters('{{ grade }}', '{{ section }}', '{{ key }}', '{{ from_teacher_id }}')">View Details</td>
+                                                                    <td>
+                                                                        <button class="btn btn-danger" onclick="deleteRecord('{{ key }}', '{{ from_teacher_id }}')">
+                                                                            <i class="fas fa-trash"></i> <!-- Assuming you're using Font Awesome for the trash icon -->
+                                                                        </button>
+                                                                    </td>
                                                                 </tr>
                                                             {% endfor %}
                                                         {% else %}

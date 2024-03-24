@@ -256,7 +256,8 @@ urlpatterns = [
 
     #Archived
     path('archived-records/', teacher_required(ArchivedViews.archived_records), name='archived_records'),
-    path('restore-archived-record/<int:archived_record_id>/', teacher_required(ArchivedViews.restore_archived_record), name='restore_archived_record'),
+    path('display_archived_classrecord/<int:class_record_id>/', admin_required(ArchivedViews.display_archived_classrecord), name='display_archived_classrecord'),
+    path('restore-archived-record/<int:archived_record_id>/', admin_required(ArchivedViews.restore_archived_record), name='restore_archived_record'),
     path('archive-class-record/<int:class_record_id>/', teacher_required(ArchivedViews.archive_class_record), name='archive_class_record'),
     path('archive_students_with_grade_and_section/<str:grade>/<str:section>/', teacher_required(ArchivedViews.archive_students_with_grade_and_section), name='archive_students_with_grade_and_section'),
     path('restore_archived_students/<str:grade>/<str:section>/', teacher_required(ArchivedViews.restore_archived_students), name='restore_archived_students'),
