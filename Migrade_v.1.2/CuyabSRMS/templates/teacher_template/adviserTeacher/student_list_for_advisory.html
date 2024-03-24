@@ -187,7 +187,16 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                             <div class="grid-margin stretch-card">
                                 <div>
                                     <div class="card-body">
-                                        <h4 class="card-title">Students</h4>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <h4 class="card-title">Students</h4>
+                                                </div>
+                                                <div class="col text-end">
+                                                    <button type="button" class="btn btn-primary" onclick="window.open('{% url 'sf9' %}', '_blank')">School Form 9</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="table-responsive">
                                             <table class="table table-hover">
                                                 <thead>
