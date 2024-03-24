@@ -239,33 +239,12 @@ class ClassRecord(models.Model):
             with transaction.atomic():
                 # Archive related GradeScores
                 for gradescore in self.gradescores.all():
-                    ArchivedGradeScores.objects.create(
+                     ArchivedGradeScores.objects.create(
                         archived_class_record=self,
                         student=gradescore.student,
-                        scores_hps_written=gradescore.scores_hps_written,
-                        scores_hps_performance=gradescore.scores_hps_performance,
-                        total_ww_hps=gradescore.total_ww_hps,
-                        total_pt_hps=gradescore.total_pt_hps,
-                        total_qa_hps=gradescore.total_qa_hps,
-                        written_works_scores=gradescore.written_works_scores,
-                        performance_task_scores=gradescore.performance_task_scores,
                         initial_grades=gradescore.initial_grades,
                         transmuted_grades=gradescore.transmuted_grades,
-                        total_score_written=gradescore.total_score_written,
-                        total_max_score_written=gradescore.total_max_score_written,
-                        total_score_performance=gradescore.total_score_performance,
-                        total_max_score_performance=gradescore.total_max_score_performance,
-                        total_score_quarterly=gradescore.total_score_quarterly,
-                        total_max_score_quarterly=gradescore.total_max_score_quarterly,
-                        percentage_score_written=gradescore.percentage_score_written,
-                        percentage_score_performance=gradescore.percentage_score_performance,
-                        percentage_score_quarterly=gradescore.percentage_score_quarterly,
-                        weight_input_written=gradescore.weight_input_written,
-                        weight_input_performance=gradescore.weight_input_performance,
-                        weight_input_quarterly=gradescore.weight_input_quarterly,
-                        weighted_score_written=gradescore.weighted_score_written,
-                          weighted_score_performance=gradescore.weighted_score_performance,
-                        weighted_score_quarterly=gradescore.weighted_score_quarterly,
+                        grade_scores=gradescore.grade_scores,
                     )
 
                 # Archive ClassRecord
@@ -336,33 +315,12 @@ class ArchivedClassRecord(models.Model):
         # Restore related GradeScores
         archived_grade_scores = self.archived_gradescores.all()
         for archived_grade_score in archived_grade_scores:
-            GradeScores.objects.create(
+             GradeScores.objects.create(
                 student=archived_grade_score.student,
                 class_record=class_record,
-                scores_hps_written=archived_grade_score.scores_hps_written,
-                scores_hps_performance=archived_grade_score.scores_hps_performance,
-                total_ww_hps=archived_grade_score.total_ww_hps,
-                total_pt_hps=archived_grade_score.total_pt_hps,
-                total_qa_hps=archived_grade_score.total_qa_hps,
-                written_works_scores=archived_grade_score.written_works_scores,
-                performance_task_scores=archived_grade_score.performance_task_scores,
                 initial_grades=archived_grade_score.initial_grades,
                 transmuted_grades=archived_grade_score.transmuted_grades,
-                total_score_written=archived_grade_score.total_score_written,
-                total_max_score_written=archived_grade_score.total_max_score_written,
-                total_score_performance=archived_grade_score.total_score_performance,
-                total_max_score_performance=archived_grade_score.total_max_score_performance,
-                total_score_quarterly=archived_grade_score.total_score_quarterly,
-                total_max_score_quarterly=archived_grade_score.total_max_score_quarterly,
-                percentage_score_written=archived_grade_score.percentage_score_written,
-                percentage_score_performance=archived_grade_score.percentage_score_performance,
-                percentage_score_quarterly=archived_grade_score.percentage_score_quarterly,
-                weight_input_written=archived_grade_score.weight_input_written,
-                weight_input_performance=archived_grade_score.weight_input_performance,
-                weight_input_quarterly=archived_grade_score.weight_input_quarterly,
-                weighted_score_written=archived_grade_score.weighted_score_written,
-                weighted_score_performance=archived_grade_score.weighted_score_performance,
-                weighted_score_quarterly=archived_grade_score.weighted_score_quarterly,
+                grade_scores=archived_grade_score.grade_scores,
             )
 
 class ArchivedGradeScores(models.Model):

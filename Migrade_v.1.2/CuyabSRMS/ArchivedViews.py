@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.db import transaction
-from .models import ClassRecord, ArchivedClassRecord, GradeScores, ArchivedGradeScores, Student, ArchivedStudent, FinalGrade, ArchivedFinalGrade, GeneralAverage, ArchivedGeneralAverage, ArchivedQuarterlyGrades, QuarterlyGrades, RestoreRequest
+from .models import ClassRecord, ArchivedClassRecord, GradeScores, Subject, ArchivedGradeScores, Student, ArchivedStudent, FinalGrade, ArchivedFinalGrade, GeneralAverage, ArchivedGeneralAverage, ArchivedQuarterlyGrades, QuarterlyGrades, RestoreRequest
 import logging
 from django.utils import timezone
 from django.http import HttpResponseRedirect
@@ -9,6 +9,8 @@ from .utils import log_activity
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.contrib import messages
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseForbidden
 
 def archive_class_record(request, class_record_id):
     
@@ -42,7 +44,9 @@ def archive_class_record(request, class_record_id):
             for grade_score in class_record.GradeScores.all():
                 archived_student, _ = ArchivedStudent.objects.get_or_create(
                     archived_name=grade_score.student,
-                    archived_teacher=class_record_teacher
+                    archived_sex=grade_score.student.sex,
+                    archived_teacher=class_record_teacher,
+       
                 )
                 ArchivedGradeScores.objects.create(
                     archived_class_record=archived_class_record,
@@ -112,31 +116,10 @@ def restore_archived_record(request, archived_record_id):
                 GradeScores.objects.create(
                     student=student,
                     class_record=class_record,
-                    scores_hps_written=archived_grade_score.scores_hps_written,
-                    scores_hps_performance=archived_grade_score.scores_hps_performance,
-                    total_ww_hps=archived_grade_score.total_ww_hps,
-                    total_pt_hps=archived_grade_score.total_pt_hps,
-                    total_qa_hps=archived_grade_score.total_qa_hps,
-                    written_works_scores=archived_grade_score.written_works_scores,
-                    performance_task_scores=archived_grade_score.performance_task_scores,
                     initial_grades=archived_grade_score.initial_grades,
                     transmuted_grades=archived_grade_score.transmuted_grades,
-                    total_score_written=archived_grade_score.total_score_written,
-                    total_max_score_written=archived_grade_score.total_max_score_written,
-                    total_score_performance=archived_grade_score.total_score_performance,
-                    total_max_score_performance=archived_grade_score.total_max_score_performance,
-                    total_score_quarterly=archived_grade_score.total_score_quarterly,
-                    total_max_score_quarterly=archived_grade_score.total_max_score_quarterly,
-                    percentage_score_written=archived_grade_score.percentage_score_written,
-                    percentage_score_performance=archived_grade_score.percentage_score_performance,
-                    percentage_score_quarterly=archived_grade_score.percentage_score_quarterly,
-                    weight_input_written=archived_grade_score.weight_input_written,
-                    weight_input_performance=archived_grade_score.weight_input_performance,
-                    weight_input_quarterly=archived_grade_score.weight_input_quarterly,
-                    weighted_score_written=archived_grade_score.weighted_score_written,
-                    weighted_score_performance=archived_grade_score.weighted_score_performance,
-                    weighted_score_quarterly=archived_grade_score.weighted_score_quarterly,
-                    # Copy other relevant fields
+                    grade_scores=archived_grade_score.grade_scores,
+                    # Copy other relevant fields from the ArchivedGradeScores model
                 )
                 archived_grade_score.student.delete()
             # Delete the archived record after restoration
@@ -837,3 +820,36 @@ def restore_archived_students(request, grade, section):
     except Exception as e:
         print(f"Error occurred during restoration: {str(e)}")
         return HttpResponseRedirect(reverse('error_page'))
+
+
+
+def display_archived_classrecord(request, class_record_id=None):
+     # If class_record_id is provided, retrieve the ClassRecord object
+    class_record = get_object_or_404(ArchivedClassRecord, id=class_record_id)
+    subject_name = class_record.subject
+    # teacher = request.user.teacher
+    # teacher_id = teacher.id
+    # if teacher_id != class_record.teacher_id:
+    #     return HttpResponseForbidden("You don't have permission to access this class record.")
+
+
+    grade_scores = ArchivedGradeScores.objects.filter(archived_class_record=class_record)
+    subject = Subject.objects.get(name=subject_name)
+    assessments = subject.assessment
+
+    assessment_types = list(assessments.keys())
+    processed_types = []
+    for assessment_type in assessment_types:
+        processed_type = assessment_type.replace(' ', '-').lower()
+        processed_types.append(processed_type)
+
+    assessment_type_processed = None
+
+    context = {
+            'class_record': class_record,
+            'gradescores': grade_scores,
+            'assessment_types': assessment_types,
+            'assessment_values': list(assessments.values()),
+        }
+
+    return render(request, 'archive_template/display_archivedclassrecord.html', context)

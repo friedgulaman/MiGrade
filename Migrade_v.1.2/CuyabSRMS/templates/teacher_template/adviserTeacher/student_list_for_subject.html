@@ -395,7 +395,7 @@ table.sortable th:not([aria-sort]) button:hover span::after {
                                                 </th>
                                                 <th aria-sort="ascending">
                                                     <button>
-                                                     Date Modified
+                                                     Data Modified
                                                       <span aria-hidden="true"></span>
                                                     </button>
                                                   </th>
@@ -550,27 +550,34 @@ table.sortable th:not([aria-sort]) button:hover span::after {
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h2>Subject Rankings</h2>
-                                            <select class="form-select-sm" id="subjectSelect" onchange="toggleSubjectRankings()">
-                                                <option value="" selected disabled>Select Subject</option>
-                                                {% for subject in subjects %}
-                                                    <option value="{{ subject.subject }}">{{ subject.subject }}</option>
-                                                {% endfor %}
-                                            </select>
+                                            <div class="d-flex">
+                                                <select class="form-select-sm me-2" id="subjectSelect" onchange="toggleSubjectRankings()">
+                                                    <option value="" selected disabled>Select Subject</option>
+                                                    {% for subject in subjects %}
+                                                        <option value="{{ subject.subject }}">{{ subject.subject }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <select class="form-select-sm" id="quarterSelect" onchange="toggleSubjectRankings()">
+                                                    <option value="" selected disabled>Select Quarter</option>
+                                                    <option value="1st Quarter">1st Quarter</option>
+                                                    <option value="2nd Quarter">2nd Quarter</option>
+                                                    <option value="3rd Quarter">3rd Quarter</option>
+                                                    <option value="4th Quarter">4th Quarter</option>
+                                                </select>
+                                            </div>
                                         </div>
                                         
-                                        <div id="subjectRankings" class="mt-3 card">
-                                            {% for subject, grades in subject_grades.items %}
-                                                <div class="subjectRanking p-4" id="{{ subject }}" style="display: none;"> <!-- Hide subject rankings by default -->
-                                                    <h3 class="mt-2"><strong>Subject:</strong><em>{{ subject }}</em></h3>
-                                                    <div class="ul_counter">
-                                                        <ul>
-                                                            {% for grade in grades %}
-                                                                <li><td>{{ forloop.counter }}</td></li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    </div>
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered sortable container">
+                                        <div id="subjectRankings" class="mt-3 card ">
+                                            {% for subject, grades_per_quarter in subject_grades.items %}
+                                                <div class="subjectRanking p-4" id="{{ subject }}" style="display: none;">
+                                                    <!-- Hide subject rankings by default -->
+                                         
+                                                    {% for quarter, grades in grades_per_quarter.items %}
+                                                        <div id="{{ subject }}_{{ quarter }}" style="display: none;"> 
+                                                            <h3 class="mt-2"><strong>Subject:</strong><em>{{ subject }}</em></h3>
+                                                            <h3 class="mt-2"><strong>Quarter:</strong><em>{{ quarter }}</em></h3>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered sortable container">
                                                             <thead>
                                                                 <tr>
                                                                     <th>Rank</th>
@@ -587,7 +594,7 @@ table.sortable th:not([aria-sort]) button:hover span::after {
                                                             <tbody>
                                                                 {% for grade in grades %}
                                                                     <tr>
-                                                                        <td></td>
+                                                                        <td>{{forloop.counter}}</td>
                                                                         <td>{{ grade.student_name }}</td>
                                                                         <td class="num">{{ grade.transmuted_grade }}</td>
                                                                         <td>{{ grade.remarks }}</td>
@@ -596,6 +603,8 @@ table.sortable th:not([aria-sort]) button:hover span::after {
                                                             </tbody>
                                                         </table>
                                                     </div>
+                                                </div>
+                                                    {% endfor %}
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -620,30 +629,35 @@ table.sortable th:not([aria-sort]) button:hover span::after {
     function toggleSubjectRankings() {
         var subjectSelect = document.getElementById("subjectSelect");
         var selectedSubject = subjectSelect.value;
+        var quarterSelect = document.getElementById("quarterSelect");
+        var selectedQuarter = quarterSelect.value;
         var subjectRankings = document.getElementById("subjectRankings");
         var noData = document.getElementById("noData");
 
-        // Hide all subject rankings initially
+        // Hide all subject rankings and quarters initially
         var subjectDivs = subjectRankings.getElementsByClassName("subjectRanking");
         for (var i = 0; i < subjectDivs.length; i++) {
             subjectDivs[i].style.display = "none";
         }
 
-        // Show the selected subject's rankings
-        if (selectedSubject) {
+        // Show the selected subject's rankings for the selected quarter
+        if (selectedSubject && selectedQuarter) {
             var selectedSubjectDiv = document.getElementById(selectedSubject);
-            if (selectedSubjectDiv) {
+            var selectedQuarterDiv = document.getElementById(selectedSubject + "_" + selectedQuarter); // Update the ID
+            if (selectedSubjectDiv && selectedQuarterDiv) {
                 selectedSubjectDiv.style.display = "block";
+                selectedQuarterDiv.style.display = "block";
                 noData.style.display = "none"; // Hide the "No data available" message
+                selectedQuarterDiv.scrollIntoView({ behavior: "smooth", block: "start" });
             } else {
-                noData.style.display = "block"; // Show the "No data available" message if the subject is not found
+                noData.style.display = "block"; // Show the "No data available" message if the subject or quarter is not found
             }
         } else {
-            noData.style.display = "block"; // Show the "No data available" message if no subject is selected
+            noData.style.display = "block"; // Show the "No data available" message if no subject or quarter is selected
         }
     }
 
-    // Initially hide all subject rankings and the "No data available" message
+    // Initially hide all subject rankings, quarters, and the "No data available" message
     window.onload = function() {
         toggleSubjectRankings();
     };

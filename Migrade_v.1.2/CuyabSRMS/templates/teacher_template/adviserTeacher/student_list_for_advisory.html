@@ -294,10 +294,15 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
                                                     <tbody class="text-muted">
                                                         {% if unique_keys %}
                                                             {% for key, from_teacher_id in unique_keys %}
-                                                                <tr onclick="showQuarters('{{ grade }}', '{{ section }}', '{{ key }}', '{{ from_teacher_id }}')">
+                                                                <tr>
                                                                     <td>{{ key }}</td>
                                                                     <td>{{ from_teacher_id }}</td>
-                                                                    <td class="text-muted view">View Details</td>
+                                                                    <td class="text-muted view" onclick="showQuarters('{{ grade }}', '{{ section }}', '{{ key }}', '{{ from_teacher_id }}')">View Details</td>
+                                                                    {% comment %} <td>
+                                                                        <a class="btn btn-danger" href="{% url 'delete_grade_data_subject' grade=grade section=section subject=key %}" onclick="return confirm('Are you sure you want to delete this subject? This action cannot be undone.');">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </a>
+                                                                    </td> {% endcomment %}
                                                                 </tr>
                                                             {% endfor %}
                                                         {% else %}
@@ -419,12 +424,6 @@ Student List for {{ grade }} {{ section }} {{ class_type}}
     </div>
 </section>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-{% if request.GET.alert %}
-<script>
-    alert('{{ request.session.error_message }}');
-    alert('{{ request.session.info_message }}');
-</script>
-{% endif %}
 <script>
     var showStudentList = function(grade, section) {
         var url = "{% url 'generate_grade_section_list' %}?grade=" + encodeURIComponent(grade) + "&section=" + encodeURIComponent(section);
