@@ -37,9 +37,12 @@ Adviser Teacher
     .form-control {
         margin: 12px;
     }
+    .hidden-content {
+        display: none;
+    }
 </style>
 
-<section class="content container mt-2">
+<section class="content container mt-2 hidden-content">
     <form method="post" action="{% url 'calculate_grades' %}">
         {% csrf_token %}
         <div class="btn-wrapper" style="display: none;">

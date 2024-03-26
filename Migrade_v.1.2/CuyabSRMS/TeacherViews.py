@@ -481,6 +481,33 @@ def save_json_data(request):
                 
                 if existing_subject.exists():
                     return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+
+
+                existing_teacher_adv = Student.objects.filter(
+                    Q(grade=grade_name) &
+                    Q(section=section_name) &
+                    Q(school_year=school_year) &
+                    Q(class_type__contains={teacher_id: "Advisory Class"})
+                )
+                
+                if existing_teacher_adv.exists():
+                    # If Advisory Class exists, continue with further processing
+                    pass
+                else:
+                    # If an advisory class does not exist, check for other types of advisory classes
+                    existing_new_asc = Student.objects.filter(
+                        Q(grade=grade_name) &
+                        Q(section=section_name) &
+                        Q(school_year=school_year) &
+                        (Q(class_type__icontains="Advisory Class, Subject Class") | Q(class_type__icontains="Advisory Class"))
+                    )
+                    
+                    # If any other type of advisory class exists, return an error message
+                    if existing_new_asc.exists():
+                        return JsonResponse({'status': 'error', 'message': f"Advisory class already exists for this {grade_name} {section_name} - School Year: {school_year}."})
+                    # If no other type of advisory class exists, continue with further processing
+                    else:
+                        pass
                              
             elif 'Subject Class' in subject:
                 existing_subject_class = Student.objects.filter(

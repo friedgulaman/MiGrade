@@ -108,32 +108,42 @@ Manage Subjects
 
 
         <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
-            <div class="container-fluid table-responsive subject-list">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title">List of Subjects</h4>
-                        <table class="table table-hover text-center">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Subject Name</th>
-                                    <th>Assessment</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for subject in subjects %}
-                                <tr class="text-muted">
-                                    <td>{{ subject.id }}</td>
-                                    <td>{{ subject.name }}</td>
-                                    <td>{{ subject.assessment }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+          <div class="container-fluid table-responsive subject-list">
+              <div class="card">
+                  <div class="card-body">
+                      <h4 class="card-title">List of Subjects</h4>
+                      <table class="table table-hover text-center">
+                          <thead>
+                              <tr>
+                                  <th>ID</th>
+                                  <th>Subject Name</th>
+                                  <th>Assessment</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for subject in subjects %}
+                              <tr class="text-muted">
+                                  <td>{{ subject.id }}</td>
+                                  <td>{{ subject.name }}</td>
+                                  <td>
+                                      {% if subject.assessment %}
+                                          {% for assessment_type, weight in subject.assessment.items %}
+                                              <div>
+                                                  <strong>{{ assessment_type }}:</strong> {{ weight }}
+                                              </div>
+                                          {% endfor %}
+                                      {% else %}
+                                          Not assigned
+                                      {% endif %}
+                                  </td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
+      </div>
 
         <div class="tab-pane fade show" id="update" role="tabpanel" aria-labelledby="update">
             <div class="container-fluid">

@@ -209,14 +209,6 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
     with open(copied_file_path, 'rb') as excel_file:
         response.write(excel_file.read())
 
-    # Add success or error message
-    if os.path.exists(copied_file_path):
-        messages.success(request, f'Summary of Quarterly Grades ({quarter}) generated successfully.')
-        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
-    else:
-        messages.error(request, 'An error occurred while generating the summary.')
-        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
-
     return response
 
 
@@ -1113,6 +1105,8 @@ def generate_excel_for_sf9(request, student_id):
     student = get_object_or_404(Student, id=student_id)
 
     user = request.user
+    teacher = request.user.teacher
+    teacher_name = f"{teacher.user.first_name} {teacher.user.middle_ini}. {teacher.user.last_name}" 
 
     # Query for other related objects
     advisory_class = AdvisoryClass.objects.filter(student=student).first()
@@ -1174,7 +1168,7 @@ def generate_excel_for_sf9(request, student_id):
 
     # Write SF9-specific data using utility functions
     write_sf9_data(front_sheet, student)
-    write_sf9_school_info(front_sheet, school_info)
+    write_sf9_school_info(front_sheet, school_info, teacher_name)
     write_sf9_grades(back_sheet, advisory_class, general_average)
     write_sf9_attendance(front_sheet, attendance_record)
     write_sf9_total_attendance(front_sheet, attendance_record)

@@ -83,12 +83,14 @@ def get_teacher_list(request):
         # Get the currently logged-in teacher
         current_teacher = request.user.teacher
         current_subject_classes = []
+        
+        print("before current_subject", current_subject_classes)
 
         # Retrieve all subject classes of the current teacher
         for grade_section, class_type in current_teacher.grade_section.items():
             if class_type == 'Subject Class' or class_type == 'Advisory Class, Subject Class':
                 current_subject_classes.append(grade_section)
-        print(current_subject_classes)
+        print("Current Subject Classes:", current_subject_classes)
 
         teacher_list = []
 
@@ -97,26 +99,36 @@ def get_teacher_list(request):
             # Iterate through each teacher
             for teacher in Teacher.objects.all():
                 # Check if grade_section exists and is not None
+                print("FOR LOOP NG TEACHER", teacher)
+                print("FOR LOOP NG TEACHER at ang kanyang teacher grade and section", teacher.grade_section)
                 if teacher.grade_section:
+                  
                     # Iterate through each grade_section of the current teacher
                     for current_subject_class in current_subject_classes:
+                        print("for loop ng current subject class sa subject classsess", current_subject_class)
+                        print("eto naman yung teacher.grade_section.keys", teacher.grade_section.keys())  
+                    
                         # Check if the teacher has the same grade_section as the current teacher
                         if current_subject_class in teacher.grade_section.keys():
+                            print("if yung current subject class:", current_subject_class)
+                            print("ay katulad ni teacher , teacher.grade_section.keys()", teacher.grade_section.keys())
                             # Check if the value of the grade_section contains 'Advisory Class'
                             # or 'Advisory Class, Subject Class'
                             if 'Advisory Class' in teacher.grade_section[current_subject_class] or 'Advisory Class, Subject Class' in teacher.grade_section[current_subject_class]:
+                                print("kung si advisory ay katulad ni teacher.gradesectionn[currentsubjectclass]", teacher.grade_section[current_subject_class])
                                 # Create a dictionary to store teacher information
                                 teacher_info = {
                                     'id': teacher.id,
                                     'name': f"{teacher.user.first_name} {teacher.user.last_name}",
-                                    'grade_section': current_subject_classes
+                                    'grade_section': current_subject_class
                                 }
+                                print("TEACHER INFO", teacher_info)
                                 teacher_list.append(teacher_info)
                                 break  # Break after finding a match to avoid duplicate entries
-        print(teacher_list)
-
+        print("Teacher List:", teacher_list)
 
         return JsonResponse({'teachers': teacher_list})
+
 
     elif request.method == 'POST':
         try:
@@ -170,9 +182,6 @@ def submit_json(request):
 def transfer_json_to_teacher(request):
     if request.method == 'POST':
         try:
-
-
-
             json_data = json.loads(request.body.decode('utf-8'))
             target_teacher_id = json_data.get('target_teacher')
             from_teacher_id = json_data.get('teacher')
@@ -195,7 +204,7 @@ def transfer_json_to_teacher(request):
             class_types_to_check = ['Advisory Class', 'Advisory Class, Subject Class']
             # Check if the section with the specified name, class_type, and teacher_id exists
             existing_section = Section.objects.filter( Q(name=section) &
-    (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]))).exists()
+            (Q(class_type__icontains=class_types_to_check[0]) | Q(class_type__icontains=class_types_to_check[1]))).exists()
             print(existing_section)
             if existing_section:
                 # Save the data to the InboxMessage model

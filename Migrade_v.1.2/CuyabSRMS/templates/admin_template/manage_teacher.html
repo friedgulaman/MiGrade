@@ -131,22 +131,26 @@ Manage Teachers
                                     <th>ID</th>
                                     <th>Teacher</th>
                                     <th>Grade & Section</th>
-                                    
                                 </tr>
                             </thead>
                             <tbody>
-                              {% for teacher in teachers %}
-                              <tr class="text-muted">
-                                  <td>{{ teacher.user.id }}</td>
-                                  <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
-                                  {% if teacher.grade_section %}
-                                  <td class="text-muted"><textarea class="text_grade_section container form-text">{{ teacher.grade_section }}</textarea></td>
-                              {% else %}
-                                  <td class="text-muted">Not assigned</td>
-                              {% endif %}
-                              </tr>
-                          {% endfor %}
-                          
+                                {% for teacher in teachers %}
+                                <tr class="text-muted">
+                                    <td>{{ teacher.user.id }}</td>
+                                    <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
+                                    <td class="text-muted">
+                                        {% if teacher.grade_section %}
+                                            {% for grade_section, classes in teacher.grade_section.items %}
+                                            <div>
+                                              <strong>{{ grade_section }}:</strong> {{ classes }}
+                                          </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            Not assigned
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
