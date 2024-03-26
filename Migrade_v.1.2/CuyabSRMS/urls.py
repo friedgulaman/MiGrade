@@ -235,6 +235,7 @@ urlpatterns = [
     path('save-observations/', teacher_required(TeacherViews.save_observations), name='save_observations'),
     path('display-observation/<str:grade>/<str:section>/', teacher_required(TeacherViews.display_learners_observation), name='display_learners_observation'),
     path('update-markings/', teacher_required(TeacherViews.update_markings), name='update_markings'),
+    path('grades/<str:grade>/<str:section>/delete_subject/<str:subject>/', teacher_required(TeacherViews.delete_grade_data_subject), name='delete_grade_data_subject'),
 
    # urls.py
     # Generation
@@ -256,7 +257,8 @@ urlpatterns = [
 
     #Archived
     path('archived-records/', teacher_required(ArchivedViews.archived_records), name='archived_records'),
-    path('restore-archived-record/<int:archived_record_id>/', teacher_required(ArchivedViews.restore_archived_record), name='restore_archived_record'),
+    path('display_archived_classrecord/<int:class_record_id>/', admin_required(ArchivedViews.display_archived_classrecord), name='display_archived_classrecord'),
+    path('restore-archived-record/<int:archived_record_id>/', admin_required(ArchivedViews.restore_archived_record), name='restore_archived_record'),
     path('archive-class-record/<int:class_record_id>/', teacher_required(ArchivedViews.archive_class_record), name='archive_class_record'),
     path('archive_students_with_grade_and_section/<str:grade>/<str:section>/', teacher_required(ArchivedViews.archive_students_with_grade_and_section), name='archive_students_with_grade_and_section'),
     path('restore_archived_students/<str:grade>/<str:section>/', teacher_required(ArchivedViews.restore_archived_students), name='restore_archived_students'),

@@ -1,7 +1,9 @@
-{% extends 'teacher_template/teacher_base.html' %}
+{% extends 'admin_template/admin_base.html' %}
+
 {% block page_title %}
-    Adviser Teacher
+upload
 {% endblock page_title %}
+
 {% block main_content %}
 <style>
         *{
@@ -225,7 +227,7 @@
                     {% if assessment_type == assessment_type %}
                     {% for score in score_data.SCORES %}
                     <input type="hidden" id="assessmentType" data-type="{{ assessment_type }}">
-                    <td class="highest-possible-scores_{{assessment_type}}" contenteditable="true">{{ score }}</td>
+                    <td class="highest-possible-scores_{{assessment_type}}" >{{ score }}</td>
                     {% endfor %}
                     <td id="total_max_{{assessment_type}}">{{ score_data.TOTAL_HPS|default_if_none:"" }}</td>
                     <td>100</td>
@@ -252,19 +254,19 @@
 
                 </tr>
                 {% for record in gradescores %}
-                {% if record.student.sex == 'M' %}  
+                {% if record.student.archived_sex == 'M' %}  
                 <tr class="row_{{record.student.name}}">
                     <td>{{ forloop.counter }}</td>  
-                    <td id="student_name_{{ record.student.name}}">{{ record.student.name}}</td>
+                    <td id="student_name_{{ record.student.name}}">{{ record.student.archived_name}}</td>
                     {% for key, value in record.grade_scores.scores_per_assessment.items %}
                     {% if key == key %}
                         {% for score in value.scores %} 
                          <input type="hidden" id="key" data-type="{{ key }}">
-                            <td class="score-cell_{{key}}" contenteditable="true">{{ score }}</td>
+                            <td class="score-cell_{{key}}">{{ score }}</td>
                         {% endfor %}
                     <td id="total_score_{{key}}">{{ value.total_score|default_if_none:"" }}</td>
                     <td id="total_percentage_score_{{key}}">{{ value.percentage_score|default_if_none:"" }}</td>
-                    <td id="total_weighted_score_{{key}}_{{ record.student.name}}">{{ value.total_weighted_score|default_if_none:"" }}</td>
+                    <td id="total_weighted_score_{{key}}">{{ value.total_weighted_score|default_if_none:"" }}</td>
                     {% endif %}
                     {% endfor %}
                     <td id="initial_grades_{{ record.student.name}}">{{record.initial_grades|default_if_none:""}}</td>
@@ -288,19 +290,19 @@
 
                 </tr>
                 {% for record in gradescores %}
-                {% if record.student.sex == 'F' %}  
+                {% if record.student.archived_sex == 'F' %}  
                 <tr class="row_{{record.student.name}}">
                     <td>{{ forloop.counter }}</td>  
-                    <td id="student_name_{{ record.student.name}}">{{ record.student.name}}</td>
+                    <td id="student_name_{{ record.student.name}}">{{ record.student.archived_name}}</td>
                     {% for key, value in record.grade_scores.scores_per_assessment.items %}
                     {% if key == key %}
                         {% for score in value.scores %} 
                         <input type="hidden" id="key" data-type="{{ key }}">
-                            <td class="score-cell_{{key}}" contenteditable="true">{{ score }}</td>
+                            <td class="score-cell_{{key}}" >{{ score }}</td>
                         {% endfor %}
                     <td id="total_score_{{key}}">{{ value.total_score|default_if_none:"" }}</td>
                     <td id="total_percentage_score_{{key}}">{{ value.percentage_score|default_if_none:"" }}</td>
-                    <td id="total_weighted_score_{{key}}_{{ record.student.name}}">{{ value.total_weighted_score|default_if_none:"" }}</td>
+                    <td id="total_weighted_score_{{key}}">{{ value.total_weighted_score|default_if_none:"" }}</td>
                     {% endif %}
                     {% endfor %}
                     <td id="initial_grades_{{ record.student.name}}">{{record.initial_grades|default_if_none:""}}</td>
@@ -317,7 +319,7 @@
 
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
+<!-- <script>
     function scrollToColumn(assessmentType) {
       // Find the th element corresponding to the selected assessment type
       var thElement = document.getElementById(assessmentType);
@@ -405,7 +407,7 @@ $(document).ready(function () {
 
     function updateTotalWeightedScores() {
         $('[id^="total_weighted_score_"]').each(function() {
-            var assessmentType = $(this).attr('id').replace('total_weighted_score_', '').replace(/_[^_]*$/, '');;
+            var assessmentType = $(this).attr('id').replace('total_weighted_score_', '');
             var studentName = $(this).closest('tr').find('[id^="student_name_"]').attr('id').replace('student_name_', '');
             var weightInputId = 'weigh_input_' + assessmentType;
             var weight = parseFloat($('#' + weightInputId).text()) || ''; // default to empty string
@@ -431,19 +433,16 @@ $(document).ready(function () {
     // Initially update total weighted scores for all assessment types for a specific student
     updateTotalWeightedScores();
 
-    function updateInitialGrades(studentName, assessmentTypes) {
-    $('[id^="initial_grades_' + studentName + '"]').each(function() {
-        var totalInitialGrades = 0;
-        assessmentTypes.forEach(function(assessmentType) {
-            $('[id^="total_weighted_score_' + assessmentType + '_' + studentName + '"]').each(function() {
-                var total_weighted_score = parseFloat($(this).text()) || 0;
-                totalInitialGrades += total_weighted_score;
+    function updateInitialGrades(studentName) {
+        $('[id^="initial_grades_' + studentName + '"]').each(function() {
+            var totalInitialGrades = 0;
+            $('[id^="total_weighted_score_"]').each(function() {
+                var score = parseFloat($(this).text()) || 0;
+                totalInitialGrades += score;
             });
+            $(this).text(totalInitialGrades.toFixed(2)); // Update the initial_grades element
         });
-        // Update the initial_grades element for the specific student
-        $(this).text(totalInitialGrades.toFixed(2));
-    });
-}
+    }
 
     function updateTransmutedGrades(studentName) {
         $('[id^="transmuted_grades_' + studentName + '"]').each(function() {
@@ -600,17 +599,9 @@ $(document).ready(function () {
         var className = $(this).attr('class');
         var assessmentType = className.split('_')[1]; 
 
-        var assessmentTypes = "{{ assessment_types|safe }}";
-        assessmentTypes = assessmentTypes.replace(/'/g, '');
-
-        var assessmentTypesArray = assessmentTypes.substring(1, assessmentTypes.length - 1).split(', ');
-
-        // Now assessmentTypesArray is an array of strings containing assessment types
-        console.log(assessmentTypesArray);
-
         var row = $(this).closest('tr');
         var studentName = row.find('td:eq(1)').text();
-        // console.log(studentName)
+        console.log(studentName)
 
 
         var classRecordId = $('input[name="class_record_id"]').val();
@@ -622,7 +613,6 @@ $(document).ready(function () {
         var total_Score = $('#total_score_' + assessmentType).text();
         var percentageScore =$('#total_percentage_score' + assessmentType).text();
         var weightedScore =$('#total_weighted_score' + assessmentType).text();
-
 
         // Send an AJAX request to update the score
         $.ajax({
@@ -641,7 +631,7 @@ $(document).ready(function () {
                 updateTotalScores();
                 updateTotalPercentageScores();
                 updateTotalWeightedScores();
-                updateInitialGrades(studentName,assessmentTypesArray);
+                updateInitialGrades(studentName);
                 updateTransmutedGrades(studentName);
                 if (data.success === false) {
                     alert(data.error);
@@ -661,7 +651,7 @@ $(document).ready(function () {
 $('td[class^="score-cell_"][contenteditable="true"]').keydown(function(e) {
     var currentCell = $(this); 
     var currentRow = currentCell.closest('tr');
-    // console.log(currentRow)
+    console.log(currentRow)
     var classes = currentCell.attr('class').split(' ');
     var assessmentType = null;
     for (var i = 0; i < classes.length; i++) {
@@ -678,7 +668,7 @@ $('td[class^="score-cell_"][contenteditable="true"]').keydown(function(e) {
     var currentColumnIndex = calculateColumnIndex_cell(currentCell, assessmentType); // Calculate correct column index
     var currentRowIndex = calculateRowIndex(currentCell, assessmentType);
     var studentNameRows = currentCell.closest('table').find('tr[class^="row_"]');
-    // console.log("currentrow", currentRowIndex)
+    console.log("currentrow", currentRowIndex)
     switch (e.which) {
         case 37: // Left arrow
             e.preventDefault();
@@ -714,7 +704,7 @@ function navigateLeft(row, columnIndex, assessmentType) {
 
 function navigateRight(row, columnIndex, assessmentType) {
     var currentIndex = columnIndex;
-    // console.log("current index", currentIndex)
+    console.log("current index", currentIndex)
     var nextCellIndex = columnIndex + 1;
     var rows = row;
     row.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + nextCellIndex + ')').focus();
@@ -722,11 +712,11 @@ function navigateRight(row, columnIndex, assessmentType) {
 
 function navigateUp(currentColumnIndex, currentRowIndex, studentNameRows, assessmentType) {
     var currentColumnIndex = currentColumnIndex;
-    // console.log("currentcolumnindex", currentColumnIndex)
+    console.log("currentcolumnindex", currentColumnIndex)
     var nextRowIndex = currentRowIndex - 1;
-    // console.log(nextRowIndex)
+    console.log(nextRowIndex)
     var nextRow = studentNameRows.eq(nextRowIndex);
-    // console.log("nextRow.length:", nextRow.length);
+    console.log("nextRow.length:", nextRow.length);
     if (nextRow.length > 0) {   
         nextRow.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + currentColumnIndex + ')').focus();
     }
@@ -734,11 +724,11 @@ function navigateUp(currentColumnIndex, currentRowIndex, studentNameRows, assess
 
 function navigateDown(currentColumnIndex, currentRowIndex, studentNameRows, assessmentType) {
     var currentColumnIndex = currentColumnIndex;
-    // console.log("currentcolumnindex", currentColumnIndex)
+    console.log("currentcolumnindex", currentColumnIndex)
     var nextRowIndex = currentRowIndex + 1;
-    // console.log(nextRowIndex)
+    console.log(nextRowIndex)
     var nextRow = studentNameRows.eq(nextRowIndex);
-    // console.log("nextRow.length:", nextRow.length);
+    console.log("nextRow.length:", nextRow.length);
     if (nextRow.length > 0) {   
         nextRow.find('td[class^="score-cell_' + assessmentType + '"]:eq(' + currentColumnIndex + ')').focus();
     }
@@ -761,8 +751,8 @@ $('td[class^="highest-possible-scores_"][contenteditable="true"]').keydown(funct
         return;
     }
     var currentColumnIndex = calculateColumnIndex(currentCell, assessmentType); // Calculate correct column index
-    // console.log("currentcolumn", currentColumnIndex);
-    // console.log("current", currentCell)
+    console.log("currentcolumn", currentColumnIndex);
+    console.log("current", currentCell)
 
 
     switch (e.which) {
@@ -827,7 +817,7 @@ function navigateRightHPS(row, columnIndex, assessmentType) {
     var nextCellIndex = columnIndex + 1;
     row.find('td[class^="highest-possible-scores_' + assessmentType + '"]:eq(' + nextCellIndex + ')').focus();
 }
-</script>
+</script> -->
     
 <!-- <script>
     // JavaScript to handle going back two steps in the browsing history
