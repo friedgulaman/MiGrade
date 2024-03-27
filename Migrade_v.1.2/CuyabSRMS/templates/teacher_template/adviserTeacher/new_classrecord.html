@@ -104,6 +104,16 @@
             </div>
         </div>
     </form>
+    {% if messages %}
+    <div class="container text-center mt-3">
+      {% for message in messages %}
+      <div class="alert alert-danger" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
 </div>
 </section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>

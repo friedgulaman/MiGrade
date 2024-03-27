@@ -99,34 +99,26 @@ def get_teacher_list(request):
             # Iterate through each teacher
             for teacher in Teacher.objects.all():
                 # Check if grade_section exists and is not None
-                print("FOR LOOP NG TEACHER", teacher)
-                print("FOR LOOP NG TEACHER at ang kanyang teacher grade and section", teacher.grade_section)
+                print("teacher", teacher.user.first_name)
+                print(f"teacher {teacher.user.first_name}`s = {teacher.grade_section}")
                 if teacher.grade_section:
-                  
                     # Iterate through each grade_section of the current teacher
                     for current_subject_class in current_subject_classes:
-                        print("for loop ng current subject class sa subject classsess", current_subject_class)
-                        print("eto naman yung teacher.grade_section.keys", teacher.grade_section.keys())  
-                    
+                        print("AVAILABLE CURRENT SUBJECT CLASS", current_subject_class)
                         # Check if the teacher has the same grade_section as the current teacher
                         if current_subject_class in teacher.grade_section.keys():
-                            print("if yung current subject class:", current_subject_class)
-                            print("ay katulad ni teacher , teacher.grade_section.keys()", teacher.grade_section.keys())
                             # Check if the value of the grade_section contains 'Advisory Class'
                             # or 'Advisory Class, Subject Class'
                             if 'Advisory Class' in teacher.grade_section[current_subject_class] or 'Advisory Class, Subject Class' in teacher.grade_section[current_subject_class]:
-                                print("kung si advisory ay katulad ni teacher.gradesectionn[currentsubjectclass]", teacher.grade_section[current_subject_class])
                                 # Create a dictionary to store teacher information
                                 teacher_info = {
                                     'id': teacher.id,
                                     'name': f"{teacher.user.first_name} {teacher.user.last_name}",
                                     'grade_section': current_subject_class
                                 }
-                                print("TEACHER INFO", teacher_info)
                                 teacher_list.append(teacher_info)
-                                break  # Break after finding a match to avoid duplicate entries
-        print("Teacher List:", teacher_list)
-
+                                # break  # Break after finding a match to avoid duplicate entries
+        print(teacher_list)
         return JsonResponse({'teachers': teacher_list})
 
 
@@ -429,7 +421,7 @@ def save_data(message, json_data, teacher):
                                   if q in subject_teacher_data and subject_teacher_data[q] and subject_teacher_data[q].strip()]
                 
                 # print(quarter_grades)
-                final_grade = round(sum(quarter_grades) / len(quarter_grades), 2) if quarter_grades else None
+                final_grade = round(sum(quarter_grades) / len(quarter_grades)) if quarter_grades else None
 
                 subject_teacher_data['final_grade'] = final_grade
                 subject_teacher_data['status'] = determine_status(final_grade)    
@@ -453,7 +445,7 @@ def save_data(message, json_data, teacher):
                                     mapeh_quarter_grades.append(float(str(grades_data[subject][q]))) 
                                 
                                     print(f"Quarter grades for {subject} subjects:", mapeh_quarter_grades)
-                        mapeh_final_grade = round(sum(mapeh_quarter_grades) / len(mapeh_quarter_grades), 2) if mapeh_quarter_grades else None
+                        mapeh_final_grade = round(sum(mapeh_quarter_grades) / len(mapeh_quarter_grades)) if mapeh_quarter_grades else None
                         print(f"Calculated {subject}:", mapeh_final_grade)
                                     # Update MAPEH's final grade
                         mapeh_quarter_grade = grades_data.get('MAPEH', {})
@@ -471,7 +463,7 @@ def save_data(message, json_data, teacher):
                                 mapeh_average.append(float(grades_data['MAPEH'][q]))
 
                         # Calculate the final grade for MAPEH
-                    mapeh_final_grade = round(sum(mapeh_average) / len(mapeh_average), 2) if mapeh_average else None
+                    mapeh_final_grade = round(sum(mapeh_average) / len(mapeh_average)) if mapeh_average else None
                     print("mapeh final grade", mapeh_final_grade)
                     mapeh_quarter_grade['final_grade'] = mapeh_final_grade
                     mapeh_quarter_grade['status'] = determine_status(mapeh_final_grade)

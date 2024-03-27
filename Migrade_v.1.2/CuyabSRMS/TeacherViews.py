@@ -720,6 +720,20 @@ def get_students_by_grade_and_section(request):
 
             user = request.user
 
+            if not Grade.objects.filter(name=grade_name).exists():
+                error_message = f"Grade '{grade_name}' does not exist."
+                messages.error(request, error_message)
+                return redirect('get_grade_details')
+            
+            # Check if the provided section_name exists in the provided grade
+            if not Section.objects.filter(name=section_name, grade__name=grade_name).exists():
+                error_message = f"Section '{section_name}' does not exist in grade '{grade_name}'."
+                messages.error(request, error_message)
+                return redirect('get_grade_details')
+      
+
+
+
             all_school_info = SchoolInformation.objects.all()
 
             for school_info in all_school_info:
@@ -783,7 +797,6 @@ def get_students_by_grade_and_section(request):
         except IntegrityError as e:
             error_message = 'Duplicate entry. The record already exists.'
             messages.error(request, error_message)
-            messages.info(request, 'You are being redirected back to the previous page.')
             return redirect('get_grade_details')
 
     
@@ -1015,7 +1028,7 @@ def display_students(request):
         teacher_id = str(teacher.id)  # Convert teacher id to string for comparison
 
         # Fetch distinct school years from the Student model
-        unique_school_years = Student.objects.values_list('school_year', flat=True).distinct()
+        unique_school_years = Student.objects.exclude(school_year=None).exclude(school_year='').values_list('school_year', flat=True).distinct()
 
         # Reverse the order of unique_school_years
         unique_school_years = list(unique_school_years)
@@ -2059,8 +2072,9 @@ def save_attendance_record(request):
         response_data = {'message': 'Attendance records saved successfully'}
         error_response_data = {'error': f'Attendance records for {month} already exist'}
 
-        if AttendanceRecord.objects.filter(attendance_record__has_key=month).exists():
-            return JsonResponse(error_response_data, status=400)
+        for student_id in students:
+            if AttendanceRecord.objects.filter(attendance_record__has_key=month, student_id=student_id).exists():
+                return JsonResponse(error_response_data, status=400)
 
         # Initialize totals
         total_school_days = 0
@@ -2187,10 +2201,9 @@ def delete_month(request):
 
                         # Update total school days, days present, and days absent if 'Total' exists
                         if 'TOTAL' in record.attendance_record:
-                            total_school_days = attendance_data.get('No. of School Days', 0)
-                            total_days_present = attendance_data.get('No. of Days Present', 0)
-                            total_days_absent = attendance_data.get('No. of Days Absent', 0)
-
+                            total_school_days = int(attendance_data.get('No. of School Days', 0))
+                            total_days_present = int(attendance_data.get('No. of Days Present', 0))
+                            total_days_absent = int(attendance_data.get('No. of Days Absent', 0))   
                             # Subtract the attendance data for the deleted month from the total records
                             record.attendance_record['TOTAL']['Total School Days'] -= total_school_days
                             record.attendance_record['TOTAL']['Total Days Present'] -= total_days_present
@@ -2235,6 +2248,9 @@ def attendance_record_view(request, grade, section):
 
     # Convert the set of months to a list and sort it based on the calendar order
     months_list = sorted(months_set, key=lambda m: month_name.index(m) if m in month_name else float('inf'))
+
+    print(months_list)
+    print(attendance_records)
 
     # Pass the attendance records and sorted list of months to the template for rendering
     context = {

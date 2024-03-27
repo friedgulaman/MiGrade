@@ -444,11 +444,15 @@ $(document).ready(function () {
         $(this).text(totalInitialGrades.toFixed(2));
     });
 }
-
+ // default to empty string
     function updateTransmutedGrades(studentName) {
         $('[id^="transmuted_grades_' + studentName + '"]').each(function() {
-            var initialGrade = parseFloat($(this).text()) || 0;
+            var initialGradeElement =  $('[id^="initial_grades_' + studentName);
+            console.log("initialGradeElement", initialGradeElement)
+            var initialGrade = parseFloat(initialGradeElement.text()) || 0; 
+            console.log("initial grade", initialGrade)
             var transmutedGrade = computeTransmutedGrade(initialGrade);
+            console.log(transmutedGrade)
             $(this).text(transmutedGrade); // Update the transmuted_grades element
         });
     }

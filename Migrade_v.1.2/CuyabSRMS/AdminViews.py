@@ -273,7 +273,7 @@ def add_teacher(request):
     return render(request, 'admin_template/add_teacher.html')
 
 def grade_and_section(request):
-    grades = Grade.objects.all()
+    grades = Grade.objects.all().order_by('name')
     sections = Section.objects.all()
     total_student = Section.objects.aggregate(total_students=models.Sum('total_students'))
 
@@ -390,7 +390,7 @@ def get_teacher_data(request):
 
 def students(request):
     # Get distinct combinations of grade and section
-    unique_combinations = Student.objects.values('grade', 'section').distinct()
+    unique_combinations = Student.objects.values('grade', 'section').order_by('grade').distinct()
 
     # Prepare a list to store dictionaries with grade, section, and total_students
     data = []

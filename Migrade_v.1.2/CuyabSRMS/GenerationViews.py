@@ -172,8 +172,10 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
                 desired_sheet_name = 'MATH'
         elif subject_name == "ARALING PANLIPUNAN":
                 desired_sheet_name = 'AP'
-        elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+        elif subject_name in ["ARTS", "PE", "HEALTH"]:
                 desired_sheet_name = subject_name
+        elif subject_name == "MUSIC":
+                desired_sheet_name = 'MUSIC '
         elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
                 desired_sheet_name = 'ESP'
         elif subject_name == "SCIENCE":
@@ -185,7 +187,7 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         # Select the desired sheet (use the correct sheet name from the output)
         sheet = workbook[desired_sheet_name]
 
-        write_student_names(sheet_input, grade_scores)
+       
         write_scores_hps_written(sheet, grade_scores)
         write_scores_hps_performance(sheet, grade_scores)
         write_scores_hps_quarterly(sheet, grade_scores)
@@ -194,7 +196,7 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         write_quarterly_assessment_scores(sheet, grade_scores)
         write_initial_grade(sheet, grade_scores)
         write_transmuted_grade(sheet, grade_scores)
-
+    write_student_names(sheet_input, grade_scores)
     write_school_info(sheet_input, school_info, grade, section, teacher_name)
 
     # Save the changes to the SF9 workbook
@@ -308,6 +310,7 @@ def generate_final_and_general_grades(request, grade, section):
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 31, 35)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+        print("grade 2")
 
     elif grade == 'Grade 3':
         write_school_info_general_average(sheet, school_info, general_grades_query)
@@ -329,7 +332,7 @@ def generate_final_and_general_grades(request, grade, section):
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EPP', 31, 35)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
 
@@ -1314,7 +1317,7 @@ def generate_final_grade_view(request):
         teacher = user.teacher
 
         # Filter class records based on the teacher
-        class_records = ClassRecord.objects.filter(teacher=teacher)
+        class_records = AdvisoryClass.objects.filter(teacher=teacher)
 
         # Create a set to store grade_sections
         grade_sections = set()
@@ -1325,6 +1328,8 @@ def generate_final_grade_view(request):
 
         # Convert the set to a sorted list
         grade_sections = sorted(grade_sections)
+
+        print(grade_sections)
 
         context = {
             'grade_sections': grade_sections,
