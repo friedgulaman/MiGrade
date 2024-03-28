@@ -13,7 +13,7 @@
                     <h2 class="card-title">Create Behavior Statements</h2>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" onsubmit="return confirm('Are you sure you want to create this behavior statement?');">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="id_core_value" class="form-label">Core Value</label>

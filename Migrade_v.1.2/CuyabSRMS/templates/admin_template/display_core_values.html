@@ -1,0 +1,66 @@
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+    Display Core Values
+{% endblock page_title %}
+
+{% block main_content %}
+<style>
+
+.btn-box {
+    display: inline-block;
+    padding: 8px 12px;
+    margin-right: 5px;
+}
+
+.btn-box a,
+.btn-box button {
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+}
+
+</style>
+
+    <div class="container">
+    
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8">
+                <div class="card">
+                    
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="card-title mb-0">Core Values List</h2>
+                        <a href="{% url 'create_core_values' %}" class="btn btn-primary">Create Core Values</a>
+                    </div>
+
+                    
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for core_values in core_values %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ core_values.name }}</strong><br>
+                                            <small>{{ core_values.description }}</small>
+                                        </div>
+                                        <div class="btn-group" role="group" aria-label="Core Values Actions">
+                                            <div class="btn-box">
+                                                <a href="{% url 'update_core_values' core_values.id %}" class="btn btn-sm btn-primary">Update</a>
+                                            </div>
+                                            <div class="btn-box">
+                                                <form action="{% url 'delete_core_values' core_values.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this core value?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock main_content %}

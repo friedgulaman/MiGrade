@@ -1,7 +1,7 @@
 {% extends 'admin_template/admin_base.html' %}
 
 {% block page_title %}
-    Create Core Values
+    Update Core Values
 {% endblock page_title %}
 
 {% block main_content %}
@@ -10,13 +10,13 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Create Core Values</h2>
+                        <h2 class="card-title">Update Core Values</h2>
                     </div>
                     <div class="card-body">
-                        <form method="post" onsubmit="return confirm('Are you sure you want to create this core value?');">
+                        <form method="post">
                             {% csrf_token %}
                             {{ form.as_p }}
-                            <button type="submit" class="btn btn-primary">Save Core Values</button>
+                            <button type="submit" class="btn btn-primary">Update Core Values</button>
                         </form>
                     </div>
                 </div>

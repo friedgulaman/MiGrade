@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from .models import MT, ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
 from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation
 from .models import ActivityLog, Announcement, CustomUser, Quarters, SchoolInformation, Student, Teacher, Grade, Section
-from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation, ArchivedClassRecord, ArchivedStudent
+from .models import Announcement, CustomUser, Quarters, Student, Teacher, Grade, Section, SchoolInformation, ArchivedClassRecord, ArchivedStudent, CoreValues, BehaviorStatement
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -166,26 +166,79 @@ def add_master(request):
             # Return a JSON response for error
             return JsonResponse({'success': False, 'message': 'Failed to Add Admin!'})
 
-
+@login_required
 def create_core_values(request):
     if request.method == 'POST':
         form = CoreValuesForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('create_core_values')
+            return redirect('display_core_values')
     else:
         form = CoreValuesForm()
     return render(request, 'admin_template/create_core_values.html', {'form': form})
 
+@login_required
+def display_core_values(request):
+    core_values = CoreValues.objects.all()
+    return render(request, 'admin_template/display_core_values.html', {'core_values': core_values})
+
+@login_required
+def update_core_values(request, core_values_id):
+    core_values = get_object_or_404(CoreValues, pk=core_values_id)
+    if request.method == 'POST':
+        form = CoreValuesForm(request.POST, instance=core_values)
+        if form.is_valid():
+            form.save()
+            return redirect('display_core_values')
+    else:
+        form = CoreValuesForm(instance=core_values)
+    
+    return render(request, 'admin_template/update_core_values.html', {'form': form, 'core_values': core_values})
+
+@login_required
+def delete_core_values(request, core_values_id):
+    core_values = get_object_or_404(CoreValues, pk=core_values_id)
+    if request.method == 'POST':
+        core_values.delete()
+        return redirect('display_core_values')
+
+    return render(request, 'admin_template/delete_core_values.html', {'core_values': core_values})
+
+@login_required
 def create_behavior_statements(request):
     if request.method == 'POST':
         form = BehaviorStatementForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('create_behavior_statements')
+            return redirect('display_behavior_statements')
     else:   
         form = BehaviorStatementForm()
     return render(request, 'admin_template/create_behavior_statements.html', {'form': form})
+
+@login_required
+def display_behavior_statements(request):
+    behavior_statements = BehaviorStatement.objects.all()
+    return render(request, 'admin_template/display_behavior_statements.html', {'behavior_statements': behavior_statements})
+
+@login_required
+def update_behavior_statement(request, behavior_statement_id):
+    behavior_statement = get_object_or_404(BehaviorStatement, pk=behavior_statement_id)
+    if request.method == 'POST':
+        form = BehaviorStatementForm(request.POST, instance=behavior_statement)
+        if form.is_valid():
+            form.save()
+            return redirect('display_behavior_statements')
+    else:
+        form = BehaviorStatementForm(instance=behavior_statement)
+    return render(request, 'admin_template/update_behavior_statement.html', {'form': form, 'behavior_statement': behavior_statement})
+
+@login_required
+def delete_behavior_statement(request, behavior_statement_id):
+    behavior_statement = get_object_or_404(BehaviorStatement, pk=behavior_statement_id)
+    if request.method == 'POST':
+        behavior_statement.delete()
+        return redirect('display_behavior_statements')
+    return render(request, 'admin_template/delete_behavior_statement.html', {'behavior_statement': behavior_statement})
 
 @require_GET
 def get_master_data(request):
@@ -291,10 +344,11 @@ def admin_base(request):
     announcements = Announcement.objects.all()
     return {'announcements': announcements}
 
-
+@login_required
 def add_teacher(request):
     return render(request, 'admin_template/add_teacher.html')
 
+@login_required
 def grade_and_section(request):
     grades = Grade.objects.all().order_by('name')
     sections = Section.objects.all()
@@ -308,6 +362,7 @@ def grade_and_section(request):
 
     return render(request, 'admin_template/manage_grade_and_section.html', context)
 
+@login_required
 def teachers(request):
     grades = Grade.objects.all()
     teachers = Teacher.objects.all()
@@ -1238,7 +1293,7 @@ def user_list(request):
 def user_activities(request):
     user_id = request.GET.get('id')
     if user_id:
-        activities = ActivityLog.objects.filter(user_id=user_id)
+        activities = ActivityLog.objects.filter(user_id=user_id).order_by('-timestamp')
         
         # Pagination
         paginator = Paginator(activities, 7)  # Show 10 activities per page

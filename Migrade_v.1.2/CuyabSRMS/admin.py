@@ -5,10 +5,11 @@ from .models import *
 
 # Extend the UserAdmin for CustomUser
 class UserModel(UserAdmin):
-    pass
+    list_display = ('username', 'first_name', 'middle_ini', 'last_name', 'email', 'is_staff', 'is_active', 'date_joined', 'user_type')
 
 # Register CustomUser with UserModel
 admin.site.register(CustomUser, UserModel)
+    
 
 # Register the Admin model
 @admin.register(Admin)

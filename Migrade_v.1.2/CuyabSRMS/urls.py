@@ -136,7 +136,13 @@ urlpatterns = [
     path('delete/<int:school_id>/',  admin_required(AdminViews.delete_school_view), name='delete_school'),
     path('remove_grade/', admin_required(AdminViews.remove_grade), name='remove_grade'),
     path('create/core_values/', admin_required(AdminViews.create_core_values), name='create_core_values'),
+    path('display/', admin_required(AdminViews.display_core_values), name='display_core_values'),
+    path('update/<int:core_values_id>/', admin_required(AdminViews.update_core_values), name='update_core_values'),
+    path('delete_core_values/<int:core_values_id>/', admin_required(AdminViews.delete_core_values), name='delete_core_values'),
     path('create/behavior_statements/', admin_required(AdminViews.create_behavior_statements), name='create_behavior_statements'),
+    path('display/behavior_statements/', admin_required(AdminViews.display_behavior_statements), name='display_behavior_statements'),
+    path('update/behavior_statements/<int:behavior_statement_id>/', admin_required(AdminViews.update_behavior_statement), name='update_behavior_statement'),
+    path('delete/behavior_statements/<int:behavior_statement_id>/', admin_required(AdminViews.delete_behavior_statement), name='delete_behavior_statement'),
 
     # Adviser Teacher
     path('faq_view', teacher_required(TeacherViews.faq_view), name="faq_view"),
