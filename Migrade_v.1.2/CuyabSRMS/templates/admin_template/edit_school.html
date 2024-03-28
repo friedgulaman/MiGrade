@@ -35,8 +35,10 @@ Edit School Information
         </div>
 
         <div class="form-group">
-            <label for="school_year">School Year:</label>
-            <input type="text" class="form-control" id="school_year" name="school_year" value="{{ school.school_year }}">
+            <label for="school_year">School Year (Ex. 2023 - 2024):</label>
+            <input type="text" class="form-control" id="school_year" name="school_year" value="{{ school.school_year }}" pattern="\d{4}\s-\s\d{4}" title="Please enter the school year in the format: Year - Year (e.g., 2023 - 2024)">
+            <!-- Add pattern attribute and title attribute for validation -->
+            <small id="school_year_help" class="form-text text-muted">Please enter the school year in the format: Year - Year (e.g., 2023 - 2024)</small>
         </div>
         <div class="form-group">
             <label for="principal">Principal</label>

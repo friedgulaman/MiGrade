@@ -68,6 +68,20 @@
         <span class="menu-title">Quarters</span>
       </a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="collapse" href="#ui-learners-observation" aria-expanded="false" aria-controls="ui-learners-observation">
+        <i class="menu-icon icon-star"></i>
+        <span class="menu-title">Learner`s Observation</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="ui-learners-observation">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"><a class="nav-link" href="{% url 'create_core_values' %}">Create Core Values</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'create_behavior_statements' %}">Create Behavior Statement</a></li>
+           {% comment %} <li class="nav-item"><a class="nav-link" href="{% url 'detect_and_convert_tables' %}">UPLOAD CLASSRECORD</a></li> {% endcomment %}
+        </ul>
+      </div>
+    </li>
     <!-- Uploading Docs -->
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#ui-documents" aria-expanded="false" aria-controls="ui-documents">

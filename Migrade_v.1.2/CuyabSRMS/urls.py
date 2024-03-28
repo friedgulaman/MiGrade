@@ -135,6 +135,8 @@ urlpatterns = [
     path('edit/<int:school_id>/', admin_required(AdminViews.edit_school_view), name='edit_school'),
     path('delete/<int:school_id>/',  admin_required(AdminViews.delete_school_view), name='delete_school'),
     path('remove_grade/', admin_required(AdminViews.remove_grade), name='remove_grade'),
+    path('create/core_values/', admin_required(AdminViews.create_core_values), name='create_core_values'),
+    path('create/behavior_statements/', admin_required(AdminViews.create_behavior_statements), name='create_behavior_statements'),
 
     # Adviser Teacher
     path('faq_view', teacher_required(TeacherViews.faq_view), name="faq_view"),
@@ -228,8 +230,6 @@ urlpatterns = [
      path('teacher_batch_process_documents/', teacher_required(TeacherViews.teacher_batch_process_documents), name='teacher_batch_process_documents'),
     path('teacher_sf10_edit_view/<int:id>/', teacher_required(TeacherViews.teacher_sf10_edit_view), name='teacher_sf10_edit_view'),
     path('teacher_sf10/edit/<int:id>/', teacher_required(TeacherViews.teacher_sf10_edit), name='teacher_sf10_edit'),
-    path('create/core_values/', teacher_required(TeacherViews.create_core_values), name='create_core_values'),
-    path('create/behavior_statements/', teacher_required(TeacherViews.create_behavior_statements), name='create_behavior_statements'),
     # path('create_learners_observation/<str:grade>/<str:section>/', TeacherViews.create_learners_observation, name='create_learners_observation'),
     path('students_behavior/<str:grade>/<str:section>/', teacher_required(TeacherViews.students_behavior_view), name='students_behavior'),
     path('save-observations/', teacher_required(TeacherViews.save_observations), name='save_observations'),

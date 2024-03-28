@@ -58,7 +58,7 @@ New Class List
                                                 </div>
                                                 <div class="btn-group">
                                                     <h5 class="dropdown-header">
-                                                        {{ grade_section.0 }} {{ grade_section.1 }} - {{ quarter }}
+                                                        {{ grade_section.0 }} {{ grade_section.1 }} SY: {{grade_section.2}} - {{ quarter }}
                                                     </h5>
                                                     <div class="btn-links">
                                                         <a href="{% url 'generate_summary_of_quarterly_grades' grade=grade_section.0 section=grade_section.1 quarter=quarter %}" class="btn btn-success">Generate Summary of Quarterly Grades</a>

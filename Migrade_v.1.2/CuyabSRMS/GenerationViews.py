@@ -1255,7 +1255,7 @@ def generate_per_all_subject_view(request):
         # Iterate through class records to organize data by quarter
         for record in class_records:
             quarter_data = quarters_data.setdefault(record.quarters, {'subjects': set(), 'grade_sections': set()})
-            quarter_data['grade_sections'].add((record.grade, record.section))
+            quarter_data['grade_sections'].add((record.grade, record.section, record.school_year))
             quarter_data['subjects'].add(record.subject)
 
         # Sort subjects alphabetically
@@ -1324,7 +1324,9 @@ def generate_final_grade_view(request):
 
         # Iterate through class records to organize data by grade and section
         for record in class_records:
-            grade_sections.add((record.grade, record.section))
+            grade_sections.add((record.student.grade, record.student.section, record.student.school_year))
+
+        print(grade_sections)
 
         # Convert the set to a sorted list
         grade_sections = sorted(grade_sections)

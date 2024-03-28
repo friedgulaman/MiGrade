@@ -74,6 +74,8 @@ from google.cloud import documentai_v1beta3 as documentai
 from google.api_core.client_options import ClientOptions
 import calendar
 from calendar import month_name
+from openpyxl import load_workbook
+import xlrd
 
 
 def faq_view(request):
@@ -678,12 +680,16 @@ def get_grade_details(request):
     selected_grade = request.GET.get('grade')
     selected_section = request.GET.get('section')
 
+    current_school_year = SchoolInformation.objects.first().school_year
+    print(current_school_year)
+
     teacher = Teacher.objects.get(user=user)
-    grades = Student.objects.filter(Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"})).values_list('grade', flat=True).distinct()
+    grades = Student.objects.filter(Q(school_year=current_school_year),Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"})).values_list('grade', flat=True).distinct()
     sections = Student.objects.values_list('section', flat=True).distinct()
     subjects = Subject.objects.values_list('name', flat=True).distinct()
     quarters = Quarters.objects.values_list('quarters', flat=True).distinct()
     
+    print(grades)
     context = {
         'teacher': teacher,
         'grades': grades,
@@ -702,8 +708,9 @@ def get_sections_classrecord(request):
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         teacher = request.user.teacher
         teacher_id = teacher.id
+        current_school_year = SchoolInformation.objects.first().school_year
         grade_id = request.GET.get('grade_id')
-        sections = Student.objects.filter(Q(grade=grade_id), Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"}) ).values_list('section', flat=True).distinct()
+        sections = Student.objects.filter(Q(school_year=current_school_year),Q(grade=grade_id), Q(class_type__contains={teacher_id :"Advisory Class, Subject Class"}) | Q(class_type__contains={teacher_id :"Subject Class"}) ).values_list('section', flat=True).distinct()
         sections_list = list(sections)
         return JsonResponse({'sections': sections_list})
     else:
@@ -1031,9 +1038,10 @@ def display_students(request):
         unique_school_years = Student.objects.exclude(school_year=None).exclude(school_year='').values_list('school_year', flat=True).distinct()
 
         # Reverse the order of unique_school_years
-        unique_school_years = list(unique_school_years)
-        unique_school_years.reverse()
+        unique_school_years = sorted(unique_school_years, key=lambda x: tuple(map(int, x.split('-'))))
         
+
+        print(unique_school_years)
         # Find the latest school year
         latest_school_year = max(unique_school_years, default=None)
 
@@ -1139,6 +1147,7 @@ def sf9(request):
 
     # Render the template with the context
     return render(request, 'teacher_template/adviserTeacher/sf9.html', context)
+
 
 @login_required
 def delete_class(request, grade, section):
@@ -2061,6 +2070,10 @@ def create_attendance_view(request):
 
         context = {
             'students': students_filtered,
+            'grade': grade,
+            'section': section,
+            'teacher_id': teacher_id,
+            'class_type': class_type
         }
         return render(request, 'teacher_template/adviserTeacher/create_attendance.html', context)
     
@@ -3419,6 +3432,7 @@ def map_data_to_model(json_data, teacher_id, request):
 
     # Extract details from JSON
     teacher_info = json_data['details']['teacher_info']
+    school_info = json_data['details']['school_info']
     students_scores = json_data['students_scores']
     hps_class_record = json_data['hps_class_record']['HIGHEST POSSIBLE SCORE']
 
@@ -3429,6 +3443,7 @@ def map_data_to_model(json_data, teacher_id, request):
         section=teacher_info['section'],
         subject=teacher_info['subject'],
         quarters=teacher_info['quarters'],
+        school_year=school_info['school_year'],
         teacher_id=teacher_id
     )
 
@@ -3998,26 +4013,6 @@ def teacher_sf10_edit(request, id):
     return render(request, 'teacher_template/adviserTeacher/teacher_edit_sf10.html', {'extracted_data': extracted_data})
 
 
-def create_core_values(request):
-    if request.method == 'POST':
-        form = CoreValuesForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('create_core_values')
-    else:
-        form = CoreValuesForm()
-    return render(request, 'teacher_template/adviserTeacher/create_core_values.html', {'form': form})
-
-def create_behavior_statements(request):
-    if request.method == 'POST':
-        form = BehaviorStatementForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('create_behavior_statements')
-    else:
-        form = BehaviorStatementForm()
-    return render(request, 'teacher_template/adviserTeacher/create_behavior_statements.html', {'form': form})
-
 
 # def create_learners_observation(request, grade, section):
 #     behavior_statements = BehaviorStatement.objects.all()
@@ -4202,8 +4197,6 @@ def sf2_upload(request):
     if request.method == 'POST' and 'pdf_file' in request.FILES:
         pdf_file = request.FILES['pdf_file']
         content = pdf_file.read()
-
-
 
         # Set up Google Cloud Document AI client
         project_id = "1083879771832"
@@ -4472,26 +4465,51 @@ def layout_to_text(layout, document_text):
     return text_content
 
 def sf2_read_excel_values(excel_file, sheet_name):
-    # Loading the workbook
-    wb = load_workbook(filename=excel_file, data_only=True)
-    sheet = wb[sheet_name]
+    if excel_file.name.endswith('.xlsx'):
+        # For .xlsx files
+        wb = load_workbook(filename=excel_file, data_only=True)
+        sheet = wb[sheet_name]
 
-    data = []
-    start_reading = False
+        data = []
+        start_reading = False
 
-    for row in sheet.iter_rows():
-        row_values = []
-        for cell in row[1:]:
-            cell_value = cell.value
-            row_values.append(cell_value)
-        
-        if any(cell_value is not None and cell_value != 0 for cell_value in row_values):
-            start_reading = True
+        for row in sheet.iter_rows():
+            row_values = []
+            for cell in row[1:]:
+                cell_value = cell.value
+                row_values.append(cell_value)
             
-            if start_reading:
-                data.append(row_values)
+            if any(cell_value is not None and cell_value != 0 for cell_value in row_values):
+                start_reading = True
+                
+                if start_reading:
+                    data.append(row_values)
 
-    return data
+        return data
+    elif excel_file.name.endswith('.xls'):
+        # For .xls files
+        workbook = xlrd.open_workbook(file_contents=excel_file.read())
+        sheet = workbook.sheet_by_name(sheet_name)
+
+        data = []
+        start_reading = False
+
+        for row_index in range(sheet.nrows):
+            row_values = []
+            for col_index in range(1, sheet.ncols):  # Start from 1 to skip the first column
+                cell_value = sheet.cell_value(rowx=row_index, colx=col_index)
+                row_values.append(cell_value)
+            
+            if any(cell_value is not None and cell_value != 0 for cell_value in row_values):
+                start_reading = True
+                
+                if start_reading:
+                    data.append(row_values)
+
+        return data
+    else:
+        # Unsupported file format
+        raise ValueError("Unsupported file format. Only .xlsx and .xls files are supported.")
 
 def sf2_process_row(row):
     # Find the index of the first non-None element after index 0
@@ -4559,34 +4577,74 @@ def sf2_scores_pdf(score_list):
 
 
 def sf2_class_record_details(excel_file, sheet_name):
-    wb = load_workbook(filename=excel_file, data_only=True)
-    sheet = wb[sheet_name]
+    if excel_file is None:
+        raise ValueError("Excel file is None. Please provide a valid Excel file.")
+    
+    if excel_file.name.endswith('.xlsx'):
+        # For .xlsx files
+        wb = load_workbook(filename=excel_file, data_only=True)
+        sheet = wb[sheet_name]
 
-    school_info = None
-    grade_info = None
+        school_info = None
+        grade_info = None
 
-    for row in sheet.iter_rows():
-        row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
-        print("Row values:", row_values)  # Debug print statement
+        for row in sheet.iter_rows():
+            row_values = [cell.value for cell in row if cell.value is not None]  # Filter out None values
+            print("Row values:", row_values)  # Debug print statement
 
-        if "Report for the Month of" in row_values:
-            school_info = {
-                    "school_id": row_values[1],
-                    "school_year": row_values[3],
-                    "month": row_values[5],
+            if "Report for the Month of" in row_values:
+                school_info = {
+                        "school_id": row_values[1],
+                        "school_year": row_values[3],
+                        "month": row_values[5],
+                    }
+            
+            if "Name of School" in row_values:
+                grade_info = {
+                    "school_name": row_values[1],
+                    "grade": row_values[3],
+                    "section": row_values[5]
                 }
-        
-        if "Name of School" in row_values:
-            grade_info = {
-                "school_name": row_values[1],
-                "grade": row_values[3],
-                "section": row_values[5]
-            }
 
-        if school_info and grade_info:
-            break
+            if school_info and grade_info:
+                break
 
-    return school_info, grade_info
+        return school_info, grade_info
+
+    elif excel_file.name.endswith('.xls'):
+        # For .xls files
+        workbook = xlrd.open_workbook(file_contents=excel_file.read())
+        sheet = workbook.sheet_by_name(sheet_name)
+
+        school_info = None
+        grade_info = None
+
+        for row_index in range(sheet.nrows):
+            row_values = sheet.row_values(row_index)
+            print("Row values:", row_values)  # Debug print statement
+
+            if "Report for the Month of" in row_values:
+                school_info = {
+                        "school_id": row_values[1],
+                        "school_year": row_values[3],
+                        "month": row_values[5],
+                    }
+            
+            if "Name of School" in row_values:
+                grade_info = {
+                    "school_name": row_values[1],
+                    "grade": row_values[3],
+                    "section": row_values[5]
+                }
+
+            if school_info and grade_info:
+                break
+
+        return school_info, grade_info
+
+    else:
+        # Unsupported file format
+        raise ValueError("Unsupported file format. Only .xlsx and .xls files are supported.")
 
 
 

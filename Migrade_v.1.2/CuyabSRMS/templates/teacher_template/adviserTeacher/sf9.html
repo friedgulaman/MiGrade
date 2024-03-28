@@ -11,16 +11,20 @@ All Students
     {% if all_students %}
         {% regroup all_students by grade as students_by_grade %}
         {% for grade_group in students_by_grade %}
-        <div class="card p-3 m-3"> 
-            <div class="d-flex justify-content-start align-items-center m-2">
-            <h2 class="me-3"><strong>Grade:</strong> <em>{{ grade_group.grouper }}</em></h2>
-
-            {% regroup grade_group.list by section as students_by_section %}
-            {% for section_group in students_by_section %}
-            <h3><strong>Section:</strong> <em>{{ section_group.grouper }}</em></h3>
-        </div>
-
                 <div class="table-responsive">
+                    <div class="card p-3 m-3"> 
+                        <div class="d-flex justify-content-between align-items-center m-2">
+                        <div>
+                            <h2 class="me-3"><strong>Grade:</strong> <em>{{ grade_group.grouper }}</em></h2>
+                            {% regroup grade_group.list by section as students_by_section %}
+                            {% for section_group in students_by_section %}
+                                <h3><strong>Section:</strong> <em>{{ section_group.grouper }}</em></h3>
+                         
+                        </div>
+                        <div>
+                            <h3><strong>School Year:</strong> <em>{{ section_group.list.0.school_year }}</em></h3>
+                        </div>
+                        </div>  
                     <table class="table table-hover">
                         <thead>
                             <tr>

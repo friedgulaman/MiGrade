@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.db import models
 from django.views.decorators.http import require_GET
 from django.db.models import Q
-from .forms import SubjectForm
+from .forms import SubjectForm, CoreValuesForm, BehaviorStatementForm
 from .models import Subject
 from .views import log_activity
 #OCR
@@ -167,6 +167,26 @@ def add_master(request):
             return JsonResponse({'success': False, 'message': 'Failed to Add Admin!'})
 
 
+def create_core_values(request):
+    if request.method == 'POST':
+        form = CoreValuesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('create_core_values')
+    else:
+        form = CoreValuesForm()
+    return render(request, 'admin_template/create_core_values.html', {'form': form})
+
+def create_behavior_statements(request):
+    if request.method == 'POST':
+        form = BehaviorStatementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('create_behavior_statements')
+    else:   
+        form = BehaviorStatementForm()
+    return render(request, 'admin_template/create_behavior_statements.html', {'form': form})
+
 @require_GET
 def get_master_data(request):
     master_id = request.GET.get('masterId')
@@ -239,11 +259,14 @@ def delete_master(request):
 @login_required
 def home_admin(request):
     # Retrieve the grades queryset
+    current_school_year = SchoolInformation.objects.first().school_year
+    print(current_school_year)
+
     grades = Grade.objects.all()
     teachers = Teacher.objects.all()
     sections = Section.objects.all()
     total_teachers = Teacher.objects.count()
-    total_students = Student.objects.count()
+    total_students = Student.objects.filter(school_year=current_school_year).count()
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
@@ -259,7 +282,7 @@ def home_admin(request):
         'total_grades': total_grades,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
-        
+        'school_year': current_school_year
        
 
     }

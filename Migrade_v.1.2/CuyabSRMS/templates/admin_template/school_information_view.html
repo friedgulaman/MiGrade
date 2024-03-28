@@ -107,13 +107,13 @@ upload
                                             </svg>
                                         </button>
                                         <!-- Dropdown menu content -->
-                                        <div class="dropdown-menu action p-2 " aria-labelledby="action">
-                                            <div class="d-flex flex-column justify-content-center align-items-center menu">
-                                                <a  href="{% url 'edit_school' school.id %}">Edit</a>
-                                                <a  href="{% url 'delete_school' school.id %}">Delete</a>
+                                        <div class="dropdown-menu action text-center p-2" aria-labelledby="action">
+                                            <div class="dropdown-item">
+                                                <a href="{% url 'edit_school' school.id %}" style="text-decoration: none;">Edit</a>
                                             </div>
-                                          
-                                            
+                                            <div class="dropdown-item">
+                                                <a href="{% url 'delete_school' school.id %}" style="text-decoration: none;">Delete</a>
+                                            </div>
                                         </div>
                                     </div>
                                    
