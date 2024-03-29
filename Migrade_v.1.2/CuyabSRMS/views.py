@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
-from .models import MT, ActivityLog, Admin, Announcement, Teacher
+from .models import MT, ActivityLog, Admin, Announcement, SuperAdmin, Teacher
 from .utils import log_activity
 import requests
 from django.contrib.auth.decorators import login_required
@@ -399,3 +399,94 @@ def mt_change_password(request):
             messages.error(request, 'Invalid old password')
 
     return redirect('mt_profile_page')  # Replace 'profile' with the name of the view you want to redirect to
+
+
+@login_required
+def super_profile_page(request):
+    user = request.user  # Get the logged-in user
+    user_type = user.user_type  # Get the user type
+    context = {}
+
+    if user_type == 1:  # Assuming '2' represents a super user type
+        super = get_object_or_404(SuperAdmin, user=user)  # Get the super object associated with the user
+        context['super'] = super
+
+    return render(request, 'superadmin_template/super_profile.html', context)
+    
+
+def super_update_profile_photo(request):
+    if request.method == "POST":
+        profile_photo = request.FILES.get("profile_photo")
+        if profile_photo:
+            # Save the new profile photo
+            request.user.profile_image = profile_photo
+            request.user.save()
+            
+            # Log the activity of updating the profile photo
+            user = request.user
+            action = 'Profile photo updated'
+            details = 'User updated their profile photo.'
+            log_activity(user, action, details)
+            
+            # Redirect to the user's profile page or a success page
+            return redirect('super_profile_page')
+
+    return render(request, 'super_profile_page')
+
+def super_update_profile(request):
+    if request.method == "POST":
+        user = request.user
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.save()
+
+        # Log the activity of updating the teacher's profile
+        action = 'super profile updated'
+        details = 'super updated their profile information.'
+        log_activity(user, action, details)
+
+        messages.success(request, 'Profile updated successfully.')  # Display a success message
+        return redirect('super_profile_page')  # Redirect to the updated profile page
+
+    return render(request, 'super_profile_page')
+
+
+@login_required
+def super_change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST['old_password']
+        new_password = request.POST['new_password']
+        confirm_password = request.POST['confirm_password']
+
+        user = request.user
+
+        if user.check_password(old_password):
+            if new_password == confirm_password:
+                if not user.check_password(new_password):
+                    # Ensure the new password is different from the old one
+                    user.set_password(new_password)
+                    user.save()
+                    update_session_auth_hash(request, user)  # To maintain the user's session
+
+                    # Log the activity of changing the password
+                    action = 'Password changed'
+                    details = 'User changed their password.'
+                    log_activity(user, action, details)
+
+                    # Add a success message
+                    messages.success(request, 'Password changed successfully.')
+                    return redirect('super_profile_page')  # Replace 'profile' with the name of the view you want to redirect to
+
+                else:
+                    # Add an error message
+                    messages.error(request, 'New password must be different from the old password.')
+
+            else:
+                # Add an error message
+                messages.error(request, 'New password and confirm password do not match.')
+
+        else:
+            # Add an error message
+            messages.error(request, 'Invalid old password')
+
+    return redirect('super_profile_page')  # Replace 'profile' with the name of the view you want to redirect to
