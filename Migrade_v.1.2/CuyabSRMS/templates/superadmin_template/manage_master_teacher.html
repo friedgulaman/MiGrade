@@ -1,99 +1,169 @@
-{% extends 'superadmin_template/super_base.html' %}
-{% block page_title %}
-    SuperAdmin
-{% endblock page_title %}
-{% block main_content %}
-<style>
-    .delete-quarter-btn {
- text-decoration: none;
- cursor: pointer;
- color: red;
- border: none;
- background: none;
- transition: color 0.3s; /* Smooth color transition */
 
- /* Shake animation on hover */
- position: relative;
+<style>
+    .delete-btn {
+    text-decoration: none;
+    cursor: pointer;
+    color: red;
+    border: none;
+    background: none;
+    transition: color 0.3s; /* Smooth color transition */
+
+    /* Shake animation on hover */
+    position: relative;
 }
 
-.delete-quarter-btn:hover {
- color: darkred; /* Change color on hover */
- animation: shake 0.5s;
+.delete-btn:hover {
+    color: darkred; /* Change color on hover */
+    animation: shake 0.5s;
 }
 
 /* Define the shake animation */
 @keyframes shake {
- 0% { transform: translateX(0); }
- 25% { transform: translateX(-5px); }
- 50% { transform: translateX(5px); }
- 75% { transform: translateX(-5px); }
- 100% { transform: translateX(0); }
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
 }
-.edit-quarter-btn{
- text-decoration: none;
+.master-link{
+  text-decoration: none;
 }
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .manage_master * {
+    animation: fadeIn 0.3s;
+  }
+
 </style>
-<section class=" container p-4">
- <h3 class="mb-4 ">Manage Master Teacher</h3>
+<div class=" container ">
+    <div class="accordion accordion-flush" id="accordionFlushMaster">
+      <!-- Accordion Item #1 -->
+      <div class="accordion-item" style="background-color: transparent !important">
+        <h2 class="accordion-header" id="flush-headingMaster">
+          <button class="accordion-button collapsed " type="button" data-toggle="collapse"
+            data-target="#flush-collapseMaster" aria-expanded="false" aria-controls="flush-collapseMaster"
+            style="border-radius: 15px">
+            Manage Master
+          </button>
+        </h2>
+        <div id="flush-collapseMaster" class="accordion-collapse collapse" aria-labelledby="flush-headingMaster"
+          data-parent="#accordionFlushMaster">
+          <div class="accordion-body">
+            <div class="manage_master">
  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
      <ul class="nav nav-tabs text" role="tablist">
-         <li class="nav-ite m">
-             <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
-                 aria-controls="create" aria-selected="true">Create</a>
+         <li class="nav-item">
+             <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#createMaster" role="tab"
+                 aria-controls="createMaster" aria-selected="true">Create</a>
          </li>
          <li class="nav-item">
-             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#displayMaster" role="tab"
                  aria-selected="false">Display</a>
          </li>
          <li class="nav-item">
-             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#update" role="tab"
+             <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#updateMaster" role="tab"
                  aria-selected="false">Update</a>
          </li>
          <li class="nav-item">
-             <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#delete" role="tab"
+             <a class="nav-link border-0" id="more-tab" data-bs-toggle="tab" href="#deleteMaster" role="tab"
                  aria-selected="false">Delete</a>
          </li>
      </ul>
  </div>
-
+</div>
  <div class="tab-content tab-content-basic">
-     <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+     <div class="tab-pane fade show active" id="createMaster" role="tabpanel" aria-labelledby="createMaster">
          <div class="container ">
-             <div class="card">
+             <div class="">
                  <div class="card-body">
-                     <h4 class="card-title">Add Quarter</h4>
-                     <form id="addQuarterForm">
-                         {% csrf_token %}
-                         <div class="form-group">  
-                         <label for="addQuarters">Quarter:</label>
-                         <input type="text" class="form-control" id="addQuarters" name="quarters" required>
-                         </div>
-                         <button class="btn btn-primary" type="button" id="saveAddQuarterBtn">Save Quarter</button>
-                     </form>
+                    <h4 class="card-title">Add master</h4>
+                    <form method="post" action="{% url 'add_master' %}" class="forms-sample" id="addmasterForm">
+            
+                      {% csrf_token %}
+            
+                      <!-- Display Messages -->
+                      {% if messages %}
+                      <div class="form-group">
+                        {% for message in messages %}
+                          {% if message.tags == "error" %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                              {{ message }}
+                              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+            
+                      <div class="form-group">
+                        <label for="exampleInputUsername1">Username</label>
+                        <input type="text" name="username" class="form-control" id="exampleInputUsername1" placeholder="Username" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" name="email" class="form-control" id="exampleInputEmail1" placeholder="Email" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputFirstName">First Name</label>
+                        <input type="text" name="first_name" class="form-control" id="exampleInputFirstName" placeholder="First Name" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputLastName">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" id="exampleInputLastName" placeholder="Last Name" required>
+                      </div>
+                      <div class="form-group">
+                        <label class="d-flex justify-content-between align-items-center" for="exampleInputMiddleInitial">Middle Initial<span class="text-muted text-small"><span class="text-danger">*</span>Optional</span></label>
+                        <input type="text" name="middle_ini" class="form-control" id="exampleInputMiddleInitial" placeholder="Middle Initial" >
+                      </div>
+                      
+                      <div class="form-group" style="display: none;">
+                        <label for="exampleInputPassword1">Password</label>
+                        <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required disabled>
+                        <small class="form-text text-muted">Default password will be set automatically. Field is disabled.</small>
+                    </div>
+                    
+                      <button type="submit" class="btn btn-primary me-2">Submit</button>
+                    </form>
                  </div>
              </div>
          </div>
      </div>
 
-     <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+     <div class="tab-pane fade show" id="displayMaster" role="tabpanel" aria-labelledby="displayMaster-tab">
          <div class="container-fluid ">
-             <div class="card">
+             <div class="">
                  <div class="card-body">
-                     <h4 class="card-title p-3">List of Quarters</h4>
+                     <h4 class="card-title">List of masters</h4>
                      <div class="table-responsive">
-                         <table class="table table-hover">
+                         <table class="table table-hover text-center">
                              <thead>
                                  <tr>
-                                     <th>Quarters</th>
+                                     <th>ID</th>
+                                     <th>Username</th>
+                                     <th>Email</th>
                                  </tr>
                              </thead>
                              <tbody>
-                                 {% for quarter in quarters %}
+                                 {% for master in masters %}
                                  <tr>
                                      <td>
-                                         {{ quarter.quarters }}
+                                         {{ master.user.id }}
                                      </td>
-                                     <td>
+                                    <td>{{ master.user.username }}
+                                    </td>
+                                    <td>
+                                        {{ master.user.email }}
+                                    </td>
                                  </tr>
                                  {% endfor %}
                              </tbody>
@@ -104,182 +174,225 @@
          </div>
          </div>
 
-     <div class="tab-pane fade show" id="update" role="tabpanel" aria-labelledby="update">
+     <div class="tab-pane fade show" id="updateMaster" role="tabpanel" aria-labelledby="updateMaster">
          <div class="container-fluid  ">
-             <div class="card">
+             <div class="">
                  <div class="card-body">
-                     <h4 class="card-title p-3">Update Quarters</h4>
-                     <div class="table-responsive">
-                         <table class="table table-hover">
-                             <thead>
-                                 <tr>
-                                     <th>Quarters</th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 {% for quarter in quarters %}
-                                 <tr>
-                                     <td>
-                                         <a href="#" class="edit-quarter-btn" data-quarter-id="{{ quarter.id }}">{{ quarter.quarters }}</a>
-                                     </td>
-                                     <td>
-                                 </tr>
-                                 {% endfor %}
-                             </tbody>
-                         </table>
-                     </div>
+                    <h4 class="card-title">Update master</h4>
+                    <div class="table-responsive">
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for master in masters %}
+                                <tr>
+                               <td>{{ master.user.id }}</td>
+                                    <td>
+                                        <a href="#" class="master-link" data-toggle="modal" data-target="#updateModal" data-master-id="{{ master.id }}">
+                                            {{ master.user.username }}
+                                        </a>
+                                    </td>
+                                    <td class="text-muted">{{ master.user.email }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
                  </div>
              </div>
          </div>
      </div>
 
-     <div class="tab-pane fade show" id="delete" role="tabpanel" aria-labelledby="delete">
+     <div class="tab-pane fade show" id="deleteMaster" role="tabpanel" aria-labelledby="deleteMaster">
          <div class="container-fluid ">
-             <div class="card">
+             <div class="">
                  <div class="card-body">
-                     <h4 class="card-title p-3">Delete Quarters</h4>
-                     <div class="table-responsive">
-                         <table class="table table-hover ">
-                             <thead >
-                                 <tr>
-                                     <th>Quarters</th>
-                                     <th></th>
-                                 </tr>
-                             </thead>
-                             <tbody >
-                                 {% for quarter in quarters %}
-                                 <tr >
-                                     <td>
-                                        {{ quarter.quarters }}
-                                     </td>
-                                     <td>
-                                         <button class="delete-quarter-btn" data-quarter-id="{{ quarter.id }}">
-                                             <i class="fas fa-trash-alt"></i></button>
-                                     </td>
-                                 </tr>
-                                 {% endfor %}
-                             </tbody>
-                         </table>
+                    <h4 class="card-title">Delete master</h4>
+                    <div class="table-responsive">
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>master</th>
+                                <th>Email</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for master in masters %}
+                                <tr class="master-row" data-master-id="{{ master.id }}">
+                                    <td>{{ master.user.id }}</td>
+                                    <td>
+                                        {{ master.user.username }}
+                                    </td>
+                                    <td>{{ master.user.email }}</td>
+                                    <td>
+                                        
+                                        <button type="button" class="delete-btn" data-master-id="{{ master.id }}">
+                                            <i class="fas fa-trash-alt"></i> <!-- Font Awesome delete icon -->
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
                      </div>
                  </div>
              </div>
          </div>
      </div>
+</div>
+</div>
+</div>
+</div>
 
-</section>
-
-<!-- Modal for Editing Quarter -->
-<div id="editQuarterModal" class="modal" tabindex="-1" role="dialog">
- <div class="modal-dialog" role="document">
-     <div class="modal-content">
-         <div class="modal-header">
-             <h5 class="modal-title">Edit Quarter</h5>
-             <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                 <span aria-hidden="true">&times;</span>
-             </button>
-         </div>
-         <div class="modal-body">
-             <form id="editQuarterForm">
-                 {% csrf_token %}
-                 <input type="hidden" id="editQuarterId" name="quarterId">
-                 <label for="editQuarters">Quarters:</label>
-                 <input type="text" id="editQuarters" name="quarters">
-                 <button type="button" id="saveEditQuarterBtn">Save Changes</button>
-             </form>
-         </div>
-     </div>
- </div>
+ <!-- Update master Modal -->
+ <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Update master Information</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="masterId" name="masterId">
+                    <div class="form-group">
+                        <label for="userName">User Name:</label>
+                        <input type="text" class="form-control" id="userName" name="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstName">First Name:</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name:</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 
-<!-- Include necessary JavaScript and jQuery -->
+
+<!-- Add this in the head section of your HTML file -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 <script>
- $(document).ready(function () {
-     // Edit Quarter Button Click Event
-     $('.edit-quarter-btn').click(function () {
-         var quarterId = $(this).data('quarter-id');
-         $('#editQuarterId').val(quarterId);
+  $(document).ready(function () {
+    // Intercept the form submission
+    $('#addmasterForm').submit(function (e) {
+      e.preventDefault(); // Prevent the form from submitting the traditional way
 
-         // AJAX request to fetch quarter details
-         $.ajax({
-             url: '/get_quarters_data/',
-             type: 'GET',
-             data: { 'quarterId': quarterId },
-             success: function (data) {
-                 $('#editQuarters').val(data.quarters);
-                 $('#editQuarterModal').modal('show');
-             },
-             error: function (error) {
-                 console.error('Error fetching quarter details:', error);
-             }
-         });
-     });
-
-     // Save Edit Quarter Button Click Event
-     $('#saveEditQuarterBtn').click(function () {
-         // AJAX request to update quarter details
-         $.ajax({
-             url: '/update_quarter/',
-             type: 'POST',
-             data: $('#editQuarterForm').serialize(),
-             success: function (response) {
-                 // Handle success (e.g., close the modal, update the list)
-                 $('#editQuarterModal').modal('hide');
-                 alert('Quarter details updated successfully!');
-                 // You may choose to update the list dynamically without a page reload
-                 location.reload();
-             },
-             error: function (error) {
-                 console.error('Error updating quarter details:', error);
-             }
-         });
-     });
-
-     // Delete Quarter Button Click Event
-     $('.delete-quarter-btn').click(function () {
-         var quarterId = $(this).data('quarter-id');
-
-         // Confirm before deleting
-         var confirmDelete = confirm('Are you sure you want to delete this quarter?');
-         if (!confirmDelete) {
-             return;  // User cancelled the deletion
-         }
-
-         // AJAX request to delete quarter
-         $.ajax({
-             url: '/delete_quarter/',
-             type: 'POST',
-             data: { 'quarterId': quarterId },
-             success: function (response) {
-                 // Handle success (e.g., remove the quarter from the list)
-                 alert('Quarter deleted successfully!');
-                 // You may choose to update the list dynamically without a page reload
-                 location.reload();
-             },
-             error: function (error) {
-                 console.error('Error deleting quarter:', error);
-             }
-         });
-     });
-
-     // Save Add Quarter Button Click Event
-     $('#saveAddQuarterBtn').click(function () {
-        
-         $.ajax({
-             url: '/add_quarter/',
-             type: 'POST',
-             data: $('#addQuarterForm').serialize(),
-             success: function (response) {
-                 alert('Quarter added successfully!');
-                 // You may choose to update the list dynamically without a page reload
-                 location.reload();
-             },
-             error: function (error) {
-                 console.error('Error adding quarter:', error);
-             }
-         });
-     });
- });
+      // Send an AJAX request
+      $.ajax({
+        type: 'POST',
+        url: $(this).attr('action'),
+        data: new FormData(this),
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          // Display success/error message
+          if (response.success) {
+            alert(response.message); // You can replace this with a more sophisticated notification system
+            // Optionally, you can redirect the user to another page on success
+            window.location.href = '{% url "home_admin" %}';
+          } else {
+            alert(response.message);
+          }
+        },
+        error: function (error) {
+          console.error('Error:', error);
+        }
+      });
+    });
+  });
 </script>
-{% endblock main_content %}
+<script>
+    $(document).ready(function () {
+      // Handle click on master link
+      $('.master-link').click(function () {
+        var masterId = $(this).data('master-id');
+        $('#updateModal').modal('show');
+        $.ajax({
+          url: '/get-master-data/',
+          type: 'GET',
+          data: { 'masterId': masterId },
+          success: function (data) {
+            // Populate the modal with existing data
+            $('#masterId').val(data.id);
+            $('#userName').val(data.username);
+            $('#firstName').val(data.first_name);
+            $('#lastName').val(data.last_name);
+          },
+          error: function (error) {
+            console.error('Error fetching master data:', error);
+          }
+        });
+      });
+  
+      // Handle form submission for updating master
+      $('#updateForm').submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+          url: '/update-master/',
+          type: 'POST',
+          data: $(this).serialize(),
+          success: function (data) {
+            
+            // Update the master name in the table
+            var masterId = $('#masterId').val();
+            var userName = $('#userName').val();
+            var newName = $('#firstName').val() + ' ' + $('#lastName').val();
+            $(`.master-link[data-master-id="${masterId}"]`).text(newName);
+            alert('Updated successfully to ' + newName);
+           
+            // Close the modal
+            $('#updateModal').modal('hide');
+          },
+          error: function (error) {
+            console.error('Error updating master data:', error);
+          }
+        });
+      });
+    });
+  </script>
+  <script>
+    $(document).ready(function () {
+      // Handle click on delete button
+      $('.delete-btn').click(function () {
+        var masterId = $(this).data('master-id');
+        
+        // Ask for confirmation before deleting
+        var confirmDelete = confirm('Are you sure you want to delete this master?');
+        
+        if (confirmDelete) {
+          $.ajax({
+            url: '/delete-master/',
+            type: 'POST',
+            data: { 'masterId': masterId },
+            success: function (data) {
+              // Remove the deleted master row from the table
+              $(`.master-row[data-master-id="${masterId}"]`).remove();
+              alert('master deleted successfully');
+            },
+            error: function (error) {
+              console.error('Error deleting master:', error);
+            }
+          });
+        }
+      });
+    });
+</script>

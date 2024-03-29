@@ -1,0 +1,50 @@
+{% extends 'master_template/base_blank.html' %}
+{% block title %} {% for subject in subjects %}
+{{ subject }}
+{% endfor %} - {{ quarter }}{% endblock %}
+{% block main_content %}
+<style>
+    
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .mema * {
+    animation: fadeIn 0.3s;
+  }
+</style>
+<section class="container mb-5 mt-5 mema">
+    <h2 class="text-center mb-4 p-2">Grade Summary - {{ quarter }}</h2>
+<div class="table-responsive card p-3">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student Name</th>
+                {% for subject in subjects %}
+                    <th>{{ subject }}</th>
+                {% endfor %}
+                <th>Average Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student, grades in subject_grades.items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td> 
+                    <td>{{ student }}</td>
+                    {% for grade in grades.values %}
+                        <td>{{ grade|default_if_none:"-" }}</td>
+                    {% endfor %} 
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</section>
+{% endblock main_content %}

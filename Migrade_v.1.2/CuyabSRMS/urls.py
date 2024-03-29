@@ -50,6 +50,14 @@ urlpatterns = [
     path('mt_update_profile_photo', views.mt_update_profile_photo, name='mt_update_profile_photo'),
     path('mt_update_profile', views.mt_update_profile, name='mt_update_profile'), 
     path('mt_change_password/', views.mt_change_password, name='mt_change_password'),
+    path('super_profile_page/', views.super_profile_page, name='super_profile_page'),
+    path('super_update_profile_photo', views.super_update_profile_photo, name='super_update_profile_photo'),
+    path('super_update_profile', views.super_update_profile, name='super_update_profile'), 
+    path('super_change_password/', views.super_change_password, name='super_change_password'),
+    path('super_profile_page/', views.super_profile_page, name='super_profile_page'),
+    path('super_update_profile_photo', views.super_update_profile_photo, name='super_update_profile_photo'),
+    path('super_update_profile', views.super_update_profile, name='super_update_profile'), 
+    path('super_change_password/', views.super_change_password, name='super_change_password'),
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
     path('activity', views.activity, name='activity'),
     path('faq_view', teacher_required(TeacherViews.faq_view), name='faq_view'),  # etoo gar
@@ -321,6 +329,9 @@ urlpatterns = [
     path('distinct_sections', mt_required(MasterTeacherViews.distinct_sections), name='distinct_sections'),
     path('subject_quarters', mt_required(MasterTeacherViews.subject_quarters), name='subject_quarters'),
     path('subject_subjects', mt_required(MasterTeacherViews.subject_subjects), name='subject_subjects'),
+    path('summary_per_quarter', mt_required(MasterTeacherViews.summary_per_quarter), name='summary_per_quarter'),
+    path('advisory_sections', mt_required(MasterTeacherViews.advisory_sections), name='advisory_sections'),
+    path('advisory_summary', mt_required(MasterTeacherViews.advisory_summary), name='advisory_summary'),
 
     path('chart-data/', StudentChartDataView.as_view(), name='chart_data'),
 ]

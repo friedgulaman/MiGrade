@@ -1,9 +1,23 @@
 {% extends 'superadmin_template/super_base.html' %}
 {% block page_title %}
-    SuperAdmin
+SuperAdmin
 {% endblock page_title %}
 {% block main_content %}
-<div class="container">
-    SUPER ADMIN
+<style>
+  .manage_admin{
+    background-color: transparent;
+    backdrop-filter: blur(8px);
+    
+  }
+</style>
+<section class="container">
+<div class="d-flex justify-content-center align-items-center row mt-3 mb-3">
+  <div class="col-12 card manage_admin">
+    {% include 'superadmin_template/manage_admin.html' %}
+  </div>
 </div>
+
+
+</section>
+
 {% endblock main_content %}
