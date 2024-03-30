@@ -76,12 +76,15 @@ import calendar
 from calendar import month_name
 
 
-def faq_view(request):
+def faqs(request):
     # Dito mo ilalagay ang iyong logic para sa FAQ page
     return render(request, 'teacher_template/adviserTeacher/faq.html')  #saka etooo
-def doc_view(request):
+def documentation(request):
     # Dito mo ilalagay ang iyong logic para sa FAQ page
     return render(request, 'teacher_template/adviserTeacher/documentation.html')  #saka etooo
+def about(request):
+    # Dito mo ilalagay ang iyong logic para sa FAQ page
+    return render(request, 'teacher_template/adviserTeacher/about_us.html')
 @login_required
 def home_teacher(request):
     announcements = Announcement.objects.all()
