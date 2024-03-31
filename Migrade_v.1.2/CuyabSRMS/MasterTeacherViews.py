@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render
-from CuyabSRMS.models import MT, AdvisoryClass,  ClassRecord, GeneralAverage, InboxMessage, QuarterlyGrades, Student, SuperAdmin, Admin, CustomUser, ActivityLog, Teacher
+from CuyabSRMS.models import MT, AdvisoryClass,  ClassRecord, GeneralAverage, GradeScores, InboxMessage, QuarterlyGrades, Student, SuperAdmin, Admin, CustomUser, ActivityLog, Teacher
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404, redirect
@@ -566,58 +566,26 @@ def summary_per_quarter(request):
     section = request.GET.get('section')
     subject = request.GET.get('subject')
     quarter = request.GET.get('quarter')
-    students = AdvisoryClass.objects.filter(grade=grade, section=section)
 
-    # Dictionary to store subject-wise grades and average score for each student
-    subject_grades = {}
-    quarter_mapping = {
-        '1st Quarter': 'first_quarter',
-        '2nd Quarter': 'second_quarter',
-        '3rd Quarter': 'third_quarter',
-        '4th Quarter': 'fourth_quarter',
-    }
+     # Retrieve the specific class record based on the provided class_record_id
+    class_record = get_object_or_404(ClassRecord, grade=grade, section=section, subject=subject, quarters=quarter)
 
-    # Fetch subject-wise grades for each student
-    for student in students:
-        grades_data = student.grades_data
-        subject_grades[student.student.name] = {}
-        grades = []  # List to store grades for calculating mean
+    # Retrieve grade scores related to the class record
+    grade_scores = GradeScores.objects.filter(class_record=class_record)
 
-        for subject, grades_info in grades_data.items():
-            if quarter_mapping[quarter] in grades_info:
-                subject_grade = grades_info[quarter_mapping[quarter]]
-       
-                subject_grades[student.student.name][subject] = subject_grade
-                if subject_grade is not None:
-                    grades.append(float(subject_grade))
-
-        # Calculate average score
-        if grades:
-            subject_grades[student.student.name]['average_score'] = round(mean(grades), 2)
-        else:
-            subject_grades[student.student.name]['average_score'] = None
-
-        # Check if QuarterlyGrades entry already exists for this student and quarter
-        existing_entry = QuarterlyGrades.objects.filter(student=student.student, quarter=quarter).first()
-        if not existing_entry:
-            # Save grades to QuarterlyGrades model
-            QuarterlyGrades.objects.create(
-                student=student.student,
-                quarter=quarter,
-                grades=subject_grades[student.student.name]
-            )
-        elif existing_entry.grades != subject_grades[student.student.name]:
-            # Update the existing entry if the grades are different
-            existing_entry.grades = subject_grades[student.student.name]
-            existing_entry.save()
-
-    subjects = list(students.first().grades_data.keys()) if students else []
+    # Handle None values for initial_grades and transmuted_grades
+    for grade_score in grade_scores:
+        if grade_score.initial_grades is None:
+            grade_score.initial_grades = ""
+        if grade_score.transmuted_grades is None:
+            grade_score.transmuted_grades = ""
 
     context = {
-        'students': students,
-        'subject_grades': subject_grades,
-        'subjects': subjects,
+        'subject': subject,
         'quarter': quarter,
+        'class_record': class_record,
+        'grade_scores': grade_scores,
     }
+
 
     return render(request, 'master_template/subject_summary.html', context)

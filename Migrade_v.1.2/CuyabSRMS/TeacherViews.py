@@ -88,7 +88,12 @@ def about(request):
 @login_required
 def home_teacher(request):
     announcements = Announcement.objects.all()
-    return render(request, 'teacher_template/home_teacher.html', {'announcements': announcements})
+    school_info = SchoolInformation.objects.all()
+    context = {
+        'announcements': announcements,
+        'school_info': school_info,
+    }
+    return render(request, 'teacher_template/home_teacher.html', context)
 @login_required
 def upload_adviser_teacher(request):
     return render(request, 'teacher_template/adviserTeacher/upload.html')

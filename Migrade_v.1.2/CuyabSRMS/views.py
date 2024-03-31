@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .EmailBackEnd import EmailBackEnd  # Update the import path
-from .models import MT, ActivityLog, Admin, Announcement, SuperAdmin, Teacher
+from .models import MT, ActivityLog, Admin, Announcement, SchoolInformation, SuperAdmin, Teacher
 from .utils import log_activity
 import requests
 from django.contrib.auth.decorators import login_required

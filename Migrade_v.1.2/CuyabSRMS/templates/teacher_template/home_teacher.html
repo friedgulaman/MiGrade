@@ -129,14 +129,12 @@
 </style>
 
 
-<section class="conten">
+<section class="content">
   <div class="container-scroller d-flex justify-content-end align-items-center   p-3  bg-white border-bottom">
-    <!-- <div class="text-muted ms-md-3 ms-lg-0 school_year text-center">
-      <code class="text-dark">School Year: 2023-2024</code>
-  </div> -->
+    
 
     <div class="d-flex  align-items-center">
-      <a class="nav-link" href="{% url 'about' %}">About Us</a>
+      <a class="nav-link" href="{% url 'about' %}">About</a>
       <a class="nav-link" href="{% url 'documentation' %}">Documentation</a>
       <a class="nav-link" href="{% url 'faqs' %}">FAQs</a>
       <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -175,10 +173,16 @@
 
 
   <div class="d-flex flex-column justify-content-center align-items-center bg" style="height: 100vh;">
+   
     <div class="display-1 text-center">
       Welcome, <span class="user text-primary">{{user}}</span>
     </div>
     <div class="display-1-desc text-center w-50">
+      {% for school in school_info %}
+      <div class="text-muted ms-md-3 ms-lg-0 school_year text-center">
+        <code class="text-dark">School Year: {{ school.school_year }}</code>
+    </div>
+    {% endfor %}
       <a id="loadingLink" class="text-decoration-none btn text-dark container explore"
         href="{% url 'home_adviser_teacher'%}" onclick="handleClick()">
         <!-- Arrow icon -->
