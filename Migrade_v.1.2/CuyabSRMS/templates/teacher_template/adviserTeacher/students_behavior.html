@@ -105,6 +105,44 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+            if (arrowKeys.includes(key)) {
+                event.preventDefault();
+                const focusedElement = document.activeElement;
+                const cell = focusedElement.closest('td');
+                const row = cell.parentElement;
+                const rowIndex = row.rowIndex;
+                const cellIndex = cell.cellIndex;
+                switch (key) {
+                    case 'ArrowUp':
+                        if (rowIndex > 1) {
+                            row.previousElementSibling.cells[cellIndex].focus();
+                        }
+                        break;
+                    case 'ArrowDown':
+                        if (rowIndex < row.parentElement.rows.length + 1) {
+                            row.nextElementSibling.cells[cellIndex].focus();
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        if (cellIndex > 0) {
+                            row.cells[cellIndex - 1].focus();
+                        }
+                        break;
+                    case 'ArrowRight':
+                        if (cellIndex < row.cells.length - 1) {
+                            row.cells[cellIndex + 1].focus();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+      </script>
+    <script>
        $(document).ready(function() {
         // Set default value "AO" for each marking cell
         $('.marking-cell').text('AO');

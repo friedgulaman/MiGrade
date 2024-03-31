@@ -1,0 +1,70 @@
+{% extends 'admin_template/admin_base.html' %}
+
+{% block page_title %}
+    Create Behavior Statements
+{% endblock page_title %}
+
+{% block main_content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Create Behavior Statements</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" onsubmit="return confirm('Are you sure you want to create this behavior statement?');">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_core_value" class="form-label">Core Value</label>
+                            {{ form.core_value }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_statement" class="form-label">Statement</label>
+                            {{ form.statement }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Behavior Statements</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('behavior_statement_form');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Form submission was successful
+                    showAlert('success', 'Behavior statement saved successfully!');
+                } else {
+                    // Form submission failed
+                    showAlert('danger', 'Failed to save behavior statement.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'An error occurred. Please try again.');
+            });
+        });
+
+        function showAlert(type, message) {
+            const alert = document.createElement('div');
+            alert.classList.add('alert', `alert-${type}`);
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            setTimeout(function() {
+                alert.remove(); // Remove alert after 3 seconds
+            }, 3000);
+        }
+    });
+</script>
+{% endblock main_content %}
+

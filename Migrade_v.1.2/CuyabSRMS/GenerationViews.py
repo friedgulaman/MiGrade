@@ -172,8 +172,10 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
                 desired_sheet_name = 'MATH'
         elif subject_name == "ARALING PANLIPUNAN":
                 desired_sheet_name = 'AP'
-        elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+        elif subject_name in ["ARTS", "PE", "HEALTH"]:
                 desired_sheet_name = subject_name
+        elif subject_name == "MUSIC":
+                desired_sheet_name = 'MUSIC '
         elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
                 desired_sheet_name = 'ESP'
         elif subject_name == "SCIENCE":
@@ -185,7 +187,7 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         # Select the desired sheet (use the correct sheet name from the output)
         sheet = workbook[desired_sheet_name]
 
-        write_student_names(sheet_input, grade_scores)
+       
         write_scores_hps_written(sheet, grade_scores)
         write_scores_hps_performance(sheet, grade_scores)
         write_scores_hps_quarterly(sheet, grade_scores)
@@ -194,7 +196,7 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         write_quarterly_assessment_scores(sheet, grade_scores)
         write_initial_grade(sheet, grade_scores)
         write_transmuted_grade(sheet, grade_scores)
-
+    write_student_names(sheet_input, grade_scores)
     write_school_info(sheet_input, school_info, grade, section, teacher_name)
 
     # Save the changes to the SF9 workbook
@@ -208,14 +210,6 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
 
     with open(copied_file_path, 'rb') as excel_file:
         response.write(excel_file.read())
-
-    # Add success or error message
-    if os.path.exists(copied_file_path):
-        messages.success(request, f'Summary of Quarterly Grades ({quarter}) generated successfully.')
-        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
-    else:
-        messages.error(request, 'An error occurred while generating the summary.')
-        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
 
     return response
 
@@ -316,6 +310,7 @@ def generate_final_and_general_grades(request, grade, section):
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 31, 35)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
+        print("grade 2")
 
     elif grade == 'Grade 3':
         write_school_info_general_average(sheet, school_info, general_grades_query)
@@ -337,7 +332,7 @@ def generate_final_and_general_grades(request, grade, section):
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EPP', 31, 35)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
 
@@ -1113,6 +1108,8 @@ def generate_excel_for_sf9(request, student_id):
     student = get_object_or_404(Student, id=student_id)
 
     user = request.user
+    teacher = request.user.teacher
+    teacher_name = f"{teacher.user.first_name} {teacher.user.middle_ini}. {teacher.user.last_name}" 
 
     # Query for other related objects
     advisory_class = AdvisoryClass.objects.filter(student=student).first()
@@ -1174,7 +1171,7 @@ def generate_excel_for_sf9(request, student_id):
 
     # Write SF9-specific data using utility functions
     write_sf9_data(front_sheet, student)
-    write_sf9_school_info(front_sheet, school_info)
+    write_sf9_school_info(front_sheet, school_info, teacher_name)
     write_sf9_grades(back_sheet, advisory_class, general_average)
     write_sf9_attendance(front_sheet, attendance_record)
     write_sf9_total_attendance(front_sheet, attendance_record)
@@ -1258,7 +1255,7 @@ def generate_per_all_subject_view(request):
         # Iterate through class records to organize data by quarter
         for record in class_records:
             quarter_data = quarters_data.setdefault(record.quarters, {'subjects': set(), 'grade_sections': set()})
-            quarter_data['grade_sections'].add((record.grade, record.section))
+            quarter_data['grade_sections'].add((record.grade, record.section, record.school_year))
             quarter_data['subjects'].add(record.subject)
 
         # Sort subjects alphabetically
@@ -1320,17 +1317,21 @@ def generate_final_grade_view(request):
         teacher = user.teacher
 
         # Filter class records based on the teacher
-        class_records = ClassRecord.objects.filter(teacher=teacher)
+        class_records = AdvisoryClass.objects.filter(teacher=teacher)
 
         # Create a set to store grade_sections
         grade_sections = set()
 
         # Iterate through class records to organize data by grade and section
         for record in class_records:
-            grade_sections.add((record.grade, record.section))
+            grade_sections.add((record.student.grade, record.student.section, record.student.school_year))
+
+        print(grade_sections)
 
         # Convert the set to a sorted list
         grade_sections = sorted(grade_sections)
+
+        print(grade_sections)
 
         context = {
             'grade_sections': grade_sections,

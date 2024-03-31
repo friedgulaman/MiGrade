@@ -42,17 +42,21 @@ class CoreValuesForm(forms.ModelForm):
         model = CoreValues
         fields = ['name', 'description']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),  # Adjust widget as needed
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter core value name'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter description'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super(CoreValuesForm, self).__init__(*args, **kwargs)
-        self.fields['description'].required = False
+        def __init__(self, *args, **kwargs):
+            super(CoreValuesForm, self).__init__(*args, **kwargs)
+            self.fields['description'].required = False
 
 class BehaviorStatementForm(forms.ModelForm):
     class Meta:
         model = BehaviorStatement
         fields = ['core_value', 'statement']
+        widgets = {
+            'core_value': forms.Select(attrs={'class': 'form-select'}),
+            'statement': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter behavior statement'}),
+        }
 
 class LearnersObservationForm(forms.Form):
     def __init__(self, students, behavior_statements, *args, **kwargs):

@@ -135,61 +135,55 @@ View Class Record
 
     // AJAX request to get teacher list based on grade and section
     $.ajax({
-        type: "GET",
-        url: "{% url 'get_teacher_list' %}",
-        data: {
-            grade: grade,
-            section: section
-        },
-        dataType: "json",
-        success: function(response) {
-            var teacherSelect = $("#teacherSelect");
-            teacherSelect.empty(); // Clear previous options
+      type: "GET",
+      url: "{% url 'get_teacher_list' %}",
+      data: {
+          grade: grade,
+          section: section
+      },
+      dataType: "json",
+      success: function(response) {
+          var teacherSelect = $("#teacherSelect");
+          teacherSelect.empty(); // Clear previous options
 
-            var adviserFound = false; // Flag to check if an adviser is found
+          var adviserFound = false; // Flag to check if an adviser is found
 
-            $.each(response.teachers, function(index, teacher) {
-              if (teacher && teacher.grade_section) { // Check if teacher and grade_section exist
-                // Loop through each item in teacher.grade_section
-                for (var i = 0; i < teacher.grade_section.length; i++) {
-                    if (teacher.grade_section[i] === grade_section_classrecord) { // Check if grade_Section_classrecord matches the current item in teacher.grade_section
-                        console.log("after", teacher.grade_section[i]);
-                        var optionText = `${teacher.grade_section[i]} - ${teacher.name}`;
-                        var optionValue = teacher.id;
-
-                        if (teacher.name === teacher_name) {
-                        // If it matches, append " (this is you)" to the option text
-                        optionText += " (this is you)";
-                        $("#submitJsonBtn").text("Save " + quarter + "-" + subject + " Grades").removeClass("btn-success").addClass("btn-primary");
-                            
-                        }
-                        
-                        // Append option to select element
-                        teacherSelect.append($('<option>', {
-                            value: optionValue,
-                            text: optionText
-                        }));
-                        adviserFound = true; // Set flag to true since adviser found
-                    }
-                    
-                }
-            }
-            });
+          $.each(response.teachers, function(index, teacher) {
+              if (teacher.grade_section === grade_section_classrecord) {
+                  var optionText = `${teacher.grade_section} - ${teacher.name}`;
+                  var optionValue = teacher.id;
+                  
+                  
+                  if (teacher.name === teacher_name) {
+                      // If it matches, append " (this is you)" to the option text
+                      optionText += " (this is you)";
+                      $("#submitJsonBtn").text("Save " + quarter + "-" + subject + " Grades").removeClass("btn-success").addClass("btn-primary");
+                      
+                  }
+                  
+                  // Append option to select element
+                  teacherSelect.append($('<option>', {
+                      value: optionValue,
+                      text: optionText
+                  }));
+                  adviserFound = true; // Set flag to true since adviser found
+              }
+          });
 
 
 
-            // If no adviser found, display "No Adviser yet."
-            if (!adviserFound) {
-                teacherSelect.append($('<option>', {
-                    value: "",
-                    text: "No Adviser yet."
-                }));
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Error fetching teacher list:", error);
-        }
-    });
+          // If no adviser found, display "No Adviser yet."
+          if (!adviserFound) {
+              teacherSelect.append($('<option>', {
+                  value: "",
+                  text: "No Adviser yet."
+              }));
+          }
+      },
+      error: function(xhr, status, error) {
+          console.error("Error fetching teacher list:", error);
+      }
+  });
 
 
 
