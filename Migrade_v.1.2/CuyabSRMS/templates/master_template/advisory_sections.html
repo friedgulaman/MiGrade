@@ -29,12 +29,16 @@
         cursor: pointer;
 
     }
+    .active:hover{
+        cursor: pointer;
+        text-decoration: underline;
+    }
   </style>
 <section class="container p-3 m-3">
     <div class="card p-5">
     <h5>
         <span class="link" onclick="home()">Advisory Classes</span> > 
-        <span  onclick="gradeUrl()">{{ grade }}</span>
+        <span class="active" onclick="gradeUrl()">{{ grade }}</span>
     </h5>
     <div class="mt-3">
     <ul class="d-flex justify-content-start align-items-center folder">

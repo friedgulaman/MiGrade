@@ -3,12 +3,13 @@
 {% block main_content %}
 {% load static %}
 <style>
-  section{
+  section {
     background-image: url('/static/star-admin/images/bg_home_teacher.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
   }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -35,14 +36,16 @@
   #ces_logo,
   #migrade_logo,
   .features {
-    transition: .7s;
+    transition: linear;
     cursor: pointer;
     -webkit-mask:
       linear-gradient(135deg, #000c 40%, #000, #000c 60%) 100% 100%/250% 250%;
   }
-  .features:hover{
+
+  .features:hover {
     -webkit-mask-position: 0 0;
   }
+
   #ces_logo:hover {
     -webkit-mask-position: 0 0;
   }
@@ -51,56 +54,89 @@
     -webkit-mask-position: 0 0;
   }
 
- 
+
   .custom-card-img {
-        width: 100px;
-        height: 100px;
-        object-fit: cover; /* Ensures the image covers the entire space while maintaining aspect ratio */
-    }
-    .arrow-icon {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    /* Ensures the image covers the entire space while maintaining aspect ratio */
+  }
+
+  .arrow-icon {
     display: inline-block;
-    width: 2em; /* Adjust width as needed */
-    height: 2em; /* Adjust height as needed */
-    line-height: 2em; /* Vertically center the icon */
+    width: 2em;
+    /* Adjust width as needed */
+    height: 2em;
+    /* Adjust height as needed */
+    line-height: 2em;
+    /* Vertically center the icon */
     text-align: center;
-    font-size: 1.5em; /* Adjust font size as needed */
-    border: 2px solid #000; /* Border properties */
-    border-radius: 50%; /* Border radius for circle shape */
-}
-.explore {
-    transition: color 0.3s; /* Smooth color transition */
+    font-size: 1.5em;
+    /* Adjust font size as needed */
+    border: 2px solid #000;
+    /* Border properties */
+    border-radius: 50%;
+    /* Border radius for circle shape */
+  }
+
+  .explore {
+    transition: color 0.3s;
+    /* Smooth color transition */
     animation: shake 1.9s infinite, fadeIn 4s;
 
-}
+  }
 
-.arrow-icon:hover {
-    color: darkred; /* Change color on hover */
-    
-}
+  .arrow-icon:hover {
+    color: darkred;
+    /* Change color on hover */
 
-/* Define the shake animation */
-@keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
-}
-.announcemet{
-  background: transparent;
-}
+  }
+
+  /* Define the shake animation */
+  @keyframes shake {
+    0% {
+      transform: translateX(0);
+    }
+
+    25% {
+      transform: translateX(-5px);
+    }
+
+    50% {
+      transform: translateX(5px);
+    }
+
+    75% {
+      transform: translateX(-5px);
+    }
+
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .announcement {
+    background: transparent;
+    z-index: 1;
+    position: absolute;
+    right: 0;
+    width: 100%;
+
+  }
+  .nav-link{
+    font-size:  clamp(0.80rem, 0.83rem, 0.56rem);
+  }
 </style>
 
 
-<section class="conten">
+<section class="content">
   <div class="container-scroller d-flex justify-content-end align-items-center   p-3  bg-white border-bottom">
-    <!-- <div class="text-muted ms-md-3 ms-lg-0 school_year text-center">
-      <code class="text-dark">School Year: 2023-2024</code>
-  </div> -->
-  
+    
+
     <div class="d-flex  align-items-center">
-      <a class="nav-link" href="{% url 'doc_view' %}">Documentation</a>
-      <a class="nav-link" href="{% url 'faq_view' %}">FAQs</a>
+      <a class="nav-link" href="{% url 'about' %}">About</a>
+      <a class="nav-link" href="{% url 'documentation' %}">Documentation</a>
+      <a class="nav-link" href="{% url 'faqs' %}">FAQs</a>
       <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
         <img class="img-xs rounded-circle border border-3" src="{{ user.profile_image.url }}" alt="Profile image"> </a>
       <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
@@ -117,63 +153,71 @@
       </div>
     </div>
   </div>
- 
+
   <div class="announcement mt-1">
     {% if announcements %}
-      <div class="alert text-dark d-flex justify-content-between align-items-center">
-        <marquee class="text-muted">
-          {% for announcement in announcements %}
-            <strong>{{ announcement.title }}</strong> - {{ announcement.content }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          {% endfor %}
-        </marquee>
-        {% if announcements %}
-          <button class="hide-announcement btn fw-bold">X</button>
-        {% endif %}
-      </div>
+    <div class="alert text-dark d-flex justify-content-between align-items-center">
+      <marquee class="text-muted">
+        {% for announcement in announcements %}
+        <strong>{{ announcement.title }}</strong> - {{ announcement.content }}
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        {% endfor %}
+      </marquee>
+      {% if announcements %}
+      <button class="hide-announcement btn fw-bold">X</button>
+      {% endif %}
+    </div>
     {% endif %}
   </div>
-  
-  
 
-  <div class="d-flex flex-column justify-content-center align-items-center bg" style="height: 70vh;">
+
+
+  <div class="d-flex flex-column justify-content-center align-items-center bg" style="height: 100vh;">
+   
     <div class="display-1 text-center">
       Welcome, <span class="user text-primary">{{user}}</span>
     </div>
     <div class="display-1-desc text-center w-50">
-      <a id="loadingLink" class="text-decoration-none btn text-dark container explore" href="{% url 'home_adviser_teacher'%}" onclick="handleClick()">
-          <!-- Arrow icon -->
-          <span class="arrow-icon p-0">&rarr;</span> 
+      {% for school in school_info %}
+      <div class="text-muted ms-md-3 ms-lg-0 school_year text-center">
+        <code class="text-dark">School Year: {{ school.school_year }}</code>
+    </div>
+    {% endfor %}
+      <a id="loadingLink" class="text-decoration-none btn text-dark container explore"
+        href="{% url 'home_adviser_teacher'%}" onclick="handleClick()">
+        <!-- Arrow icon -->
+        <span class="arrow-icon p-0">&rarr;</span>
       </a>
-  </div>
+    </div>
 
-  
+
   </div>
 
   <div class="container mb-3 features">
     <div class="d-flex justify-content-center align-center">
-        <div class="m-3">
-            <img src="static/star-admin/images/15.png" class="custom-card-img" alt="Hollywood Sign on The Hill">
-        </div>
-        <div class="m-3">
-            <img src="static/star-admin/images/16.png" class="custom-card-img" alt="Palm Springs Road">
-        </div>
-        <div class="m-3">
-            <img src="static/star-admin/images/17.png" class="custom-card-img" alt="Los Angeles Skyscrapers">
-        </div>
+      <div class="m-3">
+        <img src="static/star-admin/images/15.png" class="custom-card-img" alt="OCR">
+      </div>
+      <div class="m-3">
+        <img src="static/star-admin/images/16.png" class="custom-card-img" alt="Automated">
+      </div>
+      <div class="m-3">
+        <img src="static/star-admin/images/17.png" class="custom-card-img" alt="Google Sheet">
+      </div>
     </div>
-</div>
+  </div>
 
 
 
-</div>
+  </div>
   <div class="headline  d-flex justify-content-center align-content-center" style="height: 80vh;">
 
     <div class=" d-flex flex-column align-items-center"> <!-- Adjust column size for small screens -->
-        <div class="specialized display-4 text-muted text-center">Specialized for Cuyab Elementary School</div>
-        <img class="m-5" id="ces_logo" src="static/star-admin/images/ces_logo.png">
-        <img id="migrade_logo" src="static/star-admin/images/logo_migrade.png">
+      <div class="specialized display-4 text-muted text-center">Specialized for Cuyab Elementary School</div>
+      <img class="m-5" id="ces_logo" src="static/star-admin/images/ces_logo.png">
+      <img id="migrade_logo" src="static/star-admin/images/logo_migrade.png">
     </div>
-</div>
+  </div>
 
 
 
@@ -192,8 +236,8 @@
 <script>
   // Initialize ScrollReveal with some basic options
   const scrollReveal = ScrollReveal({
-    delay: 200,
-    distance: '50px',
+    delay: 150,
+    distance: '100px',
     easing: 'ease-in-out'
   });
 
@@ -212,35 +256,35 @@
   revealElements();
 
   // Reveal elements again on scroll up
-  window.addEventListener('scroll', function() {
+  window.addEventListener('scroll', function () {
     if (window.scrollY === 0) {
       revealElements();
     }
   });
 </script>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const hideButtons = document.querySelectorAll('.hide-announcement');
-  
-      hideButtons.forEach(function(button) {
-          button.addEventListener('click', function() {
-              // Find the parent announcement element
-              const announcementElement = button.closest('.announcement');
-              // Hide the announcement element
-              announcementElement.style.display = 'none';
-          });
+  document.addEventListener('DOMContentLoaded', function () {
+    const hideButtons = document.querySelectorAll('.hide-announcement');
+
+    hideButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        // Find the parent announcement element
+        const announcementElement = button.closest('.announcement');
+        // Hide the announcement element
+        announcementElement.style.display = 'none';
       });
+    });
   });
-  </script>
-  <script>
-    function handleClick() {
-        // Show loading indicator
-        var link = document.getElementById('loadingLink');
-        link.innerHTML = '<i class="fas fa-spinner fa-spin fs-1"></i>';
-        // Disable the link to prevent multiple clicks
-        link.setAttribute('disabled', 'true');
-        link.classList.remove('explore');
-    }
+</script>
+<script>
+  function handleClick() {
+    // Show loading indicator
+    var link = document.getElementById('loadingLink');
+    link.innerHTML = '<i class="fas fa-spinner fa-spin fs-1"></i>';
+    // Disable the link to prevent multiple clicks
+    link.setAttribute('disabled', 'true');
+    link.classList.remove('explore');
+  }
 </script>
 
 

@@ -60,8 +60,10 @@ urlpatterns = [
     path('super_change_password/', views.super_change_password, name='super_change_password'),
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
     path('activity', views.activity, name='activity'),
-    path('faq_view', teacher_required(TeacherViews.faq_view), name='faq_view'),  # etoo gar
-    path('doc_view', teacher_required(TeacherViews.doc_view), name='doc_view'),  # etoo gar
+
+    path('faqs', teacher_required(TeacherViews.faqs), name='faqs'),  # etoo gar
+    path('documentation', teacher_required(TeacherViews.documentation), name='documentation'),  # etoo gar
+    path('about', teacher_required(TeacherViews.about), name='about'),  # etoo gar
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
@@ -145,7 +147,6 @@ urlpatterns = [
     path('remove_grade/', admin_required(AdminViews.remove_grade), name='remove_grade'),
 
     # Adviser Teacher
-    path('faq_view', teacher_required(TeacherViews.faq_view), name="faq_view"),
     path('home_teacher', teacher_required(TeacherViews.home_teacher), name="home_teacher"),
     path('home_adviser_teacher', teacher_required(TeacherViews.home_adviser_teacher), name="home_adviser_teacher"),
     path('dashboard', teacher_required(TeacherViews.dashboard), name="dashboard"),   
