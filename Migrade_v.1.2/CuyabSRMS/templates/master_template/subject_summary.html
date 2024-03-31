@@ -1,0 +1,46 @@
+{% extends 'master_template/base_blank.html' %}
+{% block title %}
+{{ subject }}-({{ quarter }}){% endblock %}
+{% block main_content %}
+<style>
+    
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .mema * {
+    animation: fadeIn 0.3s;
+  }
+</style>
+<section class="container mb-5 mt-5 mema">
+    <h2 class="text-center mb-4 p-2">Grade Summary - {{ subject }} ({{ quarter }})</h2>
+<div class="table-responsive card p-3">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>No.</th>
+        <th>Student Name</th>
+        <th>Initial Grades</th>
+        <th>Transmuted Grades</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for grade_score in grade_scores %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ grade_score.student.name }}</td>
+        <td>{{ grade_score.initial_grades }}</td>
+        <td>{{ grade_score.transmuted_grades }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</section>
+{% endblock main_content %}

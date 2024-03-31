@@ -13,20 +13,41 @@
     justify-content: center;
       cursor: pointer;
     }
+    .fas:hover {
+        color: rgb(104, 181, 253);
+    }
+    .fas{
+        color: rgb(191, 221, 249);
+    }
+    .link{
+        color: rgb(104, 181, 253);
+    }
+    .link:hover{
+        text-decoration: underline;
+        cursor: pointer;
+
+    }
+    .text-truncate{
+        max-width: 60px;
+    }
+    .active:hover{
+        cursor: pointer;
+        text-decoration: underline;
+    }
   </style>
 <section class="container p-3 m-3">
     <div class="card p-5">
     <h5>
-        <span onclick="home()">Subject Classes</span> > 
-        <span onclick="gradeUrl()">{{ grade }}</span> > 
-        <span onclick="sectionUrl('{{ grade }}')">{{ section }}</span>
+        <span class="link" onclick="home()">Subject Classes</span> > 
+        <span class="link" onclick="gradeUrl()">{{ grade }}</span> > 
+        <span class="active" onclick="sectionUrl('{{ grade }}')">{{ section }}</span>
     </h5>
     <div class="mt-3">
         <ul class="d-flex justify-content-start align-items-center folder">
             {% for subject in subjects %}
-                <li onclick="showQuarters('{{ section }}', '{{ subject }}')" class="m-3 d-flex flex-column justify-content-start align-items-center">
+                <li title="{{ subject }}" onclick="showQuarters('{{ section }}', '{{ subject }}')" class="m-3 d-flex flex-column justify-content-start align-items-center">
                     <i class="fas fa-folder fa-6x"></i>
-                    <p class="text-center">{{ subject }}</p>
+                    <p class="text-center text-truncate">{{ subject }}</p>
                 </li>
             {% empty %}
                 <li>No subjects found for this section.</li>

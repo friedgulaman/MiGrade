@@ -14,46 +14,11 @@
   <link rel="stylesheet" href="{% static 'star-admin/vendors/typicons/typicons.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/simple-line-icons/css/simple-line-icons.css' %}">
   <link rel="stylesheet" href="{% static 'star-admin/vendors/css/vendor.bundle.base.css' %}">
-  
-
-  <!-- Emi code -->
-
-  
-
-    <!-- jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- Bootstrap JavaScript -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
-    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome JS-->
-    <script defer src="assets/fontawesome/js/all.min.js"></script>
-
-
-        <!-- Javascript -->          
-        <script src="assets/plugins/popper.min.js"></script>
-        <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  
-        
-        <!-- Page Specific JS -->
-        <script src="assets/plugins/smoothscroll.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
-        <script src="assets/js/highlight-custom.js"></script> 
-        <script src="assets/plugins/simplelightbox/simple-lightbox.min.js"></script>      
-        <script src="assets/plugins/gumshoe/gumshoe.polyfills.min.js"></script> 
-        <script src="assets/js/docs.js"></script> 
-
-
-<!-- FontAwesome JS -->
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
 
 
-        
- <!-- Emi code -->
 
 
-  
   <!-- endinject -->
   <!-- Plugin css for this page -->
   <link rel="stylesheet" href="{% static 'star-admin/js/select.dataTables.min.css' %}">
@@ -62,27 +27,29 @@
   <link rel="stylesheet" href="{% static 'star-admin/css/vertical-layout-light/style.css' %}">
   <!-- endinject -->
   <!-- Link to Font Awesome from a CDN (Content Delivery Network) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<link rel="icon" type="image/png" href="{% static 'star-admin/images/ces_logo.png' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="icon" type="image/png" href="{% static 'star-admin/images/ces_logo.png' %}">
 
 </head>
 <style>
-.description {
-    max-width: 200px; /* Adjust the max-width as needed */
+  .description {
+    max-width: 200px;
+    /* Adjust the max-width as needed */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
+  }
 </style>
-<body>
-   
-    {% block content %}
-    
-        {% block main_content %}
 
-        {% endblock main_content %}
-    
-    {% endblock %}
+<body>
+
+  {% block content %}
+
+  {% block main_content %}
+
+  {% endblock main_content %}
+
+  {% endblock %}
 
 
 

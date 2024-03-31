@@ -1,7 +1,7 @@
-{% extends 'master_template/master_base.html' %}
+{% extends 'superadmin_template/super_base.html' %}
 
 {% block page_title %}
-MAster Teacher
+Super Admin
 {% endblock page_title %}
 
 {% block main_content %}
@@ -94,7 +94,7 @@ input[type="password"] {
       <div class="row g-0">
         <div class="col-md-3 text-center d-flex justify-content-center align-items-center">
           <div class="image-container ">
-            <img class="zoomable-image" src="{{ mt.user.profile_image.url }}" alt="Profile Photo Preview"
+            <img class="zoomable-image" src="{{ super.user.profile_image.url }}" alt="Profile Photo Preview"
               data-bs-toggle="modal" data-bs-target="#photoUploadModal">
           </div>
         </div>
@@ -104,27 +104,27 @@ input[type="password"] {
 
 
         <div class="col-md-9">
-          <form method="post" action="{% url 'mt_update_profile' %}">
+          <form method="post" action="{% url 'super_update_profile' %}">
             {% csrf_token %}
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title">mt Profile</h5>
+                <h5 class="card-title">super Profile</h5>
                 <button type="button" class="btn btn-primary btn-sm" id="editProfileFields">&#9998; Edit Profile</button>
                 <button type="submit" class="btn btn-success btn-sm" id="submit-button-field"
                   style="display: none">&#10004; Save Changes</button>
               </div>
-              <div class="row mt-3 mb-3">
+              <div class="row super-3 mb-3">
                 <div class="col">
                   <label class="form-label form-text" for="username">User Name</label>
                   <input type="text" class="form-control input-field" id="username" name="username"
-                    value="{{ mt.user.username }}" aria-label="Email" readonly>
+                    value="{{ super.user.username }}" aria-label="Email" readonly>
                 </div>
               </div>
-              <div class="row mt-3 mb-3">
+              <div class="row super-3 mb-3">
                 <div class="col">
                   <label class="form-label form-text" for="email">Email</label>
                   <input type="text" class="form-control input-field" id="email" name="email"
-                    value="{{ mt.user.email }}" aria-label="Email" readonly>
+                    value="{{ super.user.email }}" aria-label="Email" readonly>
                 </div>
               </div>
               <div class="d-flex justify-content-end">
@@ -149,7 +149,7 @@ input[type="password"] {
   <div class="modal fade" id="photoUploadModal" tabindex="-1" aria-labelledby="photoUploadModalLabel"
     aria-hidden="true">
     <div class="modal-dialog">
-      <form class="" method="post" action="{% url 'mt_update_profile_photo' %}" enctype="multipart/form-data">
+      <form class="" method="post" action="{% url 'super_update_profile_photo' %}" enctype="multipart/form-data">
         <div class="modal-content">
           <div class="modal-header">
             {% csrf_token %}
@@ -160,7 +160,7 @@ input[type="password"] {
             <div class="container text-center d-flex justify-content-center align-items-center">
               <div class="image-container ">
                 <img class="zoomable-image" id="profile_photo_preview"
-                  src="{% if mt.user.profile_image %}{{ mt.user.profile_image.url }}{% else %}# {% endif %}"
+                  src="{% if super.user.profile_image %}{{ super.user.profile_image.url }}{% else %}# {% endif %}"
                   alt="Profile Photo Preview" data-bs-toggle="modal" data-bs-target="#photoUploadModal">
               </div>
             </div>
@@ -178,7 +178,7 @@ input[type="password"] {
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-body">
-          <form id="password-change-form" method="post" action="{% url 'mt_change_password' %}">
+          <form id="password-change-form" method="post" action="{% url 'super_change_password' %}">
             {% csrf_token %}
             <div class="form-group">
               <label for="id_old_password">Old Password</label>
@@ -257,7 +257,7 @@ input[type="password"] {
 
         reader.readAsDataURL(file);
       } else {
-        preview.src = "{% if mt.user.profile_image %}{{ mt.user.profile_image.url }}{% else %}#{% endif %}";
+        preview.src = "{% if super.user.profile_image %}{{ super.user.profile_image.url }}{% else %}#{% endif %}";
         // Hide the submit button when no new photo is selected
         document.getElementById("submit-button").style.display = "none";
       }

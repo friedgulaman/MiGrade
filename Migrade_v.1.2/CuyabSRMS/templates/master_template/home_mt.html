@@ -1,18 +1,11 @@
 {% extends 'master_template/master_base.html' %}
 {% block page_title %}
-    Master Teacher
+Master Teacher
 {% endblock page_title %}
 {% block main_content %}
-<div class="container">
-    
-    <div class="container">
-        <h3 class="mb-5">You are assigned to Monitor this: 
-            {% for grade_name in assigned_grades %}
-                {{ grade_name }},
-            {% empty %}
-                None
-            {% endfor %}
-        </h3>
+<div class="container ">
+    <div id="currentDateTime" class="p-3 mt-3 mb-2 d-flex justify-content-end align-items-end"></div>
+    <div class="container card p-5 ">
         <h6>These are the teachers you handled:</h6>
         <div class="table-responsive">
             <table class="table table-hover">
@@ -26,16 +19,22 @@
                 </thead>
                 <tbody>
                     {% for teacher in matching_teachers %}
-                        <tr>
-                            <td>{{ teacher.user.first_name }}</td>
-                            <td>{{ teacher.user.last_name }}</td>
-                            <td>{{ teacher.user.email }}</td>
-                            <td>{{ teacher.grade_section }}</td>
-                        </tr>
+                    <tr>
+                        <td>{{ teacher.user.first_name }}</td>
+                        <td>{{ teacher.user.last_name }}</td>
+                        <td>{{ teacher.user.email }}</td>
+                        <td>
+                            <ul>
+                                {% for key, value in matching_keys.items %}
+                                <li>{{ key }}: {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
                     {% empty %}
-                        <tr>
-                            <td colspan="3">No matching teachers found.</td>
-                        </tr>
+                    <tr>
+                        <td colspan="3">No matching teachers found.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -48,4 +47,16 @@
     </div>
 
 </div>
+<script>
+    // JavaScript code to display current date and time synchronously
+    function updateTime() {
+      const currentDateTimeElement = document.getElementById('currentDateTime');
+      const currentDate = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+      currentDateTimeElement.innerHTML = currentDate.toLocaleString('en-US', options);
+    }
+  
+    updateTime(); // Call the function initially to display the time
+    setInterval(updateTime, 1000); // Update the time every second
+  </script>
 {% endblock main_content %}

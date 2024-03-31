@@ -6,32 +6,39 @@ Home
 
 {% block main_content %}
 {% load static %}
+<style>
+    .school_info>div {
+        margin: 10px;
+    }
+</style>
 <div class="container-fluid">
+    <div class="card p-5">
     <h3>School Information</h3>
     <form method="post" action="{% url 'add_school' %}">
         {% csrf_token %}
-        <div class="form-group">
-            <label for="region">Region</label>
+        <div class="school_info">
+        <div>
+            <label class="form-text" for="region">Region</label>
             <input type="text" class="form-control" id="region" name="region">
         </div>
 
-        <div class="form-group">
-            <label for="division">Division</label>
+        <div>
+            <label class="form-text" for="division">Division</label>
             <input type="text" class="form-control" id="division" name="division">
         </div>
 
-        <div class="form-group">
-            <label for="school_id">School ID</label>
+        <div>
+            <label class="form-text" for="school_id">School ID</label>
             <input type="text" class="form-control" id="school_id" name="school_id">
         </div>
 
-        <div class="form-group">
-            <label for="school_name">School Name</label>
+        <div>
+            <label class="form-text" for="school_name">School Name</label>
             <input type="text" class="form-control" id="school_name" name="school_name">
         </div>
 
-        <div class="form-group">
-            <label for="district">District</label>
+        <div>
+            <label class="form-text" for="district">District</label>
             <input type="text" class="form-control" id="district" name="district">
         </div>
 
@@ -41,12 +48,14 @@ Home
             <!-- Add pattern attribute and title attribute for validation -->
             <small id="school_year_help" class="form-text text-muted">Please enter the school year in the format: Year - Year (e.g., 2023 - 2024)</small>
         </div>
-        <div class="form-group">
-            <label for="principal">Principal</label>
+        <div>
+            <label class="form-text" for="principal">Principal</label>
             <input type="text" class="form-control" id="principal_name" name="principal_name">
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary ms-2">Submit</button>
+    </div>
     </form>
+</div>
 </div>
 {% endblock main_content %}
