@@ -11,7 +11,7 @@ from .utils import log_activity
 from django import forms
 import openpyxl
 from django.contrib import messages
-from .models import AdvisoryClass, Grade, GradeScores, SchoolInformation, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
+from .models import AdvisoryClass, Feedback, Grade, GradeScores, SchoolInformation, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades
 from .models import AdvisoryClass, Grade, GradeScores, Section, Student, Teacher, Subject, Quarters, ClassRecord, FinalGrade, GeneralAverage, QuarterlyGrades, AttendanceRecord, LearnersObservation, CoreValues
 from django.contrib.auth import get_user_model  # Add this import statement
 from django.urls import reverse
@@ -75,6 +75,23 @@ from google.api_core.client_options import ClientOptions
 import calendar
 from calendar import month_name
 
+@require_POST
+def submit_feedback(request):
+    rating = request.POST.get('rating')
+    feedback_text = request.POST.get('feedback')
+
+    if rating is not None and feedback_text is not None:
+        feedback = Feedback.objects.create(rating=rating, feedback_text=feedback_text)
+        # You can perform additional processing here if needed
+        return JsonResponse({'message': 'Feedback submitted successfully!'})
+    else:
+        return JsonResponse({'error': 'Rating and feedback text are required.'}, status=400)
+    
+def adviser_manual(request):    
+    return render(request, 'teacher_template/adviserTeacher/adviser_manual.html')
+
+def subject_manual(request):    
+    return render(request, 'teacher_template/adviserTeacher/subject_manual.html')
 
 def faqs(request):
     # Dito mo ilalagay ang iyong logic para sa FAQ page
@@ -108,6 +125,39 @@ def classes(request):
 
 
 # adviser
+# @login_required
+# def home_adviser_teacher(request):
+#     url = "https://www.deped.gov.ph/"
+#     headers = {
+#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"
+#     }
+
+#     response = requests.get(url, headers=headers)
+#     recent_posts_data = []
+#     recent_deped_memoranda = []
+
+#     if response.status_code == 200:
+#         soup = BeautifulSoup(response.text, 'html.parser')
+
+#         # Recent Posts
+#         recent_posts_container = soup.find('aside', id='panel-bottom-1')
+#         if recent_posts_container:
+#             posts = recent_posts_container.find('ul', id='lcp_instance_listcategorypostswidget-2').find_all('li')
+#             for post in posts:
+#                 title = post.find('a').text.strip()
+#                 link = post.find('a')['href']
+#                 recent_posts_data.append({'title': title, 'link': link})
+
+#         # Recent DepEd Memoranda
+#         recent_deped_memoranda_container = soup.find('aside', id='panel-bottom-2')
+#         if recent_deped_memoranda_container:
+#             posts = recent_deped_memoranda_container.find('ul', id='lcp_instance_listcategorypostswidget-3').find_all('li')
+#             for post in posts:
+#                 title = post.find('a').text.strip()
+#                 link = post.find('a')['href']
+#                 recent_deped_memoranda.append({'title': title, 'link': link})
+
+#     return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', {'recent_posts_data': recent_posts_data, 'recent_deped_memoranda': recent_deped_memoranda})
 @login_required
 def home_adviser_teacher(request):
     url = "https://www.deped.gov.ph/"
@@ -140,7 +190,15 @@ def home_adviser_teacher(request):
                 link = post.find('a')['href']
                 recent_deped_memoranda.append({'title': title, 'link': link})
 
-    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', {'recent_posts_data': recent_posts_data, 'recent_deped_memoranda': recent_deped_memoranda})
+    school_info = SchoolInformation.objects.all()
+
+    context = {
+        'recent_posts_data': recent_posts_data,
+        'recent_deped_memoranda': recent_deped_memoranda,
+        'school_info': school_info,
+    }
+
+    return render(request, 'teacher_template/adviserTeacher/home_adviser_teacher.html', context)
 @login_required
 def dashboard(request):
      # Get the currently logged-in teacher
