@@ -3643,15 +3643,15 @@ def teacher_upload_documents_ocr(request):
             logs = user, action, details    
             print(logs)
 
-            project_id = '1083879771832'
+            project_id = '404456621415'
 
 
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"booming-post-418913-0158eec70d3f.json"
 
             client = documentai.DocumentProcessorServiceClient()
 
             # Define the processor resource name.
-            processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
+            processor_name = f"projects/{project_id}/locations/us/processors/8c21415e83206111"
 
             
 
@@ -3844,10 +3844,16 @@ def teacher_batch_process_documents(request):
                 logs = user, action, details    
                 print(logs)
 
-                project_id = '1083879771832'
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"ces-ocr-5a2441a9fd54.json"
+
+                project_id = '404456621415'
+
+
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"booming-post-418913-0158eec70d3f.json"
+
                 client = documentai.DocumentProcessorServiceClient()
-                processor_name = f"projects/{project_id}/locations/us/processors/84dec1544028cc60"
+
+                # Define the processor resource name.
+                processor_name = f"projects/{project_id}/locations/us/processors/8c21415e83206111"
 
                 content = uploaded_file.read()
                 file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
