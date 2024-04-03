@@ -19525,13 +19525,17 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
   animation-name: fadeOut;
 }
 
-.infinite-spin, #settings-trigger i {
-  animation-name: spin;
-  animation-duration: 3s;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
+.infinite-spin, #settings-trigger i:hover {
+  animation: shake 0.7s;
 }
 
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+}
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -19554,6 +19558,7 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 
 .fadeInUp, #settings-trigger {
   animation-name: fadeInUp;
+  
 }
 
 /*-------------------------------------------------------------------*/
