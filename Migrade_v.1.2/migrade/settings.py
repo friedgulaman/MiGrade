@@ -218,3 +218,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # or any large number that suits your needs
 PASSWORD_RESET_TIMEOUT_MINUTES = 15
+

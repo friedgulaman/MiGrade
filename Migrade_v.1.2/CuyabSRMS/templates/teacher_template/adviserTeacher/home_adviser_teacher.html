@@ -23,11 +23,11 @@
   }
   .glass{
     border-radius: 10px;
-    border: 2px solid white;
     background-color: transparent;
     backdrop-filter: blur(8px);
-    max-height: 350px;
-    overflow: auto;
+    height: 100dvh;
+    width: 100%;
+    
   }
   
   /* Customize scrollbar appearance */
@@ -81,18 +81,34 @@
 .post{
   font-size: clamp(8px, 2.5vw, 10px);
 }
+section{
+
+  height: 100dvh;
+}
 #currentDateTime{
+  width: 100%;
   font-size: clamp(12px, 2.5vw, 10px);
-  margin: 0;
+  }
+  .lead>img{
+width: 100%;
+max-width: clamp(50px, 100px, 120px);
+animation: fadeIn 3s;
+  }
+  .text>div{
+    margin: 10px;
+    font-size: clamp(12px, 2.5vw, 10px);
+    font-weight: bold;
+    align-items: baseline;
+    animation: fadeIn 2s;
   }
 </style>
-<section class="container p-2 ">
-  <div>
+<section class="w-100 p-4 glass">
+  <div >
 
+<!--  
+  <div id="currentDateTime" class="container "></div> -->
  
-  <div id="currentDateTime" class="d-flex justify-content-end align-items-center p-5 m-0"></div>
-  <div class="glass p-5 me-4 ms-4 mt-0">
-    <h3 class="mb-4">Recent DepEd Orders</h3>
+    <!-- <h3 class="mb-4">Recent DepEd Orders</h3>
     {% if recent_posts_data %}
       {% for post in recent_posts_data %}
         <div class="card">
@@ -113,11 +129,44 @@
     {% else %}
       <h3>No Recent DepEd Memoranda.</h3>
     {% endif %}
-    <hr class="container">
+    <hr class="container"> -->
+
+
+    {% for school in school_info %}
+  
+    <div class="container   ">
+      <div class="school_info">
+        <div id="currentDateTime" class="container "></div>
+          <div class="text-center">
+              <div class=" d-flex flex-wrap justify-content-between align-items-center">
+                  <div class="container lead">
+                      <img class="img-fluid" src="{% static 'star-admin/images/6.svg' %}" alt="Icon 1">
+                      <div class="text">
+                          <div>Region: <mark>{{ school.region }}</mark></div>
+                          <div>Division: <mark>{{ school.division }}</mark></div>
+                          <div>School Id: <mark>{{ school.school_id }}</mark></div>
+                          <div>School Name:<mark>{{ school.school_name }}</mark></div>
+                          <div>District:<mark>{{ school.district }}</mark></div>
+                          <div>School Year:<mark>{{ school.school_year }}</mark></div>
+                          <div>Principal:<mark>{{ school.principal_name }}</mark></div>
+                      </div>
+                      <img class="img-fluid" src="{% static 'star-admin/images/5.svg' %}" alt="Icon 2">
+                  </div>
+                 
+              </div>
+          </div>
+      
   </div>
-  <footer class="deped d-flex justify-content-end align-items-center container p-3">
+  
+ 
+  {% endfor %}
+
+
+
+  </div>
+  <!-- <footer class="deped d-flex justify-content-end align-items-center container p-3">
     <p>Recent posts retrieved from the official website of the <a class="text-white" href="https://www.deped.gov.ph/" target="_blank">Department of Education (DepEd)</a>.</p>
-  </footer>
+  </footer> -->
   </div>
 </section>
 <script>
@@ -125,7 +174,7 @@
   function updateTime() {
     const currentDateTimeElement = document.getElementById('currentDateTime');
     const currentDate = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
     currentDateTimeElement.innerHTML = currentDate.toLocaleString('en-US', options);
   }
 

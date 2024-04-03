@@ -64,6 +64,10 @@ urlpatterns = [
     path('faqs', teacher_required(TeacherViews.faqs), name='faqs'),  # etoo gar
     path('documentation', teacher_required(TeacherViews.documentation), name='documentation'),  # etoo gar
     path('about', teacher_required(TeacherViews.about), name='about'),  # etoo gar
+    path('adviser_manual', teacher_required(TeacherViews.adviser_manual), name='adviser_manual'),  # etoo gar
+    path('subject_manual', teacher_required(TeacherViews.subject_manual), name='subject_manual'),  # etoo gar
+    path('submit_feedback', teacher_required(TeacherViews.submit_feedback), name='submit_feedback'),
+
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),

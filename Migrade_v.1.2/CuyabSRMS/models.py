@@ -691,3 +691,11 @@ class RestoreRequest(models.Model):
     requester = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True)
     date_requested = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default='Pending')
+
+
+class Feedback(models.Model):
+    rating = models.CharField(max_length=50, null=True, blank=True)
+    feedback_text = models.TextField()
+
+    def __str__(self):
+        return f"Rating: {self.rating}, Feedback: {self.feedback_text}"

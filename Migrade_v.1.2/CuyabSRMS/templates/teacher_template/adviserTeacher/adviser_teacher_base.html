@@ -61,7 +61,36 @@ body::-webkit-scrollbar-track {
             display: none; /* Hide the sidebar by default on LG screens */
         }
     }
+.manual > li a{
+  text-decoration: none;
+  margin-top: 3px;
+}
+#star-ratings input[type="radio"] {
+  display: none;
+}
 
+#star-ratings label {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+#star-ratings label::before {
+  content: "\2605";
+  margin-right: 5px;
+  color: gold;
+  text-shadow: #fc0 0 0 20px;
+}
+
+
+#star-ratings label:hover ~ input[type="radio"] + label::before {
+  color: rgb(0, 0, 0);
+  
+}
+
+
+#feedback{
+  height: 100px;
+}
 </style>
 
 <body>
@@ -69,8 +98,10 @@ body::-webkit-scrollbar-track {
     {% block content %}
     
 
-<div class="container-scroller">
+<div class="container-scroller cs">
 
+ 
+ 
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row bg-white" >
         <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start" id="nav">
@@ -122,7 +153,83 @@ body::-webkit-scrollbar-track {
       </nav>
     <!-- partial -->
     <div class="page-body-wrapper">
-      
+      <div class="theme-setting-wrapper">
+        <div id="settings-trigger" class="bg-success" title="Help?"><i class="ti-help"></i></div>
+        <div id="theme-settings" class="settings-panel bg-light p-3">
+          <i class="settings-close ti-close"></i>
+          <h2 class="mt-5">Need Help?</h2>
+          <p class="mt-2">If you're experiencing issues or need assistance, here are a few options:</p>
+          <ol>
+            <li class="mt-3">Try reloading the page and see if the issue resolves.</li>
+            <li class="mt-3">If the problem persists, please refer to our User Manual for detailed instructions.</li>
+            <ul class="manual mt-3">
+              <li>
+                <a href="{% url 'adviser_manual' %}" target="_blank">Adviser Teacher Manual</a>
+              </li>
+              <li>
+                <a href="{% url 'subject_manual' %}" target="_blank">Subject Teacher Manual</a>
+              </li>
+            </ul>
+            <li class="mt-3">You can also reach out to our support team at <mark>cuyab.migrade@gmail.com</mark> for personalized assistance.</li>
+          </ol>
+          
+
+          <div class="d-flex justify-content-center align-items-center flex-column mb-0 mt-5 card p-3">
+            <p>How's your experience with our website?</p> 
+            <div id="star-ratings">        
+              <input type="radio" id="rating-very-poor" name="rating" value="very poor" onclick="submitRating()">
+              <label for="rating-very-poor" onmouseover="showRatingValue('Very Poor')"></label>
+              <input type="radio" id="rating-poor" name="rating" value="poor" onclick="submitRating()">
+              <label for="rating-poor" onmouseover="showRatingValue('Poor')"></label>
+              <input type="radio" id="rating-average" name="rating" value="average" onclick="submitRating()">
+              <label for="rating-average" onmouseover="showRatingValue('Average')"></label>
+              <input type="radio" id="rating-good" name="rating" value="good" onclick="submitRating()">
+              <label for="rating-good" onmouseover="showRatingValue('Good')"></label>
+              <input type="radio" id="rating-excellent" name="rating" value="excellent" onclick="submitRating()">
+              <label for="rating-excellent" onmouseover="showRatingValue('Excellent')"></label>
+              <div class="text-center rating_label"></div>
+          </div>
+          
+          
+          
+            
+        </div>
+        
+
+
+        
+          
+        </div>
+        <div id="modal_feedback" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
+          <div class="modal-dialog modal-bs-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Feedback Form</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" onclick="reloadPage()">&times;</button>
+
+              </div>
+              <div class="modal-body">
+                <form id="feedbackForm" method="POST">
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <input type="hidden" id="ratingInput" name="rating" value="">
+
+                    <p class="lead text-center">Your Ratings</p>
+                    <div id="ratingValue" class="text-center"></div>
+                    <!-- Your star ratings inputs go here -->
+                    <label for="feedback">Tell us about your experience:</label>
+                    <textarea id="feedback" name="feedback"  rows="3" class="form-control"></textarea>
+                  </div>
+               
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="submitFeedback()">Submit Feedback</button>
+              </div>
+            </form>
+            </div>
+          </div>
+        </div>
+      </div>
         {% include 'teacher_template/adviserTeacher/_sidebar.html' %}
       <!-- partial -->
         <!-- Main content -->
@@ -137,16 +244,19 @@ body::-webkit-scrollbar-track {
 
               </div>
             </div>
+         
         {% endblock main_content %}
-    </div>
+
+    </div >
         <!-- partial:partials/_footer.html -->
 
-  
+        
         <!-- partial -->
       </div>
       <!-- main-panel ends -->
     </div>
     <!-- page-body-wrapper ends -->
+    
   </div>
   <!-- container-scroller -->
 
@@ -181,7 +291,80 @@ body::-webkit-scrollbar-track {
   <!-- New Custom Js File Migrade  -->
   <script src="{% static 'migrade_js/js/upload_button.js' %}"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function openFeedbackModal() {
+      $('#modal_feedback').modal('show');
+    }
+  
+    function submitRating(rating) {
+  const selectedRating = document.querySelector('input[name="rating"]:checked');
+  if (selectedRating) {
+    const ratingValue = selectedRating.value;
+    console.log('Rating submitted:', ratingValue);
+    const ratingValueSpan = document.getElementById('ratingValue');
+    ratingValueSpan.innerHTML = `<span class="lead" style="color: ${getRatingColor(ratingValue)};">${ratingValue}</span>`;
+    document.getElementById('ratingInput').value = ratingValue;
+    openFeedbackModal();
 
+    // Close the modal after opening it
+    const modal = document.getElementById('theme-settings');
+    if (modal) {
+      modal.style.display = 'none'; // or modal.classList.remove('show');
+    }
+  }
+}
+
+
+// Function to determine color based on rating value
+function getRatingColor(rating) {
+  switch (rating.toLowerCase()) {
+    case 'excellent':
+      return 'green';
+    case 'good':
+      return 'orange';
+    case 'average':
+      return 'blue';
+    case 'poor':
+      return 'red';
+    case 'very poor':
+      return 'darkred';
+    default:
+      return 'black'; // Default color
+  }
+}
+
+    function submitFeedback() {
+  const form = document.getElementById('feedbackForm');
+  const formData = new FormData(form);
+
+  fetch('submit_feedback', {
+    method: 'POST',
+    body: formData,
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      // You can handle the response data here, such as displaying a success message
+      alert('Feedback submitted successfully!');
+      $('#modal_feedback').modal('hide');
+      location.reload()
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      // You can handle errors here, such as displaying an error message
+      alert('Error submitting feedback. Please try again.');
+    });
+}
+function showRatingValue(rating) {
+  const ratingLabel = document.querySelector('.rating_label');
+  ratingLabel.textContent = `Rating: ${rating}`;
+}
+function reloadPage() {
+  location.reload(); // Reload the page
+}
+
+  </script>
+  
   <!-- End custom js for this page-->
 </body>
 
