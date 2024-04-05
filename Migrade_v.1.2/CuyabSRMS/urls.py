@@ -67,6 +67,8 @@ urlpatterns = [
     path('adviser_manual', teacher_required(TeacherViews.adviser_manual), name='adviser_manual'),  # etoo gar
     path('subject_manual', teacher_required(TeacherViews.subject_manual), name='subject_manual'),  # etoo gar
     path('submit_feedback', teacher_required(TeacherViews.submit_feedback), name='submit_feedback'),
+    path('privacy-policy/', teacher_required(TeacherViews.privacy_policy_view), name='privacy_policy'),
+    path('terms-and-conditions/', teacher_required(TeacherViews.terms_and_conditions_view), name='terms_and_conditions'),
 
 
 
@@ -307,6 +309,7 @@ urlpatterns = [
     path('get-admin-data/', super_required(SuperAdminViews.get_admin_data), name='get_admin_data'),
     path('update-admin/', super_required(SuperAdminViews.update_admin), name='update_admin'),
     path('delete-admin/', super_required(SuperAdminViews.delete_admin), name='delete_admin'),
+    path('backup/', super_required(SuperAdminViews.backup_database), name='backup_database'),
 
    
 # transfer record Views

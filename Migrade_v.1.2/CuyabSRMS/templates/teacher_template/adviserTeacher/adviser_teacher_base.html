@@ -91,6 +91,9 @@ body::-webkit-scrollbar-track {
 #feedback{
   height: 100px;
 }
+.footer-links {
+  text-align: center;
+}
 </style>
 
 <body>
@@ -157,6 +160,7 @@ body::-webkit-scrollbar-track {
         <div id="settings-trigger" class="bg-success" title="Help?"><i class="ti-help"></i></div>
         <div id="theme-settings" class="settings-panel bg-light p-3">
           <i class="settings-close ti-close"></i>
+          
           <h2 class="mt-5">Need Help?</h2>
           <p class="mt-2">If you're experiencing issues or need assistance, here are a few options:</p>
           <ol>
@@ -195,7 +199,11 @@ body::-webkit-scrollbar-track {
             
         </div>
         
+        <div class="footer-links mt-3">
+          <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a> | 
+          <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
 
+      </div>
 
         
           

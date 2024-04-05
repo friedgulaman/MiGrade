@@ -183,3 +183,8 @@ class BehaviorStatementAdmin(admin.ModelAdmin):
 @admin.register(LearnersObservation)
 class LearnersObservationAdmin(admin.ModelAdmin):
     list_display = ('student', 'quarter_1', 'quarter_2', 'quarter_3', 'quarter_4')
+
+
+@admin.register(Feedback)
+class UserFeedback(admin.ModelAdmin):
+    list_display = ('rating', 'feedback_text')

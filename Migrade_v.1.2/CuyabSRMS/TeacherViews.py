@@ -104,6 +104,15 @@ def documentation(request):
 def about(request):
     # Dito mo ilalagay ang iyong logic para sa FAQ page
     return render(request, 'teacher_template/adviserTeacher/about_us.html')
+
+def privacy_policy_view(request):
+    # Your logic for the Privacy Policy view
+    return render(request, 'teacher_template/adviserTeacher/privacy_policy.html')
+
+def terms_and_conditions_view(request):
+    # Your logic for the Terms and Conditions view
+    return render(request, 'teacher_template/adviserTeacher/terms_and_conditions.html')
+
 @login_required
 def home_teacher(request):
     announcements = Announcement.objects.all()
@@ -204,7 +213,7 @@ def home_adviser_teacher(request):
 @login_required
 def dashboard(request):
      # Get the currently logged-in teacher
-    teacher = request.user.teacher
+    teacher = request.user.teacherzz
 
     # Retrieve the related section
     section = teacher.sections.first()  # Assuming a teacher can have multiple sections

@@ -20,6 +20,21 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
+from django.http import HttpResponse
+from subprocess import run, PIPE
+
+def backup_database(request):
+    # Execute the dbbackup command
+    # result = run(['python', 'manage.py', 'dbbackup', '--encrypt'], stdout=PIPE, stderr=PIPE)
+    result = run(['python', 'manage.py', 'dbbackup'], stdout=PIPE, stderr=PIPE)
+    
+    if result.returncode == 0:
+        # Backup successful
+        return HttpResponse("Backup successful")
+    else:
+        # Backup failed
+        return HttpResponse("Backup failed: " + result.stderr.decode('utf-8'), status=500)
+    
 @login_required
 def home_superadmin(request):
     admins = Admin.objects.all()

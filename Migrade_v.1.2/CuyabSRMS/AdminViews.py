@@ -312,8 +312,15 @@ def delete_master(request):
 @login_required
 def home_admin(request):
     # Retrieve the grades queryset
-    current_school_year = SchoolInformation.objects.first().school_year
-    print(current_school_year)
+    school_info = SchoolInformation.objects.first()
+    if school_info is None:
+        # Handle the case when SchoolInformation doesn't exist
+        # You can raise an error, redirect, or provide default values
+        # For simplicity, let's assume school year is None in this case
+        current_school_year = None
+    else:
+        current_school_year = school_info.school_year
+        print(current_school_year)
 
     grades = Grade.objects.all()
     teachers = Teacher.objects.all()
@@ -323,8 +330,6 @@ def home_admin(request):
     total_grades = Grade.objects.count()
     total_sections = Section.objects.count()
     total_subjects = Subject.objects.count()
-    
-   
    
     context = {
         'grades': grades,
@@ -336,10 +341,10 @@ def home_admin(request):
         'total_sections': total_sections,
         'total_subjects': total_subjects,
         'school_year': current_school_year
-       
-
     }
     return render(request, 'admin_template/home_admin.html', context)
+
+
 def admin_base(request):
     announcements = Announcement.objects.all()
     return {'announcements': announcements}

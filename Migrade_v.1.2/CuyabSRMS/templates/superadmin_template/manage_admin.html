@@ -97,6 +97,10 @@
                 </li>
               </ul>
               <div class="d-flex justify-content-end align-items-center">
+                <form action="{% url 'backup_database' %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit">Backup Database</button>
+              </form>
                 <button class="btn btn-primary btn-sm d-flex justify-content-between align-items-center ">
                   <a href="admin/" class="admin me-2">Advanced Settings</a>
                   <i class="icon-settings"></i>
