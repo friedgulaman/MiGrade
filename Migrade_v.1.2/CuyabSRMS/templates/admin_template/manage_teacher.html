@@ -179,7 +179,7 @@ Manage Teachers
                         <tbody>
                             {% for teacher in teachers %}
                                 <tr>
-                               <td>{{ teacher.user.id }}</td>
+                                  <td>{{forloop.counter}}</td>
                                     <td>
                                         <a href="#" class="teacher-link" data-toggle="modal" data-target="#updateModal" data-teacher-id="{{ teacher.id }}">
                                             {{ teacher.user.first_name }} {{ teacher.user.last_name }}
@@ -244,7 +244,7 @@ Manage Teachers
                         <tbody>
                             {% for teacher in teachers %}
                                 <tr class="teacher-row" data-teacher-id="{{ teacher.id }}">
-                                    <td>{{ teacher.user.id }}</td>
+                                  <td>{{forloop.counter}}</td>
                                     <td>
                                         {{ teacher.user.first_name }} {{ teacher.user.last_name }}
                                     </td>
