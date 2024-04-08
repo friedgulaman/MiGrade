@@ -1147,19 +1147,19 @@ def upload_documents_ocr(request):
 
             pdf_content_base64 = base64.b64encode(content).decode('utf-8')
 
-        return redirect('sf10_view')
-        # return render(request, 'admin_template/edit_extracted_data.html', {
-        #         # 'extracted_data': extracted_data_for_review,
-        #         'document_text': text,
-        #         'uploaded_document_url': processed_document.document.url,
-        #         # 'all_extracted_data': all_extracted_data,
-        #         'processed_document': processed_document,
-        #         'download_link': processed_document.document.url,
-        #         'data_by_type': data_by_type,
-        #         # 'extracted_text': extracted_text 
-        #         'extracted_data': my_data,
-        #         'pdf_content_base64': pdf_content_base64, 
-        #     })
+        # return redirect('sf10_view')
+        return render(request, 'admin_template/edit_extracted_data.html', {
+                # 'extracted_data': extracted_data_for_review,
+                'document_text': text,
+                'uploaded_document_url': processed_document.document.url,
+                # 'all_extracted_data': all_extracted_data,
+                'processed_document': processed_document,
+                'download_link': processed_document.document.url,
+                'data_by_type': data_by_type,
+                # 'extracted_text': extracted_text 
+                'extracted_data': my_data,
+                'pdf_content_base64': pdf_content_base64, 
+            })
     else: 
         form = DocumentUploadForm()
 
@@ -1208,12 +1208,11 @@ def save_edited_data(request):
         extracted_data_instance.school_year = extracted_data['school_year']
         extracted_data_instance.general_average = extracted_data['general_average']
 
-        birthdate_str = request.POST.get('Birthdate', '')
+        birthdate_str = extracted_data['birthdate']
 
         # Convert the birthdate string to the "YYYY-MM-DD" format
         try:
-            birthdate_obj = datetime.strptime(birthdate_str, "%b. %d, %Y")
-            formatted_birthdate = birthdate_obj.strftime("%Y-%m-%d")
+            formatted_birthdate = parser.parse(birthdate_str).date()
         except ValueError:
             # Handle the case where the date string is not in the expecsted format
             return HttpResponse("Invalid birthdate format.")

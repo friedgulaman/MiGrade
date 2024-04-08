@@ -823,7 +823,6 @@ def write_transmuted_grade(sheet, grade_scores_queryset):
             continue
 
 
-
 def write_sf9_data(front_sheet, student):
     # Assuming Y16 is the cell where you want to write the student's name
     column_coordinates_student_name = 17  # Column Y
@@ -1253,6 +1252,7 @@ def write_school_info_general_average(sheet, school_info, general_grades_query):
         # Write grade, section, and teacher
   
         # sheet.cell(row=row_coordinates, column=column_coordinates_teacher, value=teacher_name)
+
 
 
 def write_student_name_general_average(sheet, general_grades_query):

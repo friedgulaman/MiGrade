@@ -89,7 +89,7 @@
                     <div class="form-group mb-4">
                         <label for="grade">Quarter</label>
                         <select class="form-control" id="quarter" name="quarter" required>
-                            <option value="">Select Quarter</option>
+                            <option value="" disab>Select Quarter</option>
                             {% for quarter in quarters %}
                                 <option value="{{ quarter }}">{{ quarter }}</option>
                             {% endfor %}
@@ -107,7 +107,7 @@
     {% if messages %}
     <div class="container text-center mt-3">
       {% for message in messages %}
-      <div class="alert alert-danger" role="alert">
+      <div id="alert-message" class="alert alert-danger" role="alert">
         {{ message }}
       </div>
       {% endfor %}
@@ -119,6 +119,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
+    // Get the alert message element
+    var alertMessage = document.getElementById('alert-message');
+  
+    // Set a timeout to remove the alert message after 5 seconds (5000 milliseconds)
+    setTimeout(function() {
+      alertMessage.style.display = 'none'; // Hide the alert message
+    }, 3000); // 5000 milliseconds = 5 seconds
+  </script>
+<script>
     function saveData(event) {
         event.preventDefault();
          // Prevent the default form submission behavior
@@ -128,6 +137,11 @@
         var selectedSection = $('#section').val();
         var selectedSubject = $('#subject').val();
         var selectedQuarter = $('#quarter').val();
+
+        if (selectedQuarter === '') {
+            alert("Please select a quarter.");
+            return false; // Prevent the form submission
+        }
 
         if (selectedGrade === 'Grade 1' && selectedSubject === 'FILIPINO' && selectedQuarter === '1st Quarter') {
             alert("The selected subject is not available in Grade 1 for the 1st Quarter.");
@@ -164,6 +178,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         var selected_grade = "{{ selected_grade }}";
         var selected_section = "{{ selected_section }}";
+
+        console.log(selected_grade)
 
         // Check if selected_grade and selected_section are not empty or None before setting the values
         if (selected_grade !== "None" && selected_section !== "None")  {

@@ -76,7 +76,7 @@ New Class List
         {% if messages %}
         <div class="container text-center mt-3">
           {% for message in messages %}
-          <div class="alert alert-danger" role="alert">
+          <div id="alert-message" class="alert alert-danger" role="alert">
             {{ message }}
           </div>
           {% endfor %}
@@ -111,7 +111,7 @@ New Class List
         {% if messages %}
         <div class="container text-center mt-3">
           {% for message in messages %}
-          <div class="alert alert-danger" role="alert">
+          <div id="alert-message" class="alert alert-danger" role="alert">
             {{ message }}
           </div>
           {% endfor %}
@@ -223,7 +223,15 @@ New Class List
 
 </section>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  // Get the alert message element
+  var alertMessage = document.getElementById('alert-message');
 
+  // Set a timeout to remove the alert message after 5 seconds (5000 milliseconds)
+  setTimeout(function() {
+    alertMessage.style.display = 'none'; // Hide the alert message
+  }, 3000); // 5000 milliseconds = 5 seconds
+</script>
 <script>
   // JavaScript to handle the back button click event
   document.querySelector(".back-button").addEventListener("click", function () {

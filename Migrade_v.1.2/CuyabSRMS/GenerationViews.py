@@ -187,7 +187,6 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         # Select the desired sheet (use the correct sheet name from the output)
         sheet = workbook[desired_sheet_name]
 
-       
         write_scores_hps_written(sheet, grade_scores)
         write_scores_hps_performance(sheet, grade_scores)
         write_scores_hps_quarterly(sheet, grade_scores)
@@ -196,6 +195,7 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         write_quarterly_assessment_scores(sheet, grade_scores)
         write_initial_grade(sheet, grade_scores)
         write_transmuted_grade(sheet, grade_scores)
+        
     write_student_names(sheet_input, grade_scores)
     write_school_info(sheet_input, school_info, grade, section, teacher_name)
 
@@ -310,7 +310,6 @@ def generate_final_and_general_grades(request, grade, section):
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 31, 35)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
-        print("grade 2")
 
     elif grade == 'Grade 3':
         write_school_info_general_average(sheet, school_info, general_grades_query)
@@ -367,6 +366,9 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     quarter_name = quarter
 
     print(quarter_name)
+    print(grade_name)
+    print(subject_name)
+    print(section_name)
 
     # print(quarter)
     for grade_score in grade_scores_queryset:
@@ -467,6 +469,53 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
                 desired_sheet_name = 'Q3'
             elif quarter_name == "4th Quarter":
                 desired_sheet_name = 'Q4'
+
+        elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+            if quarter_name == "1st Quarter":
+                excel_file_name = "GRADE 4-6_ 1ST QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+            elif quarter_name == "2nd Quarter":
+                excel_file_name = "GRADE 4-6_ 2ND QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+            elif quarter_name == "3rd Quarter":
+                excel_file_name = "GRADE 4-6_ 3RD QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+            elif quarter_name == "4th Quarter":
+                excel_file_name = "GRADE 4-6_ 4TH QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+        
 
     elif grade_name == "Grade 1":
         if quarter_name == "1st Quarter":
@@ -825,7 +874,6 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
- 
         # Open the copied Excel file
     workbook = openpyxl.load_workbook(copied_file_path)
 
@@ -1326,12 +1374,8 @@ def generate_final_grade_view(request):
         for record in class_records:
             grade_sections.add((record.student.grade, record.student.section, record.student.school_year))
 
-        print(grade_sections)
-
         # Convert the set to a sorted list
         grade_sections = sorted(grade_sections)
-
-        print(grade_sections)
 
         context = {
             'grade_sections': grade_sections,
