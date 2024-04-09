@@ -21,14 +21,14 @@
         <div class="card p-5 text-center">        
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
+                    <div id="alert-message" class="alert alert-{{ message.tags }}">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
             
             {% if error %}
-                <div class="alert alert-danger">
+                <div  id="alert-message" class="alert alert-danger">
                     Error processing the file. Please try again.
                 </div>
                 <button class="btn btn-primary" onclick="tryAgain()">Try Again</button>
@@ -38,7 +38,15 @@
 </section>
 <!-- jQuery CDN -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
+<script>
+    // Get the alert message element
+    var alertMessage = document.getElementById('alert-message');
+  
+    // Set a timeout to remove the alert message after 5 seconds (5000 milliseconds)
+    setTimeout(function() {
+      alertMessage.style.display = 'none'; // Hide the alert message
+    }, 3000); // 5000 milliseconds = 5 seconds
+  </script>
 <script>
     $(document).ready(function() {
         $(".back-button").click(function() {

@@ -73,7 +73,31 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'dbbackup',
 ]
+
+# DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR / 'backup'}
+
+from google.oauth2 import service_account
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.path.join(BASE_DIR, 'booming-post-418913-0158eec70d3f.json')
+)
+
+# DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+DEFAULT_FILE_STORAGE = 'booming-post-418913.gcloud.GoogleCloudMediaFileStorage'
+GS_PROJECT_ID = '404456621415'
+GS_BUCKET_NAME = 'migrade'
+UPLOAD_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+DBBACKUP_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+DBBACKUP_STORAGE_OPTIONS = {
+    "bucket_name": "migrade",
+    "project_id": "404456621415",
+    "blob_chunk_size": 1024 * 1024
+}
+# DBBACKUP_GPG_RECIPIENT = 'cuyab.migrade (backup) <cuyab.migrade@gmail.com>'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -114,8 +138,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'migrade_v.2.0',
-        'USER': 'root',
-        'PASSWORD': '',
+        'USER': os.environ.get('DB_USERNAME'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'localhost',   
         'PORT': '3306',
     }    

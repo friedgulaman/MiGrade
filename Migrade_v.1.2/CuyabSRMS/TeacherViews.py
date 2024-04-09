@@ -104,6 +104,15 @@ def documentation(request):
 def about(request):
     # Dito mo ilalagay ang iyong logic para sa FAQ page
     return render(request, 'teacher_template/adviserTeacher/about_us.html')
+
+def privacy_policy_view(request):
+    # Your logic for the Privacy Policy view
+    return render(request, 'teacher_template/adviserTeacher/privacy_policy.html')
+
+def terms_and_conditions_view(request):
+    # Your logic for the Terms and Conditions view
+    return render(request, 'teacher_template/adviserTeacher/terms_and_conditions.html')
+
 @login_required
 def home_teacher(request):
     announcements = Announcement.objects.all()
@@ -204,7 +213,7 @@ def home_adviser_teacher(request):
 @login_required
 def dashboard(request):
      # Get the currently logged-in teacher
-    teacher = request.user.teacher
+    teacher = request.user.teacherzz
 
     # Retrieve the related section
     section = teacher.sections.first()  # Assuming a teacher can have multiple sections
@@ -756,6 +765,7 @@ def get_grade_details(request):
     quarters = Quarters.objects.values_list('quarters', flat=True).distinct()
     
     print(grades)
+    print(teacher)
     context = {
         'teacher': teacher,
         'grades': grades,
@@ -3824,23 +3834,86 @@ def teacher_upload_documents_ocr(request):
 
             pdf_content_base64 = base64.b64encode(content).decode('utf-8')
 
-        return redirect('teacher_sf10_views')
-        # return render(request, 'admin_template/edit_extracted_data.html', {
-        #         # 'extracted_data': extracted_data_for_review,
-        #         'document_text': text,
-        #         'uploaded_document_url': processed_document.document.url,
-        #         # 'all_extracted_data': all_extracted_data,
-        #         'processed_document': processed_document,
-        #         'download_link': processed_document.document.url,
-        #         'data_by_type': data_by_type,
-        #         # 'extracted_text': extracted_text 
-        #         'extracted_data': my_data,
-        #         'pdf_content_base64': pdf_content_base64, 
-        #     })
+        # return redirect('teacher_sf10_views')
+        return render(request, 'teacher_template/adviserTeacher/teacher_edit_extracted_data.html', {
+                # 'extracted_data': extracted_data_for_review,
+                'document_text': text,
+                'uploaded_document_url': processed_document.document.url,
+                # 'all_extracted_data': all_extracted_data,
+                'processed_document': processed_document,
+                'download_link': processed_document.document.url,
+                'data_by_type': data_by_type,
+                # 'extracted_text': extracted_text 
+                'extracted_data': my_data,
+                'pdf_content_base64': pdf_content_base64, 
+            })
     else: 
         form = DocumentUploadForm()
 
     return render(request, 'teacher_template/adviserTeacher/teacher_upload_documents.html', {'form': form})
+
+def teacher_save_edited_data(request):  
+    if request.method == 'POST':
+        # Assuming extracted_data is sent as POST data, retrieve it
+        extracted_data = {
+            'last_name': request.POST.get('Last_Name', ''),
+            'first_name': request.POST.get('First_Name', ''),
+            'middle_name': request.POST.get('Middle_Name', ''),
+            'sex': request.POST.get('SEX', ''),
+            'classified_as_grade': request.POST.get('Classified_as_Grade', ''),
+            'lrn': request.POST.get('LRN', ''),
+            'name_of_school': request.POST.get('Name_of_School', ''),
+            'school_year': request.POST.get('School_Year', ''),
+            'general_average': request.POST.get('General_Average', ''),
+            'birthdate': request.POST.get('Birthdate', ''),
+        }
+
+        # Retrieve the existing ProcessedDocument instance based on some criteria
+        # For example, assuming you have a unique identifier like an ID:
+        processed_document_id = request.POST.get('processed_document_id')
+        print(f"Processed Document ID: {processed_document_id}")
+        processed_document = ProcessedDocument.objects.get(pk=processed_document_id)
+
+        # Retrieve the existing ExtractedData instance based on the associated ProcessedDocument
+        try:
+            extracted_data_instance = ExtractedData.objects.get(processed_document=processed_document)
+        except ExtractedData.DoesNotExist:
+            # Handle the case where the ExtractedData instance does not exist
+            return HttpResponse("ExtractedData instance not found.")
+
+        # Update the fields of the existing ExtractedData instance
+        extracted_data_instance.last_name = extracted_data['last_name']
+        extracted_data_instance.first_name = extracted_data['first_name']
+        extracted_data_instance.middle_name = extracted_data['middle_name']
+        extracted_data_instance.sex = extracted_data['sex']
+        extracted_data_instance.classified_as_grade = extracted_data['classified_as_grade']
+        extracted_data_instance.lrn = extracted_data['lrn']
+        extracted_data_instance.name_of_school = extracted_data['name_of_school']
+        extracted_data_instance.school_year = extracted_data['school_year']
+        extracted_data_instance.general_average = extracted_data['general_average']
+
+        birthdate_str = extracted_data['birthdate']
+
+        # Convert the birthdate string to the "YYYY-MM-DD" format
+        try:
+            formatted_birthdate = parser.parse(birthdate_str).date()
+        except ValueError:
+            # Handle the case where the date string is not in the expecsted format
+            return HttpResponse("Invalid birthdate format.")
+
+        # Update the birthdate field of the existing ExtractedData instance
+        extracted_data_instance.birthdate = formatted_birthdate
+
+        # ... update other fields
+
+        # Save the changes
+        extracted_data_instance.save()
+
+        return redirect('teacher_sf10_views')
+
+    else:
+        # Handle GET request if necessary
+        return HttpResponse("Invalid request method")
 
 
 def teacher_sf10_views(request):

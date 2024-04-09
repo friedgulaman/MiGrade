@@ -67,6 +67,8 @@ urlpatterns = [
     path('adviser_manual', teacher_required(TeacherViews.adviser_manual), name='adviser_manual'),  # etoo gar
     path('subject_manual', teacher_required(TeacherViews.subject_manual), name='subject_manual'),  # etoo gar
     path('submit_feedback', teacher_required(TeacherViews.submit_feedback), name='submit_feedback'),
+    path('privacy-policy/', teacher_required(TeacherViews.privacy_policy_view), name='privacy_policy'),
+    path('terms-and-conditions/', teacher_required(TeacherViews.terms_and_conditions_view), name='terms_and_conditions'),
 
 
 
@@ -241,11 +243,12 @@ urlpatterns = [
     path('get_sections_classrecord/', teacher_required(TeacherViews.get_sections_classrecord), name='get_sections_classrecord'),
      path('create-attendance/', teacher_required(TeacherViews.create_attendance_view), name='create_attendance_view'),
     path('save_attendance_record/', teacher_required(TeacherViews.save_attendance_record), name='save_attendance_record'),
-      path('attendance-records/<str:grade>/<str:section>/', teacher_required(TeacherViews.attendance_record_view), name='attendance_records'),
-       path('update-attendance-record/', teacher_required(TeacherViews.update_attendance_record), name='update_attendance_record'),
-      path('delete-month/', teacher_required(TeacherViews.delete_month), name='delete_month'),
-     path('teacher_upload_documents/', teacher_required(TeacherViews.teacher_upload_documents_ocr), name='teacher_upload_documents'),
-         path('teacher_sf10_views/', teacher_required(TeacherViews.teacher_sf10_views), name='teacher_sf10_views'),
+    path('attendance-records/<str:grade>/<str:section>/', teacher_required(TeacherViews.attendance_record_view), name='attendance_records'),
+    path('update-attendance-record/', teacher_required(TeacherViews.update_attendance_record), name='update_attendance_record'),
+    path('delete-month/', teacher_required(TeacherViews.delete_month), name='delete_month'),
+    path('teacher_upload_documents/', teacher_required(TeacherViews.teacher_upload_documents_ocr), name='teacher_upload_documents'),
+    path('teacher_sf10_views/', teacher_required(TeacherViews.teacher_sf10_views), name='teacher_sf10_views'),
+    path('teacher_save_edited_data/', teacher_required(TeacherViews.teacher_save_edited_data), name='teacher_save_edited_data'),
      path('teacher_batch_process_documents/', teacher_required(TeacherViews.teacher_batch_process_documents), name='teacher_batch_process_documents'),
     path('teacher_sf10_edit_view/<int:id>/', teacher_required(TeacherViews.teacher_sf10_edit_view), name='teacher_sf10_edit_view'),
     path('teacher_sf10/edit/<int:id>/', teacher_required(TeacherViews.teacher_sf10_edit), name='teacher_sf10_edit'),
@@ -267,6 +270,7 @@ urlpatterns = [
     path('generate-per-all-subject/', teacher_required(GenerationViews.generate_per_all_subject_view), name='generate_per_all_subject'),
     path('generate-excel/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_excel_for_all_subjects), name='generate_excel_for_all_subjects'),
     path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_quarterly_grades), name='generate_summary_of_quarterly_grades'),
+    path('generate_summary_of_mapeh/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_mapeh), name='generate_summary_of_mapeh'),
 
     path('generate_final_and_general_grades/<str:grade>/<str:section>/', teacher_required(GenerationViews.generate_final_and_general_grades), name='generate_final_and_general_grades'),
     path('generate-summary-for-grades-4-to-6/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_for_grades_4_to_6), name='generate_summary_for_grades_4_to_6'),
@@ -307,6 +311,7 @@ urlpatterns = [
     path('get-admin-data/', super_required(SuperAdminViews.get_admin_data), name='get_admin_data'),
     path('update-admin/', super_required(SuperAdminViews.update_admin), name='update_admin'),
     path('delete-admin/', super_required(SuperAdminViews.delete_admin), name='delete_admin'),
+    path('backup/', super_required(SuperAdminViews.backup_database), name='backup_database'),
 
    
 # transfer record Views
