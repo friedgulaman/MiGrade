@@ -42,6 +42,9 @@ New Class List
                     <form method="post" class="w-100">
                         {% csrf_token %}
                         <div class="mt-5">
+                            {% if not quarters_data %}
+                            <p>No data available.</p>
+                        {% else %}
                             <ul class="d-flex flex-wrap justify-content-start align-items-center">
                                 {% for quarter, data in quarters_data.items %}
                                     {% for grade_section in data.grade_sections %}
@@ -71,6 +74,7 @@ New Class List
                                     {% endfor %}
                                 {% endfor %}
                             </ul>
+                            {% endif %}
                         </div>
                     </form>
                 </div>
