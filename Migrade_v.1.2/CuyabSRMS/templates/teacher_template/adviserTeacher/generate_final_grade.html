@@ -48,8 +48,10 @@ New Class List
                                                     {{ grade }} {{ section }} SY: {{school_year}}
                                                 </h5>
                                                 <div class="btn-links">
-                                                    <a href="{% url 'generate_final_and_general_grades' grade=grade section=section %}" class="btn btn-info">Generate Final Grade and General Average</a>
-                                                </div>
+                                                    <form id="generate-final-grade-form" action="{% url 'generate_final_and_general_grades' grade=grade section=section %}" method="GET">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-info">Generate Final Grade and General Average</button>
+                                                    </form>
                                             </div>
                                         </div>
                                     </li>
@@ -66,4 +68,29 @@ New Class List
         </div>
     </div>
 </section>
+<script>
+    $(document).ready(function() {
+        $('#generate-final-grade-form').submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            var form = $(this);
+            var url = form.attr('action');
+            var formData = form.serialize(); // Serialize form data
+
+            $.ajax({
+                type: form.attr('method'),
+                url: url,
+                data: formData,
+                success: function(response) {
+                    // Handle success, e.g., redirect to another page
+                    window.location.href = url; // Redirect to the page where the generated data is displayed
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
 {% endblock main_content %}

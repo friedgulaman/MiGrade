@@ -13,6 +13,7 @@ from collections import defaultdict
 from django.db import IntegrityError
 from django.db.models import Q
 from .views import log_activity
+from django.db.models import F
 
 def transfer_record(request):
     teacher = request.user.teacher
@@ -220,7 +221,7 @@ def inbox_open(request):
             teacher = user.teacher.id
             # Get inbox messages where the logged-in teacher is the intended recipient
             inbox_messages = InboxMessage.objects.filter(to_teacher=teacher)
-            accepted_messages = AcceptedMessage.objects.filter(accepted_by_id=teacher)
+            accepted_messages = AcceptedMessage.objects.filter(accepted_by_id=teacher).order_by(F('accepted_at').desc())
 
             # Convert json_data to dictionary for each accepted message
             for message in accepted_messages:

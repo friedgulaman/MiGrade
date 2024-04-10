@@ -65,26 +65,28 @@ Student List for {{ grade }} {{ section }}
                                                 {% if class_record.subject == subject %}
                                                     <tr>
                                                         <td>{{ subject }}</td>
-                                                        <td>{{ class_record.quarters }}</td>
-                                                        <div id="loading-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.5); z-index: 9999;">
-                                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                                                                Loading...
-                                                            </div>
-                                                        </div>
-                                                        
+                                                        <td>{{ class_record.quarters }}</td>              
                                                         <td>
-                                                            <form id="generate-excel-form" action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
+                                                            <form id="generate-excel-form" action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}"  class="container text-center d-flex flex-column" method="post">
                                                                 {% csrf_token %}
-                                                                <button id="generate-btn" type="submit" class="btn btn-primary">Generate Class Record</button>
-                                                            </form>
+                                                                <button type="submit" id="submitBtn"
+                                                                class="btn btn-primary mt-3 container d-flex justify-content-center align-center">
+                                                                <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator1" style="display: none;" role="status"
+                                                                  aria-hidden="true"></span>
+                                                                Generate Class Record
+                                                              </button>
+                                                            </form>                                                            
                                                         </td>
                                                         <td>
                                                             {% if subject == 'MUSIC' or subject == 'ARTS' or subject == 'PE' or subject == 'HEALTH' %}
-                                                            <form action="{% url 'generate_summary_of_mapeh' grade=class_record.grade section=class_record.section subject='MAPEH' quarter=class_record.quarters %}" method="post">
+                                                            <form id="generate-mapeh-form" action="{% url 'generate_summary_of_mapeh' grade=class_record.grade section=class_record.section subject='MAPEH' quarter=class_record.quarters %}" class="container text-center d-flex flex-column" method="post">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-primary">Generate MAPEH</button>
+                                                                <button type="submit" id="generateMapehBtn" 
+                                                                class="btn btn-primary mt-3 container d-flex justify-content-center align-center">
+                                                                <span class="spinner-grow spinner-grow-sm me-2" id="loadingIndicator2" style="display: none;" role="status"
+                                                                    aria-hidden="true"></span>Generate MAPEH</button>
                                                             </form>
-                                                            {% endif %}
+                                                        {% endif %}
                                                         </td>
                                                     </tr>
                                                 {% endif %}
@@ -106,22 +108,95 @@ Student List for {{ grade }} {{ section }}
 <script>
     $(document).ready(function() {
         $('#generate-excel-form').submit(function(event) {
-            // Show loading screen on form submission
-            $('#loading-screen').show();
+            event.preventDefault(); // Prevent default form submission
+
+            var form = $(this);
+            var url = form.attr('action');
+            var formData = form.serialize(); // Serialize form data
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: formData,
+                beforeSend: function() {
+                    // Show loading indicator before the AJAX request is sent
+                    $('#loadingIndicator1').show();
+                },
+                success: function(response) {
+                    // Handle success, e.g., trigger download of generated Excel file
+                    window.location.href = url; // Redirect to download the file
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(xhr.responseText);
+                },
+                complete: function() {
+                    // Re-enable the submit button and hide loading indicator after request is complete
+                    $('#submitBtn').prop('disabled', false);
+                    $('#loadingIndicator1').hide();
+                }
+            });
         });
-        
-        // Hide loading screen when the file download begins
-        $('#generate-btn').click(function() {
-            $('#loading-screen').hide();
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#generate-mapeh-form').submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            var form = $(this);
+            var url = form.attr('action');
+            var formData = form.serialize();
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: formData,
+                beforeSend: function() {
+                    // Show loading indicator before the AJAX request is sent
+                    $('#loadingIndicator2').show();
+                },
+                success: function(response) {
+                    // Handle success, e.g., redirect to another page
+                    window.location.href = url; // Redirect to download the file or another page
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(xhr.responseText);
+                },
+                complete: function() {
+                    // Hide loading indicator after request is complete
+                    $('#generateMapehBtn').prop('disabled', false);
+                    $('#loadingIndicator2').hide();
+                }
+            });
         });
     });
 </script>
 <!-- jQuery CDN -->
 <script>
-    // JavaScript to handle the back button click event
-    document.querySelector(".back-button").addEventListener("click", function () {
-        window.history.back();
-    });
+    // JavaScript to handle form submissions and show loading indicators
+    $(document).ready(function() {
+        $('#generate-excel-form').submit(function () {
+            // Show the loading indicator for Form 1
+            $('#loadingIndicator1').show();
 
+            // Optionally, you can disable the submit button to prevent multiple submissions
+            $('#submitBtn').prop('disabled', true);
+        });
+
+        $('#generate-mapeh-form').submit(function () {
+            // Show the loading indicator for Form 2
+            $('#loadingIndicator2').show();
+
+            // Optionally, you can disable the submit button to prevent multiple submissions
+            $('#generateMapehBtn').prop('disabled', true);
+        });
+
+        // JavaScript to handle the back button click event
+        $(".back-button").click(function () {
+            window.history.back();
+        });
+    });
 </script>
 {% endblock main_content %}

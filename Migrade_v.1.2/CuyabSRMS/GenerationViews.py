@@ -337,6 +337,14 @@ def generate_summary_of_mapeh(request, grade, section, subject, quarter,):
     with open(copied_file_path, 'rb') as excel_file:
         response.write(excel_file.read())
 
+    response.content += b"""
+    <script>
+        // Refresh the page after download
+        setTimeout(function() {
+            window.location.reload(true);
+        }, 1000); // 1000 milliseconds = 1 second
+    </script>
+    """
     return response
 
 
@@ -1050,7 +1058,7 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
 
     with open(copied_file_path, 'rb') as excel_file:
             response.write(excel_file.read())
-
+    
     return response
 
     # except Exception as e:

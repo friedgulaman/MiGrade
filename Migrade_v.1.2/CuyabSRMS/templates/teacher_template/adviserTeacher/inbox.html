@@ -177,7 +177,7 @@ Inbox Messages
                 </thead>
                 <tbody>
                     {% for message in accepted_messages %}
-                    <tr class="message" data-bs-toggle="modal" data-bs-target="#acceptedModal{{ message.id }}">
+                    <tr class="message" data-bs-toggle="modal" data-bs-target="#acceptedModal{{ message.message_id }}">
                         <td class="file-name-td" title="{{ message.file_name }}">
                             {% load custom_filters %}
                             {{ message.file_name|slice:"2:-2"|replace:"'"|replace:"," }}
@@ -193,17 +193,18 @@ Inbox Messages
             <p class="p-3">No messages were approved.</p>
             {% endif %}
             {% for message in accepted_messages %}
-            <div class="modal fade" id="acceptedModal{{ message.id }}" tabindex="-1" aria-labelledby="acceptedModalLabel{{ message.id }}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal fade" id="acceptedModal{{ message.message_id }}" tabindex="-1" aria-labelledby="acceptedModalLabel{{ message.message_id }}" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="acceptedModalLabel{{ message.id }}">Message Details</h5>
+                            <h5 class="modal-title" id="acceptedModalLabel{{ message.message_id }}">Message Details</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <p class="json-data">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
+                                      
                                         <strong>Grade:</strong> {{ message.json_data.grade }}<br>
                                         <strong>Section:</strong> {{ message.json_data.section }}<br>
                                         <strong>Subject:</strong> {{ message.json_data.subject }}<br>
