@@ -12,6 +12,7 @@ from datetime import datetime
 import urllib.parse
 from django.contrib import messages 
 from django.conf import settings
+import zipfile
 
 from .utils import (
     write_student_names,
@@ -1286,6 +1287,109 @@ def generate_summary_for_grades_4_to_6(request, grade, section, subject, quarter
     #     return HttpResponse(f"An error occurred: {e}")
   
 
+def generate_excel_for_sf9_grade_section(request, grade, section):
+    # Retrieve students in the specified grade and section
+    students = Student.objects.filter(grade=grade, section=section)
+
+    # Check if any students exist in the specified grade and section
+    if not students.exists():
+        return render(request, 'teacher_template/adviserTeacher/generate_excel_for_sf9.html', {'students_missing': True})
+
+    # Retrieve user and teacher information
+    user = request.user
+    teacher = user.teacher
+    teacher_name = f"{teacher.user.first_name} {teacher.user.middle_ini}. {teacher.user.last_name}" 
+
+    # Query for other related objects
+    school_info =  SchoolInformation.objects.all()
+
+
+            
+            # Log activity for each student
+    action = f'{user} generate the SF9 of {grade} {section}'
+    details = f'{user} generate the SF9 of {grade} {section}.'
+    log_activity(user, action, details)
+
+            # Define directories
+    media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
+    created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
+
+            # Create directories if they don't exist
+    if not os.path.exists(media_directory):
+        os.makedirs(media_directory)
+    if not os.path.exists(created_directory):
+        os.makedirs(created_directory)
+
+            # Generate a timestamp for the copy
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    zip_filename = f'SF9_{grade}_{section}_{timestamp}.zip'
+    zip_file_path = os.path.join(created_directory, zip_filename)
+
+    # Create a zip file
+    with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+
+        # Proceed with generating the Excel files for each student
+        for student in students:
+            advisory_class = AdvisoryClass.objects.filter(student=student).first()
+            general_average = GeneralAverage.objects.filter(student=student).first()
+            attendance_record = AttendanceRecord.objects.filter(student=student).first()
+            learners_observation = LearnersObservation.objects.filter(student=student).first() 
+
+            # Determine the appropriate Excel file based on grade
+            if grade == 'Grade 1':
+                excel_file_name = "SF9_Grade1.xlsx"
+            elif grade == 'Grade 2':
+                excel_file_name = "SF9_Grade2.xlsx"
+            elif grade == 'Grade 3':
+                excel_file_name = "SF9_Grade3.xlsx"
+            else:
+                excel_file_name = "SF9_Grade4-6.xlsx"
+
+            # Create the path for the original file
+            original_file_path = os.path.join(media_directory, excel_file_name)
+
+            # Create a path for the copied file with a timestamp
+            copied_file_path = os.path.join(created_directory, f'SF9_{student.name}_{grade}_{section}_{timestamp}.xlsx')
+
+            # Copy the Excel file
+            shutil.copyfile(original_file_path, copied_file_path)
+
+            # Open the copied SF9 Excel file
+            workbook = openpyxl.load_workbook(copied_file_path)
+
+            # Select the desired sheet (use the correct sheet name from the output)
+            front_sheet_name = 'FRONT'
+            front_sheet = workbook[front_sheet_name]
+            back_sheet_name = 'BACK'
+            back_sheet = workbook[back_sheet_name]
+
+            # Write SF9-specific data using utility functions
+            write_sf9_data(front_sheet, student)
+            write_sf9_school_info(front_sheet, school_info, teacher_name)
+            write_sf9_grades(back_sheet, advisory_class, general_average, grade)
+            write_sf9_attendance(front_sheet, attendance_record)
+            write_sf9_total_attendance(front_sheet, attendance_record)
+            write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_1', 25)
+            write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_2', 26)
+            write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_3', 27)
+            write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_4', 28)
+
+            # Save the changes to the SF9 workbook
+            workbook.save(copied_file_path)
+
+            # Create an HTTP response with the updated SF9 Excel file
+            zipf.write(copied_file_path, f'SF9_{student.name}_{grade}_{section}_{timestamp}.xlsx')
+
+            # with open(copied_file_path, 'rb') as excel_file:
+            #     response.write(excel_file.read())
+
+    with open(zip_file_path, 'rb') as zip_file:
+        response = HttpResponse(zip_file.read(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+
+    return response
+
+
 def generate_excel_for_sf9(request, student_id):
     # Retrieve the student object
     student = get_object_or_404(Student, id=student_id)
@@ -1319,7 +1423,6 @@ def generate_excel_for_sf9(request, student_id):
     section_name = student.section
 
     # Original file path for SF9 template
-    excel_file_name = "SF9.xlsx"
 
     # Define directories
     media_directory = os.path.join(settings.MEDIA_ROOT, 'excel-files')
@@ -1333,6 +1436,15 @@ def generate_excel_for_sf9(request, student_id):
 
     # Generate a timestamp for the copy
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+
+    if grade_name == 'Grade 1':
+        excel_file_name = "SF9_Grade1.xlsx"
+    if grade_name == 'Grade 2':
+        excel_file_name = "SF9_Grade2.xlsx"
+    if grade_name == 'Grade 3':
+        excel_file_name = "SF9_Grade3.xlsx"
+    if grade_name == 'Grade 4' or grade_name == 'Grade 5' or grade_name == 'Grade 6':
+        excel_file_name = "SF9_Grade4-6.xlsx"
 
     # Create the path for the original file
     original_file_path = os.path.join(media_directory, excel_file_name)
@@ -1355,7 +1467,7 @@ def generate_excel_for_sf9(request, student_id):
     # Write SF9-specific data using utility functions
     write_sf9_data(front_sheet, student)
     write_sf9_school_info(front_sheet, school_info, teacher_name)
-    write_sf9_grades(back_sheet, advisory_class, general_average)
+    write_sf9_grades(back_sheet, advisory_class, general_average, grade_name)
     write_sf9_attendance(front_sheet, attendance_record)
     write_sf9_total_attendance(front_sheet, attendance_record)
     write_sf9_learners_observation(back_sheet, learners_observation, 'quarter_1', 25)

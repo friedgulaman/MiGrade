@@ -23,6 +23,7 @@ All Students
                         </div>
                         <div>
                             <h3><strong>School Year:</strong> <em>{{ section_group.list.0.school_year }}</em></h3>
+                            <a href="{% url 'generate_excel_for_sf9_grade_section' grade=grade_group.grouper section=section_group.grouper %}">Generate All SF9 of {{ grade_group.grouper }} - {{ section_group.grouper }}</a>
                         </div>
                         </div>  
                     <table class="table table-hover">

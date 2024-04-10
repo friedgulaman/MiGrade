@@ -845,14 +845,30 @@ def write_sf9_data(front_sheet, student):
 
     bold_font = Font(bold=True, name='Aparajita')
 
+    sex = student.sex.upper()
+    if sex == 'M':
+        sex = 'MALE'
+    elif sex == 'F':
+        sex = 'FEMALE'
+
+    grade_mapping = {
+        'Grade 1': 'ONE',
+        'Grade 2': 'TWO',
+        'Grade 3': 'THREE',
+        'Grade 4': 'FOUR',
+        'Grade 5': 'FIVE',
+        'Grade 6': 'SIX'
+    }
+    grade = grade_mapping.get(student.grade, student.grade)
+
     # Calculate the age
     age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
     print(age)
     # Write the student's name to the specified cell
     front_sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
     front_sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
-    front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=student.sex if student else "").font = bold_font
-    front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=student.grade if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=sex if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=grade if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=student.age if student else "N/A")
     # print(student.name)
@@ -866,36 +882,92 @@ def write_sf9_school_info(front_sheet, school_info_queryset, teacher_name):
     column_teacher = 20
     row_teacher = 26
 
+    bold_font = Font(bold=True, name='Aparajita')
     # Assuming there's only one principal for a single school information record
     for school_info in school_info_queryset:
         principal = school_info.principal_name
         school_year = school_info.school_year
-        front_sheet.cell(row=row, column=column, value=principal)
+        front_sheet.cell(row=row, column=column, value=principal).font = bold_font
         front_sheet.cell(row=row_sy, column=column_sy, value=school_year)
 
-    front_sheet.cell(row=row_teacher, column=column_teacher, value=teacher_name)
+    front_sheet.cell(row=row_teacher, column=column_teacher, value=teacher_name).font = bold_font
 
 
-def write_sf9_grades(back_sheet, advisory_class, general_average):
+def write_sf9_grades(back_sheet, advisory_class, general_average, grade_name):
     # Retrieve grades data from the AdvisoryClass instance
     grades_data = advisory_class.grades_data
     
     # Define the row coordinates for subjects
-    row_coordinates = {
-        "FILIPINO": 7,
-        "ENGLISH": 8,
-        "MATHEMATICS": 9,
-        "SCIENCE": 11,
-        "ARALING PANLIPUNAN": 12, 
-        "EDUKASYON SA PAGPAPAKATAO": 13,
-        "EPP": 15,
-        "MAPEH": 17,
-        "MUSIC": 18,
-        "ARTS": 19,
-        "PE": 20,
-        "HEALTH": 21,
-        # Add more subjects as needed
-    }
+    if grade_name == 'Grade 1':
+        row_coordinates = {
+            "MOTHER TONGUE": 7,
+            "FILIPINO": 8,
+            "ENGLISH": 9,
+            "MATHEMATICS": 11,
+            "ARALING PANLIPUNAN": 12, 
+            "MAPEH": 13,
+            "MUSIC": 15,
+            "ARTS": 17,
+            "PE": 18,
+            "HEALTH": 19,
+            "EDUKASYON SA PAGPAPAKATAO": 20,
+            # Add more subjects as needed
+        }
+        general_average_row = 21
+
+    if grade_name == 'Grade 2':
+        row_coordinates = {
+            "FILIPINO": 7,
+            "ENGLISH": 8,
+            "MATHEMATICS": 9,
+            "SCIENCE": 11,
+            "ARALING PANLIPUNAN": 12, 
+            "EDUKASYON SA PAGPAPAKATAO": 13,
+            "EPP": 15,
+            "MAPEH": 17,
+            "MUSIC": 18,
+            "ARTS": 19,
+            "PE": 20,
+            "HEALTH": 21,
+            # Add more subjects as needed
+        }
+        general_average_row = 21
+
+    if grade_name == 'Grade 3':
+        row_coordinates = {
+            "FILIPINO": 7,
+            "ENGLISH": 8,
+            "MATHEMATICS": 9,
+            "SCIENCE": 11,
+            "ARALING PANLIPUNAN": 12, 
+            "EDUKASYON SA PAGPAPAKATAO": 13,
+            "EPP": 15,
+            "MAPEH": 17,
+            "MUSIC": 18,
+            "ARTS": 19,
+            "PE": 20,
+            "HEALTH": 21,
+            # Add more subjects as needed
+        }
+        general_average_row = 21
+
+    if grade_name == 'Grade 4' or grade_name == 'Grade 5' or grade_name == 'Grade 6':
+        row_coordinates = {
+            "FILIPINO": 7,
+            "ENGLISH": 8,
+            "MATHEMATICS": 9,
+            "SCIENCE": 11,
+            "ARALING PANLIPUNAN": 12, 
+            "EDUKASYON SA PAGPAPAKATAO": 13,
+            "EPP": 15,
+            "MAPEH": 17,
+            "MUSIC": 18,
+            "ARTS": 19,
+            "PE": 20,
+            "HEALTH": 21,
+            # Add more subjects as needed
+        }
+        general_average_row = 22
 
     # Write the grades for each subject
     for subject, data in grades_data.items():
@@ -956,7 +1028,7 @@ def write_sf9_grades(back_sheet, advisory_class, general_average):
         if fourth_quarter_value is not None and fourth_quarter_value != '':
                     back_sheet.cell(row=row, column=18, value=int(round(final_grade_value)) if final_grade_value is not None and final_grade_value != '' else None)
                     back_sheet.cell(row=row, column=19, value=status)
-                    back_sheet.cell(row=22, column=18, value=general_average.general_average)
+                    back_sheet.cell(row=general_average_row, column=18, value=general_average.general_average)
 
 def write_sf9_total_attendance(front_sheet, attendance_record):
  if attendance_record is not None:

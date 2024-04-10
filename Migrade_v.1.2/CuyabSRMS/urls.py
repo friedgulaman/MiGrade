@@ -265,6 +265,7 @@ urlpatterns = [
     path('generate_excel_for_grades/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_excel_for_grades), 
          name='generate_excel_for_grades'),
     path('generate-excel-sf9/<int:student_id>/', teacher_required(GenerationViews.generate_excel_for_sf9), name='generate_excel_for_sf9'),
+    path('generate-excel/<str:grade>/<str:section>/', teacher_required(GenerationViews.generate_excel_for_sf9_grade_section), name='generate_excel_for_sf9_grade_section'),
     path('generate-per-subject/', teacher_required(GenerationViews.generate_per_subject_view), name='generate_per_subject'),
     path('generate_grade_section_list/', teacher_required(GenerationViews.generate_grade_section_list), name='generate_grade_section_list'),
     path('generate-per-all-subject/', teacher_required(GenerationViews.generate_per_all_subject_view), name='generate_per_all_subject'),
