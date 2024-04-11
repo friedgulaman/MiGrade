@@ -1,0 +1,7 @@
+{% if matched_url %}
+    <p>Click <a href="{{ matched_url }}">here</a> to view the matched content.</p>
+{% elif error_message %}
+    <p>{{ error_message }}</p>
+{% else %}
+    <p>No search results found.</p>
+{% endif %}

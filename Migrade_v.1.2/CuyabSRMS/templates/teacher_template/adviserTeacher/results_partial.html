@@ -1,0 +1,30 @@
+<div class="container results mt-3 " id="content">
+    {% if class_records or matched_urls %}
+    <p>Search Results for "{{ search_input }}"</p>
+    <div class="p-1">
+        {% if class_records %}
+        <h3>Class Records:</h3>
+        <ul>
+            {% for record in class_records %}
+                <li><i class="icon-paper me-2"></i><a href="{% url 'display_classrecord' class_record_id=record.id %}">{{record.name }}</a> </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if matched_urls %}
+        <h3 class="mt-2">Navigate to:</h3>
+        <ul>
+            {% for url in matched_urls %}
+                <li><i class="icon-link me-2"></i><a href="/{{ url }}">{{ url }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    </div>
+   {% else %}
+   {% if search_input %}
+   <p>No Matching Results for "{{ search_input }}"</p>
+{% else %}
+   
+{% endif %}
+{% endif %}
+</div>
+
