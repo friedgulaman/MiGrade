@@ -23,6 +23,7 @@ New Class List
                     <form method="post" class="w-100">
                         {% csrf_token %}
                         <div class="mt-5">
+                            {% if class_records %}
                             <ul class="d-flex flex-wrap justify-content-start align-items-center">
                                 {% for record in class_records %}
                                     <li class="d-block p-2 ">
@@ -37,13 +38,16 @@ New Class List
                                                     </svg>
                                                 </div>
                                                 <div class="btn-group">
-                                                    {{ record.grade }} {{ record.section }}
+                                                    {{ record.grade }} {{ record.section }} - SY: {{record.school_year}}
                                                 </div>
                                             </button>
                                         </div>
                                     </li>
                                 {% endfor %}
                             </ul>
+                            {% else %}
+                            <p>No records available.</p>
+                        {% endif %}
                         </div>
                     </form>
                 </div>

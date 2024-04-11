@@ -113,6 +113,10 @@ def get_user_details(request):
         return HttpResponse("Please Login First")
     
 def logout_user(request):
+    user = request.user
+    action = f'{user} logged out'
+    details = f'{user} logged out to the system.'
+    log_activity(user, action, details)
     request.session.flush()  # or request.session.clear()
     messages.success(request, "Logout successfully!")
     return redirect('/')

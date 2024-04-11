@@ -181,6 +181,7 @@ margin-left: 30px;
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center mt-5 buton">
+                    <button type="button" class="btn btn-secondary cancel-btn" onclick="handleCancel()">Cancel</button>
                     <button type="button" class="btn btn-secondary prev-tab">Previous</button>
                     <button id="saveGradeSection" class="btn btn-success ms-3">Save</button>
                 </div>
@@ -190,6 +191,14 @@ margin-left: 30px;
 
 </section>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function handleCancel() {
+        if (confirm('Are you sure you want to cancel?')) {
+            window.location.href = "{% url 'upload_adviser_teacher' %}";
+        }
+    }
+</script>
+
 <script>
     $(document).ready(function () {
         // JavaScript to handle multi-step form navigation
@@ -395,7 +404,7 @@ margin-left: 30px;
 </script>
 <script>
     function goBack() {
-        window.history.back();
+        window.location.href = "{% url 'upload_adviser_teacher' %}";
     }
     document.querySelector('.cancel-btn').addEventListener('click', function() {
         // Your logic to handle canceling the current action

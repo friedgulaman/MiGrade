@@ -42,6 +42,9 @@ New Class List
                     <form method="post" class="w-100">
                         {% csrf_token %}
                         <div class="mt-5">
+                            {% if not quarters_data %}
+                            <p>No data available.</p>
+                        {% else %}
                             <ul class="d-flex flex-wrap justify-content-start align-items-center">
                                 {% for quarter, data in quarters_data.items %}
                                     {% for grade_section in data.grade_sections %}
@@ -58,7 +61,7 @@ New Class List
                                                 </div>
                                                 <div class="btn-group">
                                                     <h5 class="dropdown-header">
-                                                        {{ grade_section.0 }} {{ grade_section.1 }} - {{ quarter }}
+                                                        {{ grade_section.0 }} {{ grade_section.1 }} SY: {{grade_section.2}} - {{ quarter }}
                                                     </h5>
                                                     <div class="btn-links">
                                                         <a href="{% url 'generate_summary_of_quarterly_grades' grade=grade_section.0 section=grade_section.1 quarter=quarter %}" class="btn btn-success">Generate Summary of Quarterly Grades</a>
@@ -71,6 +74,7 @@ New Class List
                                     {% endfor %}
                                 {% endfor %}
                             </ul>
+                            {% endif %}
                         </div>
                     </form>
                 </div>

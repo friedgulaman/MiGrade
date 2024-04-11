@@ -12,8 +12,23 @@ Student List for {{ grade }} {{ section }} {{ class_type }}
         text-decoration: none;
         cursor: pointer;
     }
-    .final{
-        overflow: scroll;
+    .final {
+        margin: auto; /* I-center ang container sa gitna ng page */
+        max-width: 100%; /* Limitahan ang lapad ng container para hindi masagad sa edge */
+        
+    }
+    .final table {
+        border-collapse: collapse; /* Collapse table borders */
+        overflow-x: auto; /
+    }
+    .final th, .final td {
+        padding: 8px; /* Add padding to table cells */
+    }
+    .final th:first-child, .final td:first-child {
+        text-align: left; /* Left align first column */
+    }
+    .table-responsive {
+        overflow-x: auto; /* Add horizontal scrollbar */
     }
 
 </style>

@@ -172,8 +172,10 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
                 desired_sheet_name = 'MATH'
         elif subject_name == "ARALING PANLIPUNAN":
                 desired_sheet_name = 'AP'
-        elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+        elif subject_name in ["ARTS", "PE", "HEALTH"]:
                 desired_sheet_name = subject_name
+        elif subject_name == "MUSIC":
+                desired_sheet_name = 'MUSIC '
         elif subject_name == "EDUKASYON SA PAGPAPAKATAO":
                 desired_sheet_name = 'ESP'
         elif subject_name == "SCIENCE":
@@ -185,7 +187,6 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         # Select the desired sheet (use the correct sheet name from the output)
         sheet = workbook[desired_sheet_name]
 
-        write_student_names(sheet_input, grade_scores)
         write_scores_hps_written(sheet, grade_scores)
         write_scores_hps_performance(sheet, grade_scores)
         write_scores_hps_quarterly(sheet, grade_scores)
@@ -194,7 +195,8 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
         write_quarterly_assessment_scores(sheet, grade_scores)
         write_initial_grade(sheet, grade_scores)
         write_transmuted_grade(sheet, grade_scores)
-
+        
+    write_student_names(sheet_input, grade_scores)
     write_school_info(sheet_input, school_info, grade, section, teacher_name)
 
     # Save the changes to the SF9 workbook
@@ -209,13 +211,131 @@ def generate_summary_of_quarterly_grades(request, grade, section, quarter):
     with open(copied_file_path, 'rb') as excel_file:
         response.write(excel_file.read())
 
-    # Add success or error message
-    if os.path.exists(copied_file_path):
-        messages.success(request, f'Summary of Quarterly Grades ({quarter}) generated successfully.')
-        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
-    else:
-        messages.error(request, 'An error occurred while generating the summary.')
-        return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html')
+    return response
+
+def generate_summary_of_mapeh(request, grade, section, subject, quarter,):
+    # Assuming `grade`, `section`, and `quarter` are passed in the URL parameters
+
+    # Query the QuarterlyGrades model
+    grade_scores_queryset = GradeScores.objects.filter(
+        class_record__quarters=quarter, student__grade=grade, student__section=section,
+    )
+
+    grade_name = grade
+    section_name = section
+    quarter_name = quarter
+    subject_name = subject
+
+    school_info = SchoolInformation.objects.all()
+
+    print(grade_scores_queryset)
+
+    # Initialize lists to hold data for each subject
+    subject_data = {}
+    for grade_score in GradeScores.objects.filter(class_record__quarters=quarter, student__grade=grade, student__section=section):
+        class_record_name = grade_score.class_record.name
+        teacher_name = f"{grade_score.class_record.teacher.user.first_name} {grade_score.class_record.teacher.user.last_name}".upper()
+
+        # Assuming `subjects` is the related field to GradeScores
+        subject_name = grade_score.class_record.subject
+
+        if subject_name not in subject_data:
+            subject_data[subject_name] = {'data': [], 'gradescores': []}
+        
+        # Append the grade score and its corresponding GradeScores object to the dictionary
+        subject_data[subject_name]['data'].append((class_record_name, teacher_name))
+        subject_data[subject_name]['gradescores'].append(grade_score)
+
+    user = request.user
+    action = f'{user} generate MAPEH Class Record of {grade} {section} ({quarter})'
+    details = f'{user} generate MAPEH Class Record of {grade} {section} ({quarter}) in the system.'
+    log_activity(user, action, details)
+
+    
+
+    if quarter_name == "1st Quarter":
+                    excel_file_name = "GRADE 4-6_ 1ST QUARTER MAPEH.xlsx"
+                    media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+    elif quarter_name == "2nd Quarter":
+                    excel_file_name = "GRADE 4-6_ 2ND QUARTER MAPEH.xlsx"
+                    media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+    elif quarter_name == "3rd Quarter":
+                    excel_file_name = "GRADE 4-6_ 3RD QUARTER MAPEH.xlsx"
+                    media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+    elif quarter_name == "4th Quarter":
+                    excel_file_name = "GRADE 4-6_ 4TH QUARTER MAPEH.xlsx"
+                    media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+    
+            
+
+
+    original_file_path = os.path.join(media_directory, excel_file_name)
+
+    created_directory = os.path.join(settings.MEDIA_ROOT, 'created-sf9')
+    if not os.path.exists(created_directory):
+        os.makedirs(created_directory)
+
+    # Generate a timestamp for the copy
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+
+    # Create a path for the copied file with a timestamp
+    copied_file_path = os.path.join(created_directory, f'Class Record {grade_name}_{section_name}_{subject_name}_{quarter_name}_{timestamp}.xlsx')
+
+    # Copy the Excel file
+    shutil.copyfile(original_file_path, copied_file_path)
+
+    # Open the copied SF9 Excel file
+    workbook = openpyxl.load_workbook(copied_file_path)
+
+    sheet_input_data = 'INPUT DATA'
+    sheet_input = workbook[sheet_input_data]
+
+    for subject_name, subject_info in subject_data.items():
+        # Extract data and GradeScores objects for the current subject
+        data = subject_info['data']
+        grade_scores = subject_info['gradescores']
+
+        # Determine the Excel sheet name for each subject
+    
+
+        if subject_name == "ARTS":
+                desired_sheet_name = 'ARTS'
+        elif subject_name == "MUSIC":
+                desired_sheet_name = 'MUSIC'
+        elif subject_name == "PE":
+                desired_sheet_name = 'PE'
+        elif subject_name == "HEALTH":
+                desired_sheet_name = 'HEALTH'
+        else:
+                desired_sheet_name = 'Sheet1'
+       
+
+        # Select the desired sheet (use the correct sheet name from the output)
+        sheet = workbook[desired_sheet_name]
+
+        write_scores_hps_written(sheet, grade_scores)
+        write_scores_hps_performance(sheet, grade_scores)
+        write_scores_hps_quarterly(sheet, grade_scores)
+        write_written_works_scores(sheet, grade_scores)
+        write_performance_tasks_scores(sheet, grade_scores)
+        write_quarterly_assessment_scores(sheet, grade_scores)
+        write_initial_grade(sheet, grade_scores)
+        write_transmuted_grade(sheet, grade_scores)
+        
+    write_student_names(sheet_input, grade_scores)
+    write_school_info(sheet_input, school_info, grade, section, teacher_name)
+
+    # Save the changes to the SF9 workbook
+    workbook.save(copied_file_path)
+
+    # Create an HTTP response with the updated SF9 Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f'Class Record {grade_name}_{section_name}_{subject}_{quarter_name}_{timestamp}.xlsx'
+    encoded_filename = urllib.parse.quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{encoded_filename}"'
+
+    with open(copied_file_path, 'rb') as excel_file:
+        response.write(excel_file.read())
 
     return response
 
@@ -337,7 +457,7 @@ def generate_final_and_general_grades(request, grade, section):
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MATHEMATICS', 16, 20)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'SCIENCE', 21, 25)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'ARALING PANLIPUNAN', 26, 30)
-        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYONG PANTAHANAN AT PANGKABUHAYAN', 31, 35)
+        write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EPP', 31, 35)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'MAPEH', 36, 40)
         write_final_grade_subject(sheet, advisory_class_query, general_grades_query, 'EDUKASYON SA PAGPAPAKATAO', 41, 45)
 
@@ -372,8 +492,12 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     quarter_name = quarter
 
     print(quarter_name)
+    print(grade_name)
+    print(subject_name)
+    print(section_name)
 
     # print(quarter)
+   
     for grade_score in grade_scores_queryset:
         class_record_name = grade_score.class_record.name
         teacher_name = f"{grade_score.class_record.teacher.user.first_name} {grade_score.class_record.teacher.user.last_name}".upper()
@@ -472,6 +596,53 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
                 desired_sheet_name = 'Q3'
             elif quarter_name == "4th Quarter":
                 desired_sheet_name = 'Q4'
+
+        elif subject_name in ["MUSIC", "ARTS", "PE", "HEALTH"]:
+            if quarter_name == "1st Quarter":
+                excel_file_name = "GRADE 4-6_ 1ST QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+            elif quarter_name == "2nd Quarter":
+                excel_file_name = "GRADE 4-6_ 2ND QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+            elif quarter_name == "3rd Quarter":
+                excel_file_name = "GRADE 4-6_ 3RD QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+            elif quarter_name == "4th Quarter":
+                excel_file_name = "GRADE 4-6_ 4TH QUARTER MAPEH.xlsx"
+                media_directory = os.path.join(settings.MEDIA_ROOT, 'classrecord', 'GRADE-4-6_E-Class-Record-Templates-1', 'MAPEH')
+                if subject_name == 'MUSIC':
+                    desired_sheet_name = 'MUSIC'
+                elif subject_name == 'ARTS':
+                    desired_sheet_name = 'ARTS'
+                elif subject_name == 'PE':
+                    desired_sheet_name = 'PE'
+                elif subject_name == 'HEALTH':
+                    desired_sheet_name = 'HEALTH'
+
 
     elif grade_name == "Grade 1":
         if quarter_name == "1st Quarter":
@@ -830,7 +1001,6 @@ def generate_excel_for_grades(request, grade, section, subject, quarter):
     # Copy the Excel file
     shutil.copyfile(original_file_path, copied_file_path)
 
- 
         # Open the copied Excel file
     workbook = openpyxl.load_workbook(copied_file_path)
 
@@ -1113,6 +1283,8 @@ def generate_excel_for_sf9(request, student_id):
     student = get_object_or_404(Student, id=student_id)
 
     user = request.user
+    teacher = request.user.teacher
+    teacher_name = f"{teacher.user.first_name} {teacher.user.middle_ini}. {teacher.user.last_name}" 
 
     # Query for other related objects
     advisory_class = AdvisoryClass.objects.filter(student=student).first()
@@ -1174,7 +1346,7 @@ def generate_excel_for_sf9(request, student_id):
 
     # Write SF9-specific data using utility functions
     write_sf9_data(front_sheet, student)
-    write_sf9_school_info(front_sheet, school_info)
+    write_sf9_school_info(front_sheet, school_info, teacher_name)
     write_sf9_grades(back_sheet, advisory_class, general_average)
     write_sf9_attendance(front_sheet, attendance_record)
     write_sf9_total_attendance(front_sheet, attendance_record)
@@ -1258,7 +1430,7 @@ def generate_per_all_subject_view(request):
         # Iterate through class records to organize data by quarter
         for record in class_records:
             quarter_data = quarters_data.setdefault(record.quarters, {'subjects': set(), 'grade_sections': set()})
-            quarter_data['grade_sections'].add((record.grade, record.section))
+            quarter_data['grade_sections'].add((record.grade, record.section, record.school_year))
             quarter_data['subjects'].add(record.subject)
 
         # Sort subjects alphabetically
@@ -1320,14 +1492,14 @@ def generate_final_grade_view(request):
         teacher = user.teacher
 
         # Filter class records based on the teacher
-        class_records = ClassRecord.objects.filter(teacher=teacher)
+        class_records = AdvisoryClass.objects.filter(teacher=teacher)
 
         # Create a set to store grade_sections
         grade_sections = set()
 
         # Iterate through class records to organize data by grade and section
         for record in class_records:
-            grade_sections.add((record.grade, record.section))
+            grade_sections.add((record.student.grade, record.student.section, record.student.school_year))
 
         # Convert the set to a sorted list
         grade_sections = sorted(grade_sections)

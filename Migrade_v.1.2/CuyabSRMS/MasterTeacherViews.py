@@ -37,9 +37,11 @@ def home_mt(request):
                     if any(grade.lower() in key.lower() for grade in assigned_grades):
                         matching_teachers.add(teacher)
                         matching_keys[key] = value  # Add key-value pair to the dictionary
+        print(matching_keys)
 
         context = {
             'matching_keys': matching_keys,
+            'assigned_grades' : assigned_grades,
             'matching_teachers': matching_teachers,
         }
 

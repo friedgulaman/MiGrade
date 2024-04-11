@@ -23,12 +23,20 @@ Master Teacher
                         <td>{{ teacher.user.first_name }}</td>
                         <td>{{ teacher.user.last_name }}</td>
                         <td>{{ teacher.user.email }}</td>
-                        <td>
-                            <ul>
+                        <td class="text-muted">
+                            {% if teacher.grade_section %}
+                                {% for grade_section, classes in teacher.grade_section.items %}
                                 {% for key, value in matching_keys.items %}
-                                <li>{{ key }}: {{ value }}</li>
+                                {% if grade_section == key %}
+                                <div>
+                                  <strong>{{ grade_section }}:</strong> {{ classes }}
+                              </div>
+                              {% endif %}
+                              {% endfor %}
                                 {% endfor %}
-                            </ul>
+                            {% else %}
+                                Not assigned
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

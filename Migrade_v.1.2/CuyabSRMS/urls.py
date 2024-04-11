@@ -67,6 +67,8 @@ urlpatterns = [
     path('adviser_manual', teacher_required(TeacherViews.adviser_manual), name='adviser_manual'),  
     path('subject_manual', teacher_required(TeacherViews.subject_manual), name='subject_manual'),  
     path('submit_feedback', teacher_required(TeacherViews.submit_feedback), name='submit_feedback'),
+    path('privacy-policy/', teacher_required(TeacherViews.privacy_policy_view), name='privacy_policy'),
+    path('terms-and-conditions/', teacher_required(TeacherViews.terms_and_conditions_view), name='terms_and_conditions'),
 
     path('search/', SearchViews.search_classrecord, name='search_classrecord'),
 
@@ -150,6 +152,14 @@ urlpatterns = [
     path('edit/<int:school_id>/', admin_required(AdminViews.edit_school_view), name='edit_school'),
     path('delete/<int:school_id>/',  admin_required(AdminViews.delete_school_view), name='delete_school'),
     path('remove_grade/', admin_required(AdminViews.remove_grade), name='remove_grade'),
+    path('create/core_values/', admin_required(AdminViews.create_core_values), name='create_core_values'),
+    path('display/', admin_required(AdminViews.display_core_values), name='display_core_values'),
+    path('update/<int:core_values_id>/', admin_required(AdminViews.update_core_values), name='update_core_values'),
+    path('delete_core_values/<int:core_values_id>/', admin_required(AdminViews.delete_core_values), name='delete_core_values'),
+    path('create/behavior_statements/', admin_required(AdminViews.create_behavior_statements), name='create_behavior_statements'),
+    path('display/behavior_statements/', admin_required(AdminViews.display_behavior_statements), name='display_behavior_statements'),
+    path('update/behavior_statements/<int:behavior_statement_id>/', admin_required(AdminViews.update_behavior_statement), name='update_behavior_statement'),
+    path('delete/behavior_statements/<int:behavior_statement_id>/', admin_required(AdminViews.delete_behavior_statement), name='delete_behavior_statement'),
 
     # Adviser Teacher
     path('home_teacher', teacher_required(TeacherViews.home_teacher), name="home_teacher"),
@@ -234,16 +244,15 @@ urlpatterns = [
     path('get_sections_classrecord/', teacher_required(TeacherViews.get_sections_classrecord), name='get_sections_classrecord'),
      path('create-attendance/', teacher_required(TeacherViews.create_attendance_view), name='create_attendance_view'),
     path('save_attendance_record/', teacher_required(TeacherViews.save_attendance_record), name='save_attendance_record'),
-      path('attendance-records/<str:grade>/<str:section>/', teacher_required(TeacherViews.attendance_record_view), name='attendance_records'),
-       path('update-attendance-record/', teacher_required(TeacherViews.update_attendance_record), name='update_attendance_record'),
-      path('delete-month/', teacher_required(TeacherViews.delete_month), name='delete_month'),
-     path('teacher_upload_documents/', teacher_required(TeacherViews.teacher_upload_documents_ocr), name='teacher_upload_documents'),
-         path('teacher_sf10_views/', teacher_required(TeacherViews.teacher_sf10_views), name='teacher_sf10_views'),
+    path('attendance-records/<str:grade>/<str:section>/', teacher_required(TeacherViews.attendance_record_view), name='attendance_records'),
+    path('update-attendance-record/', teacher_required(TeacherViews.update_attendance_record), name='update_attendance_record'),
+    path('delete-month/', teacher_required(TeacherViews.delete_month), name='delete_month'),
+    path('teacher_upload_documents/', teacher_required(TeacherViews.teacher_upload_documents_ocr), name='teacher_upload_documents'),
+    path('teacher_sf10_views/', teacher_required(TeacherViews.teacher_sf10_views), name='teacher_sf10_views'),
+    path('teacher_save_edited_data/', teacher_required(TeacherViews.teacher_save_edited_data), name='teacher_save_edited_data'),
      path('teacher_batch_process_documents/', teacher_required(TeacherViews.teacher_batch_process_documents), name='teacher_batch_process_documents'),
     path('teacher_sf10_edit_view/<int:id>/', teacher_required(TeacherViews.teacher_sf10_edit_view), name='teacher_sf10_edit_view'),
     path('teacher_sf10/edit/<int:id>/', teacher_required(TeacherViews.teacher_sf10_edit), name='teacher_sf10_edit'),
-    path('create/core_values/', teacher_required(TeacherViews.create_core_values), name='create_core_values'),
-    path('create/behavior_statements/', teacher_required(TeacherViews.create_behavior_statements), name='create_behavior_statements'),
     # path('create_learners_observation/<str:grade>/<str:section>/', TeacherViews.create_learners_observation, name='create_learners_observation'),
     path('students_behavior/<str:grade>/<str:section>/', teacher_required(TeacherViews.students_behavior_view), name='students_behavior'),
     path('save-observations/', teacher_required(TeacherViews.save_observations), name='save_observations'),
@@ -262,6 +271,7 @@ urlpatterns = [
     path('generate-per-all-subject/', teacher_required(GenerationViews.generate_per_all_subject_view), name='generate_per_all_subject'),
     path('generate-excel/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_excel_for_all_subjects), name='generate_excel_for_all_subjects'),
     path('generate_summary_of_quarterly_grades/<str:grade>/<str:section>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_quarterly_grades), name='generate_summary_of_quarterly_grades'),
+    path('generate_summary_of_mapeh/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_of_mapeh), name='generate_summary_of_mapeh'),
 
     path('generate_final_and_general_grades/<str:grade>/<str:section>/', teacher_required(GenerationViews.generate_final_and_general_grades), name='generate_final_and_general_grades'),
     path('generate-summary-for-grades-4-to-6/<str:grade>/<str:section>/<str:subject>/<str:quarter>/', teacher_required(GenerationViews.generate_summary_for_grades_4_to_6), name='generate_summary_for_grades_4_to_6'),
@@ -302,6 +312,7 @@ urlpatterns = [
     path('get-admin-data/', super_required(SuperAdminViews.get_admin_data), name='get_admin_data'),
     path('update-admin/', super_required(SuperAdminViews.update_admin), name='update_admin'),
     path('delete-admin/', super_required(SuperAdminViews.delete_admin), name='delete_admin'),
+    path('backup/', super_required(SuperAdminViews.backup_database), name='backup_database'),
 
    
 # transfer record Views

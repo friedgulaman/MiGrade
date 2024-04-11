@@ -36,9 +36,11 @@ Student List for {{ grade }} {{ section }}
             <section class="content container mt-2 vh-100">
                 <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                     <ul class="nav nav-tabs text" role="tablist">
+                        {% load custom_filters %}
                         {% for subject in subjects %}
                             <li class="nav-item">
-                                <a class="nav-link" id="{{ subject }}-tab" data-bs-toggle="tab" href="#{{ subject }}" role="tab" aria-controls="{{ subject }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ subject }}</a>
+                                <a class="nav-link" id="{{ subject|replace_spaces }}-tab" data-bs-toggle="tab" href="#{{ subject|replace_spaces }}" role="tab" aria-controls="{{ subject|replace_spaces }}" aria-selected="false">{{ subject }}</a>
+                            </li>
                             </li>
                         {% endfor %}
                     </ul>
@@ -47,8 +49,7 @@ Student List for {{ grade }} {{ section }}
             
                 <div class="tab-content tab-content-basic students-tab">
                     {% for subject in subjects %}
-                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="{{ subject }}" role="tabpanel" aria-labelledby="{{ subject }}-tab">
-                          
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="{{ subject|replace_spaces }}" role="tabpanel" aria-labelledby="{{ subject|replace_spaces }}-tab">
                             <div class="class-record-container">
                                 <div class="table-responsive ">
                                     <table class="table table-hover ">
@@ -59,18 +60,31 @@ Student List for {{ grade }} {{ section }}
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                           
+                                        <tbody>     
                                             {% for class_record in class_records %}
                                                 {% if class_record.subject == subject %}
                                                     <tr>
                                                         <td>{{ subject }}</td>
                                                         <td>{{ class_record.quarters }}</td>
+                                                        <div id="loading-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.5); z-index: 9999;">
+                                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                                                                Loading...
+                                                            </div>
+                                                        </div>
+                                                        
                                                         <td>
-                                                            <form action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
+                                                            <form id="generate-excel-form" action="{% url 'generate_excel_for_grades' grade=class_record.grade section=class_record.section subject=class_record.subject quarter=class_record.quarters %}" method="post">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-primary">Generate Class Record</button>
+                                                                <button id="generate-btn" type="submit" class="btn btn-primary">Generate Class Record</button>
                                                             </form>
+                                                        </td>
+                                                        <td>
+                                                            {% if subject == 'MUSIC' or subject == 'ARTS' or subject == 'PE' or subject == 'HEALTH' %}
+                                                            <form action="{% url 'generate_summary_of_mapeh' grade=class_record.grade section=class_record.section subject='MAPEH' quarter=class_record.quarters %}" method="post">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-primary">Generate MAPEH</button>
+                                                            </form>
+                                                            {% endif %}
                                                         </td>
                                                     </tr>
                                                 {% endif %}
@@ -88,7 +102,20 @@ Student List for {{ grade }} {{ section }}
         </div>
     </div>
 </section>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#generate-excel-form').submit(function(event) {
+            // Show loading screen on form submission
+            $('#loading-screen').show();
+        });
+        
+        // Hide loading screen when the file download begins
+        $('#generate-btn').click(function() {
+            $('#loading-screen').hide();
+        });
+    });
+</script>
 <!-- jQuery CDN -->
 <script>
     // JavaScript to handle the back button click event

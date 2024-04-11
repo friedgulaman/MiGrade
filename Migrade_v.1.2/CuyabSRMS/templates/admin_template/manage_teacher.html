@@ -42,11 +42,11 @@ Manage Teachers
     <div class="d-sm-flex align-items-center justify-content-between border-bottom ">
       <ul class="nav nav-tabs text" role="tablist">
         <li class="nav-ite m">
-          <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
+          <a class="nav-link" id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
             aria-controls="create" aria-selected="true">Create</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+          <a class="nav-link  active" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
             aria-selected="false">Display</a>
         </li>
         <li class="nav-item">
@@ -61,7 +61,7 @@ Manage Teachers
     </div>
   
     <div class="tab-content tab-content-basic">
-      <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+      <div class="tab-pane fade show" id="create" role="tabpanel" aria-labelledby="create">
         <div class="container-fluid">
             <div class="card">
               <div class="card-body">
@@ -104,12 +104,13 @@ Manage Teachers
                   </div>
                   <div class="form-group">
                     <label class="d-flex justify-content-between align-items-center" for="exampleInputMiddleInitial">Middle Initial<span class="text-muted text-small"><span class="text-danger">*</span>Optional</span></label>
-                    <input type="text" name="middle_ini" class="form-control" id="exampleInputMiddleInitial" placeholder="Middle Initial" >
-                  </div>
+                    <input type="text" name="middle_ini" class="form-control" id="exampleInputMiddleInitial" placeholder="Middle Initial">
+                    <small id="middleInitialValidation" class="form-text text-danger d-none">Please enter only one character for the middle initial.</small>
+                </div>
                   
-                  <div class="form-group" style="display: none;">
+                  <div class="form-group">
                     <label for="exampleInputPassword1">Password</label>
-                    <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required disabled>
+                    <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="teacher_pass" required disabled>
                     <small class="form-text text-muted">Default password will be set automatically. Field is disabled.</small>
                 </div>
                 
@@ -119,7 +120,7 @@ Manage Teachers
             </div>
           </div>
       </div>
-      <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+      <div class="tab-pane fade show active" id="display" role="tabpanel" aria-labelledby="display-tab">
         <div class="container-fluid">
             <div class="card">
                 <div class="card-body">
@@ -131,22 +132,26 @@ Manage Teachers
                                     <th>ID</th>
                                     <th>Teacher</th>
                                     <th>Grade & Section</th>
-                                    
                                 </tr>
                             </thead>
                             <tbody>
-                              {% for teacher in teachers %}
-                              <tr class="text-muted">
-                                  <td>{{ teacher.user.id }}</td>
-                                  <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
-                                  {% if teacher.grade_section %}
-                                  <td class="text-muted"><textarea class="text_grade_section container form-text">{{ teacher.grade_section }}</textarea></td>
-                              {% else %}
-                                  <td class="text-muted">Not assigned</td>
-                              {% endif %}
-                              </tr>
-                          {% endfor %}
-                          
+                                {% for teacher in teachers %}
+                                <tr class="text-muted">
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
+                                    <td class="text-muted">
+                                        {% if teacher.grade_section %}
+                                            {% for grade_section, classes in teacher.grade_section.items %}
+                                            <div>
+                                              <strong>{{ grade_section }}:</strong> {{ classes }}
+                                          </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            Not assigned
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -174,7 +179,7 @@ Manage Teachers
                         <tbody>
                             {% for teacher in teachers %}
                                 <tr>
-                               <td>{{ teacher.user.id }}</td>
+                                  <td>{{forloop.counter}}</td>
                                     <td>
                                         <a href="#" class="teacher-link" data-toggle="modal" data-target="#updateModal" data-teacher-id="{{ teacher.id }}">
                                             {{ teacher.user.first_name }} {{ teacher.user.last_name }}
@@ -239,7 +244,7 @@ Manage Teachers
                         <tbody>
                             {% for teacher in teachers %}
                                 <tr class="teacher-row" data-teacher-id="{{ teacher.id }}">
-                                    <td>{{ teacher.user.id }}</td>
+                                  <td>{{forloop.counter}}</td>
                                     <td>
                                         {{ teacher.user.first_name }} {{ teacher.user.last_name }}
                                     </td>
@@ -265,6 +270,20 @@ Manage Teachers
 <!-- Add this in the head section of your HTML file -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
+<script>
+  document.getElementById('exampleInputMiddleInitial').addEventListener('input', function() {
+      var middleInitialInput = this.value.trim();
+      var middleInitialValidationMessage = document.getElementById('middleInitialValidation');
+
+      if (middleInitialInput.length > 1) {
+          middleInitialValidationMessage.classList.remove('d-none');
+          this.setCustomValidity('Please enter only one character for the middle initial.');
+      } else {
+          middleInitialValidationMessage.classList.add('d-none');
+          this.setCustomValidity('');
+      }
+  });
+</script>
 <script>
   $(document).ready(function () {
     // Intercept the form submission

@@ -92,7 +92,6 @@ body::-webkit-scrollbar-track {
   height: 100px;
 }
 
-
 .results {
     width: 100%;
     max-width: 500px;
@@ -122,6 +121,9 @@ body::-webkit-scrollbar-track {
 }
 
 
+.footer-links {
+  text-align: center;
+}
 
 </style>
 
@@ -225,6 +227,7 @@ body::-webkit-scrollbar-track {
         <div id="settings-trigger" class="bg-success" title="Help?"><i class="ti-help"></i></div>
         <div id="theme-settings" class="settings-panel bg-light p-3">
           <i class="settings-close ti-close"></i>
+          
           <h2 class="mt-5">Need Help?</h2>
           <p class="mt-2">If you're experiencing issues or need assistance, here are a few options:</p>
           <ol>
@@ -263,7 +266,11 @@ body::-webkit-scrollbar-track {
             
         </div>
         
+        <div class="footer-links mt-3">
+          <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a> | 
+          <a href="{% url 'terms_and_conditions' %}" target="_blank">Terms and Conditions</a>
 
+      </div>
 
         
           

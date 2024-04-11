@@ -39,11 +39,11 @@
  <div class="d-sm-flex align-items-center justify-content-between border-bottom">
      <ul class="nav nav-tabs text" role="tablist">
          <li class="nav-ite m">
-             <a class="nav-link active " id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
+             <a class="nav-link" id="home-tab" data-bs-toggle="tab" href="#create" role="tab"
                  aria-controls="create" aria-selected="true">Create</a>
          </li>
          <li class="nav-item">
-             <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
+             <a class="nav-link  active" id="profile-tab" data-bs-toggle="tab" href="#display" role="tab"
                  aria-selected="false">Display</a>
          </li>
          <li class="nav-item">
@@ -58,7 +58,7 @@
  </div>
 
  <div class="tab-content tab-content-basic">
-     <div class="tab-pane fade show active" id="create" role="tabpanel" aria-labelledby="create">
+     <div class="tab-pane fade show" id="create" role="tabpanel" aria-labelledby="create">
          <div class="container ">
              <div class="card">
                  <div class="card-body">
@@ -104,9 +104,9 @@
                         <input type="text" name="middle_ini" class="form-control" id="exampleInputMiddleInitial" placeholder="Middle Initial" >
                       </div>
                       
-                      <div class="form-group" style="display: none;">
+                      <div class="form-group">
                         <label for="exampleInputPassword1">Password</label>
-                        <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required disabled>
+                        <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="mt_pass" required disabled>
                         <small class="form-text text-muted">Default password will be set automatically. Field is disabled.</small>
                     </div>
                     
@@ -117,7 +117,7 @@
          </div>
      </div>
 
-     <div class="tab-pane fade show" id="display" role="tabpanel" aria-labelledby="display-tab">
+     <div class="tab-pane fade show active" id="display" role="tabpanel" aria-labelledby="display-tab">
          <div class="container-fluid ">
              <div class="card">
                  <div class="card-body">
