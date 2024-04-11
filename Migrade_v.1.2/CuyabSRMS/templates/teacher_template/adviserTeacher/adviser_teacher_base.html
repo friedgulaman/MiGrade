@@ -91,6 +91,38 @@ body::-webkit-scrollbar-track {
 #feedback{
   height: 100px;
 }
+
+
+.results {
+    width: 100%;
+    max-width: 500px;
+    max-height: 500px;
+    overflow: auto;
+    margin: 0 auto;
+    position: relative;
+}
+.results li:hover i {
+ 
+  color: black;
+  font-size: 14px;
+}
+.results li a{
+  text-decoration: none;
+  color: #1F3BB3;
+}
+.results li {
+ 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ms-n5 {
+    margin-left: -40px;
+}
+
+
+
 </style>
 
 <body>
@@ -127,7 +159,19 @@ body::-webkit-scrollbar-track {
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
-
+            <!-- <li class="nav-item search">
+              <form class="search-form" action="#">
+                <i class="icon-search" id="search-icon"></i>
+                <input type="search" class="form-control search-bar" id="user-input" placeholder="Search Here" title="Search here">         
+          </form>
+         
+            </li>
+            <div id="replaceable-content">
+              {% include 'teacher_template/adviserTeacher/results_partial.html' %}      
+  </div> -->
+  <button type="button" class="btn  btn-secondary btn-rounded d-flex align-items-center" id="openSearchModal">
+    <i class="icon-search" id="search-icon"></i>
+</button>
             <li class="nav-item dropdown  d-lg-block user-dropdown">
               <a id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                 {% if user.profile_image %}
@@ -151,6 +195,30 @@ body::-webkit-scrollbar-track {
           </button>
         </div>
       </nav>
+      <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                  <h3>Search</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="p-1 rounded rounded-pill shadow-sm mb-4">
+                    <div class="input-group align-items-center">
+                      <input type="search" placeholder="What're you searching for?" aria-describedby="button-addon1" class="form-control border-0" id="user-input">
+                      <div class="input-group-append">
+                        <button id="button-addon1" type="submit" class="btn btn-link text-primary"><i class="fa fa-search"></i></button>
+                      </div>
+                    </div>
+                  </div>
+            
+              <div id="replaceable-content">
+                {% include 'teacher_template/adviserTeacher/results_partial.html' %}
+              </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- partial -->
     <div class="page-body-wrapper">
       <div class="theme-setting-wrapper">
@@ -364,7 +432,77 @@ function reloadPage() {
 }
 
   </script>
-  
+   <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const user_input = document.getElementById("user-input");
+        const replaceable_content = document.getElementById("replaceable-content");
+
+        user_input.addEventListener("focus", function () {
+            replaceable_content.style.display = "block";
+        });
+
+        user_input.addEventListener("blur", function () {
+            replaceable_content.style.display = "none";
+        });
+    });
+</script>
+<script>
+    const user_input = $("#user-input")
+    const search_icon = $('#search-icon')
+    const class_records_div = $('#replaceable-content')
+    const endpoint = '/search/'
+    const delay_by_in_ms = 500
+    let scheduled_function = false
+
+    let ajax_call = function (endpoint, request_parameters) {
+        $.ajax({
+            url: endpoint,
+            type: 'GET',
+            data: request_parameters,
+            dataType: 'json',  // Specify JSON data type
+            success: function(response) {
+                console.log(response);
+                // fade out the class_records_div, then:
+                class_records_div.fadeTo('100', 0).promise().then(() => {
+                    // replace the HTML contents
+                    class_records_div.html(response['html_from_view'])
+                    // fade-in the div with new contents
+                    class_records_div.fadeTo('100', 1)
+                    // stop animating search icon
+                    search_icon.removeClass('blink')
+                })
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    user_input.on('input', function () {
+        const request_parameters = {
+            search_input: $(this).val().trim()
+        }
+
+        // start animating the search icon with the CSS class
+        search_icon.addClass('blink')
+
+        // if scheduled_function is NOT false, cancel the execution of the function
+        if (scheduled_function) {
+            clearTimeout(scheduled_function)
+        }
+
+        // setTimeout returns the ID of the function to be executed
+        scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
+    })
+</script>
+<script>
+  // jQuery script to open the modal when the button is clicked
+  $(document).ready(function () {
+      $('#openSearchModal').click(function () {
+          $('#searchModal').modal('show');
+      });
+  });
+</script>
   <!-- End custom js for this page-->
 </body>
 

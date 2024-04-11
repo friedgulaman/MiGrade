@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import URLPattern, path, include
 
 
-from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews, SuperAdminViews, MasterTeacherViews
+from CuyabSRMS import AdminViews, TeacherViews, GenerationViews, ArchivedViews, TransferRecordViews, SuperAdminViews, MasterTeacherViews, SearchViews
 
 from .DashboardViews import StudentChartDataView
 from django.contrib import admin
@@ -61,13 +61,14 @@ urlpatterns = [
     path('password_reset_sent', views.password_reset_sent, name='password_reset_sent'),
     path('activity', views.activity, name='activity'),
 
-    path('faqs', teacher_required(TeacherViews.faqs), name='faqs'),  # etoo gar
-    path('documentation', teacher_required(TeacherViews.documentation), name='documentation'),  # etoo gar
-    path('about', teacher_required(TeacherViews.about), name='about'),  # etoo gar
-    path('adviser_manual', teacher_required(TeacherViews.adviser_manual), name='adviser_manual'),  # etoo gar
-    path('subject_manual', teacher_required(TeacherViews.subject_manual), name='subject_manual'),  # etoo gar
+    path('faqs', teacher_required(TeacherViews.faqs), name='faqs'),  
+    path('documentation', teacher_required(TeacherViews.documentation), name='documentation'),  
+    path('about', teacher_required(TeacherViews.about), name='about'),  
+    path('adviser_manual', teacher_required(TeacherViews.adviser_manual), name='adviser_manual'),  
+    path('subject_manual', teacher_required(TeacherViews.subject_manual), name='subject_manual'),  
     path('submit_feedback', teacher_required(TeacherViews.submit_feedback), name='submit_feedback'),
 
+    path('search/', SearchViews.search_classrecord, name='search_classrecord'),
 
 
     path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),

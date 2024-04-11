@@ -1,0 +1,100 @@
+{% extends 'teacher_template/adviserTeacher/adviser_teacher_base.html' %}
+{% load static %}
+
+{% block title %}
+Inbox Messages
+{% endblock title %}
+
+{% block main_content %}
+    <style>
+        @keyframes blinker {
+            from {opacity: 1.0;}
+            to {opacity: 0.0;}
+        }
+
+        .blink {
+            text-decoration: blink;
+            animation-name: blinker;
+            animation-duration: 0.6s;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+            animation-direction: alternate;
+        }
+    </style>
+<div class="contaienr">
+    <div>
+        
+        <i id="search-icon" class="fas fa-search"></i>
+        <input id="user-input" placeholder="Search">
+    </div>
+
+    <div id="replaceable-content">
+        <div class="card" id="search-results-card" style="display: none;">
+            <div class="card-body">
+                {% include 'teacher_template/adviserTeacher/results_partial.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        document.getElementById("user-input").addEventListener("focus", function() {
+            document.getElementById("search-results-card").style.display = "block";
+        });
+    
+        document.getElementById("user-input").addEventListener("blur", function() {
+            document.getElementById("search-results-card").style.display = "none";
+        });
+    </script>
+    <script>
+        const user_input = $("#user-input")
+        const search_icon = $('#search-icon')
+        const class_records_div = $('#replaceable-content')
+        const endpoint = '/search/'
+        const delay_by_in_ms = 500
+        let scheduled_function = false
+
+        let ajax_call = function (endpoint, request_parameters) {
+            $.ajax({
+                url: endpoint,
+                type: 'GET',
+                data: request_parameters,
+                dataType: 'json',  // Specify JSON data type
+                success: function(response) {
+                    console.log(response);
+                    // fade out the class_records_div, then:
+                    class_records_div.fadeTo('100', 0).promise().then(() => {
+                        // replace the HTML contents
+                        class_records_div.html(response['html_from_view'])
+                        // fade-in the div with new contents
+                        class_records_div.fadeTo('100', 1)
+                        // stop animating search icon
+                        search_icon.removeClass('blink')
+                    })
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        user_input.on('input', function () {
+            const request_parameters = {
+                search_input: $(this).val().trim()
+            }
+
+            // start animating the search icon with the CSS class
+            search_icon.addClass('blink')
+
+            // if scheduled_function is NOT false, cancel the execution of the function
+            if (scheduled_function) {
+                clearTimeout(scheduled_function)
+            }
+
+            // setTimeout returns the ID of the function to be executed
+            scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
+        })
+    </script>
+
+{% endblock main_content %}
