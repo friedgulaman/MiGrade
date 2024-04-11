@@ -831,10 +831,16 @@ def write_sf9_data(front_sheet, student):
     row_coordinates_lrn = 15
     row_coordinates_sex = 16
     column_coordinates_sex = 20
-    row_coordinates_grade = 17
-    column_coordinates_grade = 17
-    row_coordinates_section = 17
-    column_coordinates_section = 20
+    row_coordinates_grade_1 = 17
+    column_coordinates_grade_1 = 17
+    row_coordinates_section_1 = 17
+    column_coordinates_section_1 = 20
+    row_coordinates_grade_2 = 32
+    column_coordinates_grade_2 = 18
+    row_coordinates_grade_3 = 33
+    column_coordinates_grade_3 = 19
+    row_coordinates_section_2 = 32
+    column_coordinates_section_2 = 21
     row_coordinates_age = 16
     column_coordinates_age = 17
     birthdate = datetime.strptime(student.birthday, '%m-%d-%Y')
@@ -860,6 +866,14 @@ def write_sf9_data(front_sheet, student):
         'Grade 6': 'SIX'
     }
     grade = grade_mapping.get(student.grade, student.grade)
+    grades = list(grade_mapping.values())
+    if grade in grades[:-1]:  # Check if the grade is not the last one
+        next_grade_index = grades.index(grade) + 1
+        next_grade = grades[next_grade_index]
+    else:
+        next_grade = None  # There is no next grade
+
+    print("Next Grade:", next_grade)
 
     # Calculate the age
     age = current_date.year - birthdate.year - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
@@ -868,29 +882,36 @@ def write_sf9_data(front_sheet, student):
     front_sheet.cell(row=row_coordinates_student_name, column=column_coordinates_student_name, value=student.name if student else "")
     front_sheet.cell(row=row_coordinates_lrn, column=column_coordinates_lrn, value=student.lrn if student else "")
     front_sheet.cell(row=row_coordinates_sex, column=column_coordinates_sex, value=sex if student else "").font = bold_font
-    front_sheet.cell(row=row_coordinates_grade, column=column_coordinates_grade, value=grade if student else "").font = bold_font
-    front_sheet.cell(row=row_coordinates_section, column=column_coordinates_section, value=student.section if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_grade_1, column=column_coordinates_grade_1, value=grade if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_section_1, column=column_coordinates_section_1, value=student.section if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_grade_2, column=column_coordinates_grade_2, value=grade if student else "").font = bold_font
+    front_sheet.cell(row=row_coordinates_section_2, column=column_coordinates_section_2, value=student.section if student else "").font = bold_font
     front_sheet.cell(row=row_coordinates_age, column=column_coordinates_age, value=student.age if student else "N/A")
+    front_sheet.cell(row=row_coordinates_grade_3, column=column_coordinates_grade_3, value=next_grade if student else "").font = bold_font
     # print(student.name)
 
 
 def write_sf9_school_info(front_sheet, school_info_queryset, teacher_name):
-    row = 27
+    row_principal_1 = 27
+    row_principal_2 = 37
     column = 16
     row_sy = 18
     column_sy = 18
     column_teacher = 20
-    row_teacher = 26
+    row_teacher_1 = 26
+    row_teacher_2 = 36
 
     bold_font = Font(bold=True, name='Aparajita')
     # Assuming there's only one principal for a single school information record
     for school_info in school_info_queryset:
         principal = school_info.principal_name
         school_year = school_info.school_year
-        front_sheet.cell(row=row, column=column, value=principal).font = bold_font
+        front_sheet.cell(row=row_principal_1, column=column, value=principal).font = bold_font
+        front_sheet.cell(row=row_principal_2, column=column, value=principal).font = bold_font
         front_sheet.cell(row=row_sy, column=column_sy, value=school_year)
 
-    front_sheet.cell(row=row_teacher, column=column_teacher, value=teacher_name).font = bold_font
+    front_sheet.cell(row=row_teacher_1, column=column_teacher, value=teacher_name).font = bold_font
+    front_sheet.cell(row=row_teacher_2, column=column_teacher, value=teacher_name).font = bold_font
 
 
 def write_sf9_grades(back_sheet, advisory_class, general_average, grade_name):
@@ -917,39 +938,39 @@ def write_sf9_grades(back_sheet, advisory_class, general_average, grade_name):
 
     if grade_name == 'Grade 2':
         row_coordinates = {
-            "FILIPINO": 7,
-            "ENGLISH": 8,
-            "MATHEMATICS": 9,
-            "SCIENCE": 11,
+            "MOTHER TONGUE": 7,
+            "FILIPINO": 8,
+            "ENGLISH": 9,
+            "MATHEMATICS": 11,
             "ARALING PANLIPUNAN": 12, 
-            "EDUKASYON SA PAGPAPAKATAO": 13,
-            "EPP": 15,
-            "MAPEH": 17,
-            "MUSIC": 18,
-            "ARTS": 19,
-            "PE": 20,
-            "HEALTH": 21,
+            "MAPEH": 13,
+            "MUSIC": 15,
+            "ARTS": 17,
+            "PE": 18,
+            "HEALTH": 19,
+            "EDUKASYON SA PAGPAPAKATAO": 20,
             # Add more subjects as needed
         }
         general_average_row = 21
 
     if grade_name == 'Grade 3':
         row_coordinates = {
-            "FILIPINO": 7,
-            "ENGLISH": 8,
-            "MATHEMATICS": 9,
-            "SCIENCE": 11,
-            "ARALING PANLIPUNAN": 12, 
-            "EDUKASYON SA PAGPAPAKATAO": 13,
-            "EPP": 15,
+            "MOTHER TONGUE": 7,
+            "FILIPINO": 8,
+            "ENGLISH": 9,
+            "MATHEMATICS": 11,
+            "SCIENCE": 12,
+            "ARALING PANLIPUNAN": 13, 
+            "EDUKASYON SA PAGPAPAKATAO": 15,
             "MAPEH": 17,
             "MUSIC": 18,
             "ARTS": 19,
             "PE": 20,
             "HEALTH": 21,
+           
             # Add more subjects as needed
         }
-        general_average_row = 21
+        general_average_row = 22
 
     if grade_name == 'Grade 4' or grade_name == 'Grade 5' or grade_name == 'Grade 6':
         row_coordinates = {
@@ -1029,6 +1050,7 @@ def write_sf9_grades(back_sheet, advisory_class, general_average, grade_name):
                     back_sheet.cell(row=row, column=18, value=int(round(final_grade_value)) if final_grade_value is not None and final_grade_value != '' else None)
                     back_sheet.cell(row=row, column=19, value=status)
                     back_sheet.cell(row=general_average_row, column=18, value=general_average.general_average)
+                    back_sheet.cell(row=general_average_row, column=19, value=general_average.status)
 
 def write_sf9_total_attendance(front_sheet, attendance_record):
  if attendance_record is not None:

@@ -1382,10 +1382,12 @@ def generate_excel_for_sf9_grade_section(request, grade, section):
 
             # with open(copied_file_path, 'rb') as excel_file:
             #     response.write(excel_file.read())
+            
 
     with open(zip_file_path, 'rb') as zip_file:
         response = HttpResponse(zip_file.read(), content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        
 
     return response
 

@@ -2800,13 +2800,13 @@ def determine_status(general_average):
         return 'No Grade'
      
     if general_average >= 98:
-        return 'PASSED'
+        return 'PROMOTED'
     elif general_average >= 95:
-        return 'PASSED'
+        return 'PROMOTED'
     elif general_average >= 90:
-        return 'PASSED'
+        return 'PROMOTED'
     elif general_average >= 75:
-        return 'PASSED'
+        return 'PROMOTED'
     else:
         return 'FAILED'
 
