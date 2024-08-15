@@ -441,8 +441,6 @@ def subject_classes_mt(request):
         return render(request, 'master_template/subject_classes.html', context)
     
     except MT.DoesNotExist:
-        # Handle the case where the MT instance does not exist
-        # Redirect or render an appropriate response
         pass
 
 def distinct_sections(request):
@@ -471,8 +469,6 @@ def distinct_sections(request):
             distinct_sections = set(class_records.values_list('section', flat=True).distinct())
 
     except MT.DoesNotExist:
-        # Handle the case where the MT instance does not exist
-        # Redirect or render an appropriate response
         pass
 
     context = {
@@ -549,8 +545,6 @@ def subject_quarters(request):
             quarters.extend(class_records.values_list('quarters', flat=True).distinct())
 
     except MT.DoesNotExist:
-        # Handle the case where the MT instance does not exist
-        # Redirect or render an appropriate response
         pass
 
     context = {

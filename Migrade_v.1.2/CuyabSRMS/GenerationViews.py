@@ -1491,35 +1491,18 @@ def generate_excel_for_sf9(request, student_id):
 
     return response
 
-    # Convert Excel to PDF using libreoffice
-  
-    # return response
-
-    # except Exception as e:
-    #     # Handle exceptions, such as a corrupted file
-    #     return HttpResponse(f"An error occurred: {e}")
-
-
 
 @login_required
 def generate_per_subject_view(request):
-    # Retrieve the user and check if the user is a teacher
     user = request.user
     if hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
         teacher = user.teacher
-
-        # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher)
-
-        # Keep track of unique grade and section combinations
         unique_combinations = set()
         unique_class_records = []
 
-        # Iterate through class records to filter out duplicates
         for record in class_records:
             combination = (record.grade, record.section)
-            # Check if the combination is unique
             if combination not in unique_combinations:
                 unique_combinations.add(combination)
                 unique_class_records.append(record)
@@ -1531,31 +1514,20 @@ def generate_per_subject_view(request):
         return render(request, 'teacher_template/adviserTeacher/generate_per_subject.html', context)
     
     else:
-        # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
 
 
 @login_required
 def generate_per_all_subject_view(request):
-    # Retrieve the user and check if the user is a teacher
     user = request.user
     if hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
         teacher = user.teacher
-
-        # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher)
-
-        # Create a dictionary to store data organized by quarter
         quarters_data = {}
-
-        # Iterate through class records to organize data by quarter
         for record in class_records:
             quarter_data = quarters_data.setdefault(record.quarters, {'subjects': set(), 'grade_sections': set()})
             quarter_data['grade_sections'].add((record.grade, record.section, record.school_year))
             quarter_data['subjects'].add(record.subject)
-
-        # Sort subjects alphabetically
         for quarter_data in quarters_data.values():
             quarter_data['subjects'] = sorted(quarter_data['subjects'])
 
@@ -1567,26 +1539,19 @@ def generate_per_all_subject_view(request):
         return render(request, 'teacher_template/adviserTeacher/generate_per_all_subject.html', context)
     
     else:
-        # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
     
 def generate_grade_section_list(request):
-    # Assuming the user is logged in
-    user = request.user
 
-    # Check if the user is a teacher
+    user = request.user
     if user.is_authenticated and hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
         teacher = user.teacher
 
         grade = request.GET.get('grade')
         section = request.GET.get('section')
-        
-        # Filter class records based on the teacher
         class_records = ClassRecord.objects.filter(teacher=teacher, grade=grade, section=section)
         print(class_records)
 
-        # Fetch distinct subjects based on grade and section
         subjects = class_records.values_list('subject', flat=True).distinct()
 
         for class_record in class_records:
@@ -1602,36 +1567,22 @@ def generate_grade_section_list(request):
 
         return render(request, 'teacher_template/adviserTeacher/generate_grade_section_list.html', context)
     else:
-        # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")
     
 @login_required
 def generate_final_grade_view(request):
-    # Retrieve the user and check if the user is a teacher
     user = request.user
     if hasattr(user, 'teacher'):
-        # Retrieve the teacher associated with the user
         teacher = user.teacher
-
-        # Filter class records based on the teacher
         class_records = AdvisoryClass.objects.filter(teacher=teacher)
-
-        # Create a set to store grade_sections
         grade_sections = set()
-
-        # Iterate through class records to organize data by grade and section
         for record in class_records:
             grade_sections.add((record.student.grade, record.student.section, record.student.school_year))
-
-        # Convert the set to a sorted list
         grade_sections = sorted(grade_sections)
 
         context = {
             'grade_sections': grade_sections,
         }
-
         return render(request, 'teacher_template/adviserTeacher/generate_final_grade.html', context)
-    
     else:
-        # Handle the case where the user is not a teacher
         return render(request, "teacher_template/adviserTeacher/home_adviser_teacher.html")

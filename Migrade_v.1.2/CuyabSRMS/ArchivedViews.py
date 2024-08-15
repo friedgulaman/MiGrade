@@ -79,16 +79,6 @@ def restore_archived_record(request, archived_record_id):
     
     try:
         with transaction.atomic():
-
-            
-            # archived_record = ArchivedClassRecord.objects.filter(id=archived_record_id)
-            # archived_record = ArchivedClassRecord.objects.filter(id=archived_record_id, is_restore_approved=False)
-            # restore = is_restore_approved = True
-            # for restore_approved in archived_records:
-            #     restore_approved.is_restore_approved = restore
-            #     archived_record.save()
-
-            # Create a new instance of ClassRecord using archived data
             class_record = ClassRecord.objects.create(
                 name=archived_record.name,
                 grade=archived_record.grade,
@@ -131,52 +121,6 @@ def restore_archived_record(request, archived_record_id):
         print(f"Error occurred during restoration: {str(e)}")
         return redirect('error_page')  # Redirect to an error page or handle as needed
 
-# def initiate_restore_request(request, archived_record_id):
-#     archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
-#     if request.method == 'POST':
-#         # Check if a restore request already exists for the archived record
-#         existing_request = RestoreRequest.objects.filter(archived_record=archived_record).exists()
-#         if existing_request:
-#             # If a restore request already exists, show a message and redirect back
-#             messages.error(request, 'A restore request already exists for this archived record.')
-#             return redirect('archived_records')
-#         else:
-#             # If no restore request exists, create a new restore request
-#             RestoreRequest.objects.create(archived_record=archived_record, requester=request.user.teacher)
-#             messages.success(request, 'Restore request created successfully.')
-#             return redirect('archived_records')  # Redirect to archived records page or a thank you page
-#     return render(request, 'archive_template/initiate_restore_request.html', {'archived_record': archived_record})
-
-# def restore_requests(request):
-#     # Assuming you have a model for restore requests with a foreign key to the User model
-#     restore_requests = RestoreRequest.objects.all()
-#     return render(request, 'archive_template/restore_requests.html', {'restore_requests': restore_requests})
-
-# def confirm_restore(request, archived_record_id):
-#     try:
-#         archived_record = ArchivedClassRecord.objects.get(id=archived_record_id)
-#         return render(request, 'archive_template/confirm_restore.html', {'archived_record': archived_record})
-#     except ArchivedClassRecord.DoesNotExist:
-#         return redirect('error_page')  
-    
-# def view_restore_request(request, request_id):
-#     restore_request = RestoreRequest.objects.get(id=request_id)
-#     return render(request, 'archive_template/view_restore_request.html', {'restore_request': restore_request})
-
-# def approve_restore_request(request, request_id):
-#     restore_request = RestoreRequest.objects.get(id=request_id)
-#     # Perform logic to approve the request
-#     restore_request.status = 'Approved'
-#     restore_request.save()
-#     # Redirect to the confirm_restore view with the archived record ID
-#     return redirect('confirm_restore', archived_record_id=restore_request.archived_record.id)
-
-# def deny_restore_request(request, request_id):
-#     restore_request = RestoreRequest.objects.get(id=request_id)
-#     # Perform logic to deny the request
-#     restore_request.status = 'Denied'
-#     restore_request.save()
-#     return redirect('restore_requests')
 
 
 
@@ -189,31 +133,19 @@ def admin_archived_records(request):
 def archived_records(request):
 
     teacher = request.user.teacher
-
-
-    # Retrieve all archived class records
     archived_records = ArchivedClassRecord.objects.filter(teacher=teacher)
-    
-    # Retrieve distinct archived student information
     archived_students = ArchivedStudent.objects.values('archived_grade', 'archived_section').distinct()
-    
-    # Retrieve all pending restore requests
     restore_requests = RestoreRequest.objects.filter(status='Pending')
     print(restore_requests)
-    
-    # Render the template with the archived records, students, and restore requests
+
     return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records, 'archived_students': archived_students, 'restore_requests': restore_requests})
 
-# def archived_records(request):
-#     archived_records = ArchivedClassRecord.objects.all()
-#     return render(request, 'archive_template/archived_records.html', {'archived_records': archived_records})
+
 
 
 def archive_students_with_grade_and_section(request, grade, section):
     try:
         with transaction.atomic():
-
-            # Get the students with the specified grade and section
             students_to_archive = Student.objects.filter(grade=grade, section=section)
             class_records_to_archive = ClassRecord.objects.filter(grade=grade, section=section)
 
@@ -229,7 +161,6 @@ def archive_students_with_grade_and_section(request, grade, section):
 
             if class_records_to_archive.exists():
                 for class_record in class_records_to_archive:
-                    # Create an archived class record
                     archived_class_record = ArchivedClassRecord.objects.create(
                         name=class_record.name,
                         grade=class_record.grade,
@@ -240,17 +171,12 @@ def archive_students_with_grade_and_section(request, grade, section):
                         date_archived=timezone.now(),
                         school_year=class_record.school_year
                     )
-
-                    # Log the archived class record
                     print(f"Archived class record: {archived_class_record.name}")
 
-                    # Archive associated GradeScores records for each student
                     for student in students_to_archive:
-                        # Check if an archived student already exists with the same LRN
                         existing_archived_student = ArchivedStudent.objects.filter(archived_lrn=student.lrn).first()
 
                         if existing_archived_student:
-                            # Update existing archived student information
                             existing_archived_student.archived_name = student.name
                             existing_archived_student.archived_sex = student.sex
                             existing_archived_student.archived_birthday = student.birthday
@@ -269,7 +195,6 @@ def archive_students_with_grade_and_section(request, grade, section):
                             archived_student = existing_archived_student
                             
                         else:
-                            # Create archived student if it doesn't exist
                             archived_student = ArchivedStudent.objects.create(
                                 archived_name=student.name,
                                 archived_lrn=student.lrn,
@@ -287,7 +212,6 @@ def archive_students_with_grade_and_section(request, grade, section):
                             )
                             print(f"Archived student: {archived_student.archived_name}")
 
-                        # Archive associated GradeScores records
                         grade_scores_to_archive = GradeScores.objects.filter(student=student, class_record=class_record)
                         for grade_score in grade_scores_to_archive:
                             archived_grade_score = ArchivedGradeScores.objects.create(
@@ -318,15 +242,9 @@ def archive_students_with_grade_and_section(request, grade, section):
                                 weighted_score_performance=grade_score.weighted_score_performance,
                                 weighted_score_quarterly=grade_score.weighted_score_quarterly
                             )
-                            # Log the archived grade score
                             print(f"Archived grade score for {archived_student.archived_name}")
-
-
-                        # Add similar code blocks for archiving FinalGrade, QuarterlyGrades, and GeneralAverage records here
-                        # Archive associated FinalGrade records
                         final_grades_to_archive = FinalGrade.objects.filter(student=student)
                         for final_grade in final_grades_to_archive:
-                            # Check if an archived final grade already exists for the student, grade, and section
                             existing_archived_final_grade = ArchivedFinalGrade.objects.filter(
                                 archived_student=archived_student,
                                 archived_teacher=final_grade.teacher,
@@ -335,12 +253,10 @@ def archive_students_with_grade_and_section(request, grade, section):
                             ).first()
 
                             if existing_archived_final_grade:
-                                # Update existing archived final grade
                                 existing_archived_final_grade.archived_final_grade = final_grade.final_grade
                                 existing_archived_final_grade.save()
                                 print(f"Updated final grade for {archived_student.archived_name}: {final_grade.final_grade}")
                             else:
-                                # Create archived final grade if it doesn't exist
                                 ArchivedFinalGrade.objects.create(
                                     archived_teacher=final_grade.teacher,
                                     archived_student=archived_student,
@@ -349,11 +265,8 @@ def archive_students_with_grade_and_section(request, grade, section):
                                     archived_final_grade=final_grade.final_grade
                                 )
                                 print(f"Archived final grade for {archived_student.archived_name}: {final_grade.final_grade}")
-
-                        # Archive associated GeneralAverage records
                         general_averages_to_archive = GeneralAverage.objects.filter(student=student)
                         for general_average in general_averages_to_archive:
-                            # Check if an existing archived general average record exists
                             existing_archived_general_average = ArchivedGeneralAverage.objects.filter(
                                 archived_student=archived_student,
                                 archived_grade=general_average.grade,
@@ -361,12 +274,10 @@ def archive_students_with_grade_and_section(request, grade, section):
                             ).first()
 
                             if existing_archived_general_average:
-                                # Update existing archived general average record
                                 existing_archived_general_average.archived_general_average = general_average.general_average
                                 existing_archived_general_average.save()
                                 print(f"Updated archived general average for {archived_student.archived_name}: {general_average.general_average}")
                             else:
-                                # Create archived general average record if it doesn't exist
                                 ArchivedGeneralAverage.objects.create(
                                     archived_student=archived_student,
                                     archived_grade=general_average.grade,
@@ -409,8 +320,7 @@ def archive_students_with_grade_and_section(request, grade, section):
                     return redirect(referer_url)
                 else:
                     # If referer URL is not available, redirect to a default URL
-                    return redirect('archived_records')  # Redirect to the archived records page
-                
+                    return redirect('archived_records')  
             else:
                     # Iterate over each student and archive them
                 for student in students_to_archive:
@@ -827,12 +737,6 @@ def display_archived_classrecord(request, class_record_id=None):
      # If class_record_id is provided, retrieve the ClassRecord object
     class_record = get_object_or_404(ArchivedClassRecord, id=class_record_id)
     subject_name = class_record.subject
-    # teacher = request.user.teacher
-    # teacher_id = teacher.id
-    # if teacher_id != class_record.teacher_id:
-    #     return HttpResponseForbidden("You don't have permission to access this class record.")
-
-
     grade_scores = ArchivedGradeScores.objects.filter(archived_class_record=class_record)
     subject = Subject.objects.get(name=subject_name)
     assessments = subject.assessment
